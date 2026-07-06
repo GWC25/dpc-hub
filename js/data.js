@@ -343,8 +343,14 @@ async function checkSessionSnapshot(ui) {
 async function loadHub(ui) {
   if (!checkAPISupport()) return false;
 
+  // Clear any stale localStorage folder handle flag if this is truly first time
+  // (handles case where flag is set but no real handle exists)
   const permState = getPermissionState();
+
   if (permState === 'first-time') {
+    // Clear any stale flags
+    localStorage.removeItem(DPC_CONFIG.LS_KEYS.FOLDER_HANDLE_STORED);
+    localStorage.removeItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE);
     await selectFolderFirstTime(ui);
   } else if (permState === 'expired') {
     await reconnectFolder(ui);
