@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DPC Hub — Digital Pedagogy Coach operating system. Weston College Group.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>DPC Hub</title>
+  <link rel="stylesheet" href="css/design.css">
+</head>
+<body>
+
+  <!-- Skip link -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ── Auth guard ─────────────────────────────────────────── -->
+  <!-- Checked immediately in the inline script at bottom -->
+
+  <!-- ── Loading overlay ────────────────────────────────────── -->
+  <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading DPC Hub">
+    <div class="loading-spinner" aria-hidden="true"></div>
+    <p class="loading-message" id="loading-message">Loading DPC Hub…</p>
+  </div>
+
+  <!-- ── Folder selection modal ─────────────────────────────── -->
+  <!-- Cannot be dismissed — required for data access -->
+  <div
+    id="folder-modal"
+    class="modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="folder-modal-title"
+    hidden
+    aria-hidden="true"
+  >
+    <div class="modal modal--narrow">
+      <div class="modal__header">
+        <h1 class="modal__title" id="folder-modal-title">Connect to OneDrive</h1>
+      </div>
+      <p id="folder-modal-message" style="font-size:var(--text-base);color:var(--color-slate);margin-bottom:var(--space-md);"></p>
+      <p id="folder-modal-summary" style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-lg);" hidden></p>
+      <p id="folder-modal-error" style="font-size:var(--text-sm);color:var(--color-red);margin-bottom:var(--space-md);" role="alert" aria-live="assertive"></p>
+      <div class="btn-row" style="flex-direction:column;">
+        <button id="folder-modal-btn" class="btn btn--primary btn--full" type="button">
+          Select folder
+        </button>
+        <button id="folder-modal-offline" class="btn btn--ghost btn--full" type="button" hidden>
+          Continue in offline mode
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Restore session banner ──────────────────────────────── -->
+  <div
+    id="restore-banner"
+    class="banner banner--amber"
+    role="alert"
+    aria-live="polite"
+    hidden
+    style="position:fixed;top:calc(var(--nav-height) + var(--space-md));left:50%;transform:translateX(-50%);z-index:var(--z-toast);max-width:500px;width:calc(100% - var(--space-2xl));"
+  >
+    <span>Unsaved session from <strong id="restore-time"></strong> detected — restore?</span>
+    <button id="restore-btn" class="btn btn--sm btn--secondary" type="button" style="margin-left:auto;flex-shrink:0;">
+      Restore
+    </button>
+    <button
+      class="banner__close"
+      type="button"
+      aria-label="Dismiss"
+      onclick="document.getElementById('restore-banner').hidden=true"
+    >×</button>
+  </div>
+
+  <!-- ── Hub layout ──────────────────────────────────────────── -->
+  <div class="hub-layout" id="hub-layout">
+
+    <!-- Top navigation -->
+    <header class="hub-nav" role="banner">
+      <a href="hub.html" class="hub-nav__brand" aria-label="DPC Hub — home">DPC Hub</a>
+      <div class="hub-nav__right">
+        <span
+          class="hub-nav__save-indicator"
+          id="save-indicator"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >Saved ✓</span>
+
+        <button
+          class="hub-nav__notification"
+          id="notification-btn"
+          type="button"
+          aria-label="Notifications — 0 pending"
+        >
+          🔔
+          <span
+            class="hub-nav__badge hub-nav__badge--hidden"
+            id="notification-badge"
+            aria-hidden="true"
+          >0</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Body: sidebar + main -->
+    <div class="hub-body">
+
+      <!-- Sidebar navigation -->
+      <nav class="hub-sidebar" aria-label="Hub modules">
+        <ul class="hub-sidebar__nav" role="list">
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="home" aria-current="page">
+              <span class="hub-sidebar__icon" aria-hidden="true">⌂</span>
+              Home
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="calendar">
+              <span class="hub-sidebar__icon" aria-hidden="true">📅</span>
+              Calendar
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="areas">
+              <span class="hub-sidebar__icon" aria-hidden="true">🗂</span>
+              Areas
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="tasks">
+              <span class="hub-sidebar__icon" aria-hidden="true">✓</span>
+              Tasks
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="meetings">
+              <span class="hub-sidebar__icon" aria-hidden="true">💬</span>
+              Meetings
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="notes">
+              <span class="hub-sidebar__icon" aria-hidden="true">✏</span>
+              Notes
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="staff">
+              <span class="hub-sidebar__icon" aria-hidden="true">👤</span>
+              Staff
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="afis">
+              <span class="hub-sidebar__icon" aria-hidden="true">🔁</span>
+              Loops
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="templates">
+              <span class="hub-sidebar__icon" aria-hidden="true">📋</span>
+              Templates
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="healthchecks">
+              <span class="hub-sidebar__icon" aria-hidden="true">📊</span>
+              Health Checks
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="dashboards">
+              <span class="hub-sidebar__icon" aria-hidden="true">📈</span>
+              Dashboards
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="digitalleads">
+              <span class="hub-sidebar__icon" aria-hidden="true">⭐</span>
+              Digital Leads
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="currentfocus">
+              <span class="hub-sidebar__icon" aria-hidden="true">🎯</span>
+              Current Focus
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="cpd">
+              <span class="hub-sidebar__icon" aria-hidden="true">📚</span>
+              CPD
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="reports">
+              <span class="hub-sidebar__icon" aria-hidden="true">📄</span>
+              Reports
+            </a>
+          </li>
+          <li role="listitem">
+            <a href="#" class="hub-sidebar__link" data-module="aisupport">
+              <span class="hub-sidebar__icon" aria-hidden="true">🤖</span>
+              AI Support
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Main content -->
+      <main id="main-content" class="hub-main" tabindex="-1">
+        <!-- Banner container for non-blocking alerts -->
+        <div id="banner-container" aria-live="polite"></div>
+        <!-- Module content injected here by app.js -->
+      </main>
+
+    </div><!-- /.hub-body -->
+
+  </div><!-- /.hub-layout -->
+
+  <!-- ── Quick Capture FAB ────────────────────────────────────── -->
+  <button
+    id="quick-capture-btn"
+    type="button"
+    aria-label="Quick Capture — log an activity"
+    style="
+      position: fixed;
+      bottom: var(--space-xl);
+      right: var(--space-xl);
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--color-teal);
+      color: var(--color-white);
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: var(--shadow-lg);
+      z-index: calc(var(--z-nav) - 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--transition), transform var(--transition);
+    "
+  >+</button>
+
+  <!-- ── Toast container ────────────────────────────────────── -->
+  <div
+    id="toast-container"
+    class="toast-container"
+    aria-live="polite"
+    aria-label="Notifications"
+  ></div>
+
+  <!-- ── Scripts — load order is critical ──────────────────── -->
+  <!-- 1. Config (no dependencies) -->
+  <script src="js/config.js"></script>
+  <!-- 2. Schema (imports nothing) -->
+  <script src="js/schema.js"></script>
+  <!-- 3. Data layer (imports config + schema via globals) -->
+  <script src="js/data.js"></script>
+  <!-- 4. App controller (imports everything via globals) -->
+  <script src="js/app.js"></script>
+
+  <!-- Auth guard — must run before app initialises -->
+  <script>
+    (function () {
+      'use strict';
+      const token  = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_TOKEN);
+      const expiry = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_EXPIRY);
+      if (!token || token !== 'authenticated' || !expiry || new Date(expiry) <= new Date()) {
+        // Not authenticated — redirect to login
+        window.location.replace('index.html');
+      }
+    })();
+  </script>
+
+</body>
+</html>
