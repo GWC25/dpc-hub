@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DPC Hub — Digital Pedagogy Coach operating system. Weston College Group.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>DPC Hub — Sign in</title>
+  <link rel="stylesheet" href="css/design.css">
+  <style>
+    /* Page-specific: auth only — do not put shared styles here */
+    .auth-page form { margin-top: var(--space-lg); }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <main id="main-content" class="auth-page">
+    <div class="auth-card" role="region" aria-label="DPC Hub sign in">
+
+      <div class="auth-card__logo" aria-label="DPC Hub">DPC Hub</div>
+      <p class="auth-card__subtitle">Weston College Group · Digital Pedagogy Coach</p>
+
+      <form id="auth-form" novalidate>
+        <label class="auth-card__label" for="password">Password</label>
+        <input
+          class="auth-card__input"
+          type="password"
+          id="password"
+          name="password"
+          autocomplete="current-password"
+          aria-required="true"
+          aria-describedby="password-error"
+          placeholder=""
+        >
+        <p class="auth-card__error" id="password-error" role="alert" aria-live="assertive"></p>
+
+        <button class="auth-card__btn" type="submit" id="submit-btn">
+          Enter Hub
+        </button>
+      </form>
+
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script>
+    // Auth page — inline script only. No Hub JS loaded until authenticated.
+    (function () {
+      'use strict';
+
+      // If already authenticated (session still valid), go straight to hub
+      const token  = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_TOKEN);
+      const expiry = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_EXPIRY);
+      if (token === 'authenticated' && expiry && new Date(expiry) > new Date()) {
+        window.location.replace('hub.html');
+        return;
+      }
+
+      const form     = document.getElementById('auth-form');
+      const input    = document.getElementById('password');
+      const errorEl  = document.getElementById('password-error');
+      const submitBtn= document.getElementById('submit-btn');
+
+      function showError(msg) {
+        input.classList.add('auth-card__input--error');
+        input.setAttribute('aria-invalid', 'true');
+        errorEl.textContent = msg;
+        errorEl.classList.add('auth-card__error--visible');
+        input.focus();
+      }
+
+      function clearError() {
+        input.classList.remove('auth-card__input--error');
+        input.removeAttribute('aria-invalid');
+        errorEl.textContent = '';
+        errorEl.classList.remove('auth-card__error--visible');
+      }
+
+      input.addEventListener('input', clearError);
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearError();
+
+        const password = input.value;
+        if (!password) {
+          showError('Please enter your password.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Checking…';
+
+        try {
+          // SHA-256 hash the input and compare to stored hash
+          const msgBuffer  = new TextEncoder().encode(password);
+          const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+          const hashArray  = Array.from(new Uint8Array(hashBuffer));
+          const hash       = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+          if (hash === DPC_CONFIG.DPC_PASSWORD_HASH) {
+            // Set auth session
+            const expiry = new Date(Date.now() + DPC_CONFIG.AUTH_SESSION_HOURS * 60 * 60 * 1000).toISOString();
+            localStorage.setItem(DPC_CONFIG.LS_KEYS.AUTH_TOKEN, 'authenticated');
+            localStorage.setItem(DPC_CONFIG.LS_KEYS.AUTH_EXPIRY, expiry);
+            window.location.replace('hub.html');
+          } else {
+            showError('Incorrect password — please try again.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enter Hub';
+          }
+        } catch (err) {
+          showError('An error occurred. Please try again.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Enter Hub';
+          console.error('DPC Hub auth error:', err);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
