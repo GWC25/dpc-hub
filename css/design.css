@@ -716,12 +716,12 @@ ul, ol { list-style: none; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: calc(var(--z-modal) + 50);
+  z-index: calc(var(--z-modal) - 10);
   color: var(--color-white);
   gap: var(--space-lg);
 }
 
-.loading-overlay--hidden { display: none; }
+.loading-overlay--hidden { display: none; pointer-events: none; }
 
 .loading-spinner {
   width: 40px;
