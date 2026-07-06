@@ -7,14 +7,24 @@
   <meta name="robots" content="noindex, nofollow">
   <title>DPC Hub</title>
   <link rel="stylesheet" href="css/design.css">
+
+  <!-- Auth guard runs first — before any other script -->
+  <script src="js/config.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const token  = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_TOKEN);
+      const expiry = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_EXPIRY);
+      if (!token || token !== 'authenticated' || !expiry || new Date(expiry) <= new Date()) {
+        window.location.replace('index.html');
+      }
+    })();
+  </script>
 </head>
 <body>
 
   <!-- Skip link -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
-
-  <!-- ── Auth guard ─────────────────────────────────────────── -->
-  <!-- Checked immediately in the inline script at bottom -->
 
   <!-- ── Loading overlay ────────────────────────────────────── -->
   <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading DPC Hub">
@@ -23,7 +33,6 @@
   </div>
 
   <!-- ── Folder selection modal ─────────────────────────────── -->
-  <!-- Cannot be dismissed — required for data access -->
   <div
     id="folder-modal"
     class="modal-overlay"
@@ -68,7 +77,7 @@
       class="banner__close"
       type="button"
       aria-label="Dismiss"
-      onclick="document.getElementById('restore-banner').hidden=true"
+      id="restore-dismiss-btn"
     >×</button>
   </div>
 
@@ -254,26 +263,25 @@
   ></div>
 
   <!-- ── Scripts — load order is critical ──────────────────── -->
-  <!-- 1. Config (no dependencies) -->
-  <script src="js/config.js"></script>
+  <!-- config.js already loaded in <head> for auth guard -->
   <!-- 2. Schema (imports nothing) -->
   <script src="js/schema.js"></script>
-  <!-- 3. Data layer (imports config + schema via globals) -->
+  <!-- 3. Data layer -->
   <script src="js/data.js"></script>
-  <!-- 4. App controller (imports everything via globals) -->
+  <!-- 4. App controller -->
   <script src="js/app.js"></script>
 
-  <!-- Auth guard — must run before app initialises -->
+  <!-- Wire restore dismiss button after DOM ready -->
   <script>
-    (function () {
-      'use strict';
-      const token  = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_TOKEN);
-      const expiry = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_EXPIRY);
-      if (!token || token !== 'authenticated' || !expiry || new Date(expiry) <= new Date()) {
-        // Not authenticated — redirect to login
-        window.location.replace('index.html');
+    document.addEventListener('DOMContentLoaded', function () {
+      var dismissBtn = document.getElementById('restore-dismiss-btn');
+      if (dismissBtn) {
+        dismissBtn.addEventListener('click', function () {
+          var banner = document.getElementById('restore-banner');
+          if (banner) banner.hidden = true;
+        });
       }
-    })();
+    });
   </script>
 
 </body>
