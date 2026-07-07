@@ -274,4 +274,7 @@ function generateId() {
 function nowISO() { return new Date().toISOString(); }
 
 // ── Helper: ISO date today ────────────────────────────────────
-function todayISO() { return new Date().toISOString().split('T')[0]; }
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
