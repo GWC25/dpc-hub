@@ -213,7 +213,6 @@ function renderPlaceholder(label, icon) {
     </div>`;
 }
 
-function initAreas()        { renderPlaceholder('Areas', '🗂'); }
 function initTasks()        { renderPlaceholder('Tasks', '✓'); }
 function initMeetings()     { renderPlaceholder('Meetings', '💬'); }
 function initNotes()        { renderPlaceholder('Notes', '✏'); }
@@ -229,14 +228,7 @@ function initReports()      { renderPlaceholder('Reports', '📄'); }
 function initAISupport()    { renderPlaceholder('AI Support', '🤖'); }
 
 // ── Quick Capture button ──────────────────────────────────────
-function initQuickCapture() {
-  const btn = document.getElementById('quick-capture-btn');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    // Phase 3 will replace this with the real Quick Capture modal
-    UI.showToast('info', 'Quick Capture will be available from Phase 3.');
-  });
-}
+
 
 // ── Notification badge update ─────────────────────────────────
 function updateBadgeCount() {
@@ -263,7 +255,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   UI.hideLoading();
   updateBadgeCount();
-  initQuickCapture();
+  // Quick capture is initialised by quickcapture.js — called via initQuickCapture()
+  if (typeof initQuickCapture === 'function') initQuickCapture();
 
   if (loaded) {
     navigateTo('home');
