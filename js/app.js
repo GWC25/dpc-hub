@@ -30,8 +30,8 @@ const UI = {
   showFolderModal({ title, message, btnLabel, summary='', allowOffline=false, onConfirm, onOffline }) {
     const modal = DOM.folderModal();
     if (!modal) return;
-    DOM.folderModalTitle().textContent  = title;
-    DOM.folderModalMsg().textContent    = message;
+    DOM.folderModalTitle().textContent = title;
+    DOM.folderModalMsg().textContent   = message;
     const summaryEl = DOM.folderModalSummary();
     if (summaryEl) { summaryEl.textContent = summary; summaryEl.hidden = !summary; }
     const btn = DOM.folderModalBtn();
@@ -43,14 +43,17 @@ const UI = {
       if (allowOffline && onOffline) offlineBtn.onclick = onOffline;
     }
     DOM.folderModalErr().textContent = '';
+    // Remove hidden attribute only — never set aria-hidden on a dialog
     modal.removeAttribute('hidden');
-    modal.removeAttribute('aria-hidden');
-    btn.focus();
+    // Focus after browser has rendered — requestAnimationFrame ensures
+    // element is visible before focus is attempted (fixes aria-hidden block)
+    requestAnimationFrame(() => { btn.focus(); });
   },
 
   hideFolderModal() {
     const modal = DOM.folderModal();
-    if (modal) { modal.setAttribute('hidden', ''); modal.setAttribute('aria-hidden', 'true'); }
+    // hidden attribute only — never aria-hidden on a dialog element
+    if (modal) modal.setAttribute('hidden', '');
   },
 
   showFolderModalError(msg) {
