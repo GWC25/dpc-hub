@@ -28,37 +28,19 @@ const DOM = {
 // ── UI object passed to data.js ───────────────────────────────
 const UI = {
   showFolderModal({ title, message, btnLabel, summary='', allowOffline=false, onConfirm, onOffline }) {
-    const modal = DOM.folderModal();
-    if (!modal) return;
-    DOM.folderModalTitle().textContent = title;
-    DOM.folderModalMsg().textContent   = message;
-    const summaryEl = DOM.folderModalSummary();
-    if (summaryEl) { summaryEl.textContent = summary; summaryEl.hidden = !summary; }
-    const btn = DOM.folderModalBtn();
-    btn.textContent = btnLabel;
-    btn.onclick = onConfirm;
-    const offlineBtn = DOM.folderModalOffline();
-    if (offlineBtn) {
-      offlineBtn.hidden = !allowOffline;
-      if (allowOffline && onOffline) offlineBtn.onclick = onOffline;
+    // Delegates to window.DPC_FOLDER_MODAL which is set up in hub.html
+    // with direct synchronous click handlers — required for showDirectoryPicker()
+    if (window.DPC_FOLDER_MODAL) {
+      window.DPC_FOLDER_MODAL.show({ message, btnLabel, summary, allowOffline, onConfirm, onOffline });
     }
-    DOM.folderModalErr().textContent = '';
-    // Remove hidden attribute only — never set aria-hidden on a dialog
-    modal.removeAttribute('hidden');
-    // Focus after browser has rendered — requestAnimationFrame ensures
-    // element is visible before focus is attempted (fixes aria-hidden block)
-    requestAnimationFrame(() => { btn.focus(); });
   },
 
   hideFolderModal() {
-    const modal = DOM.folderModal();
-    // hidden attribute only — never aria-hidden on a dialog element
-    if (modal) modal.setAttribute('hidden', '');
+    if (window.DPC_FOLDER_MODAL) window.DPC_FOLDER_MODAL.hide();
   },
 
   showFolderModalError(msg) {
-    const err = DOM.folderModalErr();
-    if (err) { err.textContent = msg; err.hidden = false; }
+    if (window.DPC_FOLDER_MODAL) window.DPC_FOLDER_MODAL.showError(msg);
   },
 
   showFatalError(msg, retryFn) {
@@ -131,14 +113,16 @@ const UI = {
   showRestoreBanner(time, onRestore) {
     const banner = DOM.restoreBanner();
     if (!banner) return;
-    DOM.restoreTime().textContent = time;
-    DOM.restoreBtn().onclick = onRestore;
-    banner.hidden = false;
+    const timeEl = DOM.restoreTime();
+    if (timeEl) timeEl.textContent = time || 'earlier';
+    const restoreBtn = DOM.restoreBtn();
+    if (restoreBtn) restoreBtn.onclick = onRestore;
+    banner.style.display = 'flex';
   },
 
   hideRestoreBanner() {
     const banner = DOM.restoreBanner();
-    if (banner) banner.hidden = true;
+    if (banner) banner.style.display = 'none';
   },
 
   showMondayBanner(summary) {
@@ -155,8 +139,10 @@ const UI = {
   },
 
   hideLoading() {
+    // Loading overlay is removed from the flow entirely after hub loads
+    // The hub shell is always visible behind any modals
     const el = DOM.loadingOverlay();
-    if (el) el.classList.add('loading-overlay--hidden');
+    if (el) el.style.display = 'none';
   },
 
   updateNotificationBadge(count) {
