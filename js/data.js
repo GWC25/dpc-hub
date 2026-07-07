@@ -203,8 +203,9 @@ async function loadRequiredFiles(ui) {
     if (result.status === 'rejected' || result.value === null) {
       // Try to create the file with defaults
       if (filename === 'data-areas.json') {
-        await _writeFile(filename, _buildDefaultAreas());
-        window.DPC_DATA.areas = _buildDefaultAreas();
+        const seedData = await _buildDefaultAreas();
+        await _writeFile(filename, seedData);
+        window.DPC_DATA.areas = seedData;
       } else if (filename === 'data-calendar.json') {
         const def = { entries: [] };
         await _writeFile(filename, def);
@@ -558,9 +559,17 @@ function _writeLocalSnapshot() {
 }
 
 // ── Internal: build default areas from seed ───────────────────
-function _buildDefaultAreas() {
-  // Minimal seed — full seed data is in data/areas-seed.json
-  // If areas-seed.json is present, that takes precedence.
+async function _buildDefaultAreas() {
+  // Try to fetch the seed file from the GitHub Pages deployment
+  try {
+    const resp = await fetch('./data/areas-seed.json');
+    if (resp.ok) {
+      const seed = await resp.json();
+      return seed;
+    }
+  } catch (e) {
+    console.warn('DPC Hub: could not load areas-seed.json:', e);
+  }
   return { areas: [] };
 }
 
