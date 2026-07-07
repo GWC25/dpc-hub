@@ -146,6 +146,9 @@ function openQuickCapture() {
   const modal = document.getElementById('qc-modal');
   if (!modal) return;
 
+  // Refresh area dropdown every open (data may have loaded since init)
+  _populateQCAreaDropdown();
+
   // Reset form
   const form  = modal.querySelector('form') || modal;
   document.getElementById('qc-type').value    = 'learning-walk';
