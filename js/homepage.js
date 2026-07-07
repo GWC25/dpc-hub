@@ -1,19 +1,13 @@
 // DPC Hub · homepage.js · v1.0 · July 2026
 
-/**
- * Initializes the Homepage module and mounts it to the provided container.
- * @param {HTMLElement} container - The DOM node to inject the homepage content.
- */
 export function initHomepage(container) {
   try {
-    container.innerHTML = ''; // Clear container
+    container.innerHTML = '';
 
-    // Retrieve data safely, falling back to empty arrays if missing [cite: 142]
-    const calendarData = window.DPC_DATA?.calendar?.entries || [];
+    const calendarData = window.DPC_DATA?.calendar || [];
     const afiData = window.DPC_DATA?.afi || [];
 
-    // Calculate Metrics
-    const openAfiCount = afiData.filter(afi => afi.status === 'open' || afi.status === 'in-progress').length;
+    const openAfiCount = afiData.filter(afi => afi.status === 'open' || afi.status === 're-opened').length;
     const closedThisMonthCount = afiData.filter(afi => {
       if (afi.status !== 'closed' || !afi.closedAt) return false;
       const closedDate = new Date(afi.closedAt);
@@ -21,95 +15,172 @@ export function initHomepage(container) {
       return closedDate.getMonth() === now.getMonth() && closedDate.getFullYear() === now.getFullYear();
     }).length;
 
-    // Filter Calendar Data
     const now = new Date();
     const tasks = calendarData.filter(entry => entry.entryType === 'task' || entry.entryType === 'micro-task');
-    const sortedTasks = tasks.sort((a, b) => new Date(a.date) - new Date(b.date)); [cite: 191]
+    const sortedTasks = tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     
     const deadlines14Days = calendarData.filter(entry => {
       if (entry.entryType !== 'deadline') return false;
       const entryDate = new Date(entry.date);
-      const diffTime = Math.abs(entryDate - now);
+      const diffTime = entryDate - now;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays <= 14 && entryDate >= now;
-    });
+      return diffDays >= 0 && diffDays <= 14;
+    }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
     const meetings7Days = calendarData.filter(entry => {
       if (entry.entryType !== 'meeting') return false;
       const entryDate = new Date(entry.date);
-      const diffTime = Math.abs(entryDate - now);
+      const diffTime = entryDate - now;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays <= 7 && entryDate >= now;
-    });
+      return diffDays >= 0 && diffDays <= 7;
+    }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Build Layout [cite: 413-419]
+    // Top Strip (VIEW 3)
     const topStrip = document.createElement('div');
-    topStrip.className = 'homepage-top-strip';
+    topStrip.style.width = '100%';
+    topStrip.style.height = '80px';
+    topStrip.style.display = 'flex';
+    topStrip.style.gap = 'var(--space-lg)';
+    topStrip.style.marginBottom = 'var(--space-xl)';
+    
     topStrip.innerHTML = `
-      <div class="metric-panel">
-        <span class="metric-label" style="color: var(--color-amber);">Open AFI Loops</span>
-        <span class="metric-value" style="color: var(--color-amber);">${openAfiCount}</span>
+      <div style="flex: 1; background: var(--color-white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: center; padding: 0 var(--space-lg);">
+        <span style="font-size: var(--text-sm); color: var(--color-muted);">Open AFI Loops</span>
+        <span style="font-size: var(--text-3xl); font-weight: var(--font-bold); color: var(--color-amber);">${openAfiCount}</span>
       </div>
-      <div class="metric-panel">
-        <span class="metric-label" style="color: var(--color-green);">Closed this month</span>
-        <span class="metric-value" style="color: var(--color-green);">${closedThisMonthCount}</span>
+      <div style="flex: 1; background: var(--color-white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: center; padding: 0 var(--space-lg);">
+        <span style="font-size: var(--text-sm); color: var(--color-muted);">Closed this month</span>
+        <span style="font-size: var(--text-3xl); font-weight: var(--font-bold); color: var(--color-green);">${closedThisMonthCount}</span>
       </div>
     `;
 
+    // Main Area
     const mainArea = document.createElement('div');
-    mainArea.className = 'homepage-main-area';
+    mainArea.style.display = 'flex';
+    mainArea.style.width = '100%';
 
-    // Left Column: Jobs Board [cite: 415]
+    // Left Column (62%)
     const leftCol = document.createElement('div');
-    leftCol.className = 'homepage-left-col';
-    leftCol.innerHTML = `<h2 style="font-size: var(--text-2xl); color: var(--color-navy);">Jobs Board</h2>`;
-    
+    leftCol.style.width = '62%';
+    leftCol.style.display = 'flex';
+    leftCol.style.flexDirection = 'column';
+
+    const jobsHeader = document.createElement('h2');
+    jobsHeader.textContent = 'Jobs Board';
+    jobsHeader.style.fontSize = 'var(--text-2xl)';
+    jobsHeader.style.color = 'var(--color-navy)';
+    jobsHeader.style.marginBottom = 'var(--space-md)';
+    leftCol.appendChild(jobsHeader);
+
     const jobsGrid = document.createElement('div');
-    jobsGrid.className = 'jobs-grid'; // Masonry style applied in CSS
-    
+    jobsGrid.style.display = 'grid';
+    jobsGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
+    jobsGrid.style.gap = 'var(--space-md)';
+    jobsGrid.style.marginBottom = 'var(--space-md)';
+
     sortedTasks.forEach(task => {
-      const postIt = createPostItCard(task);
-      jobsGrid.appendChild(postIt);
+      const card = document.createElement('div');
+      card.style.backgroundColor = 'var(--color-white)';
+      card.style.borderRadius = 'var(--radius-lg)';
+      card.style.boxShadow = 'var(--shadow-sm)';
+      card.style.padding = 'var(--space-lg)';
+      card.style.minHeight = '120px';
+      card.style.cursor = 'pointer';
+      card.tabIndex = 0;
+
+      let dotColor = 'var(--color-blue)'; 
+      let ariaStatus = 'Upcoming';
+      if (task.status === 'in-progress') { dotColor = 'var(--color-amber)'; ariaStatus = 'In Progress'; }
+      else if (task.status === 'overdue') { dotColor = 'var(--color-red)'; ariaStatus = 'Overdue'; }
+      else if (task.status === 'complete') { dotColor = 'var(--color-green)'; ariaStatus = 'Complete'; }
+
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background-color: ${dotColor};" aria-label="Status: ${ariaStatus}"></span>
+          <span style="font-size: var(--text-xs); color: var(--color-muted);">${task.date || ''}</span>
+        </div>
+        <div style="font-size: var(--text-md); font-weight: var(--font-bold); color: var(--color-navy); margin-top: var(--space-sm); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+          ${task.title}
+        </div>
+        <div style="margin-top: var(--space-sm); display: flex; justify-content: space-between; align-items: flex-end; height: 100%;">
+          ${task.areaCode || task.personRefs?.length ? `<span style="font-size: var(--text-xs); background-color: var(--color-teal-lt); color: var(--color-teal); padding: 2px 6px; border-radius: var(--radius-sm);">${task.areaCode || task.personRefs[0]}</span>` : '<span></span>'}
+          ${task.projectRef ? `<span style="font-size: var(--text-xs); color: var(--color-muted);">${task.projectRef}</span>` : ''}
+        </div>
+      `;
+
+      card.addEventListener('click', () => {
+        import('./calendar.js').then(module => module.openEntryModal(task));
+      });
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          import('./calendar.js').then(module => module.openEntryModal(task));
+        }
+      });
+      jobsGrid.appendChild(card);
     });
-    
     leftCol.appendChild(jobsGrid);
 
     const addTaskBtn = document.createElement('button');
-    addTaskBtn.className = 'btn-primary';
+    addTaskBtn.textContent = '+ Add task';
     addTaskBtn.style.backgroundColor = 'var(--color-teal)';
     addTaskBtn.style.color = 'var(--color-white)';
+    addTaskBtn.style.padding = 'var(--space-sm) var(--space-md)';
+    addTaskBtn.style.border = 'none';
     addTaskBtn.style.borderRadius = 'var(--radius-sm)';
-    addTaskBtn.textContent = '+ Add task';
-    addTaskBtn.setAttribute('aria-label', 'Add a new task to the Jobs Board');
-    addTaskBtn.addEventListener('click', () => openTaskModal()); [cite: 191]
+    addTaskBtn.style.cursor = 'pointer';
+    addTaskBtn.style.alignSelf = 'flex-start';
+    addTaskBtn.addEventListener('click', () => {
+      import('./calendar.js').then(module => module.openEntryModal({ entryType: 'task' }));
+    });
     leftCol.appendChild(addTaskBtn);
 
-    // Right Column: Deadlines and Meetings [cite: 416-418]
+    // Right Column (38%)
     const rightCol = document.createElement('div');
-    rightCol.className = 'homepage-right-col';
-    
-    const deadlinesPanel = document.createElement('div');
-    deadlinesPanel.className = 'panel-stacked';
-    deadlinesPanel.innerHTML = `<h3 style="font-size: var(--text-lg); color: var(--color-navy);">Next 14 days — Deadlines</h3>`;
-    const deadlineList = document.createElement('ul');
-    deadlines14Days.forEach(d => {
-      const li = document.createElement('li');
-      const statusColor = new Date(d.date) < now ? 'var(--color-red)' : 'var(--color-green)';
-      li.innerHTML = `<span class="status-dot" style="background-color: ${statusColor};" aria-label="Deadline status"></span> ${d.title} - ${d.date}`;
-      deadlineList.appendChild(li);
-    });
-    deadlinesPanel.appendChild(deadlineList);
+    rightCol.style.width = '38%';
+    rightCol.style.paddingLeft = 'var(--space-lg)';
+    rightCol.style.display = 'flex';
+    rightCol.style.flexDirection = 'column';
+    rightCol.style.gap = 'var(--space-lg)';
 
-    const meetingsPanel = document.createElement('div');
-    meetingsPanel.className = 'panel-stacked';
-    meetingsPanel.innerHTML = `<h3 style="font-size: var(--text-lg); color: var(--color-navy);">This week — Meetings</h3>`;
-    const meetingList = document.createElement('ul');
-    meetings7Days.forEach(m => {
-      const li = document.createElement('li');
-      li.textContent = `${new Date(m.date).toLocaleDateString('en-GB', {weekday: 'short'})} ${m.startTime || ''} - ${m.title}`;
-      meetingList.appendChild(li);
+    // Deadlines Panel
+    const deadlinesPanel = document.createElement('div');
+    deadlinesPanel.style.backgroundColor = 'var(--color-white)';
+    deadlinesPanel.style.borderRadius = 'var(--radius-lg)';
+    deadlinesPanel.style.boxShadow = 'var(--shadow-sm)';
+    deadlinesPanel.style.padding = 'var(--space-lg)';
+    deadlinesPanel.style.maxHeight = '300px';
+    deadlinesPanel.style.overflowY = 'auto';
+    
+    let deadlinesHtml = `<h3 style="font-size: var(--text-lg); color: var(--color-navy); margin-bottom: var(--space-md);">Next 14 days — Deadlines</h3><ul style="list-style: none; padding: 0; margin: 0;">`;
+    if (deadlines14Days.length === 0) deadlinesHtml += `<li style="color: var(--color-muted); font-size: var(--text-sm);">No upcoming deadlines.</li>`;
+    deadlines14Days.forEach(d => {
+      const isSoon = (new Date(d.date) - now) / (1000 * 60 * 60 * 24) <= 3;
+      const statusColor = isSoon ? 'var(--color-amber)' : 'var(--color-green)';
+      deadlinesHtml += `<li style="margin-bottom: var(--space-sm); font-size: var(--text-base); display: flex; align-items: center; gap: var(--space-sm);"><span style="width: 8px; height: 8px; border-radius: 50%; background-color: ${statusColor};" aria-label="Deadline status"></span> ${d.title} <span style="color: var(--color-muted); font-size: var(--text-sm); margin-left: auto;">${d.date}</span></li>`;
     });
-    meetingsPanel.appendChild(meetingList);
+    deadlinesHtml += `</ul>`;
+    deadlinesPanel.innerHTML = deadlinesHtml;
+
+    // Meetings Panel
+    const meetingsPanel = document.createElement('div');
+    meetingsPanel.style.backgroundColor = 'var(--color-white)';
+    meetingsPanel.style.borderRadius = 'var(--radius-lg)';
+    meetingsPanel.style.boxShadow = 'var(--shadow-sm)';
+    meetingsPanel.style.padding = 'var(--space-lg)';
+    meetingsPanel.style.maxHeight = '300px';
+    meetingsPanel.style.overflowY = 'auto';
+
+    let meetingsHtml = `<h3 style="font-size: var(--text-lg); color: var(--color-navy); margin-bottom: var(--space-md);">This week — Meetings</h3><ul style="list-style: none; padding: 0; margin: 0;">`;
+    if (meetings7Days.length === 0) meetingsHtml += `<li style="color: var(--color-muted); font-size: var(--text-sm);">No upcoming meetings.</li>`;
+    meetings7Days.forEach(m => {
+      const dayStr = new Date(m.date).toLocaleDateString('en-GB', { weekday: 'short' });
+      meetingsHtml += `<li style="margin-bottom: var(--space-sm); font-size: var(--text-base); display: flex; flex-direction: column; border-left: 2px solid var(--color-blue); padding-left: var(--space-sm);">
+        <span style="font-weight: var(--font-bold); color: var(--color-navy);">${dayStr}, ${m.startTime || 'TBD'}</span>
+        <span>${m.personRefs?.join(', ') || 'Unnamed'} — ${m.title}</span>
+      </li>`;
+    });
+    meetingsHtml += `</ul>`;
+    meetingsPanel.innerHTML = meetingsHtml;
 
     rightCol.appendChild(deadlinesPanel);
     rightCol.appendChild(meetingsPanel);
@@ -120,63 +191,6 @@ export function initHomepage(container) {
     container.appendChild(topStrip);
     container.appendChild(mainArea);
   } catch (error) {
-    console.error("Homepage Init Error:", error); [cite: 137]
-    container.innerHTML = `<p style="color: var(--color-red);">Unable to load homepage data. Please try refreshing.</p>`; [cite: 138]
+    console.error("Homepage Init Error:", error);
   }
-}
-
-/**
- * Creates a post-it card DOM element based on task data.
- * @param {Object} task - The task data object.
- * @returns {HTMLElement} - The constructed post-it card.
- */
-function createPostItCard(task) {
-  const card = document.createElement('div');
-  card.className = 'post-it-card';
-  // Style according to spec [cite: 421]
-  card.style.backgroundColor = 'var(--color-white)';
-  card.style.borderRadius = 'var(--radius-lg)';
-  card.style.boxShadow = 'var(--shadow-sm)';
-  card.style.padding = 'var(--space-lg)';
-  card.style.minHeight = '120px';
-  card.style.cursor = 'pointer';
-  card.setAttribute('tabindex', '0'); // Accessibility [cite: 130]
-
-  let dotColor = 'var(--color-blue)'; // Default upcoming
-  let ariaStatus = 'Upcoming';
-  if (task.status === 'in-progress') { dotColor = 'var(--color-amber)'; ariaStatus = 'In Progress'; } [cite: 421]
-  else if (task.status === 'overdue') { dotColor = 'var(--color-red)'; ariaStatus = 'Overdue'; }
-  else if (task.status === 'complete') { dotColor = 'var(--color-green)'; ariaStatus = 'Complete'; }
-
-  card.innerHTML = `
-    <div class="card-header" style="display: flex; justify-content: space-between;">
-      <span class="status-dot" style="width: 12px; height: 12px; border-radius: 50%; background-color: ${dotColor};" aria-label="Status: ${ariaStatus}"></span>
-      <span class="due-date" style="font-size: var(--text-xs); color: var(--color-muted);">${task.date || 'No Date'}</span>
-    </div>
-    <div class="card-title" style="font-size: var(--text-md); font-weight: var(--font-bold); color: var(--color-navy); margin-top: var(--space-sm); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-      ${task.title}
-    </div>
-    <div class="card-footer" style="margin-top: var(--space-sm); display: flex; justify-content: space-between;">
-      ${task.areaCode ? `<span class="tag" style="font-size: var(--text-xs); background-color: var(--color-teal-lt); color: var(--color-teal); padding: 2px 6px; border-radius: var(--radius-sm);">${task.areaCode}</span>` : '<span></span>'}
-      ${task.projectRef ? `<span class="project-ref" style="font-size: var(--text-xs); color: var(--color-muted);">${task.projectRef}</span>` : ''}
-    </div>
-  `;
-
-  // Interaction handlers [cite: 424]
-  card.addEventListener('click', () => openTaskModal(task));
-  card.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') openTaskModal(task);
-  });
-
-  return card;
-}
-
-/**
- * Stub for opening the task detail modal.
- * ARCHITECT QUERY: Full modal implementation crosses into Tasks module scope, providing stub for Phase 2 Seam Test.
- * @param {Object} [task] - Task object if editing, undefined if new.
- */
-function openTaskModal(task = null) {
-  console.log('Opening task modal for:', task ? task.title : 'New Task');
-  // Trigger DOM updates for modal injection here
 }
