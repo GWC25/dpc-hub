@@ -7,12 +7,10 @@
   <meta name="robots" content="noindex, nofollow">
   <title>DPC Hub</title>
   <link rel="stylesheet" href="css/design.css">
-
-  <!-- Auth guard runs first — before any other script -->
   <script src="js/config.js"></script>
   <script>
+    // Auth guard — runs before anything else
     (function () {
-      'use strict';
       var token  = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_TOKEN);
       var expiry = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_EXPIRY);
       if (!token || token !== 'authenticated' || !expiry || new Date(expiry) <= new Date()) {
@@ -23,149 +21,184 @@
 </head>
 <body>
 
-  <!-- Skip link -->
-  <a href="#main-content" class="skip-link">Skip to main content</a>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 
-  <!-- ── Loading overlay ─────────────────────────────────────
-       z-index: 10 — well below modal (200) and nav (50)
-       Hides via display:none when --hidden class added        -->
-  <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading DPC Hub">
-    <div class="loading-spinner" aria-hidden="true"></div>
-    <p class="loading-message" id="loading-message">Loading DPC Hub…</p>
+<!-- ── Folder modal ────────────────────────────────────────────
+     Shown/hidden via .hidden CSS class (not the HTML hidden attr)
+     Starts VISIBLE if permission needed — hidden by JS after grant  -->
+<div id="folder-modal" style="
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.5);
+  z-index:9000;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+" role="dialog" aria-modal="true" aria-labelledby="folder-modal-title">
+  <div style="background:#fff;border-radius:12px;padding:40px;width:100%;max-width:440px;box-shadow:0 8px 24px rgba(0,0,0,0.12);">
+    <h1 id="folder-modal-title" style="font:bold 24px Arial,sans-serif;color:#1D3557;margin-bottom:16px;" id="folder-modal-title">Connect to OneDrive</h1>
+    <p id="folder-modal-message" style="font:16px Arial,sans-serif;color:#334155;margin-bottom:24px;"></p>
+    <p id="folder-modal-summary" style="font:14px Arial,sans-serif;color:#64748B;margin-bottom:16px;display:none;"></p>
+    <p id="folder-modal-error" role="alert" style="font:14px Arial,sans-serif;color:#DC2626;margin-bottom:16px;display:none;"></p>
+    <button id="folder-modal-btn" type="button" style="
+      display:block;width:100%;padding:12px 24px;
+      background:#0F766E;color:#fff;border:none;border-radius:4px;
+      font:bold 16px Arial,sans-serif;cursor:pointer;margin-bottom:12px;
+      min-height:44px;
+    ">Select folder</button>
+    <button id="folder-modal-offline" type="button" style="
+      display:none;width:100%;padding:12px 24px;
+      background:transparent;color:#0F766E;border:2px solid #0F766E;border-radius:4px;
+      font:bold 16px Arial,sans-serif;cursor:pointer;
+      min-height:44px;
+    ">Continue in offline mode</button>
   </div>
+</div>
 
-  <!-- ── Folder selection modal ─────────────────────────────
-       z-index: var(--z-modal) = 200
-       Shown/hidden by data.js via UI.showFolderModal()        -->
-  <div
-    id="folder-modal"
-    class="modal-overlay"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="folder-modal-title"
-    hidden
-    style="z-index:500;"
-  >
-    <div class="modal modal--narrow">
-      <div class="modal__header">
-        <h1 class="modal__title" id="folder-modal-title">Connect to OneDrive</h1>
-      </div>
-      <p id="folder-modal-message" style="font-size:var(--text-base);color:var(--color-slate);margin-bottom:var(--space-md);"></p>
-      <p id="folder-modal-summary" style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-lg);" hidden></p>
-      <p id="folder-modal-error" style="font-size:var(--text-sm);color:var(--color-red);margin-bottom:var(--space-md);" role="alert" aria-live="assertive"></p>
-      <div class="btn-row" style="flex-direction:column;">
-        <button id="folder-modal-btn" class="btn btn--primary btn--full" type="button">
-          Select folder
-        </button>
-        <button id="folder-modal-offline" class="btn btn--ghost btn--full" type="button" hidden>
-          Continue in offline mode
-        </button>
-      </div>
+<!-- ── Restore banner ─────────────────────────────────────────  -->
+<div id="restore-banner" style="
+  display:none;
+  position:fixed;
+  top:72px;left:50%;transform:translateX(-50%);
+  z-index:8000;
+  max-width:500px;width:calc(100% - 48px);
+  background:#FFFBEB;border:1px solid #B45309;border-radius:4px;
+  padding:12px 16px;
+  font:14px Arial,sans-serif;color:#B45309;
+  align-items:center;gap:12px;
+" role="alert">
+  <span>Unsaved session from <strong id="restore-time">earlier</strong> detected — restore?</span>
+  <button id="restore-btn" type="button" style="
+    padding:6px 16px;background:#fff;border:1px solid #B45309;
+    border-radius:4px;font:bold 14px Arial,sans-serif;cursor:pointer;
+    color:#B45309;white-space:nowrap;min-height:36px;
+  ">Restore</button>
+  <button type="button" onclick="document.getElementById('restore-banner').style.display='none';" style="
+    background:none;border:none;cursor:pointer;font-size:20px;
+    color:#B45309;min-width:44px;min-height:44px;
+    display:flex;align-items:center;justify-content:center;
+  " aria-label="Dismiss">×</button>
+</div>
+
+<!-- ── Hub shell ──────────────────────────────────────────────── -->
+<div class="hub-layout">
+  <header class="hub-nav" role="banner">
+    <a href="hub.html" class="hub-nav__brand" aria-label="DPC Hub home">DPC Hub</a>
+    <div class="hub-nav__right">
+      <span id="save-indicator" class="hub-nav__save-indicator" role="status" aria-live="polite" aria-atomic="true">Saved ✓</span>
+      <button id="notification-btn" class="hub-nav__notification" type="button" aria-label="Notifications — 0 pending">
+        🔔<span id="notification-badge" class="hub-nav__badge hub-nav__badge--hidden" aria-hidden="true">0</span>
+      </button>
     </div>
+  </header>
+
+  <div class="hub-body">
+    <nav class="hub-sidebar" aria-label="Hub modules">
+      <ul class="hub-sidebar__nav" role="list">
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="home"><span class="hub-sidebar__icon" aria-hidden="true">⌂</span>Home</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="calendar"><span class="hub-sidebar__icon" aria-hidden="true">📅</span>Calendar</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="areas"><span class="hub-sidebar__icon" aria-hidden="true">🗂</span>Areas</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="tasks"><span class="hub-sidebar__icon" aria-hidden="true">✓</span>Tasks</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="meetings"><span class="hub-sidebar__icon" aria-hidden="true">💬</span>Meetings</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="notes"><span class="hub-sidebar__icon" aria-hidden="true">✏</span>Notes</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="staff"><span class="hub-sidebar__icon" aria-hidden="true">👤</span>Staff</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="afis"><span class="hub-sidebar__icon" aria-hidden="true">🔁</span>Loops</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="templates"><span class="hub-sidebar__icon" aria-hidden="true">📋</span>Templates</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="healthchecks"><span class="hub-sidebar__icon" aria-hidden="true">📊</span>Health Checks</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="dashboards"><span class="hub-sidebar__icon" aria-hidden="true">📈</span>Dashboards</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="digitalleads"><span class="hub-sidebar__icon" aria-hidden="true">⭐</span>Digital Leads</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="currentfocus"><span class="hub-sidebar__icon" aria-hidden="true">🎯</span>Current Focus</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="cpd"><span class="hub-sidebar__icon" aria-hidden="true">📚</span>CPD</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="reports"><span class="hub-sidebar__icon" aria-hidden="true">📄</span>Reports</a></li>
+        <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="aisupport"><span class="hub-sidebar__icon" aria-hidden="true">🤖</span>AI Support</a></li>
+      </ul>
+    </nav>
+
+    <main id="main-content" class="hub-main" tabindex="-1">
+      <div id="banner-container" aria-live="polite"></div>
+    </main>
   </div>
+</div>
 
-  <!-- ── Restore session banner ─────────────────────────────
-       z-index: 150 — below folder modal (500)                 -->
-  <div
-    id="restore-banner"
-    class="banner banner--amber"
-    role="alert"
-    aria-live="polite"
-    hidden
-    style="position:fixed;top:calc(var(--nav-height) + var(--space-md));left:50%;transform:translateX(-50%);z-index:150;max-width:500px;width:calc(100% - var(--space-2xl));pointer-events:auto;"
-  >
-    <span>Unsaved session from <strong id="restore-time">earlier</strong> detected — restore?</span>
-    <button id="restore-btn" class="btn btn--sm btn--secondary" type="button" style="margin-left:var(--space-md);flex-shrink:0;">
-      Restore
-    </button>
-    <button
-      class="banner__close"
-      type="button"
-      aria-label="Dismiss restore banner"
-      onclick="document.getElementById('restore-banner').hidden=true;return false;"
-      style="cursor:pointer;"
-    >×</button>
-  </div>
+<!-- Quick Capture FAB -->
+<button id="quick-capture-btn" type="button" aria-label="Quick Capture — log an activity" style="
+  position:fixed;bottom:32px;right:32px;
+  width:56px;height:56px;border-radius:50%;
+  background:#0F766E;color:#fff;border:none;
+  font-size:24px;cursor:pointer;
+  box-shadow:0 8px 24px rgba(0,0,0,0.12);
+  z-index:49;display:flex;align-items:center;justify-content:center;
+">+</button>
 
-  <!-- ── Hub layout ─────────────────────────────────────────── -->
-  <div class="hub-layout" id="hub-layout">
+<!-- Toast container -->
+<div id="toast-container" class="toast-container" aria-live="polite" aria-label="Notifications"></div>
 
-    <!-- Top navigation -->
-    <header class="hub-nav" role="banner">
-      <a href="hub.html" class="hub-nav__brand" aria-label="DPC Hub — home">DPC Hub</a>
-      <div class="hub-nav__right">
-        <span
-          class="hub-nav__save-indicator"
-          id="save-indicator"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >Saved ✓</span>
-        <button
-          class="hub-nav__notification"
-          id="notification-btn"
-          type="button"
-          aria-label="Notifications — 0 pending"
-        >
-          🔔
-          <span
-            class="hub-nav__badge hub-nav__badge--hidden"
-            id="notification-badge"
-            aria-hidden="true"
-          >0</span>
-        </button>
-      </div>
-    </header>
+<!-- Scripts -->
+<script src="js/schema.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
 
-    <!-- Body: sidebar + main -->
-    <div class="hub-body">
+<script>
+// ── Folder modal controller ────────────────────────────────────
+// Runs after all scripts loaded. Uses direct event listeners so
+// showDirectoryPicker() is called from a synchronous click handler
+// (required by browser security policy for File System Access API).
+(function() {
+  var modal      = document.getElementById('folder-modal');
+  var btn        = document.getElementById('folder-modal-btn');
+  var offlineBtn = document.getElementById('folder-modal-offline');
+  var msgEl      = document.getElementById('folder-modal-message');
+  var summaryEl  = document.getElementById('folder-modal-summary');
+  var errorEl    = document.getElementById('folder-modal-error');
 
-      <!-- Sidebar navigation -->
-      <nav class="hub-sidebar" aria-label="Hub modules">
-        <ul class="hub-sidebar__nav" role="list">
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="home" aria-current="page"><span class="hub-sidebar__icon" aria-hidden="true">⌂</span>Home</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="calendar"><span class="hub-sidebar__icon" aria-hidden="true">📅</span>Calendar</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="areas"><span class="hub-sidebar__icon" aria-hidden="true">🗂</span>Areas</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="tasks"><span class="hub-sidebar__icon" aria-hidden="true">✓</span>Tasks</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="meetings"><span class="hub-sidebar__icon" aria-hidden="true">💬</span>Meetings</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="notes"><span class="hub-sidebar__icon" aria-hidden="true">✏</span>Notes</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="staff"><span class="hub-sidebar__icon" aria-hidden="true">👤</span>Staff</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="afis"><span class="hub-sidebar__icon" aria-hidden="true">🔁</span>Loops</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="templates"><span class="hub-sidebar__icon" aria-hidden="true">📋</span>Templates</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="healthchecks"><span class="hub-sidebar__icon" aria-hidden="true">📊</span>Health Checks</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="dashboards"><span class="hub-sidebar__icon" aria-hidden="true">📈</span>Dashboards</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="digitalleads"><span class="hub-sidebar__icon" aria-hidden="true">⭐</span>Digital Leads</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="currentfocus"><span class="hub-sidebar__icon" aria-hidden="true">🎯</span>Current Focus</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="cpd"><span class="hub-sidebar__icon" aria-hidden="true">📚</span>CPD</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="reports"><span class="hub-sidebar__icon" aria-hidden="true">📄</span>Reports</a></li>
-          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="aisupport"><span class="hub-sidebar__icon" aria-hidden="true">🤖</span>AI Support</a></li>
-        </ul>
-      </nav>
+  // Expose show/hide to window so data.js can call them
+  window.DPC_FOLDER_MODAL = {
+    show: function(opts) {
+      msgEl.textContent = opts.message || '';
+      if (opts.summary) {
+        summaryEl.textContent = opts.summary;
+        summaryEl.style.display = 'block';
+      } else {
+        summaryEl.style.display = 'none';
+      }
+      errorEl.style.display = 'none';
+      errorEl.textContent = '';
+      btn.textContent = opts.btnLabel || 'Select folder';
+      offlineBtn.style.display = opts.allowOffline ? 'block' : 'none';
 
-      <!-- Main content -->
-      <main id="main-content" class="hub-main" tabindex="-1">
-        <div id="banner-container" aria-live="polite"></div>
-      </main>
+      // Store callbacks
+      window.DPC_FOLDER_MODAL._onConfirm = opts.onConfirm;
+      window.DPC_FOLDER_MODAL._onOffline = opts.onOffline;
 
-    </div>
-  </div>
+      modal.style.display = 'flex';
+      btn.focus();
+    },
+    hide: function() {
+      modal.style.display = 'none';
+    },
+    showError: function(msg) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    },
+    _onConfirm: null,
+    _onOffline: null,
+  };
 
-  <!-- ── Quick Capture FAB ──────────────────────────────────── -->
-  <button
-    id="quick-capture-btn"
-    type="button"
-    aria-label="Quick Capture — log an activity"
-    style="position:fixed;bottom:var(--space-xl);right:var(--space-xl);width:56px;height:56px;border-radius:50%;background:var(--color-teal);color:var(--color-white);border:none;font-size:24px;cursor:pointer;box-shadow:var(--shadow-lg);z-index:calc(var(--z-nav) - 1);display:flex;align-items:center;justify-content:center;transition:background var(--transition);"
-  >+</button>
+  // DIRECT click handler — synchronous user gesture
+  // showDirectoryPicker() must be called here, not inside a promise chain
+  btn.addEventListener('click', function() {
+    if (window.DPC_FOLDER_MODAL._onConfirm) {
+      window.DPC_FOLDER_MODAL._onConfirm();
+    }
+  });
 
-  <!-- ── Toast container ───────────────────────────────────── -->
-  <div id="toast-container" class="toast-container" aria-live="polite" aria-label="Notifications"></div>
-
-  <!-- ── Scripts ───────────────────────────────────────────── -->
-  <!-- config.js already loaded in <head> -->
-  <script src="js/schema.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/app.js"></script>
+  offlineBtn.addEventListener('click', function() {
+    if (window.DPC_FOLDER_MODAL._onOffline) {
+      window.DPC_FOLDER_MODAL._onOffline();
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
