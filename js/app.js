@@ -213,8 +213,6 @@ function renderPlaceholder(label, icon) {
     </div>`;
 }
 
-function initHomepage()     { renderPlaceholder('Home', '⌂'); }
-function initCalendar()     { renderPlaceholder('Calendar', '📅'); }
 function initAreas()        { renderPlaceholder('Areas', '🗂'); }
 function initTasks()        { renderPlaceholder('Tasks', '✓'); }
 function initMeetings()     { renderPlaceholder('Meetings', '💬'); }
