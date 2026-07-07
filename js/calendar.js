@@ -165,7 +165,7 @@ function _renderWeekView() {
   // Day columns with entries
   html += `<div style="display:grid;grid-template-columns:repeat(7,1fr);min-height:400px;">`;
   days.forEach(d => {
-    const dateStr  = d.toISOString().split('T')[0];
+    const dateStr  = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const isToday  = dateStr === todayStr;
     const dayEntries = _getEntriesForDate(dateStr);
 
@@ -206,7 +206,7 @@ function _renderMonthView() {
   const cursor = new Date(startDate);
   for (let week = 0; week < 6; week++) {
     for (let dow = 0; dow < 7; dow++) {
-      const dateStr     = cursor.toISOString().split('T')[0];
+      const dateStr     = `${cursor.getFullYear()}-${String(cursor.getMonth()+1).padStart(2,'0')}-${String(cursor.getDate()).padStart(2,'0')}`;
       const isThisMonth = cursor.getMonth() === month;
       const isToday     = dateStr === todayStr;
       const entries     = _getEntriesForDate(dateStr);
