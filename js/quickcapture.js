@@ -235,7 +235,6 @@ function _wireQCEvents() {
       }
     });
   });
-  });
 
   // ESC
   document.addEventListener('keydown', function qcEsc(e) {
