@@ -217,7 +217,6 @@ function initTasks()        { renderPlaceholder('Tasks', '✓'); }
 function initMeetings()     { renderPlaceholder('Meetings', '💬'); }
 function initNotes()        { renderPlaceholder('Notes', '✏'); }
 function initStaff()        { renderPlaceholder('Staff', '👤'); }
-function initAFIs()         { renderPlaceholder('Loops', '🔁'); }
 function initTemplates()    { renderPlaceholder('Templates', '📋'); }
 function initHealthChecks() { renderPlaceholder('Health Checks', '📊'); }
 function initDashboards()   { renderPlaceholder('Dashboards', '📈'); }
