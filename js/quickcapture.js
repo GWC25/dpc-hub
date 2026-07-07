@@ -64,14 +64,30 @@ function initQuickCapture() {
 
         <!-- Hyper focus tags (prominent — college priority) -->
         <div class="form-group">
-          <fieldset style="border:1px solid var(--color-teal);border-radius:var(--radius-sm);padding:var(--space-md);">
+          <fieldset style="border:2px solid var(--color-teal);border-radius:var(--radius-md);padding:var(--space-md);">
             <legend style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-teal);padding:0 var(--space-xs);">College priority focus areas (Hyper)</legend>
-            <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-xs);">
+            <div style="display:flex;flex-direction:column;gap:var(--space-sm);margin-top:var(--space-xs);">
               ${HYPER_FOCUS.map(f => `
-                <label style="display:flex;align-items:center;gap:var(--space-xs);cursor:pointer;padding:var(--space-xs) var(--space-sm);border:2px solid var(--color-teal);border-radius:999px;font-size:var(--text-sm);transition:all 150ms ease;" id="qc-hyper-label-${f.id}">
-                  <input type="checkbox" name="qc-hyper" value="${f.id}" id="qc-hyper-${f.id}" style="width:16px;height:16px;accent-color:var(--color-teal);">
-                  ${_escHtml(f.label)}
-                </label>`).join('')}
+                <div id="qc-hyper-block-${f.id}" style="border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-sm);">
+                  <label style="display:flex;align-items:center;gap:var(--space-xs);cursor:pointer;margin-bottom:0;">
+                    <input type="checkbox" name="qc-hyper" value="${f.id}" id="qc-hyper-${f.id}" style="width:16px;height:16px;accent-color:var(--color-teal);flex-shrink:0;">
+                    <span style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);">${_escHtml(f.label)}</span>
+                  </label>
+                  <div id="qc-hyper-detail-${f.id}" style="display:none;margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid var(--color-border);">
+                    <p id="qc-hyper-q-${f.id}" style="font-size:var(--text-xs);color:var(--color-teal);font-style:italic;margin-bottom:var(--space-sm);"></p>
+                    <div style="display:flex;gap:var(--space-xs);flex-wrap:wrap;" role="group" aria-label="Severity for ${f.label}">
+                      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border:2px solid var(--color-green);border-radius:var(--radius-sm);font-size:var(--text-xs);font-weight:bold;color:var(--color-green);">
+                        <input type="radio" name="qc-sev-${f.id}" value="Strength" style="width:12px;height:12px;accent-color:var(--color-green);"> Strength
+                      </label>
+                      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border:2px solid var(--color-amber);border-radius:var(--radius-sm);font-size:var(--text-xs);font-weight:bold;color:var(--color-amber);">
+                        <input type="radio" name="qc-sev-${f.id}" value="Areas to Strengthen" style="width:12px;height:12px;accent-color:var(--color-amber);"> Areas to Strengthen
+                      </label>
+                      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border:2px solid var(--color-red);border-radius:var(--radius-sm);font-size:var(--text-xs);font-weight:bold;color:var(--color-red);">
+                        <input type="radio" name="qc-sev-${f.id}" value="Areas for Immediate Improvement" style="width:12px;height:12px;accent-color:var(--color-red);"> Immediate
+                      </label>
+                    </div>
+                  </div>
+                </div>`).join('')}
             </div>
           </fieldset>
         </div>
@@ -198,15 +214,27 @@ function _wireQCEvents() {
     arrow.textContent = isOpen ? '▶' : '▼';
   });
 
-  // Hyper checkbox visual feedback
+  // Hyper checkbox — show severity + follow-up question when checked
   HYPER_FOCUS.forEach(f => {
-    document.getElementById(`qc-hyper-${f.id}`)?.addEventListener('change', e => {
-      const lbl = document.getElementById(`qc-hyper-label-${f.id}`);
-      if (lbl) {
-        lbl.style.background = e.target.checked ? 'var(--color-teal)' : 'transparent';
-        lbl.style.color      = e.target.checked ? 'var(--color-white)' : 'var(--color-teal)';
+    const cb = document.getElementById('qc-hyper-' + f.id);
+    if (!cb) return;
+    cb.addEventListener('change', function(e) {
+      const block  = document.getElementById('qc-hyper-block-' + f.id);
+      const detail = document.getElementById('qc-hyper-detail-' + f.id);
+      const qEl    = document.getElementById('qc-hyper-q-' + f.id);
+      if (e.target.checked) {
+        if (block)  { block.style.background = 'var(--color-teal-lt)'; block.style.borderColor = 'var(--color-teal)'; }
+        if (detail) detail.style.display = 'block';
+        if (qEl && typeof getQuestionsForTheme === 'function') {
+          var rules = getQuestionsForTheme(f.id);
+          qEl.textContent = rules.length > 0 ? rules[0].followUpQuestions[0] : '';
+        }
+      } else {
+        if (block)  { block.style.background = ''; block.style.borderColor = 'var(--color-border)'; }
+        if (detail) detail.style.display = 'none';
       }
     });
+  });
   });
 
   // ESC
@@ -234,10 +262,20 @@ function _saveQC() {
   if (!areaCode) { _showQCError('Please select an area.'); document.getElementById('qc-area').focus(); return; }
   if (!date)     { _showQCError('Please enter a date.'); document.getElementById('qc-date').focus(); return; }
 
-  // Collect Hyper themes
-  const hyperThemes = HYPER_FOCUS
-    .filter(f => document.getElementById(`qc-hyper-${f.id}`)?.checked)
-    .map(f => f.id);
+  // Collect Hyper themes + severity + generate AFI drafts
+  var hyperThemes = [];
+  var afiDrafts   = [];
+  HYPER_FOCUS.forEach(function(f) {
+    var cb = document.getElementById('qc-hyper-' + f.id);
+    if (cb && cb.checked) {
+      hyperThemes.push(f.id);
+      var sevEl = document.querySelector('input[name="qc-sev-' + f.id + '"]:checked');
+      if (sevEl && typeof draftAFI === 'function') {
+        var draft = draftAFI(f.id, sevEl.value, areaCode);
+        if (draft) afiDrafts.push(draft);
+      }
+    }
+  });
 
   // Collect LRA themes
   const lraThemeIds = Array.from(document.querySelectorAll('input[name="qc-lra"]:checked'))
@@ -265,6 +303,21 @@ function _saveQC() {
 
   if (!area.activityLog) area.activityLog = [];
   area.activityLog.push(activity);
+  if (!area.afiRefs) area.afiRefs = [];
+
+  // Save any AFI drafts generated from Hyper severity selections
+  if (afiDrafts.length > 0 && typeof saveAFI === 'function') {
+    var allAFIs = window.DPC_DATA.afi.afis || [];
+    afiDrafts.forEach(function(draft) {
+      draft.parentObservationId = activity.activityId;
+      allAFIs.push(draft);
+      area.afiRefs.push(draft.afiId);
+      activity.afiIdsGenerated.push(draft.afiId);
+    });
+    window.DPC_DATA.afi.afis = allAFIs;
+    saveAFI(afiDrafts[0]);
+  }
+
   area.lastUpdated = nowISO();
   saveArea(area);
 
@@ -272,7 +325,7 @@ function _saveQC() {
 
   // Show confirmation toast
   if (typeof UI !== 'undefined' && UI.showToast) {
-    UI.showToast('success', `Activity logged: ${type} — ${areaCode}`);
+    UI.showToast('success', 'Activity logged: ' + type + ' — ' + areaCode + (afiDrafts.length > 0 ? '. ' + afiDrafts.length + ' AFI' + (afiDrafts.length !== 1 ? 's' : '') + ' created.' : ''));
   }
 
   // Refresh current view if we're on areas
