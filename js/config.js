@@ -13,7 +13,7 @@ const DPC_CONFIG = Object.freeze({
   // SHA-256 hash of the hub password.
   // Default hash below = 'dpc2026weston' — CHANGE BEFORE FIRST USE.
   // Generate your own hash using the instructions above.
-  DPC_PASSWORD_HASH: 'c67ea4b261209bd50ab989ac5472a8551f73b3aff2507faaee3205638c683c8b',
+  DPC_PASSWORD_HASH: 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3',
 
   // ── Supabase (Phase 7 only — Hub Lite) ────────────────────
   // These are the non-sensitive anon/public credentials.
