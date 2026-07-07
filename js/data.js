@@ -325,7 +325,8 @@ async function checkSessionSnapshot(ui) {
   const age = (Date.now() - new Date(snapAt).getTime()) / (1000 * 60 * 60);
   if (age > 24) return; // Snapshot too old
   // Show restore banner
-  const snapTime = new Date(snapAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  let snapTime = '';
+  try { snapTime = new Date(snapAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); } catch { snapTime = 'earlier'; }
   ui.showRestoreBanner(snapTime, async () => {
     try {
       const parsed = JSON.parse(snapshot);
