@@ -13,8 +13,8 @@
   <script>
     (function () {
       'use strict';
-      const token  = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_TOKEN);
-      const expiry = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_EXPIRY);
+      var token  = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_TOKEN);
+      var expiry = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_EXPIRY);
       if (!token || token !== 'authenticated' || !expiry || new Date(expiry) <= new Date()) {
         window.location.replace('index.html');
       }
@@ -26,13 +26,17 @@
   <!-- Skip link -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
-  <!-- ── Loading overlay ────────────────────────────────────── -->
+  <!-- ── Loading overlay ─────────────────────────────────────
+       z-index: 10 — well below modal (200) and nav (50)
+       Hides via display:none when --hidden class added        -->
   <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Loading DPC Hub">
     <div class="loading-spinner" aria-hidden="true"></div>
     <p class="loading-message" id="loading-message">Loading DPC Hub…</p>
   </div>
 
-  <!-- ── Folder selection modal ─────────────────────────────── -->
+  <!-- ── Folder selection modal ─────────────────────────────
+       z-index: var(--z-modal) = 200
+       Shown/hidden by data.js via UI.showFolderModal()        -->
   <div
     id="folder-modal"
     class="modal-overlay"
@@ -41,6 +45,7 @@
     aria-labelledby="folder-modal-title"
     hidden
     aria-hidden="true"
+    style="z-index:500;"
   >
     <div class="modal modal--narrow">
       <div class="modal__header">
@@ -60,28 +65,30 @@
     </div>
   </div>
 
-  <!-- ── Restore session banner ──────────────────────────────── -->
+  <!-- ── Restore session banner ─────────────────────────────
+       z-index: 150 — below folder modal (500)                 -->
   <div
     id="restore-banner"
     class="banner banner--amber"
     role="alert"
     aria-live="polite"
     hidden
-    style="position:fixed;top:calc(var(--nav-height) + var(--space-md));left:50%;transform:translateX(-50%);z-index:var(--z-toast);max-width:500px;width:calc(100% - var(--space-2xl));"
+    style="position:fixed;top:calc(var(--nav-height) + var(--space-md));left:50%;transform:translateX(-50%);z-index:150;max-width:500px;width:calc(100% - var(--space-2xl));pointer-events:auto;"
   >
-    <span>Unsaved session from <strong id="restore-time"></strong> detected — restore?</span>
-    <button id="restore-btn" class="btn btn--sm btn--secondary" type="button" style="margin-left:auto;flex-shrink:0;">
+    <span>Unsaved session from <strong id="restore-time">earlier</strong> detected — restore?</span>
+    <button id="restore-btn" class="btn btn--sm btn--secondary" type="button" style="margin-left:var(--space-md);flex-shrink:0;">
       Restore
     </button>
     <button
       class="banner__close"
       type="button"
-      aria-label="Dismiss"
-      id="restore-dismiss-btn"
+      aria-label="Dismiss restore banner"
+      onclick="document.getElementById('restore-banner').hidden=true;return false;"
+      style="cursor:pointer;"
     >×</button>
   </div>
 
-  <!-- ── Hub layout ──────────────────────────────────────────── -->
+  <!-- ── Hub layout ─────────────────────────────────────────── -->
   <div class="hub-layout" id="hub-layout">
 
     <!-- Top navigation -->
@@ -95,7 +102,6 @@
           aria-live="polite"
           aria-atomic="true"
         >Saved ✓</span>
-
         <button
           class="hub-nav__notification"
           id="notification-btn"
@@ -118,171 +124,49 @@
       <!-- Sidebar navigation -->
       <nav class="hub-sidebar" aria-label="Hub modules">
         <ul class="hub-sidebar__nav" role="list">
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="home" aria-current="page">
-              <span class="hub-sidebar__icon" aria-hidden="true">⌂</span>
-              Home
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="calendar">
-              <span class="hub-sidebar__icon" aria-hidden="true">📅</span>
-              Calendar
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="areas">
-              <span class="hub-sidebar__icon" aria-hidden="true">🗂</span>
-              Areas
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="tasks">
-              <span class="hub-sidebar__icon" aria-hidden="true">✓</span>
-              Tasks
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="meetings">
-              <span class="hub-sidebar__icon" aria-hidden="true">💬</span>
-              Meetings
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="notes">
-              <span class="hub-sidebar__icon" aria-hidden="true">✏</span>
-              Notes
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="staff">
-              <span class="hub-sidebar__icon" aria-hidden="true">👤</span>
-              Staff
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="afis">
-              <span class="hub-sidebar__icon" aria-hidden="true">🔁</span>
-              Loops
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="templates">
-              <span class="hub-sidebar__icon" aria-hidden="true">📋</span>
-              Templates
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="healthchecks">
-              <span class="hub-sidebar__icon" aria-hidden="true">📊</span>
-              Health Checks
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="dashboards">
-              <span class="hub-sidebar__icon" aria-hidden="true">📈</span>
-              Dashboards
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="digitalleads">
-              <span class="hub-sidebar__icon" aria-hidden="true">⭐</span>
-              Digital Leads
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="currentfocus">
-              <span class="hub-sidebar__icon" aria-hidden="true">🎯</span>
-              Current Focus
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="cpd">
-              <span class="hub-sidebar__icon" aria-hidden="true">📚</span>
-              CPD
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="reports">
-              <span class="hub-sidebar__icon" aria-hidden="true">📄</span>
-              Reports
-            </a>
-          </li>
-          <li role="listitem">
-            <a href="#" class="hub-sidebar__link" data-module="aisupport">
-              <span class="hub-sidebar__icon" aria-hidden="true">🤖</span>
-              AI Support
-            </a>
-          </li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="home" aria-current="page"><span class="hub-sidebar__icon" aria-hidden="true">⌂</span>Home</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="calendar"><span class="hub-sidebar__icon" aria-hidden="true">📅</span>Calendar</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="areas"><span class="hub-sidebar__icon" aria-hidden="true">🗂</span>Areas</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="tasks"><span class="hub-sidebar__icon" aria-hidden="true">✓</span>Tasks</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="meetings"><span class="hub-sidebar__icon" aria-hidden="true">💬</span>Meetings</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="notes"><span class="hub-sidebar__icon" aria-hidden="true">✏</span>Notes</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="staff"><span class="hub-sidebar__icon" aria-hidden="true">👤</span>Staff</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="afis"><span class="hub-sidebar__icon" aria-hidden="true">🔁</span>Loops</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="templates"><span class="hub-sidebar__icon" aria-hidden="true">📋</span>Templates</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="healthchecks"><span class="hub-sidebar__icon" aria-hidden="true">📊</span>Health Checks</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="dashboards"><span class="hub-sidebar__icon" aria-hidden="true">📈</span>Dashboards</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="digitalleads"><span class="hub-sidebar__icon" aria-hidden="true">⭐</span>Digital Leads</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="currentfocus"><span class="hub-sidebar__icon" aria-hidden="true">🎯</span>Current Focus</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="cpd"><span class="hub-sidebar__icon" aria-hidden="true">📚</span>CPD</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="reports"><span class="hub-sidebar__icon" aria-hidden="true">📄</span>Reports</a></li>
+          <li role="listitem"><a href="#" class="hub-sidebar__link" data-module="aisupport"><span class="hub-sidebar__icon" aria-hidden="true">🤖</span>AI Support</a></li>
         </ul>
       </nav>
 
       <!-- Main content -->
       <main id="main-content" class="hub-main" tabindex="-1">
-        <!-- Banner container for non-blocking alerts -->
         <div id="banner-container" aria-live="polite"></div>
-        <!-- Module content injected here by app.js -->
       </main>
 
-    </div><!-- /.hub-body -->
+    </div>
+  </div>
 
-  </div><!-- /.hub-layout -->
-
-  <!-- ── Quick Capture FAB ────────────────────────────────────── -->
+  <!-- ── Quick Capture FAB ──────────────────────────────────── -->
   <button
     id="quick-capture-btn"
     type="button"
     aria-label="Quick Capture — log an activity"
-    style="
-      position: fixed;
-      bottom: var(--space-xl);
-      right: var(--space-xl);
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: var(--color-teal);
-      color: var(--color-white);
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      box-shadow: var(--shadow-lg);
-      z-index: calc(var(--z-nav) - 1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background var(--transition), transform var(--transition);
-    "
+    style="position:fixed;bottom:var(--space-xl);right:var(--space-xl);width:56px;height:56px;border-radius:50%;background:var(--color-teal);color:var(--color-white);border:none;font-size:24px;cursor:pointer;box-shadow:var(--shadow-lg);z-index:calc(var(--z-nav) - 1);display:flex;align-items:center;justify-content:center;transition:background var(--transition);"
   >+</button>
 
-  <!-- ── Toast container ────────────────────────────────────── -->
-  <div
-    id="toast-container"
-    class="toast-container"
-    aria-live="polite"
-    aria-label="Notifications"
-  ></div>
+  <!-- ── Toast container ───────────────────────────────────── -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-label="Notifications"></div>
 
-  <!-- ── Scripts — load order is critical ──────────────────── -->
-  <!-- config.js already loaded in <head> for auth guard -->
-  <!-- 2. Schema (imports nothing) -->
+  <!-- ── Scripts ───────────────────────────────────────────── -->
+  <!-- config.js already loaded in <head> -->
   <script src="js/schema.js"></script>
-  <!-- 3. Data layer -->
   <script src="js/data.js"></script>
-  <!-- 4. App controller -->
   <script src="js/app.js"></script>
-
-  <!-- Wire restore dismiss button after DOM ready -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      var dismissBtn = document.getElementById('restore-dismiss-btn');
-      if (dismissBtn) {
-        dismissBtn.addEventListener('click', function () {
-          var banner = document.getElementById('restore-banner');
-          if (banner) banner.hidden = true;
-        });
-      }
-    });
-  </script>
 
 </body>
 </html>
