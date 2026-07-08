@@ -195,6 +195,9 @@ function _saveCPDEntry() {
 
   if (!window.DPC_DATA.cpd) window.DPC_DATA.cpd={entries:[],plannedTraining:[],deliveredCPD:[]};
   const cpd = window.DPC_DATA.cpd;
+  if (!cpd.entries) cpd.entries=[];
+  if (!cpd.plannedTraining) cpd.plannedTraining=[];
+  if (!cpd.deliveredCPD) cpd.deliveredCPD=[];
 
   if (type==='my-cpd') {
     const confRadio=document.querySelector('input[name="cpd-conf"]:checked');
