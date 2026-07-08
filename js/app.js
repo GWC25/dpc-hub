@@ -169,6 +169,7 @@ const MODULES = {
   afis:           { label: 'Loops',          icon: '🔁', init: () => initAFIs() },
   devobs:         { label: 'Dev Obs',        icon: '🔍', init: () => initDevObs() },
   learningwalk:   { label: 'Learning Walk',  icon: '🚶', init: () => initLearningWalk() },
+  reflections:    { label: 'Reflections',    icon: '💭', init: () => initReflections() },
   templates:      { label: 'Templates',      icon: '📋', init: () => initTemplates() },
   healthchecks:   { label: 'Health Checks',  icon: '📊', init: () => initHealthChecks() },
   dashboards:     { label: 'Dashboards',     icon: '📈', init: () => initDashboards() },
