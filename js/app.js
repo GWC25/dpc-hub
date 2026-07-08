@@ -219,11 +219,6 @@ function renderPlaceholder(label, icon) {
 function initTasks()        { renderPlaceholder('Tasks', '✓'); }
 function initMeetings()     { renderPlaceholder('Meetings', '💬'); }
 function initNotes()        { renderPlaceholder('Notes', '✏'); }
-function initHealthChecks() { renderPlaceholder('Health Checks', '📊'); }
-function initDashboards()   { renderPlaceholder('Dashboards', '📈'); }
-function initDigitalLeads() { renderPlaceholder('Digital Leads', '⭐'); }
-function initCurrentFocus() { renderPlaceholder('Current Focus', '🎯'); }
-function initCPD()          { renderPlaceholder('CPD', '📚'); }
 function initReports()      { renderPlaceholder('Reports', '📄'); }
 function initAISupport()    { renderPlaceholder('AI Support', '🤖'); }
 
