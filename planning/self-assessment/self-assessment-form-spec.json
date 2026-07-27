@@ -1,0 +1,97 @@
+{
+  "_comment": "Canonical source of truth for the staff self-assessment Form. Edit this file to change the Form — Graeme regenerates the MS-Forms build sheet from it. This same structure is what the Hub importer (built later, once responses come back) will map spreadsheet columns against. Do not rename field ids once the Form is published — old responses key against them.",
+
+  "cycleId": "2026-27",
+  "focus": ["accessibility", "digital-learning-environments", "digital-skills-capability"],
+  "sendDate": "2026-08-17",
+  "reminderWindow": "mid-September 2026 — Digital Leads to chase non-completers",
+
+  "confidenceScale": {
+    "_comment": "Plain language for 2026-27 — staff don't know ETF DTPF yet. Numeric meaning (1-5) is designed to line up with ETF Explore/Adopt/Adapt/Create/Innovate for a future year, so only the labels need to change later, not the data or the code.",
+    "1": "Not at all confident — haven't started with this yet",
+    "2": "A little confident — basic awareness, need a lot of support",
+    "3": "Somewhat confident — can do this with support",
+    "4": "Confident — can do this independently",
+    "5": "Very confident — could support others with this"
+  },
+
+  "fields": [
+    {
+      "id": "fullName",
+      "order": 1,
+      "label": "Full name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "areaCode",
+      "order": 2,
+      "label": "Which curriculum area do you work in?",
+      "type": "single-select",
+      "required": true,
+      "optionsSource": "AREA_CODES — populate with area names (not codes), sorted alphabetically",
+      "note": "HoA name deliberately not asked — derived from area on import via data-areas.json, to avoid typo/mismatch against data already trusted more."
+    },
+    {
+      "id": "jiscGoal1",
+      "order": 3,
+      "label": "Jisc Discovery Tool — Goal 1",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "jiscGoal2",
+      "order": 4,
+      "label": "Jisc Discovery Tool — Goal 2",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "jiscGoal3",
+      "order": 5,
+      "label": "Jisc Discovery Tool — Goal 3",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "confidenceGoals",
+      "order": 6,
+      "label": "How confident do you feel about achieving these three goals by the end of the year?",
+      "type": "scale-1to5",
+      "required": true,
+      "scaleRef": "confidenceScale"
+    },
+    {
+      "id": "supportNeeded",
+      "order": 7,
+      "label": "How might I be able to support you?",
+      "type": "text-long",
+      "required": true,
+      "note": "Deliberately open-ended, no predefined categories — Graeme will judge delivery type (coaching / teach-meet / resource / etc) after reading responses, rather than staff self-selecting from a fixed list."
+    },
+    {
+      "id": "confidenceAccessibility",
+      "order": 8,
+      "label": "How confident do you feel with Digital Accessibility?",
+      "type": "scale-1to5",
+      "required": true,
+      "scaleRef": "confidenceScale"
+    },
+    {
+      "id": "confidenceDLE",
+      "order": 9,
+      "label": "How confident do you feel using Digital Learning Environments (e.g. Teams) inclusively?",
+      "type": "scale-1to5",
+      "required": true,
+      "scaleRef": "confidenceScale"
+    },
+    {
+      "id": "confidenceDigitalSkills",
+      "order": 10,
+      "label": "How confident do you feel in your overall Digital Skills Capability?",
+      "type": "scale-1to5",
+      "required": true,
+      "scaleRef": "confidenceScale"
+    }
+  ]
+}
