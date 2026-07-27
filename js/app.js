@@ -205,6 +205,11 @@ function navigateTo(moduleKey) {
 // Phase 1 provides empty placeholder screens for all modules.
 // Each placeholder shows the module name and a "coming in next phase" note.
 // The pattern is identical — future phases replace these with real implementations.
+//
+// initReports() and initAISupport() are NOT stubbed here — they're defined
+// for real in js/reports.js and js/ai-support.js respectively. Do not add
+// them back here: this file loads last, so a stub here would silently
+// override the real implementation with no error at all.
 
 function renderPlaceholder(label, icon) {
   const main = DOM.mainContent();
@@ -219,8 +224,6 @@ function renderPlaceholder(label, icon) {
 function initTasks()        { renderPlaceholder('Tasks', '✓'); }
 function initMeetings()     { renderPlaceholder('Meetings', '💬'); }
 function initNotes()        { renderPlaceholder('Notes', '✏'); }
-function initReports()      { renderPlaceholder('Reports', '📄'); }
-function initAISupport()    { renderPlaceholder('AI Support', '🤖'); }
 
 // ── Quick Capture button ──────────────────────────────────────
 
