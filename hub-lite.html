@@ -110,12 +110,11 @@
 <script>
 (function () {
   // ── Supabase config ──────────────────────────────────────────
-  // TODO(Graeme): fill these in from Supabase → Project Settings → API,
-  // then this page is fully live. Anon key is safe to expose here —
-  // row-level security on the dpc_captures table is what actually
-  // protects it (insert + select-where-synced=false only).
-  const SUPABASE_URL = '';       // e.g. 'https://xxxxx.supabase.co'
-  const SUPABASE_ANON_KEY = '';  // the "anon public" key, not the service_role key
+  // Supabase config — DPC Hub Project, live as of this session.
+  // Publishable key (new format, replaces legacy anon key) — safe to expose
+  // in client code; RLS policies on dpc_captures are the real protection.
+  const SUPABASE_URL = 'https://gygngjifcmyjslsqpkmb.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_3iVEEIuwPL9ldyltSV5r8g_WazUfZSX';
 
   const configured = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
   if (!configured) {
