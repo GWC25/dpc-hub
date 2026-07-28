@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DPC Hub Lite — quick capture companion. Weston College Group.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>DPC Hub Lite</title>
+  <link rel="stylesheet" href="css/design.css">
+  <script src="js/config.js"></script>
+  <script>
+    // Auth guard — identical to hub.html's, so the same login covers both.
+    (function () {
+      var token  = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_TOKEN);
+      var expiry = localStorage.getItem(DPC_CONFIG.LS_KEYS.AUTH_EXPIRY);
+      if (!token || token !== 'authenticated' || !expiry || new Date(expiry) <= new Date()) {
+        window.location.replace('index.html');
+      }
+    })();
+  </script>
+  <style>
+    /* Hub Lite is standalone — no OneDrive/File System Access dependency,
+       so it doesn't share hub.html's layout shell. Mobile-first, single column. */
+    body { margin:0; font-family:Arial,sans-serif; background:#F4F7F6; color:#334155; }
+    .hl-header {
+      background:#1D3557; color:#fff; padding:16px 20px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .hl-header a { color:#fff; text-decoration:none; font-weight:bold; font-size:18px; }
+    .hl-main { max-width:480px; margin:0 auto; padding:20px 16px 80px; }
+    .hl-card {
+      background:#fff; border-radius:12px; padding:20px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:16px;
+    }
+    .hl-label { display:block; font-weight:bold; font-size:14px; color:#1D3557; margin-bottom:6px; }
+    .hl-input, .hl-select, .hl-textarea {
+      width:100%; box-sizing:border-box; padding:12px; border:1px solid #CBD5E1;
+      border-radius:6px; font-size:16px; font-family:inherit; color:#334155;
+      min-height:44px; margin-bottom:16px;
+    }
+    .hl-textarea { min-height:100px; resize:vertical; }
+    .hl-type-group { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+    .hl-type-btn {
+      text-align:left; padding:14px; border:2px solid #CBD5E1; border-radius:8px;
+      background:#fff; cursor:pointer; font-size:15px; color:#334155; min-height:44px;
+    }
+    .hl-type-btn[aria-pressed="true"] { border-color:#0F766E; background:#F0FDFA; font-weight:bold; color:#0F766E; }
+    .hl-submit-btn {
+      width:100%; padding:14px; background:#0F766E; color:#fff; border:none;
+      border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer; min-height:48px;
+    }
+    .hl-submit-btn:disabled { background:#94A3B8; cursor:not-allowed; }
+    .hl-status { padding:12px; border-radius:6px; margin-bottom:16px; font-size:14px; display:none; }
+    .hl-status--success { background:#F0FDF4; color:#166534; border:1px solid #86EFAC; display:block; }
+    .hl-status--error   { background:#FEF2F2; color:#B91C1C; border:1px solid #FCA5A5; display:block; }
+    .hl-recent-item {
+      padding:12px; border-bottom:1px solid #E2E8F0; font-size:14px;
+    }
+    .hl-recent-item:last-child { border-bottom:none; }
+    .hl-recent-meta { color:#64748B; font-size:12px; margin-top:2px; }
+    .hl-empty { color:#64748B; font-size:14px; text-align:center; padding:16px 0; }
+  </style>
+</head>
+<body>
+
+<header class="hl-header">
+  <a href="hub.html">← DPC Hub</a>
+  <span>Hub Lite</span>
+</header>
+
+<main class="hl-main">
+  <div class="hl-card">
+    <p id="hl-config-warning" class="hl-status hl-status--error" role="alert" style="display:none;">
+      Supabase isn't configured yet — captures can't be saved until SUPABASE_URL and SUPABASE_ANON_KEY
+      are set in this file.
+    </p>
+
+    <form id="hl-form">
+      <span class="hl-label" id="hl-type-label">What are you capturing?</span>
+      <div class="hl-type-group" role="group" aria-labelledby="hl-type-label">
+        <button type="button" class="hl-type-btn" data-type="meeting_shell" aria-pressed="false">💬 Meeting shell</button>
+        <button type="button" class="hl-type-btn" data-type="quick_note" aria-pressed="false">✏ Quick note</button>
+        <button type="button" class="hl-type-btn" data-type="calendar_entry" aria-pressed="false">📅 Calendar entry</button>
+      </div>
+
+      <label class="hl-label" for="hl-area">Curriculum area <span style="font-weight:400;">(optional)</span></label>
+      <select class="hl-select" id="hl-area">
+        <option value="">— No specific area —</option>
+      </select>
+
+      <label class="hl-label" for="hl-content">Details</label>
+      <textarea class="hl-textarea" id="hl-content"
+        placeholder="Keep it non-confidential — this syncs to a queue you'll review on the desktop Hub before anything is committed."
+        required aria-required="true"></textarea>
+
+      <div id="hl-status" class="hl-status" role="status" aria-live="polite"></div>
+
+      <button type="submit" class="hl-submit-btn" id="hl-submit-btn">Save capture</button>
+    </form>
+  </div>
+
+  <div class="hl-card">
+    <span class="hl-label">Captured today</span>
+    <div id="hl-recent-list">
+      <p class="hl-empty">Nothing captured yet today.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  // ── Supabase config ──────────────────────────────────────────
+  // TODO(Graeme): fill these in from Supabase → Project Settings → API,
+  // then this page is fully live. Anon key is safe to expose here —
+  // row-level security on the dpc_captures table is what actually
+  // protects it (insert + select-where-synced=false only).
+  const SUPABASE_URL = '';       // e.g. 'https://xxxxx.supabase.co'
+  const SUPABASE_ANON_KEY = '';  // the "anon public" key, not the service_role key
+
+  const configured = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+  if (!configured) {
+    document.getElementById('hl-config-warning').style.display = 'block';
+  }
+
+  // ── Local state ──────────────────────────────────────────────
+  let selectedType = null;
+  const todaysCaptures = [];
+
+  // ── Area dropdown — plain fetch, no File System Access API ───
+  // Hub Lite is standalone: it reads the public areas-seed.json directly
+  // rather than pulling in the full OneDrive Tier 2 data layer, which
+  // depends on showDirectoryPicker() and doesn't work on mobile at all.
+  fetch('data/areas-seed.json')
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+    .then(data => {
+      const areas = (data.areas || []).slice().sort((a, b) =>
+        (a.areaName || '').localeCompare(b.areaName || ''));
+      const select = document.getElementById('hl-area');
+      areas.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.areaCode;
+        opt.textContent = a.areaName || a.areaCode;
+        select.appendChild(opt);
+      });
+    })
+    .catch(err => {
+      console.warn('DPC Hub Lite: could not load areas-seed.json —', err.message);
+      // Non-fatal: area is optional, form still works without the dropdown populated
+    });
+
+  // ── Type selector ────────────────────────────────────────────
+  document.querySelectorAll('.hl-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.hl-type-btn').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      selectedType = btn.dataset.type;
+    });
+  });
+
+  // ── Status helper ────────────────────────────────────────────
+  function showStatus(msg, kind) {
+    const el = document.getElementById('hl-status');
+    el.textContent = msg;
+    el.className = 'hl-status hl-status--' + kind;
+  }
+  function clearStatus() {
+    const el = document.getElementById('hl-status');
+    el.className = 'hl-status';
+    el.textContent = '';
+  }
+
+  // ── Recent list ──────────────────────────────────────────────
+  function renderRecent() {
+    const list = document.getElementById('hl-recent-list');
+    if (!todaysCaptures.length) {
+      list.innerHTML = '<p class="hl-empty">Nothing captured yet today.</p>';
+      return;
+    }
+    const typeLabels = { meeting_shell: '💬 Meeting shell', quick_note: '✏ Quick note', calendar_entry: '📅 Calendar entry' };
+    list.innerHTML = todaysCaptures.slice().reverse().map(c => `
+      <div class="hl-recent-item">
+        <div>${typeLabels[c.capture_type] || c.capture_type}${c.area_code ? ' · ' + c.area_code : ''}</div>
+        <div class="hl-recent-meta">${new Date(c.captured_at).toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'})}</div>
+      </div>`).join('');
+  }
+
+  // ── Submit ───────────────────────────────────────────────────
+  document.getElementById('hl-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearStatus();
+
+    if (!selectedType) { showStatus('Choose what you\u2019re capturing first.', 'error'); return; }
+    const content = document.getElementById('hl-content').value.trim();
+    if (!content) { showStatus('Add some detail before saving.', 'error'); return; }
+    if (!configured) { showStatus('Supabase isn\u2019t configured yet — see the notice above.', 'error'); return; }
+
+    const areaCode = document.getElementById('hl-area').value || null;
+    const submitBtn = document.getElementById('hl-submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving…';
+
+    const payload = {
+      capture_type: selectedType,
+      area_code: areaCode,
+      content: content,
+      synced: false,
+    };
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/dpc_captures`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error(`Supabase error (HTTP ${res.status})${errText ? ': ' + errText : ''}`);
+      }
+
+      const [saved] = await res.json();
+      todaysCaptures.push(saved || { ...payload, captured_at: new Date().toISOString() });
+      renderRecent();
+
+      showStatus('✓ Saved. Review and commit it on the desktop Hub when you\u2019re next there.', 'success');
+      document.getElementById('hl-content').value = '';
+      document.querySelectorAll('.hl-type-btn').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      selectedType = null;
+      document.getElementById('hl-area').value = '';
+
+    } catch (err) {
+      console.error(err);
+      showStatus(`Couldn\u2019t save: ${err.message}`, 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save capture';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
