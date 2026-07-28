@@ -24,6 +24,7 @@ window.DPC_DATA = {
   cpd:           { entries: [], plannedTraining: [], deliveredCPD: [] },
   digitalLeads:  { digitalLeads: [] },
   currentFocus:  { focuses: [] },
+  notes:         { notes: [] },
 };
 
 // Dirty tracking: which files have unsaved changes
@@ -185,6 +186,7 @@ function _buildBlankManifest() {
       cpd:           'data-cpd.json',
       digitalLeads:  'data-digital-leads.json',
       currentFocus:  'data-current-focus.json',
+      notes:         'data-notes.json',
     }
   };
 }
@@ -272,12 +274,16 @@ async function fetchPublicResources() {
   })();
 }
 
-// ── Step 8: Check Supabase captures (Phase 7 — stub for now) ──
+// ── Step 8: Check Supabase captures ────────────────────────────
+// This stub is intentionally left as a harmless fallback. The real
+// implementation is a same-named function declared in js/supabase-sync.js,
+// which loads AFTER this file — its declaration overrides this one, same
+// convention as app.js's real initReports()/initAISupport(). If
+// supabase-sync.js is ever removed from hub.html's script list, this
+// no-op keeps loadHub() safe rather than throwing.
 async function checkSupabaseCaptures() {
-  // Stub — implemented in Phase 7 (js/supabase-sync.js)
-  // In Phase 1: no-op
   if (!DPC_CONFIG.SUPABASE_URL || !DPC_CONFIG.SUPABASE_ANON_KEY) return;
-  // Phase 7 implementation will go here
+  // No-op fallback — see js/supabase-sync.js for the real implementation.
 }
 
 // ── Step 9: Initialise auto-save ──────────────────────────────
@@ -467,6 +473,19 @@ function saveTemplate(template) {
   _writeLocalSnapshot();
 }
 
+// ── Public: save a note (meeting shell / quick note) ──────────
+function saveNote(note) {
+  const notes = window.DPC_DATA.notes.notes;
+  const idx = notes.findIndex(n => n.noteId === note.noteId);
+  if (idx >= 0) {
+    notes[idx] = { ...note, lastUpdated: nowISO() };
+  } else {
+    notes.push({ ...note, lastUpdated: nowISO() });
+  }
+  _dirty.add('data-notes.json');
+  _writeLocalSnapshot();
+}
+
 // ── Public: mark all files dirty (used after restore) ────────
 function markAllDirty() {
   _dirty.add('data-areas.json');
@@ -478,6 +497,7 @@ function markAllDirty() {
   _dirty.add('data-cpd.json');
   _dirty.add('data-digital-leads.json');
   _dirty.add('data-current-focus.json');
+  _dirty.add('data-notes.json');
 }
 
 // ── Public: force save now (called on user action) ────────────
@@ -520,6 +540,7 @@ function _assignToStore(filename, data) {
     'data-cpd.json':           'cpd',
     'data-digital-leads.json': 'digitalLeads',
     'data-current-focus.json': 'currentFocus',
+    'data-notes.json':         'notes',
   };
   const key = keyMap[filename];
   if (key && data) window.DPC_DATA[key] = data;
@@ -537,6 +558,7 @@ function _getDataForFile(filename) {
     'data-cpd.json':           window.DPC_DATA.cpd,
     'data-digital-leads.json': window.DPC_DATA.digitalLeads,
     'data-current-focus.json': window.DPC_DATA.currentFocus,
+    'data-notes.json':         window.DPC_DATA.notes,
     [DPC_CONFIG.MANIFEST_FILENAME]: window.DPC_DATA.manifest,
   };
   return keyMap[filename] || null;
