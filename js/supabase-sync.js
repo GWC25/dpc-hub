@@ -40,12 +40,16 @@ async function checkSupabaseCaptures() {
 }
 
 // ── Fetch pending captures from Supabase ────────────────────────
+// Supabase's newer sb_publishable_... keys are NOT JWTs — they must go
+// ONLY in the apikey header. Sending one in Authorization: Bearer ...
+// (even the same value) is rejected with 401. Leave Authorization unset
+// for anonymous/publishable-key requests — this is Supabase's current
+// documented behaviour, not specific to this project.
 async function _fetchPendingCaptures() {
   const url = `${DPC_CONFIG.SUPABASE_URL}/rest/v1/dpc_captures?synced=eq.false&select=*&order=captured_at.asc`;
   const resp = await fetch(url, {
     headers: {
       apikey: DPC_CONFIG.SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${DPC_CONFIG.SUPABASE_ANON_KEY}`,
     },
   });
   if (!resp.ok) throw new Error(`Supabase fetch failed: ${resp.status}`);
@@ -59,7 +63,6 @@ async function _markCaptureSynced(captureId) {
     method: 'PATCH',
     headers: {
       apikey: DPC_CONFIG.SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${DPC_CONFIG.SUPABASE_ANON_KEY}`,
       'Content-Type': 'application/json',
       Prefer: 'return=minimal',
     },
@@ -112,14 +115,17 @@ function _deriveTitle(content) {
   return firstLine.length > 80 ? firstLine.slice(0, 77) + '…' : firstLine;
 }
 
-// ── Approve: commit locally, then mark synced remotely ──────────
+// ── Approve: mark synced remotely FIRST, then commit locally ────
+// Order matters: if the remote update fails, nothing local should
+// change, so the capture stays safely retryable with no risk of a
+// duplicate entry being written to OneDrive on a second attempt.
 async function _approveCapture(captureId) {
   const capture = _pendingCaptures.find(c => c.id === captureId);
   if (!capture) return;
 
   try {
-    _commitCapture(capture);
     await _markCaptureSynced(captureId);
+    _commitCapture(capture);
     _pendingCaptures = _pendingCaptures.filter(c => c.id !== captureId);
     _renderCaptureBanner();
     if (typeof UI !== 'undefined') {
