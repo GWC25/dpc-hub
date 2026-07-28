@@ -244,6 +244,7 @@ const DEFAULT_DATA = Object.freeze({
   'data-cpd.json':          { cpd: { entries: [], plannedTraining: [], deliveredCPD: [] } },
   'data-digital-leads.json':{ digitalLeads: [] },
   'data-current-focus.json':{ focuses: [] },
+  'data-notes.json':        { notes: [] },
 });
 
 // ── Helper: get LRA theme by ID ───────────────────────────────
