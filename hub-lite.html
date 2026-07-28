@@ -110,11 +110,11 @@
 <script>
 (function () {
   // ── Supabase config ──────────────────────────────────────────
-  // Supabase config — DPC Hub Project, live as of this session.
-  // Publishable key (new format, replaces legacy anon key) — safe to expose
-  // in client code; RLS policies on dpc_captures are the real protection.
-  const SUPABASE_URL = 'https://gygngjifcmyjslsqpkmb.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_3iVEEIuwPL9ldyltSV5r8g_WazUfZSX';
+  // Supabase config — sourced from js/config.js (DPC_CONFIG), which this
+  // page already loads for the auth guard. Single source of truth — update
+  // the key in one place (config.js) if it's ever rotated, not two.
+  const SUPABASE_URL = DPC_CONFIG.SUPABASE_URL;
+  const SUPABASE_ANON_KEY = DPC_CONFIG.SUPABASE_ANON_KEY;
 
   const configured = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
   if (!configured) {
