@@ -473,6 +473,79 @@ function saveTemplate(template) {
   _writeLocalSnapshot();
 }
 
+// ── Resource Library (Session 32) ───────────────────────────────
+// saveLibraryEntry: manual entries only (LinkedIn Pathway / DPC-created).
+// Learning Studio entries are never saved here — see LIBRARY_TYPE in schema.js.
+function saveLibraryEntry(entry) {
+  if (!window.DPC_DATA.resourceLibrary) window.DPC_DATA.resourceLibrary = { entries: [], shares: [] };
+  const entries = window.DPC_DATA.resourceLibrary.entries;
+  const idx = entries.findIndex(e => e.resourceId === entry.resourceId);
+  if (idx >= 0) {
+    entries[idx] = { ...entry, lastUpdated: nowISO() };
+  } else {
+    entries.push({ ...entry, createdAt: nowISO(), lastUpdated: nowISO() });
+  }
+  _dirty.add('data-resource-library.json');
+  _writeLocalSnapshot();
+}
+
+// saveLibraryShare: records that a resource (of any LIBRARY_TYPE, including
+// an auto-derived Learning Studio one) was shared with one or more staff in
+// an area, on a date, with optional context. Writes to two places, same
+// denormalised-for-different-queries pattern already used elsewhere in this
+// app (e.g. activityLog on the area + afiRefs on the area both point at the
+// same AFI):
+//   1. A central record in data-resource-library.json — for area-level and
+//      resource-level queries ("who has this been shared with").
+//   2. staff.touchHistory[] on every staff member shared with — for
+//      staff-level queries. The History tab already renders touchHistory
+//      generically, so this needs no new staff-side UI at all.
+function saveLibraryShare(share) {
+  if (!window.DPC_DATA.resourceLibrary) window.DPC_DATA.resourceLibrary = { entries: [], shares: [] };
+  const shareRecord = {
+    shareId:       share.shareId || generateId(),
+    resourceId:    share.resourceId,
+    resourceType:  share.resourceType,
+    resourceTitle: share.resourceTitle,
+    resourceUrl:   share.resourceUrl,
+    date:          share.date,
+    areaCode:      share.areaCode,
+    staffIds:      share.staffIds || [],
+    contextNotes:  share.contextNotes || '',
+    createdAt:     nowISO(),
+  };
+  window.DPC_DATA.resourceLibrary.shares.push(shareRecord);
+  _dirty.add('data-resource-library.json');
+
+  // Mirror into each shared staff member's touchHistory
+  const staffList = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  const touchType = share.resourceType === LIBRARY_TYPE.LINKEDIN_PATHWAY
+    ? TOUCH_TYPE.LINKEDIN_PATHWAY
+    : TOUCH_TYPE.RESOURCE_ASSIGNED;
+
+  shareRecord.staffIds.forEach(staffId => {
+    const staff = staffList.find(s => s.staffId === staffId);
+    if (!staff) return;
+    if (!staff.touchHistory) staff.touchHistory = [];
+    staff.touchHistory.push({
+      touchId:      generateId(),
+      touchType,
+      date:         shareRecord.date,
+      areaCode:     shareRecord.areaCode,
+      resourceId:   shareRecord.resourceId,
+      resourceUrl:  shareRecord.resourceUrl,
+      summary:      `Shared: ${shareRecord.resourceTitle}`,
+      contextNotes: shareRecord.contextNotes,
+      createdAt:    nowISO(),
+    });
+    staff.lastUpdated = nowISO();
+  });
+  if (shareRecord.staffIds.length > 0) _dirty.add('data-staff.json');
+
+  _writeLocalSnapshot();
+  return shareRecord;
+}
+
 // ── Public: save a note (meeting shell / quick note) ──────────
 function saveNote(note) {
   const notes = window.DPC_DATA.notes.notes;
@@ -541,6 +614,7 @@ function _assignToStore(filename, data) {
     'data-digital-leads.json': 'digitalLeads',
     'data-current-focus.json': 'currentFocus',
     'data-notes.json':         'notes',
+    'data-resource-library.json': 'resourceLibrary',
   };
   const key = keyMap[filename];
   if (key && data) window.DPC_DATA[key] = data;
@@ -559,6 +633,7 @@ function _getDataForFile(filename) {
     'data-digital-leads.json': window.DPC_DATA.digitalLeads,
     'data-current-focus.json': window.DPC_DATA.currentFocus,
     'data-notes.json':         window.DPC_DATA.notes,
+    'data-resource-library.json': window.DPC_DATA.resourceLibrary,
     [DPC_CONFIG.MANIFEST_FILENAME]: window.DPC_DATA.manifest,
   };
   return keyMap[filename] || null;
