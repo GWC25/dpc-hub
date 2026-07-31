@@ -581,5 +581,21 @@ async function getResourcesForTags(tags = []) {
       }
     });
   });
+
+  // Session 32: also match Resource Library entries (LinkedIn Pathway /
+  // DPC-created) whose own tags overlap with the requested tags. Library
+  // entries only exist once window.DPC_DATA.resourceLibrary has loaded —
+  // this degrades gracefully to "no library matches" rather than erroring
+  // if called before that (e.g. resource-tag-map.json matches still work).
+  const libraryEntries = (window.DPC_DATA && window.DPC_DATA.resourceLibrary && window.DPC_DATA.resourceLibrary.entries) || [];
+  libraryEntries.forEach(entry => {
+    const entryTags = entry.tags || [];
+    const matches = entryTags.some(t => tags.includes(t));
+    if (matches && !seen.has(entry.url)) {
+      seen.add(entry.url);
+      results.push({ title: entry.title, url: entry.url });
+    }
+  });
+
   return results;
 }
