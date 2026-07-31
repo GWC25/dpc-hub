@@ -176,13 +176,13 @@ function _renderAreaDetail(areaCode) {
 
     <!-- Tabs -->
     <div role="tablist" aria-label="Area sections" style="display:flex;border-bottom:2px solid var(--color-border);margin-bottom:var(--space-lg);gap:0;">
-      ${['overview','rag','activity','staff'].map(tab => `
+      ${['overview','rag','activity','staff','resources'].map(tab => `
         <button role="tab" type="button" id="tab-${tab}" data-tab="${tab}"
           aria-selected="${tab==='overview'?'true':'false'}"
           style="padding:10px 20px;border:none;border-bottom:3px solid ${tab==='overview'?'var(--color-teal)':'transparent'};
           background:none;cursor:pointer;font:${tab==='overview'?'bold':''} var(--text-base) Arial,sans-serif;
           color:${tab==='overview'?'var(--color-teal)':'var(--color-muted)'};min-height:44px;white-space:nowrap;">
-          ${{overview:'Overview',rag:'RAG Matrix',activity:'Activity Log',staff:'Staff'}[tab]}
+          ${{overview:'Overview',rag:'RAG Matrix',activity:'Activity Log',staff:'Staff',resources:'Resources Shared'}[tab]}
         </button>`).join('')}
     </div>
 
@@ -286,6 +286,27 @@ function _renderAreaTab(tab, areaCode) {
               <p style="font-size:var(--text-xs);color:var(--color-muted);">${_escHtml(s.role||'')} ${s.etfStage ? '· ETF Stage '+s.etfStage : ''}</p>
             </div>
             ${_getStaffOpenAFIs(s.staffId) > 0 ? `<span style="font-size:var(--text-xs);font-weight:bold;color:var(--color-amber);">${_getStaffOpenAFIs(s.staffId)} open loop${_getStaffOpenAFIs(s.staffId)!==1?'s':''}</span>` : ''}
+          </div>`).join('')
+      }`;
+  }
+
+  if (tab === 'resources') {
+    // Reads from library.js — resource shares are stored centrally, not on
+    // the area record, same reasoning as AFIs (area.afiRefs is a pointer,
+    // not the source of truth). See data.js saveLibraryShare().
+    const shares = (typeof _libGetSharesForArea === 'function' ? _libGetSharesForArea(areaCode) : []).slice().reverse();
+    panel.innerHTML = `
+      <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-md);">Resources shared (${shares.length})</h3>
+      ${shares.length === 0
+        ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No resources shared with staff in this area yet. Share one from the Resource Library.</p>'
+        : shares.map(s => `
+          <div style="display:flex;gap:var(--space-md);padding:var(--space-md) 0;border-bottom:1px solid var(--color-border);align-items:flex-start;">
+            <span style="font-size:var(--text-xs);color:var(--color-muted);white-space:nowrap;padding-top:2px;min-width:70px;">${_formatDateShort(s.date)}</span>
+            <div style="flex:1;">
+              <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-slate);">${_escHtml(s.resourceTitle||'')}</p>
+              <p style="font-size:var(--text-xs);color:var(--color-muted);">${typeof _libStaffNames==='function' ? _escHtml(_libStaffNames(s.staffIds)) : (s.staffIds||[]).length + ' staff'}</p>
+              ${s.contextNotes?`<p style="font-size:var(--text-xs);color:var(--color-muted);font-style:italic;">${_escHtml(s.contextNotes)}</p>`:''}
+            </div>
           </div>`).join('')
       }`;
   }
