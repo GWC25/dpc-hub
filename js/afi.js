@@ -264,7 +264,7 @@ function _openAFIDetail(afiId) {
       <div class="form-group">
         <label class="form-label" for="afi-ev-type">Evidence type</label>
         <select class="form-select" id="afi-ev-type">
-          <option value="devobs">DevObs</option>
+          <option value="devobs">Instructional Coaching</option>
           <option value="learning-walk">Learning Walk</option>
           <option value="reflection-immediate">Reflection (immediate)</option>
           <option value="reflection-follow-up">Reflection (follow-up)</option>
