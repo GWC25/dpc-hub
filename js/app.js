@@ -177,6 +177,7 @@ const MODULES = {
   currentfocus:   { label: 'Current Focus',  icon: '🎯', init: () => initCurrentFocus() },
   cpd:            { label: 'CPD',            icon: '📚', init: () => initCPD() },
   reports:        { label: 'Reports',        icon: '📄', init: () => initReports() },
+  library:        { label: 'Resource Library', icon: '📖', init: () => initLibrary() },
   aisupport:      { label: 'AI Support',     icon: '🤖', init: () => initAISupport() },
 };
 
