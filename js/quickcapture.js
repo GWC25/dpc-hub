@@ -26,7 +26,7 @@ function initQuickCapture() {
           <select class="form-select" id="qc-type" name="qc-type" aria-required="true">
             <optgroup label="Observations">
               <option value="learning-walk">Learning Walk</option>
-              <option value="devobs">Development Observation (DevObs)</option>
+              <option value="devobs">Instructional Coaching</option>
               <option value="work-review">Work Review</option>
             </optgroup>
             <optgroup label="Coaching & Development">
