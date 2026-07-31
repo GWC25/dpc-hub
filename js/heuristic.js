@@ -532,3 +532,54 @@ function draftAFI(themeId, severity, areaCode, staffId=null) {
 
 // Get all rules (for admin / debugging)
 function getHeuristicRules() { return HEURISTIC_RULES; }
+
+// ── Learning Studio resource matching (Session 31) ──────────────
+// Resolves resourceTags already present on every HEURISTIC_RULES entry to
+// real, live Digital Practice Cards / Resources on The Learning Studio
+// (gwc25.github.io/The-Learning-Studio). Hand-curated map, not automatic —
+// see data/resource-tag-map.json. Deliberately does not attempt to match
+// pedagogy-only tags (cold-call, hinge, wait-time, retrieval-practice, etc.)
+// — Learning Studio doesn't own that content by design, and force-matching
+// them to something unrelated would be worse than no match. Structural tags
+// (CAT1-CAT7, strength, severity/status markers like ARD/LED/EHCP/SEND/DIRT)
+// are also never matched, on purpose.
+//
+// This starts hand-curated and small. As Learning Studio's content grows,
+// data/resource-tag-map.json just gets more entries — no code change
+// needed. A future WalkThru-replacement content set (public-domain TLA
+// technique cards, EEF-sourced, no WalkThru IP) would plug into this same
+// mechanism once it has its own home.
+
+let _resourceTagMap = null;
+let _resourceTagMapPromise = null;
+
+async function loadResourceTagMap() {
+  if (_resourceTagMap) return _resourceTagMap;
+  if (!_resourceTagMapPromise) {
+    _resourceTagMapPromise = fetch('./data/resource-tag-map.json')
+      .then(r => r.ok ? r.json() : {})
+      .then(map => { _resourceTagMap = map; return map; })
+      .catch(() => { _resourceTagMap = {}; return {}; });
+  }
+  return _resourceTagMapPromise;
+}
+
+// Given an array of resourceTags (e.g. a firing HEURISTIC_RULES entry's
+// resourceTags), returns a de-duplicated array of { title, url } Learning
+// Studio links. Call loadResourceTagMap() once at app start (or let this
+// call it lazily) before relying on results — the first call may return an
+// empty array while the map is still loading.
+async function getResourcesForTags(tags = []) {
+  const map = await loadResourceTagMap();
+  const seen = new Set();
+  const results = [];
+  tags.forEach(tag => {
+    (map[tag] || []).forEach(entry => {
+      if (!seen.has(entry.url)) {
+        seen.add(entry.url);
+        results.push(entry);
+      }
+    });
+  });
+  return results;
+}
