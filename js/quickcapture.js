@@ -1,358 +1,281 @@
-// DPC Hub · js/quickcapture.js · v1.0 · July 2026
-// Quick Capture module. Floating FAB opens a modal for fast activity logging.
-// Logs to area activityLog[] via saveArea(). Called from app.js initQuickCapture().
+// DPC Hub · js/schema.js · v1.0 · July 2026
+// All schema constants. Imports nothing. Exports constants only.
+// Every other file that needs these values imports from here.
+// Do not add UI logic or data operations to this file.
 
-function initQuickCapture() {
-  // Modal HTML injected once into body — persists across module navigation
-  if (document.getElementById('qc-modal')) return; // already initialised
+// ── LRA Taxonomy 26/27 ────────────────────────────────────────
+// 7 categories, 30 themes. Hardcoded — does not change between sessions.
+const LRA_TAXONOMY = Object.freeze([
+  {
+    id: 'CAT1',
+    label: 'Planning and Sequencing of Learning',
+    themes: [
+      { id: 'LI',  label: 'Learning Intentions',        desc: 'Clear, limitless, aligned to curriculum knowledge, skills and behaviours.' },
+      { id: 'BB',  label: 'Building Blocks',             desc: 'Step-by-step structure; each task builds on the last.' },
+      { id: 'SP',  label: 'Starting Points',             desc: 'Initial assessment and vocational starting points inform pitch and planning.' },
+      { id: 'LL',  label: 'Lasting Learning',            desc: 'Designed to help learners recall, repeat and gain deeper knowledge over time.' },
+    ]
+  },
+  {
+    id: 'CAT2',
+    label: 'Inclusive TLA & SEND',
+    themes: [
+      { id: 'PL',  label: 'Personalised Learning',           desc: 'Staff know learners as individuals based on well-informed sources.' },
+      { id: 'AR',  label: 'Accessible Resources',            desc: 'Materials clear, easy to use, inclusive in layout and language.' },
+      { id: 'ARD', label: 'Accessible Resources (Digital)',  desc: 'Digital materials meet accessibility standards; AT coaching embedded.' },
+      { id: 'LL2', label: 'Language & Literacy Skills',      desc: 'Natural opportunities for literacy and language development built in.' },
+      { id: 'NS',  label: 'Numeracy Skills',                 desc: 'Natural opportunities for numeracy development built in.' },
+    ]
+  },
+  {
+    id: 'CAT3',
+    label: 'Inclusive Learning Environment',
+    themes: [
+      { id: 'LE',  label: 'Learning Environment',                desc: 'Safe, structured spaces; learners focused, engaged, valued.' },
+      { id: 'LED', label: 'Learning Environment (Digital nav)',   desc: 'Learners navigate digital spaces easily; fewest clicks; personalise independently.' },
+      { id: 'RL',  label: 'Readiness to Learn',                  desc: 'R.E.A.D.Y framework; settled environment; learning routines.' },
+      { id: 'PR',  label: 'Positive Relationships',              desc: 'Trust, motivation and belonging through positive staff-learner relationships.' },
+      { id: 'BR',  label: 'Behaviour Regulation',                desc: 'Staff support emotion and behaviour management effectively.' },
+      { id: 'EAS', label: 'Effective Use of Additional Staff',   desc: 'Learning support and technicians deployed effectively.' },
+    ]
+  },
+  {
+    id: 'CAT4',
+    label: 'Modelling and Professional Language',
+    themes: [
+      { id: 'PC',  label: 'Professional Communication',        desc: 'Clear, structured, precise explanations; rephrased when needed.' },
+      { id: 'LM',  label: 'Live Modelling and Guided Practice', desc: 'Staff show HOW (talk-alouds); technical concepts demonstrated accurately.' },
+      { id: 'SSL', label: 'Subject Specific Language (CBL)',   desc: 'Technical language taught and reinforced; industry-ready vocabulary.' },
+      { id: 'ISV', label: 'Industry & Sector Vocabulary (WBL)',desc: 'Learning linked to real-world or workplace scenarios.' },
+    ]
+  },
+  {
+    id: 'CAT5',
+    label: 'Engagement, Collaboration and Independence',
+    themes: [
+      { id: 'AL',  label: 'Ambitious Learning',      desc: 'High expectations; challenge; success clearly defined as motivation.' },
+      { id: 'AE',  label: 'Active Engagement',       desc: 'Learners actively do, think, apply; know more, can do more, remember more.' },
+      { id: 'SS',  label: 'Scaffolding & Support',   desc: 'Support gradually removed; learners succeed and progress independently.' },
+      { id: 'CL',  label: 'Collaborative Learning',  desc: 'Learners develop knowledge socially; interact positively with peers.' },
+      { id: 'LI2', label: 'Learner Independence',    desc: 'Curriculum structures build confident, autonomous, self-regulating learners.' },
+      { id: 'AT',  label: 'Assistive Technology',    desc: 'AT positively promoted; aligned to learning intentions and individual needs.' },
+    ]
+  },
+  {
+    id: 'CAT6',
+    label: 'Assessment, Feedback and Progress',
+    themes: [
+      { id: 'CU',  label: 'Checks for Understanding', desc: 'Range of techniques; adapted in real time and future sessions.' },
+      { id: 'EQ',  label: 'Effective Questioning',    desc: 'Deep thinking; reasoning; opportunities to say and do it better.' },
+      { id: 'EF',  label: 'Effective Feedback',       desc: 'Timely, aligned to goals; focused on how learners progress and improve.' },
+      { id: 'EA',  label: 'Effective Assessment',     desc: 'Variety of strategies; learners make rapid progress; awarding body met.' },
+      { id: 'AP',  label: 'Adaptive Practice',        desc: 'Misconceptions addressed quickly; reasonable adjustments in place.' },
+    ]
+  },
+  {
+    id: 'CAT7',
+    label: 'Personal Development and Wellbeing',
+    themes: [
+      { id: 'RTL', label: 'Ready to Learn', desc: 'R.E.A.D.Y expectations; IAG, tutorials, target setting; regular attendance.' },
+      { id: 'RTW', label: 'Ready to Work',  desc: 'Employability skills; CEIAG, WEX, IP, WRA, competitive opportunities.' },
+      { id: 'RFL', label: 'Ready for Life', desc: 'Tutorials: EDI, wellbeing, relationships, SG&P, current affairs, FBV.' },
+      { id: 'FS',  label: 'Future Skills',  desc: 'SMART targets; Future Ready framework; Digital, Academic, Professional, Mindset.' },
+    ]
+  },
+]);
 
-  const modalEl = document.createElement('div');
-  modalEl.innerHTML = `
-    <div id="qc-modal" role="dialog" aria-modal="true" aria-labelledby="qc-modal-title" style="
-      display:none;position:fixed;inset:0;
-      background:rgba(0,0,0,0.5);z-index:600;
-      align-items:center;justify-content:center;padding:var(--space-lg);
-    ">
-      <div style="background:var(--color-white);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:var(--space-xl);">
+// ── Hyper focus areas (college-wide priority 2025-26) ─────────
+// These three are surfaced prominently in Instructional Coaching and Learning Walk.
+const HYPER_FOCUS = Object.freeze([
+  { id: 'ARD', label: 'Accessible by Design',         categoryId: 'CAT2' },
+  { id: 'LED', label: 'Digital Learning Environment', categoryId: 'CAT3' },
+  { id: 'AT',  label: 'Assistive Technology',         categoryId: 'CAT5' },
+]);
 
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-lg);">
-          <h2 id="qc-modal-title" style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">Quick Capture</h2>
-          <button id="qc-close" type="button" aria-label="Close Quick Capture" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--color-muted);min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);">×</button>
-        </div>
+// ── AFI severity (use exact labels from LRA file) ─────────────
+const AFI_SEVERITY = Object.freeze({
+  STRENGTH:   'Strength',
+  STRENGTHEN: 'Areas to Strengthen',
+  IMMEDIATE:  'Areas for Immediate Improvement',
+});
 
-        <!-- Activity type -->
-        <div class="form-group">
-          <label class="form-label" for="qc-type">Activity type</label>
-          <select class="form-select" id="qc-type" name="qc-type" aria-required="true">
-            <optgroup label="Observations">
-              <option value="learning-walk">Learning Walk</option>
-              <option value="devobs">Instructional Coaching</option>
-              <option value="work-review">Work Review</option>
-            </optgroup>
-            <optgroup label="Coaching & Development">
-              <option value="coaching">1:1 Coaching Session</option>
-              <option value="teach-meet">Teach Meet</option>
-              <option value="cpd-delivered">CPD Delivered</option>
-            </optgroup>
-            <optgroup label="Meetings">
-              <option value="hoa-meeting">HoA Meeting</option>
-              <option value="digital-lead-meeting">Digital Lead Meeting</option>
-              <option value="tlam-meeting">TLAM Meeting</option>
-              <option value="meeting">Other Meeting</option>
-            </optgroup>
-            <optgroup label="Other">
-              <option value="health-check-visit">Health Check Visit</option>
-              <option value="referral">Referral</option>
-              <option value="resource-created">Resource Created</option>
-            </optgroup>
-          </select>
-        </div>
+// ── AFI status lifecycle ──────────────────────────────────────
+const AFI_STATUS = Object.freeze({
+  OPEN:           'open',
+  ACTIONED:       'actioned',
+  IMPACT_CHECKED: 'impact-checked',
+  CLOSED:         'closed',
+  REOPENED:       're-opened',
+});
 
-        <!-- Area -->
-        <div class="form-group">
-          <label class="form-label" for="qc-area">Area</label>
-          <select class="form-select" id="qc-area" name="qc-area" aria-required="true">
-            <option value="">— Select area —</option>
-          </select>
-        </div>
+// ── Pyramid levels ────────────────────────────────────────────
+const PYRAMID_LEVEL = Object.freeze({
+  FOUNDATIONS: 'foundations',
+  INCLUSION:   'inclusion',
+  INNOVATION:  'innovation',
+});
 
-        <!-- Date -->
-        <div class="form-group">
-          <label class="form-label" for="qc-date">Date</label>
-          <input class="form-input" type="date" id="qc-date" name="qc-date" aria-required="true">
-        </div>
+// ── Activity types ────────────────────────────────────────────
+const ACTIVITY_TYPE = Object.freeze({
+  DEVOBS:             'devobs',
+  LEARNING_WALK:      'learning-walk',
+  COACHING:           'coaching',
+  TEACH_MEET:         'teach-meet',
+  HEALTH_CHECK_VISIT: 'health-check-visit',
+  REFERRAL:           'referral',
+  RESOURCE_CREATED:   'resource-created',
+  MEETING:            'meeting',
+  CPD_DELIVERED:      'cpd-delivered',
+  WORK_REVIEW:        'work-review',
+  HOA_MEETING:        'hoa-meeting',
+  DL_MEETING:         'digital-lead-meeting',
+  TLAM_MEETING:       'tlam-meeting',
+});
 
-        <!-- Hyper focus tags (prominent — college priority) -->
-        <div class="form-group">
-          <fieldset style="border:2px solid var(--color-teal);border-radius:var(--radius-md);padding:var(--space-md);">
-            <legend style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-teal);padding:0 var(--space-xs);">College priority focus areas (Hyper)</legend>
-            <div style="display:flex;flex-direction:column;gap:var(--space-sm);margin-top:var(--space-xs);">
-              ${HYPER_FOCUS.map(f => `
-                <div id="qc-hyper-block-${f.id}" style="border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-sm);">
-                  <label style="display:flex;align-items:center;gap:var(--space-xs);cursor:pointer;margin-bottom:0;">
-                    <input type="checkbox" name="qc-hyper" value="${f.id}" id="qc-hyper-${f.id}" style="width:16px;height:16px;accent-color:var(--color-teal);flex-shrink:0;">
-                    <span style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);">${_escHtml(f.label)}</span>
-                  </label>
-                  <div id="qc-hyper-detail-${f.id}" style="display:none;margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid var(--color-border);">
-                    <p id="qc-hyper-q-${f.id}" style="font-size:var(--text-xs);color:var(--color-teal);font-style:italic;margin-bottom:var(--space-sm);"></p>
-                    <div style="display:flex;gap:var(--space-xs);flex-wrap:wrap;" role="group" aria-label="Severity for ${f.label}">
-                      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border:2px solid var(--color-green);border-radius:var(--radius-sm);font-size:var(--text-xs);font-weight:bold;color:var(--color-green);">
-                        <input type="radio" name="qc-sev-${f.id}" value="Strength" style="width:12px;height:12px;accent-color:var(--color-green);"> Strength
-                      </label>
-                      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border:2px solid var(--color-amber);border-radius:var(--radius-sm);font-size:var(--text-xs);font-weight:bold;color:var(--color-amber);">
-                        <input type="radio" name="qc-sev-${f.id}" value="Areas to Strengthen" style="width:12px;height:12px;accent-color:var(--color-amber);"> Areas to Strengthen
-                      </label>
-                      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border:2px solid var(--color-red);border-radius:var(--radius-sm);font-size:var(--text-xs);font-weight:bold;color:var(--color-red);">
-                        <input type="radio" name="qc-sev-${f.id}" value="Areas for Immediate Improvement" style="width:12px;height:12px;accent-color:var(--color-red);"> Immediate
-                      </label>
-                    </div>
-                  </div>
-                </div>`).join('')}
-            </div>
-          </fieldset>
-        </div>
+// ── Touch types ───────────────────────────────────────────────
+const TOUCH_TYPE = Object.freeze({
+  DEVOBS:            'devobs',
+  LEARNING_WALK:     'learning-walk',
+  COACHING:          'coaching',
+  TEACH_MEET:        'teach-meet',
+  REFERRAL:          'referral',
+  RESOURCE_ASSIGNED: 'resource-assigned',
+  LINKEDIN_PATHWAY:  'linkedin-pathway',
+  HEALTH_CHECK:      'health-check',
+  REFLECTION:        'reflection',
+  WORK_REVIEW:       'work-review',
+});
 
-        <!-- LRA themes (collapsed by default) -->
-        <div class="form-group">
-          <button type="button" id="qc-lra-toggle" style="background:none;border:none;cursor:pointer;color:var(--color-teal);font-size:var(--text-sm);font-weight:var(--font-bold);padding:0;display:flex;align-items:center;gap:var(--space-xs);" aria-expanded="false" aria-controls="qc-lra-panel">
-            <span id="qc-lra-arrow">▶</span> LRA themes (optional)
-          </button>
-          <div id="qc-lra-panel" style="display:none;margin-top:var(--space-md);">
-            ${LRA_TAXONOMY.map(cat => `
-              <div style="margin-bottom:var(--space-md);">
-                <p style="font-size:var(--text-xs);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-xs);text-transform:uppercase;letter-spacing:0.05em;">${_escHtml(cat.label)}</p>
-                <div style="display:flex;gap:var(--space-xs);flex-wrap:wrap;">
-                  ${cat.themes.map(theme => `
-                    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:3px var(--space-sm);border:1px solid var(--color-border);border-radius:999px;font-size:var(--text-xs);background:var(--color-white);" title="${_escHtml(theme.desc)}">
-                      <input type="checkbox" name="qc-lra" value="${theme.id}" id="qc-lra-${theme.id}" style="width:12px;height:12px;accent-color:var(--color-navy);">
-                      ${_escHtml(theme.id)} — ${_escHtml(theme.label)}
-                    </label>`).join('')}
-                </div>
-              </div>`).join('')}
-          </div>
-        </div>
+// ── Action types (within an AFI) ──────────────────────────────
+const ACTION_TYPE = Object.freeze({
+  COACHING:           'coaching',
+  TEACH_MEET:         'teach-meet',
+  LINKEDIN_PATHWAY:   'linkedin-pathway',
+  RESOURCE:           'resource',
+  TRAINING_PROGRAMME: 'training-programme',
+  REFERRAL_OUT:       'referral-out',
+});
 
-        <!-- Pyramid level -->
-        <div class="form-group">
-          <label class="form-label" for="qc-pyramid">Pyramid level</label>
-          <select class="form-select" id="qc-pyramid" name="qc-pyramid">
-            <option value="foundations">Foundations</option>
-            <option value="inclusion">Inclusion</option>
-            <option value="innovation">Innovation</option>
-          </select>
-        </div>
+// ── Evidence types (within an AFI evidence chain) ─────────────
+const EVIDENCE_TYPE = Object.freeze({
+  DEVOBS:              'devobs',
+  LEARNING_WALK:       'learning-walk',
+  REFLECTION_IMMEDIATE:'reflection-immediate',
+  REFLECTION_FOLLOWUP: 'reflection-follow-up',
+  HEALTH_CHECK_SCORE:  'health-check-score',
+  DATA_POINT:          'data-point',
+  STAFF_VOICE:         'staff-voice',
+  COACHING_NOTE:       'coaching-note',
+});
 
-        <!-- Summary / notes -->
-        <div class="form-group">
-          <label class="form-label" for="qc-summary">Summary</label>
-          <textarea class="form-textarea" id="qc-summary" name="qc-summary" rows="3" placeholder="Brief note about this activity…"></textarea>
-        </div>
+// ── Loop movement (what evidence does to an AFI) ──────────────
+const LOOP_MOVEMENT = Object.freeze({
+  OPENS:    'opens',
+  PROGRESSES:'progresses',
+  CLOSES:   'closes',
+  REOPENS:  're-opens',
+});
 
-        <!-- QIP reference -->
-        <div class="form-group">
-          <label class="form-label form-label--optional" for="qc-qip">QIP reference</label>
-          <input class="form-input" type="text" id="qc-qip" name="qc-qip" placeholder="e.g. Q3.2">
-        </div>
+// ── Template types ────────────────────────────────────────────
+const TEMPLATE_TYPE = Object.freeze({
+  TEACH_MEET:          'teach-meet',
+  COACHING_QUESTIONS:  'coaching-questions',
+  MEETING_AGENDA:      'meeting-agenda',
+  OBSERVATION_FRAMEWORK:'observation-framework',
+});
 
-        <p id="qc-error" role="alert" style="font-size:var(--text-sm);color:var(--color-red);display:none;margin-bottom:var(--space-md);"></p>
+// ── ETF DTPF stages ───────────────────────────────────────────
+const ETF_STAGES = Object.freeze([1, 2, 3, 4, 5]);
 
-        <div class="btn-row">
-          <button id="qc-save" type="button" class="btn btn--primary">Save activity</button>
-          <button id="qc-cancel" type="button" class="btn btn--secondary">Cancel</button>
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modalEl);
+// ── Calendar entry types ──────────────────────────────────────
+const CALENDAR_TYPE = Object.freeze({
+  MEETING:    'meeting',
+  TASK:       'task',
+  WORK_BLOCK: 'work-block',
+  DEADLINE:   'deadline',
+  MICRO_TASK: 'micro-task',
+});
 
-  _populateQCAreaDropdown();
-  _wireQCEvents();
+// ── Task status ───────────────────────────────────────────────
+const TASK_STATUS = Object.freeze({
+  UPCOMING:    'upcoming',
+  IN_PROGRESS: 'in-progress',
+  COMPLETE:    'complete',
+  OVERDUE:     'overdue',
+});
 
-  // Wire the FAB button
-  const fab = document.getElementById('quick-capture-btn');
-  if (fab) {
-    // Remove any previous listener by cloning
-    const newFab = fab.cloneNode(true);
-    fab.parentNode.replaceChild(newFab, fab);
-    newFab.addEventListener('click', openQuickCapture);
+// ── RAG dimensions (all 8) ────────────────────────────────────
+const RAG_DIMENSIONS = Object.freeze([
+  { id: 'staffCapability',       label: 'Staff Capability' },
+  { id: 'hoaLeadership',         label: 'HoA Leadership' },
+  { id: 'infrastructure',        label: 'Infrastructure & Devices' },
+  { id: 'digitalSkillsAssessment',label: 'Digital Skills Assessment' },
+  { id: 'curriculumIntegration', label: 'Curriculum Integration' },
+  { id: 'learnerReadiness',      label: 'Learner Readiness' },
+  { id: 'accessibilityInclusion',label: 'Accessibility & Inclusion' },
+  { id: 'digitalLeadEngagement', label: 'Digital Lead Engagement' },
+]);
+
+// ── RAG score labels (always paired with colour — never colour alone) ──
+const RAG_LABELS = Object.freeze({
+  1: 'Immediate priority',
+  2: 'Significant development needed',
+  3: 'Developing',
+  4: 'Establishing',
+  5: 'Embedded',
+});
+
+// ── Area codes (35 areas — join key across all systems) ──────
+const AREA_CODES = Object.freeze([
+  'ACA', 'AHC', 'ART', 'BEA', 'BUI', 'CAR', 'CHI', 'COG',
+  'CON', 'CRE', 'CRI', 'DIG', 'EAR', 'ELE', 'ENG', 'ENT',
+  'FLO', 'HAI', 'HBH', 'HOS', 'INC', 'LAW', 'MAT', 'MED',
+  'MUS', 'NUR', 'OUT', 'PER', 'PHO', 'PLA', 'PUB', 'SCH',
+  'SCI', 'SPO', 'TRA',
+]);
+
+// ── Default empty data structures ────────────────────────────
+// Used when optional files are missing — Hub starts with safe defaults.
+const DEFAULT_DATA = Object.freeze({
+  'data-staff.json':        { staff: [] },
+  'data-afi.json':          { afis: [] },
+  'data-reflections.json':  { reflections: [] },
+  'data-templates.json':    { templates: [] },
+  'data-cpd.json':          { cpd: { entries: [], plannedTraining: [], deliveredCPD: [] } },
+  'data-digital-leads.json':{ digitalLeads: [] },
+  'data-current-focus.json':{ focuses: [] },
+  'data-notes.json':        { notes: [] },
+});
+
+// ── Helper: get LRA theme by ID ───────────────────────────────
+function getLRATheme(themeId) {
+  for (const cat of LRA_TAXONOMY) {
+    const theme = cat.themes.find(t => t.id === themeId);
+    if (theme) return { ...theme, categoryId: cat.id, categoryLabel: cat.label };
   }
+  return null;
 }
 
-function openQuickCapture() {
-  const modal = document.getElementById('qc-modal');
-  if (!modal) return;
-
-  // Refresh area dropdown every open (data may have loaded since init)
-  _populateQCAreaDropdown();
-
-  // Reset form
-  const form  = modal.querySelector('form') || modal;
-  document.getElementById('qc-type').value    = 'learning-walk';
-  document.getElementById('qc-area').value    = '';
-  document.getElementById('qc-date').value    = todayISO();
-  document.getElementById('qc-pyramid').value = 'foundations';
-  document.getElementById('qc-summary').value = '';
-  document.getElementById('qc-qip').value     = '';
-  document.getElementById('qc-error').style.display = 'none';
-
-  // Uncheck all checkboxes
-  modal.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; });
-
-  // Reset Hyper label styles
-  HYPER_FOCUS.forEach(f => {
-    const lbl = document.getElementById(`qc-hyper-label-${f.id}`);
-    if (lbl) { lbl.style.background = 'transparent'; lbl.style.color = 'var(--color-teal)'; }
-  });
-
-  // Collapse LRA panel
-  document.getElementById('qc-lra-panel').style.display = 'none';
-  document.getElementById('qc-lra-toggle').setAttribute('aria-expanded','false');
-  document.getElementById('qc-lra-arrow').textContent = '▶';
-
-  modal.style.display = 'flex';
-  document.getElementById('qc-type').focus();
+// ── Helper: get all themes as flat array ──────────────────────
+function getAllLRAThemes() {
+  return LRA_TAXONOMY.flatMap(cat =>
+    cat.themes.map(t => ({ ...t, categoryId: cat.id, categoryLabel: cat.label }))
+  );
 }
 
-function _wireQCEvents() {
-  document.getElementById('qc-close')?.addEventListener('click', _closeQC);
-  document.getElementById('qc-cancel')?.addEventListener('click', _closeQC);
-  document.getElementById('qc-save')?.addEventListener('click', _saveQC);
-
-  // Close on overlay click
-  document.getElementById('qc-modal')?.addEventListener('click', e => {
-    if (e.target === document.getElementById('qc-modal')) _closeQC();
-  });
-
-  // LRA toggle
-  document.getElementById('qc-lra-toggle')?.addEventListener('click', () => {
-    const panel  = document.getElementById('qc-lra-panel');
-    const btn    = document.getElementById('qc-lra-toggle');
-    const arrow  = document.getElementById('qc-lra-arrow');
-    const isOpen = panel.style.display !== 'none';
-    panel.style.display = isOpen ? 'none' : 'block';
-    btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
-    arrow.textContent = isOpen ? '▶' : '▼';
-  });
-
-  // Hyper checkbox — show severity + follow-up question when checked
-  HYPER_FOCUS.forEach(f => {
-    const cb = document.getElementById('qc-hyper-' + f.id);
-    if (!cb) return;
-    cb.addEventListener('change', function(e) {
-      const block  = document.getElementById('qc-hyper-block-' + f.id);
-      const detail = document.getElementById('qc-hyper-detail-' + f.id);
-      const qEl    = document.getElementById('qc-hyper-q-' + f.id);
-      if (e.target.checked) {
-        if (block)  { block.style.background = 'var(--color-teal-lt)'; block.style.borderColor = 'var(--color-teal)'; }
-        if (detail) detail.style.display = 'block';
-        if (qEl && typeof getQuestionsForTheme === 'function') {
-          var rules = getQuestionsForTheme(f.id);
-          qEl.textContent = rules.length > 0 ? rules[0].followUpQuestions[0] : '';
-        }
-      } else {
-        if (block)  { block.style.background = ''; block.style.borderColor = 'var(--color-border)'; }
-        if (detail) detail.style.display = 'none';
-      }
-    });
-  });
-
-  // ESC
-  document.addEventListener('keydown', function qcEsc(e) {
-    if (e.key === 'Escape') {
-      const m = document.getElementById('qc-modal');
-      if (m && m.style.display === 'flex') { _closeQC(); e.stopPropagation(); }
-      else document.removeEventListener('keydown', qcEsc);
-    }
+// ── Helper: generate UUID v4 ──────────────────────────────────
+function generateId() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
   });
 }
 
-function _closeQC() {
-  const modal = document.getElementById('qc-modal');
-  if (modal) modal.style.display = 'none';
-}
+// ── Helper: ISO timestamp now ─────────────────────────────────
+function nowISO() { return new Date().toISOString(); }
 
-function _saveQC() {
-  const areaCode = document.getElementById('qc-area').value;
-  const type     = document.getElementById('qc-type').value;
-  const date     = document.getElementById('qc-date').value;
-  const summary  = document.getElementById('qc-summary').value.trim();
-  const errEl    = document.getElementById('qc-error');
-
-  if (!areaCode) { _showQCError('Please select an area.'); document.getElementById('qc-area').focus(); return; }
-  if (!date)     { _showQCError('Please enter a date.'); document.getElementById('qc-date').focus(); return; }
-
-  // Collect Hyper themes + severity + generate AFI drafts
-  var hyperThemes = [];
-  var afiDrafts   = [];
-  HYPER_FOCUS.forEach(function(f) {
-    var cb = document.getElementById('qc-hyper-' + f.id);
-    if (cb && cb.checked) {
-      hyperThemes.push(f.id);
-      var sevEl = document.querySelector('input[name="qc-sev-' + f.id + '"]:checked');
-      if (sevEl && typeof draftAFI === 'function') {
-        var draft = draftAFI(f.id, sevEl.value, areaCode);
-        if (draft) afiDrafts.push(draft);
-      }
-    }
-  });
-
-  // Collect LRA themes
-  const lraThemeIds = Array.from(document.querySelectorAll('input[name="qc-lra"]:checked'))
-    .map(cb => cb.value);
-
-  const activity = {
-    activityId:   generateId(),
-    activityType: type,
-    date,
-    areaCode,
-    staffIds:     [],
-    lraThemeIds,
-    hyperThemes,
-    pyramidLevel: document.getElementById('qc-pyramid').value || 'foundations',
-    summary:      summary || `${type} — ${areaCode}`,
-    afiIdsGenerated: [],
-    sharedId:     null,
-    qipRef:       document.getElementById('qc-qip').value.trim() || null,
-    createdAt:    nowISO(),
-  };
-
-  // Write to area record
-  const area = _getArea(areaCode);
-  if (!area) { _showQCError('Area not found — please try again.'); return; }
-
-  if (!area.activityLog) area.activityLog = [];
-  area.activityLog.push(activity);
-  if (!area.afiRefs) area.afiRefs = [];
-
-  // Save any AFI drafts generated from Hyper severity selections
-  if (afiDrafts.length > 0 && typeof saveAFI === 'function') {
-    var allAFIs = window.DPC_DATA.afi.afis || [];
-    afiDrafts.forEach(function(draft) {
-      draft.parentObservationId = activity.activityId;
-      allAFIs.push(draft);
-      area.afiRefs.push(draft.afiId);
-      activity.afiIdsGenerated.push(draft.afiId);
-    });
-    window.DPC_DATA.afi.afis = allAFIs;
-    saveAFI(afiDrafts[0]);
-  }
-
-  area.lastUpdated = nowISO();
-  saveArea(area);
-
-  _closeQC();
-
-  // Show confirmation toast
-  if (typeof UI !== 'undefined' && UI.showToast) {
-    UI.showToast('success', 'Activity logged: ' + type + ' — ' + areaCode + (afiDrafts.length > 0 ? '. ' + afiDrafts.length + ' AFI' + (afiDrafts.length !== 1 ? 's' : '') + ' created.' : ''));
-  }
-
-  // Refresh current view if we're on areas
-  if (typeof _areasCurrentArea !== 'undefined' && _areasCurrentArea === areaCode) {
-    _renderAreaTab(_areasDetailTab || 'activity', areaCode);
-  }
-}
-
-function _showQCError(msg) {
-  const el = document.getElementById('qc-error');
-  if (el) { el.textContent = msg; el.style.display = 'block'; }
-}
-
-function _populateQCAreaDropdown() {
-  const sel = document.getElementById('qc-area');
-  if (!sel) return;
-  // Clear existing options beyond first
-  while (sel.options.length > 1) sel.remove(1);
-  const areas = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
-  areas.sort((a,b) => a.areaName.localeCompare(b.areaName)).forEach(area => {
-    const opt = document.createElement('option');
-    opt.value = area.areaCode;
-    opt.textContent = `${area.areaCode} — ${area.areaName}`;
-    sel.appendChild(opt);
-  });
-}
-
-function _escHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ── Helper: ISO date today ────────────────────────────────────
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
