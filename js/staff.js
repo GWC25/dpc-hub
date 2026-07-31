@@ -1,5 +1,5 @@
 // DPC Hub · js/staff.js · v1.0 · July 2026
-// Staff Profile module. Dynamic creation via DevObs/LW/referral.
+// Staff Profile module. Dynamic creation via Instructional Coaching/LW/referral.
 // Touch history, development priorities (3), ETF stage, reflection timeline.
 // Reads from window.DPC_DATA.staff via data.js globals.
 
@@ -24,7 +24,7 @@ function initStaff() {
       <div>
         <div id="staff-list" role="list" aria-label="Staff profiles"></div>
         <p id="staff-empty" style="font-size:var(--text-sm);color:var(--color-muted);padding:var(--space-lg) 0;">
-          No staff profiles yet. Profiles are created automatically when you log a DevObs or Learning Walk, or you can create one manually.
+          No staff profiles yet. Profiles are created automatically when you log an Instructional Coaching session or Learning Walk, or you can create one manually.
         </p>
       </div>
       <!-- Profile detail -->
@@ -59,7 +59,7 @@ function initStaff() {
           <select class="form-select" id="staff-entry">
             <option value="referral">Referral (TLAM/HoA)</option>
             <option value="self-referral">Self-referral</option>
-            <option value="devobs">DevObs</option>
+            <option value="devobs">Instructional Coaching</option>
             <option value="learning-walk">Learning Walk</option>
             <option value="health-check">Health Check visit</option>
           </select>
