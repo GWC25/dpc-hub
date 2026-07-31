@@ -85,7 +85,7 @@ const LRA_TAXONOMY = Object.freeze([
 ]);
 
 // ── Hyper focus areas (college-wide priority 2025-26) ─────────
-// These three are surfaced prominently in DevObs and Learning Walk.
+// These three are surfaced prominently in Instructional Coaching and Learning Walk.
 const HYPER_FOCUS = Object.freeze([
   { id: 'ARD', label: 'Accessible by Design',         categoryId: 'CAT2' },
   { id: 'LED', label: 'Digital Learning Environment', categoryId: 'CAT3' },
