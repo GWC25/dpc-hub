@@ -146,6 +146,19 @@ const TOUCH_TYPE = Object.freeze({
   WORK_REVIEW:       'work-review',
 });
 
+// ── Resource Library types (Session 32) ────────────────────────
+// 'learning-studio' entries are never stored in data-resource-library.json —
+// they're computed at render time from data/resource-tag-map.json (the same
+// file getResourcesForTags() in heuristic.js already uses). Only their
+// shares get persisted, keyed by resourceId = the Learning Studio URL.
+// 'linkedin-pathway' and 'dpc-created' entries are hand-created and are
+// the only entries actually stored in data-resource-library.json.
+const LIBRARY_TYPE = Object.freeze({
+  LEARNING_STUDIO:  'learning-studio',
+  LINKEDIN_PATHWAY: 'linkedin-pathway',
+  DPC_CREATED:      'dpc-created',
+});
+
 // ── Action types (within an AFI) ──────────────────────────────
 const ACTION_TYPE = Object.freeze({
   COACHING:           'coaching',
@@ -245,6 +258,7 @@ const DEFAULT_DATA = Object.freeze({
   'data-digital-leads.json':{ digitalLeads: [] },
   'data-current-focus.json':{ focuses: [] },
   'data-notes.json':        { notes: [] },
+  'data-resource-library.json': { entries: [], shares: [] },
 });
 
 // ── Helper: get LRA theme by ID ───────────────────────────────
