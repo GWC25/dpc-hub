@@ -1,5 +1,5 @@
 // DPC Hub · js/devobs.js · v1.0 · July 2026
-// Development Observation modal. Full LRA theme selection with heuristic
+// Instructional Coaching modal (internal name: devobs). Full LRA theme selection with heuristic
 // follow-up questions. Hyper themes prominent. AFI auto-draft review panel.
 // Dual-write to area activityLog[] and data-afi.json via saveArea() / saveAFI().
 
@@ -7,17 +7,17 @@ function initDevObs() {
   const main = document.getElementById('main-content');
   main.innerHTML = `
     <div id="banner-container" aria-live="polite"></div>
-    <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-lg);">Development Observations</h1>
-    <p style="font-size:var(--text-base);color:var(--color-muted);margin-bottom:var(--space-xl);">Structured developmental observations linked to the LRA taxonomy. Click to open a new DevObs or view recent observations.</p>
-    <button id="devobs-new-btn" type="button" class="btn btn--primary" style="margin-bottom:var(--space-xl);">+ New DevObs</button>
-    <h2 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-md);">Recent DevObs</h2>
+    <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-lg);">Instructional Coaching</h1>
+    <p style="font-size:var(--text-base);color:var(--color-muted);margin-bottom:var(--space-xl);">Structured instructional coaching observations linked to the LRA taxonomy. Click to open a new Instructional Coaching session or view recent sessions.</p>
+    <button id="devobs-new-btn" type="button" class="btn btn--primary" style="margin-bottom:var(--space-xl);">+ New Instructional Coaching Session</button>
+    <h2 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-md);">Recent Instructional Coaching</h2>
     <div id="devobs-recent-list"></div>
   `;
   _renderRecentDevObs();
   document.getElementById('devobs-new-btn')?.addEventListener('click', () => openDevObsModal({}));
 }
 
-// ── Open DevObs modal ─────────────────────────────────────────
+// ── Open Instructional Coaching modal (internal name: devobs) ──
 function openDevObsModal(prefillData={}) {
   document.getElementById('devobs-modal')?.remove();
 
@@ -32,8 +32,8 @@ function openDevObsModal(prefillData={}) {
       <div style="background:var(--color-white);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:100%;max-width:800px;padding:var(--space-xl);margin:auto;">
 
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-lg);">
-          <h2 id="devobs-title" style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">Development Observation</h2>
-          <button id="devobs-close" type="button" aria-label="Close DevObs" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--color-muted);min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;">×</button>
+          <h2 id="devobs-title" style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">Instructional Coaching</h2>
+          <button id="devobs-close" type="button" aria-label="Close Instructional Coaching" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--color-muted);min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;">×</button>
         </div>
 
         <!-- Header fields -->
@@ -395,7 +395,7 @@ function _commitDevObs(confirmedAFIs) {
     lraThemeIds:     p.selectedThemes.map(t => t.id),
     hyperThemes:     p.hyperThemes,
     pyramidLevel:    p.pyramid,
-    summary:         p.notes || `DevObs — ${p.areaCode}${p.staffName ? ' — ' + p.staffName : ''}`,
+    summary:         p.notes || `Instructional Coaching — ${p.areaCode}${p.staffName ? ' — ' + p.staffName : ''}`,
     afiIdsGenerated: confirmedAFIs.map(a => a.afiId),
     sharedId:        p.sharedId,
     qipRef:          null,
@@ -424,7 +424,7 @@ function _commitDevObs(confirmedAFIs) {
   window._devObsPending = null;
 
   if (typeof UI !== 'undefined') {
-    UI.showToast('success', `DevObs saved — ${p.areaCode}. ${confirmedAFIs.length} AFI${confirmedAFIs.length!==1?'s':''} confirmed.`);
+    UI.showToast('success', `Instructional Coaching saved — ${p.areaCode}. ${confirmedAFIs.length} AFI${confirmedAFIs.length!==1?'s':''} confirmed.`);
   }
 
   if (document.getElementById('devobs-recent-list')) _renderRecentDevObs();
@@ -443,7 +443,7 @@ function _renderRecentDevObs() {
   all.sort((a,b) => (b.date||'').localeCompare(a.date||''));
   const recent = all.slice(0, 8);
   if (recent.length === 0) {
-    list.innerHTML = '<p style="color:var(--color-muted);font-size:var(--text-sm);">No DevObs logged yet.</p>';
+    list.innerHTML = '<p style="color:var(--color-muted);font-size:var(--text-sm);">No Instructional Coaching sessions logged yet.</p>';
     return;
   }
   list.innerHTML = recent.map(d => `
