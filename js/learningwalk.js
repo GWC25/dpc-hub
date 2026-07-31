@@ -1,6 +1,6 @@
 // DPC Hub · js/learningwalk.js · v1.0 · July 2026
 // Learning Walk module. Quick capture with LRA theme tagging.
-// Hyper focus areas prominently surfaced. Option to escalate to DevObs.
+// Hyper focus areas prominently surfaced. Option to escalate to Instructional Coaching (internal name: devobs).
 // Writes to area activityLog[] via saveArea().
 
 function initLearningWalk() {
@@ -123,7 +123,7 @@ function openLearningWalkModal(prefillData) {
 
         <div class="btn-row">
           <button id="lw-save" type="button" class="btn btn--primary">Save Learning Walk</button>
-          <button id="lw-escalate" type="button" class="btn btn--ghost">Escalate to DevObs →</button>
+          <button id="lw-escalate" type="button" class="btn btn--ghost">Escalate to Instructional Coaching →</button>
           <button id="lw-cancel" type="button" class="btn btn--secondary">Cancel</button>
         </div>
       </div>
