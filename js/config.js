@@ -40,6 +40,7 @@ const DPC_CONFIG = Object.freeze({
     'data-digital-leads.json',
     'data-current-focus.json',
     'data-notes.json',
+    'data-resource-library.json',
   ],
   // ── Hub version ───────────────────────────────────────────
   HUB_VERSION: '1.0.0',
