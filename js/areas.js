@@ -277,7 +277,7 @@ function _renderAreaTab(tab, areaCode) {
     panel.innerHTML = `
       <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-md);">Staff (${areaStaff.length})</h3>
       ${areaStaff.length === 0
-        ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No staff profiles linked to this area yet. Staff profiles are created automatically when you log a DevObs or Learning Walk.</p>'
+        ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No staff profiles linked to this area yet. Staff profiles are created automatically when you log an Instructional Coaching session or Learning Walk.</p>'
         : areaStaff.map(s => `
           <div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md) 0;border-bottom:1px solid var(--color-border);">
             <div style="width:36px;height:36px;border-radius:50%;background:var(--color-teal-lt);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--color-teal);font-size:var(--text-base);flex-shrink:0;">${(s.name||'?')[0].toUpperCase()}</div>
