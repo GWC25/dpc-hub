@@ -18,10 +18,6 @@ const DPC_CONFIG = Object.freeze({
   // goes in dpc-manifest.json which lives on OneDrive, not in the public repo.
   SUPABASE_URL:      'https://gygngjifcmyjslsqpkmb.supabase.co',
   SUPABASE_ANON_KEY: 'sb_publishable_3iVEEIuwPL9ldyltSV5r8g_WazUfZSX',
-  // ── CPD Library (public GitHub Pages repo) ────────────────
-  CPD_LIBRARY_BASE:  'https://gwc25.github.io/dpc-cpd-library',
-  CPD_RESOURCES_URL: 'https://gwc25.github.io/dpc-cpd-library/data/resources.json',
-  CPD_CARDS_URL:     'https://gwc25.github.io/dpc-cpd-library/data/walkthru-cards.json',
   // ── Auto-save interval ────────────────────────────────────
   AUTOSAVE_INTERVAL_MS: 60000,  // 60 seconds
   // ── File System Access API permission window ──────────────
@@ -50,8 +46,6 @@ const DPC_CONFIG = Object.freeze({
     PERMISSION_DATE:      'dpc_permission_date',
     SESSION_SNAPSHOT:     'dpc_session_snapshot',
     SNAPSHOT_AT:          'dpc_snapshot_at',
-    RESOURCES_CACHE:      'dpc_resources_cache',
-    RESOURCES_CACHED_AT:  'dpc_resources_cached_at',
     AUTH_TOKEN:           'dpc_auth',
     AUTH_EXPIRY:          'dpc_auth_expiry',
   }),
