@@ -246,34 +246,6 @@ async function loadOptionalFiles() {
   }
 }
 
-// ── Step 7: Fetch public resource data ────────────────────────
-async function fetchPublicResources() {
-  // Non-blocking — don't await at load time
-  (async () => {
-    try {
-      const [resResult, cardsResult] = await Promise.allSettled([
-        fetch(DPC_CONFIG.CPD_RESOURCES_URL).then(r => r.ok ? r.json() : Promise.reject(r.status)),
-        fetch(DPC_CONFIG.CPD_CARDS_URL).then(r => r.ok ? r.json() : Promise.reject(r.status)),
-      ]);
-      const resources = resResult.status === 'fulfilled' ? resResult.value : null;
-      const cards     = cardsResult.status === 'fulfilled' ? cardsResult.value : null;
-      if (resources || cards) {
-        window.DPC_RESOURCES = { resources, cards };
-        localStorage.setItem(DPC_CONFIG.LS_KEYS.RESOURCES_CACHE, JSON.stringify({ resources, cards }));
-        localStorage.setItem(DPC_CONFIG.LS_KEYS.RESOURCES_CACHED_AT, nowISO());
-      }
-    } catch {
-      // Network unavailable — try cache
-      const cached = localStorage.getItem(DPC_CONFIG.LS_KEYS.RESOURCES_CACHE);
-      if (cached) {
-        try { window.DPC_RESOURCES = JSON.parse(cached); } catch { /* ignore */ }
-      }
-      // Non-blocking — no error shown to user
-      console.warn('DPC Hub: CPD Library unavailable — using cached resources or none.');
-    }
-  })();
-}
-
 // ── Step 8: Check Supabase captures ────────────────────────────
 // This stub is intentionally left as a harmless fallback. The real
 // implementation is a same-named function declared in js/supabase-sync.js,
@@ -368,7 +340,6 @@ async function loadHub(ui) {
   await loadManifest(ui);
   await loadRequiredFiles(ui);
   await loadOptionalFiles();
-  fetchPublicResources();   // non-blocking
   checkSupabaseCaptures();  // non-blocking
   await checkSessionSnapshot(ui);
   initAutoSave(ui);
