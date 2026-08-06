@@ -185,38 +185,55 @@ function _renderRAGTable() {
 }
 
 // ── Health Check Dashboard ────────────────────────────────────
+// Session 36: rewritten to read from data-health-checks.json (staff-level,
+// 5 focus areas — see HC_FOCUS_AREAS in schema.js) instead of the
+// abandoned area.healthChecks[] (old 5-broad-dimension model). Area-level
+// rollup here = average across each area's most-recently-reviewed staff
+// member per focus area, deduped by staffId so the same person's older
+// review in an earlier cycle doesn't get double-counted alongside their
+// newer one.
 function _renderDashHC() {
   const panel = document.getElementById('dash-panel');
   if (!panel) return;
 
-  const areas  = _getAreas()||[];
-  const hcDims = [
-    {id:'digitalLearningEnv',label:'Digital Learning Env'},
-    {id:'inclusivePractice',label:'Inclusive Practice'},
-    {id:'accessibilityByDesign',label:'Accessibility by Design'},
-    {id:'staffCapabilityHC',label:'Staff Capability'},
-    {id:'learnerDigitalSkills',label:'Learner Digital Skills'},
-  ];
+  const areas = _getAreas() || [];
+  const allReviews = typeof _hcGetAllReviews === 'function' ? _hcGetAllReviews() : [];
 
-  const areasWithHC = areas.filter(a=>a.healthChecks&&a.healthChecks.length>0);
-  const completion  = Math.round((areasWithHC.length/Math.max(areas.length,1))*100);
+  const areasWithHC = areas.filter(a => allReviews.some(r => r.areaCode === a.areaCode));
+  const completion = Math.round((areasWithHC.length / Math.max(areas.length, 1)) * 100);
 
-  panel.innerHTML=`
+  // Latest review per (areaCode, staffId) — the dedupe step described above.
+  function latestPerStaff(areaCode) {
+    const areaReviews = allReviews.filter(r => r.areaCode === areaCode);
+    const byStaff = {};
+    areaReviews.forEach(r => {
+      if (!byStaff[r.staffId] || (r.date || '') > (byStaff[r.staffId].date || '')) byStaff[r.staffId] = r;
+    });
+    return Object.values(byStaff);
+  }
+
+  function areaFocusAvg(areaCode, focusId) {
+    const reviews = latestPerStaff(areaCode);
+    const scores = reviews.map(r => r.domains && r.domains[focusId] && r.domains[focusId].avgScore).filter(v => v != null);
+    return scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+  }
+
+  panel.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin-bottom:var(--space-xl);">
       <div style="padding:var(--space-lg);background:var(--color-teal-lt);border-radius:var(--radius-md);text-align:center;">
         <div style="font-size:var(--text-2xl);font-weight:bold;color:var(--color-teal);">${areasWithHC.length}/${areas.length}</div>
-        <div style="font-size:var(--text-xs);color:var(--color-muted);">Areas completed</div>
+        <div style="font-size:var(--text-xs);color:var(--color-muted);">Areas with a review</div>
       </div>
       <div style="padding:var(--space-lg);background:var(--color-blue-lt);border-radius:var(--radius-md);text-align:center;">
         <div style="font-size:var(--text-2xl);font-weight:bold;color:var(--color-blue);">${completion}%</div>
-        <div style="font-size:var(--text-xs);color:var(--color-muted);">Completion rate</div>
+        <div style="font-size:var(--text-xs);color:var(--color-muted);">Coverage</div>
       </div>
-      ${hcDims.slice(0,2).map(dim=>{
-        const scores=areasWithHC.map(a=>{const hc=a.healthChecks[a.healthChecks.length-1];return hc?.scores?.[dim.id]?.score;}).filter(Boolean);
-        const avg=scores.length>0?(scores.reduce((s,x)=>s+x,0)/scores.length).toFixed(1):'—';
+      ${HC_FOCUS_AREAS.slice(0, 2).map(fa => {
+        const scores = areas.map(a => areaFocusAvg(a.areaCode, fa.id)).filter(v => v != null);
+        const avg = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '—';
         return `<div style="padding:var(--space-lg);background:var(--color-light);border-radius:var(--radius-md);text-align:center;">
           <div style="font-size:var(--text-2xl);font-weight:bold;color:var(--color-navy);">${avg}</div>
-          <div style="font-size:var(--text-xs);color:var(--color-muted);">Avg: ${dim.label}</div>
+          <div style="font-size:var(--text-xs);color:var(--color-muted);">Avg: ${fa.label}</div>
         </div>`;
       }).join('')}
     </div>
@@ -227,26 +244,26 @@ function _renderDashHC() {
         <thead>
           <tr style="background:var(--color-navy);">
             <th style="text-align:left;padding:var(--space-sm) var(--space-md);color:var(--color-white);font-size:var(--text-xs);">Area</th>
-            <th style="text-align:center;padding:var(--space-sm);color:var(--color-white);font-size:10px;">Last check</th>
-            ${hcDims.map(d=>`<th style="text-align:center;padding:var(--space-sm) var(--space-xs);color:var(--color-white);font-size:10px;min-width:80px;">${d.label.split(' ').slice(0,2).join(' ')}</th>`).join('')}
+            <th style="text-align:center;padding:var(--space-sm);color:var(--color-white);font-size:10px;">Staff reviewed</th>
+            ${HC_FOCUS_AREAS.map(fa => `<th style="text-align:center;padding:var(--space-sm) var(--space-xs);color:var(--color-white);font-size:10px;min-width:80px;">${fa.label.split(' ').slice(0,2).join(' ')}</th>`).join('')}
           </tr>
         </thead>
         <tbody>
-          ${areas.map((area,ri)=>{
-            const checks=area.healthChecks||[];
-            const latest=checks.length>0?checks[checks.length-1]:null;
+          ${areas.map((area, ri) => {
+            const reviewed = latestPerStaff(area.areaCode);
             return `<tr style="background:${ri%2===0?'var(--color-light)':'var(--color-white)'};border-bottom:1px solid var(--color-border);">
               <td style="padding:var(--space-sm) var(--space-md);">
                 <span style="font-size:10px;font-weight:bold;background:var(--color-navy);color:var(--color-white);padding:1px 6px;border-radius:999px;margin-right:4px;">${_dEsc(area.areaCode)}</span>
                 <span style="color:var(--color-slate);">${_dEsc(area.areaName)}</span>
               </td>
-              <td style="text-align:center;font-size:var(--text-xs);color:var(--color-muted);padding:var(--space-sm);">${latest?_dFmtDate(latest.date):'—'}</td>
-              ${hcDims.map(dim=>{
-                const score=latest?.scores?.[dim.id]?.score;
-                const bg=score?['','var(--rag-1-bg)','var(--rag-2-bg)','var(--rag-3-bg)','var(--rag-4-bg)','var(--rag-5-bg)'][score]:'transparent';
-                const col=score?['','var(--rag-1-text)','var(--rag-2-text)','var(--rag-3-text)','var(--rag-4-text)','var(--rag-5-text)'][score]:'var(--color-border)';
+              <td style="text-align:center;font-size:var(--text-xs);color:var(--color-muted);padding:var(--space-sm);">${reviewed.length}</td>
+              ${HC_FOCUS_AREAS.map(fa => {
+                const avg = areaFocusAvg(area.areaCode, fa.id);
+                const rounded = avg != null ? Math.round(avg) : null;
+                const bg = rounded ? ['','var(--rag-1-bg)','var(--rag-2-bg)','var(--rag-3-bg)','var(--rag-4-bg)','var(--rag-5-bg)'][rounded] : 'transparent';
+                const col = rounded ? ['','var(--rag-1-text)','var(--rag-2-text)','var(--rag-3-text)','var(--rag-4-text)','var(--rag-5-text)'][rounded] : 'var(--color-border)';
                 return `<td style="text-align:center;padding:var(--space-xs);">
-                  <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-sm);background:${bg};color:${col};font-weight:bold;font-size:var(--text-base);">${score||'—'}</span>
+                  <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-sm);background:${bg};color:${col};font-weight:bold;font-size:var(--text-base);">${avg != null ? avg.toFixed(1) : '—'}</span>
                 </td>`;
               }).join('')}
             </tr>`;
