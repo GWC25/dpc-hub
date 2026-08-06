@@ -146,6 +146,103 @@ const TOUCH_TYPE = Object.freeze({
   WORK_REVIEW:       'work-review',
 });
 
+// ── Digital Health Check (Session 36 rebuild) ───────────────────
+// Replaces the Session-1-era area-level, 5-broad-dimension model
+// (HC_DIMENSIONS in healthcheck.js, area.healthChecks[]) with the real
+// instrument actually in use: a staff-level observation across 5 focus
+// areas, each with specific scored indicator statements, evidence,
+// context, and an action point with an escalation level. Source: the
+// "Digital Health Checks 25-26" Microsoft Form, confirmed by Graeme as
+// the genuine Year 1 accessibility/inclusion instrument, cross-checked
+// against a real baseline round (48 staff, 19 areas, June 2026) already
+// run before this rebuild.
+//
+// One review record can cover 1-5 focus areas in a single sitting,
+// matching the Form's own "select an area to review, then choose another
+// or submit" flow — not every review necessarily scores all 5.
+//
+// Cycle-tagged (HC_CYCLES) the same way the self-assessment form is
+// cycle-tagged, so baseline / Nov / Feb-Mar / Jun rounds stay comparable
+// but distinct, rather than overwriting each other.
+const HC_CYCLES = Object.freeze({
+  BASELINE:  'baseline-2026',
+  NOVEMBER:  'nov-2026',
+  FEB_MARCH: 'feb-mar-2027',
+  JUNE:      'jun-2027',
+});
+
+const HC_ACTION_LEVEL = Object.freeze({
+  INFORM_ONLY:    'inform-only',
+  SUPPORT:        'support-coaching',
+  TRAINING:       'training-development',
+  FORMAL_FOLLOWUP:'formal-follow-up',
+});
+
+const HC_SCORE_LABELS = Object.freeze({
+  1: 'Urgent', 2: 'Challenged', 3: 'Developing', 4: 'On Track', 5: 'Confident',
+});
+
+// Faithfully reproduced from the real Form — do not reword indicator
+// statements without updating the Form to match, or historical and new
+// responses stop being comparable.
+const HC_FOCUS_AREAS = Object.freeze([
+  {
+    id: 'accessibilityByDesign',
+    label: 'Accessibility by Design',
+    indicators: [
+      { id: 'usesAccessibilityChecker', label: 'Uses Accessibility Checker', desc: 'Runs Accessibility Checker before sharing resources in Teams' },
+      { id: 'altTextOnImages',          label: 'Alt text on images', desc: 'Adds meaningful alt text to images in shared documents and slides' },
+      { id: 'colourContrastChecked',    label: 'Colour contrast checked', desc: 'Verifies text/background contrast meets WCAG 2.2 AA standards' },
+      { id: 'captionsTranscripts',      label: 'Captions/transcripts on video', desc: 'Provides captions or transcripts for all shared video content' },
+      { id: 'accessibleAssignmentBriefs', label: 'Accessible assignment briefs', desc: 'Assignment briefs use clear headings, readable fonts, and accessible structure' },
+    ],
+  },
+  {
+    id: 'promotingAccessiblePractice',
+    label: 'Promoting Accessible Practice',
+    indicators: [
+      { id: 'offersImmersiveReader', label: 'Proactively offers Immersive Reader', desc: 'Demonstrates and encourages Immersive Reader use for all learners' },
+      { id: 'mentionsATTools',       label: 'Mentions AT tools in lessons', desc: 'References assistive technology tools (Read&Write, Dictate, Live Captions) in lessons' },
+      { id: 'accessibilityUniversal', label: 'Accessibility offered universally', desc: 'Frames accessibility tools as useful for all learners, not SEND-only' },
+      { id: 'learnersPersonalise',   label: 'Learners personalise their digital environment', desc: 'Teaches and encourages learners to adjust their digital settings' },
+      { id: 'atEmbeddedRoutine',     label: 'AT embedded into routine delivery', desc: 'Assistive technology is planned into lesson design, not added reactively' },
+    ],
+  },
+  {
+    id: 'inclusiveKnowledgeAndPractice',
+    label: 'Inclusive Knowledge and Practice',
+    indicators: [
+      { id: 'awareOfSENDNeeds', label: 'Aware of SEND needs and adjusts digitally', desc: 'Makes digital adjustments based on cohort SEND needs' },
+      { id: 'appliesUDL',       label: 'Applies UDL — multiple means of engagement', desc: 'Provides multiple formats for content representation and learner response' },
+      { id: 'digitalAlternatives', label: 'Provides digital alternatives or choices', desc: 'Offers genuine choice in how learners engage with and submit work' },
+      { id: 'equitableResources', label: 'Resources designed for equitable access', desc: 'Resources use plain language, clear layout, and accessible design' },
+      { id: 'inclusionVsSkills', label: 'Understands digital inclusion vs digital skills', desc: 'Can distinguish access barriers from skill gaps and respond differently' },
+    ],
+  },
+  {
+    id: 'digitalOrganisationAndHygiene',
+    label: 'Digital Organisation and Hygiene',
+    indicators: [
+      { id: 'folderStructureLogical', label: 'Teams/SharePoint folder structure is logical', desc: 'Folder hierarchy is clear, labelled, and navigable by learners' },
+      { id: 'gdprCompliantSharing',   label: 'GDPR-compliant sharing', desc: 'Personal learner data is not shared in open files or links' },
+      { id: 'versionControl',         label: 'Version control — no "final_v3" files', desc: 'Uses consistent version naming or OneDrive version history' },
+      { id: 'namingConventions',      label: 'Naming conventions are consistent', desc: 'Files and folders use clear, descriptive, consistent naming' },
+      { id: 'resourcesReviewedRegularly', label: 'Digital resources reviewed and updated regularly', desc: 'Resources are reviewed before delivery and outdated materials removed' },
+    ],
+  },
+  {
+    id: 'effectiveDigitalCommunication',
+    label: 'Effective Digital Communication',
+    indicators: [
+      { id: 'teamsSpaceOrganised', label: 'Teams channel/class space is organised', desc: 'Teams space has clear channels, pinned resources, and is actively used' },
+      { id: 'postsClearProfessional', label: 'Posts and messages are clear and professional', desc: 'Teams posts are well-written, timely, and easy to understand' },
+      { id: 'appropriateFeatures', label: 'Appropriate Teams features used', desc: 'Uses Assignments, channels, tabs, and announcements purposefully' },
+      { id: 'resourcesProactivelyShared', label: 'Resources proactively shared', desc: 'Resources are shared in advance or alongside lessons, not retrospectively' },
+      { id: 'communicationAccessible', label: 'Communication is accessible and inclusive', desc: 'Posts use plain language, alt text, and inclusive formatting' },
+    ],
+  },
+]);
+
 // ── Resource Library types (Session 32) ────────────────────────
 // 'learning-studio' entries are never stored in data-resource-library.json —
 // they're computed at render time from data/resource-tag-map.json (the same
@@ -259,6 +356,7 @@ const DEFAULT_DATA = Object.freeze({
   'data-current-focus.json':{ focuses: [] },
   'data-notes.json':        { notes: [] },
   'data-resource-library.json': { entries: [], shares: [] },
+  'data-health-checks.json': { reviews: [] },
 });
 
 // ── Helper: get LRA theme by ID ───────────────────────────────
