@@ -531,6 +531,75 @@ function archiveArea(areaCode, archived = true) {
   return true;
 }
 
+// ── Departments (Session 39) ─────────────────────────────────────
+// Several areas turned out to be genuinely multi-department in real
+// practice — PAP (Performing Arts / Music), DCI (several digital
+// departments), SEL (distinct SEND programmes), SMS (individual A-Level
+// subjects). Rather than duplicating a department field onto every
+// record type (AFIs, Health Checks, resource shares...), departments are
+// stored ONE level: nested inside the area (area.departments[]) as the
+// catalog, and staff.departmentCode as the single, optional pointer.
+// Every other record type is already tied to a staffId (Health Checks,
+// AFIs) or a set of staffIds (Resource Library shares) — department for
+// those is derived by looking up that staff member's departmentCode when
+// needed, not stored redundantly. This is the same reasoning as areaCode
+// living on staff and being the join key everywhere else, one level down.
+//
+// An area with no departments defined behaves exactly as before —
+// departmentCode stays null/optional, nothing forces its use.
+
+function saveDepartment(areaCode, dept) {
+  const area = (window.DPC_DATA.areas.areas || []).find(a => a.areaCode === areaCode);
+  if (!area) return null;
+  if (!area.departments) area.departments = [];
+  const idx = area.departments.findIndex(d => d.departmentCode === dept.departmentCode);
+  if (idx >= 0) {
+    area.departments[idx] = { ...area.departments[idx], ...dept };
+  } else {
+    area.departments.push({ archived: false, ...dept });
+  }
+  area.lastUpdated = nowISO();
+  _dirty.add('data-areas.json');
+  _writeLocalSnapshot();
+  return area.departments;
+}
+
+// Cascades through staff.departmentCode for every staff member in this
+// area currently assigned to the old department code — same rename-safety
+// principle as renameAreaCode, one level down.
+function renameDepartmentCode(areaCode, oldCode, newCode) {
+  if (!oldCode || !newCode || oldCode === newCode) return { changed: 0 };
+  const area = (window.DPC_DATA.areas.areas || []).find(a => a.areaCode === areaCode);
+  if (!area || !area.departments) return { changed: 0 };
+
+  const dept = area.departments.find(d => d.departmentCode === oldCode);
+  if (dept) dept.departmentCode = newCode;
+  area.lastUpdated = nowISO();
+  _dirty.add('data-areas.json');
+
+  let changed = dept ? 1 : 0;
+  const staff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  staff.forEach(s => {
+    if (s.areaCode === areaCode && s.departmentCode === oldCode) { s.departmentCode = newCode; changed++; }
+  });
+  if (changed > (dept ? 1 : 0)) _dirty.add('data-staff.json');
+
+  _writeLocalSnapshot();
+  return { changed };
+}
+
+function archiveDepartment(areaCode, deptCode, archived = true) {
+  const area = (window.DPC_DATA.areas.areas || []).find(a => a.areaCode === areaCode);
+  if (!area || !area.departments) return false;
+  const dept = area.departments.find(d => d.departmentCode === deptCode);
+  if (!dept) return false;
+  dept.archived = archived;
+  area.lastUpdated = nowISO();
+  _dirty.add('data-areas.json');
+  _writeLocalSnapshot();
+  return true;
+}
+
 // ── Public: save a staff profile ─────────────────────────────
 function saveStaff(staffData) {
   const staff = window.DPC_DATA.staff.staff;
