@@ -33,8 +33,13 @@ function initHealthChecks() {
   const main = document.getElementById('main-content');
   main.innerHTML = `
     <div id="banner-container" aria-live="polite"></div>
-    <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-sm);">Digital Health Checks</h1>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm);flex-wrap:wrap;gap:var(--space-sm);">
+      <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);">Digital Health Checks</h1>
+      <button id="hc-import-btn" type="button" class="btn btn--ghost btn--sm">Import baseline data (2026)</button>
+    </div>
     <p style="font-size:var(--text-base);color:var(--color-muted);margin-bottom:var(--space-xl);">Accessibility and Inclusion Practice Review — staff-level observation across five focus areas.</p>
+
+    <div id="hc-import-panel" style="display:none;margin-bottom:var(--space-2xl);"></div>
 
     <div style="display:grid;grid-template-columns:320px 1fr;gap:var(--space-xl);align-items:start;">
       <div>
@@ -410,6 +415,217 @@ function _wireHCEvents() {
     document.getElementById('hc-review-form').style.display = 'none';
   });
   document.getElementById('hc-new-review-btn')?.addEventListener('click', _hcStartNewReview);
+  document.getElementById('hc-import-btn')?.addEventListener('click', _hcOpenBaselineImport);
+}
+
+// ── Baseline import (Session 37) ─────────────────────────────────
+// Imports the real June 2026 baseline round — 50 review rows, extracted
+// and validated against the source spreadsheet's own independently-
+// computed avg/lowest scores before ever reaching this code (all 49
+// cross-checkable rows matched exactly; see the handoff notes).
+//
+// What this code does NOT do: silently guess and save. Area codes in the
+// real data are genuinely messy ("BUI400" vs "BUI", "Performing" vs
+// "PERFORMING ARTS" vs "Performing Arts", "CON/BUI" naming two areas at
+// once, "PD tutor (all areas)" not being an area at all) — a wrong
+// automatic match here would misattribute a real person's real practice
+// review. Every row gets a best-guess suggestion; nothing saves until
+// area AND staff are both explicitly confirmed for that row, one row at
+// a time or via "select all confidently matched" as a convenience — never
+// a silent bulk default.
+//
+// Dedup: every imported review carries baselineSourceRowId. Re-running
+// the import skips rows whose sourceRowId already exists in saved
+// reviews, so this is safe to open more than once.
+
+let _hcBaselineData = null;
+
+async function _hcOpenBaselineImport() {
+  const panel = document.getElementById('hc-import-panel');
+  panel.style.display = 'block';
+  panel.innerHTML = '<p style="color:var(--color-muted);">Loading baseline data…</p>';
+
+  if (!_hcBaselineData) {
+    try {
+      const res = await fetch('./planning/health-check-import/baseline-2026-parsed.json');
+      _hcBaselineData = res.ok ? await res.json() : [];
+    } catch {
+      _hcBaselineData = [];
+    }
+  }
+
+  if (_hcBaselineData.length === 0) {
+    panel.innerHTML = '<p style="color:var(--color-red);">Could not load baseline-2026-parsed.json.</p>';
+    return;
+  }
+
+  const alreadyImported = new Set(_hcGetAllReviews().map(r => r.baselineSourceRowId).filter(Boolean));
+  const areas = _getAreas() || [];
+  const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+
+  panel.innerHTML = `
+    <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md);">
+        <h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">Import baseline data — June 2026</h2>
+        <button id="hc-import-close" type="button" class="btn btn--ghost btn--sm">Close</button>
+      </div>
+      <p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-md);">
+        ${_hcBaselineData.length} rows from the original Form export. Area and staff matches are suggestions only —
+        confirm each one before importing. ${alreadyImported.size > 0 ? `${alreadyImported.size} already imported.` : ''}
+      </p>
+      <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-lg);">
+        <button id="hc-select-matched" type="button" class="btn btn--ghost btn--sm">Select all confidently matched</button>
+        <button id="hc-import-selected" type="button" class="btn btn--primary btn--sm">Import selected</button>
+      </div>
+      <div id="hc-import-rows"></div>
+    </div>
+  `;
+
+  const rowsContainer = document.getElementById('hc-import-rows');
+  _hcBaselineData.forEach((rec, idx) => {
+    if (alreadyImported.has(rec.sourceRowId)) {
+      rowsContainer.appendChild(_hcRenderImportedRow(rec));
+      return;
+    }
+    const guess = _hcGuessMatch(rec, areas, allStaff);
+    rowsContainer.appendChild(_hcRenderImportRow(rec, idx, guess, areas, allStaff));
+  });
+
+  document.getElementById('hc-import-close')?.addEventListener('click', () => { panel.style.display = 'none'; });
+  document.getElementById('hc-select-matched')?.addEventListener('click', () => {
+    document.querySelectorAll('.hc-import-row[data-confident="true"] .hc-import-checkbox').forEach(cb => { cb.checked = true; });
+  });
+  document.getElementById('hc-import-selected')?.addEventListener('click', _hcCommitSelectedImports);
+}
+
+// Best-guess only — never auto-confirmed. Tries an exact case-insensitive
+// match on area code or name first, then a prefix match (stripping
+// trailing digits, e.g. "BUI400" -> "BUI") since that covers the most
+// common real pattern in this data. Anything else is left unmatched
+// rather than guessed at — "CON/BUI", "PD tutor (all areas)", and the
+// three different spellings of Performing Arts are exactly the cases
+// that should NOT be auto-resolved.
+function _hcGuessMatch(rec, areas, allStaff) {
+  const raw = (rec.areaCode || '').trim().toLowerCase();
+  const rawName = (rec.areaName || '').trim().toLowerCase();
+  let areaMatch = areas.find(a => a.areaCode.toLowerCase() === raw || a.areaName.toLowerCase() === rawName);
+  if (!areaMatch) {
+    const prefix = raw.replace(/\d+$/, '');
+    if (prefix && prefix !== raw) {
+      const candidates = areas.filter(a => a.areaCode.toLowerCase() === prefix);
+      if (candidates.length === 1) areaMatch = candidates[0];
+    }
+  }
+
+  const rawStaffName = (rec.staffMemberName || '').trim().toLowerCase();
+  const staffPool = areaMatch ? allStaff.filter(s => s.areaCode === areaMatch.areaCode) : allStaff;
+  const staffMatches = staffPool.filter(s => (s.name || '').trim().toLowerCase() === rawStaffName);
+  const staffMatch = staffMatches.length === 1 ? staffMatches[0] : null;
+
+  return {
+    areaCode: areaMatch ? areaMatch.areaCode : '',
+    staffId: staffMatch ? staffMatch.staffId : '',
+    confident: !!(areaMatch && staffMatch),
+  };
+}
+
+function _hcRenderImportRow(rec, idx, guess, areas, allStaff) {
+  const div = document.createElement('div');
+  div.className = 'hc-import-row';
+  div.dataset.idx = idx;
+  div.dataset.confident = guess.confident ? 'true' : 'false';
+  div.style.cssText = `padding:var(--space-md);border:1px solid ${guess.confident ? 'var(--color-border)' : 'var(--color-amber)'};border-radius:var(--radius-sm);margin-bottom:var(--space-sm);`;
+
+  const domainSummary = Object.entries(rec.domains).map(([id, d]) => {
+    const label = (HC_FOCUS_AREAS.find(fa => fa.id === id) || {}).label || id;
+    return `${label} (avg ${d.avgScore.toFixed(1)})`;
+  }).join(', ');
+
+  div.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:var(--space-md);">
+      <input type="checkbox" class="hc-import-checkbox" style="margin-top:6px;">
+      <div style="flex:1;">
+        <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-slate);">
+          "${_hcEsc(rec.staffMemberName)}" — raw area: "${_hcEsc(rec.areaCode)}" (${_hcEsc(rec.areaName)})
+          ${!guess.confident ? '<span style="font-size:10px;color:var(--color-amber);font-weight:bold;margin-left:6px;">NEEDS REVIEW</span>' : ''}
+        </p>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-xs);">${_hcFmtDate(rec.date)} · Assessor: ${_hcEsc(rec.assessorName)} · ${_hcEsc(domainSummary)}</p>
+        <div style="display:flex;gap:var(--space-sm);">
+          <select class="form-select hc-import-area" style="flex:1;min-height:36px;font-size:var(--text-xs);">
+            <option value="">— No area match —</option>
+            ${areas.map(a => `<option value="${a.areaCode}" ${a.areaCode === guess.areaCode ? 'selected' : ''}>${a.areaCode} — ${a.areaName}</option>`).join('')}
+          </select>
+          <select class="form-select hc-import-staff" style="flex:1;min-height:36px;font-size:var(--text-xs);">
+            <option value="">— No staff match —</option>
+            ${allStaff.map(s => `<option value="${s.staffId}" ${s.staffId === guess.staffId ? 'selected' : ''}>${_hcEsc(s.name)} (${s.areaCode})</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>
+  `;
+
+  div.querySelector('.hc-import-area').addEventListener('change', function () {
+    const staffSel = div.querySelector('.hc-import-staff');
+    const chosen = this.value;
+    Array.from(staffSel.options).forEach(opt => {
+      if (!opt.value) return;
+      const s = allStaff.find(x => x.staffId === opt.value);
+      opt.hidden = chosen && s && s.areaCode !== chosen;
+    });
+  });
+
+  return div;
+}
+
+function _hcRenderImportedRow(rec) {
+  const div = document.createElement('div');
+  div.style.cssText = 'padding:var(--space-sm) var(--space-md);border:1px solid var(--color-green);background:var(--color-green-lt);border-radius:var(--radius-sm);margin-bottom:var(--space-sm);font-size:var(--text-xs);color:var(--color-green);';
+  div.textContent = `✓ Already imported: ${rec.staffMemberName} — ${rec.areaCode} (${_hcFmtDate(rec.date)})`;
+  return div;
+}
+
+function _hcCommitSelectedImports() {
+  const rows = document.querySelectorAll('.hc-import-row');
+  let imported = 0, skipped = 0;
+
+  rows.forEach(row => {
+    const checkbox = row.querySelector('.hc-import-checkbox');
+    if (!checkbox.checked) return;
+
+    const idx = parseInt(row.dataset.idx);
+    const rec = _hcBaselineData[idx];
+    const areaCode = row.querySelector('.hc-import-area').value;
+    const staffId = row.querySelector('.hc-import-staff').value;
+
+    if (!areaCode || !staffId) { skipped++; return; }
+
+    const review = {
+      reviewId: generateId(),
+      cycleId: HC_CYCLES.BASELINE,
+      date: rec.date,
+      areaCode,
+      staffId,
+      assessorName: rec.assessorName || '',
+      provision: rec.provision || '',
+      levelOfLearning: rec.levelOfLearning || '',
+      domains: rec.domains,
+      overallReflection: rec.overallReflection || '',
+      keyStrengths: rec.keyStrengths || '',
+      areasForImprovement: rec.areasForImprovement || '',
+      priorityNextSteps: rec.priorityNextSteps || '',
+      baselineSourceRowId: rec.sourceRowId, // dedup guard — see file header
+    };
+    review.supportPriorityScore = _hcPriorityScore(review);
+
+    saveHealthCheckReview(review);
+    imported++;
+  });
+
+  if (typeof UI !== 'undefined') {
+    UI.showToast(imported > 0 ? 'success' : 'warning',
+      `Imported ${imported} review(s).${skipped > 0 ? ` ${skipped} skipped (area or staff not selected).` : ''}`);
+  }
+  _hcOpenBaselineImport(); // re-render to show newly-imported rows as done
 }
 
 // ── Helpers ───────────────────────────────────────────────────
