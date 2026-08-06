@@ -1,7 +1,7 @@
 # Self-Assessment Form — Build Sheet
 **Cycle:** 2026-27  
 **Focus:** accessibility, digital-learning-environments, digital-skills-capability  
-**Send date:** 2026-08-17  
+**Send date:** TBC — planned for week 4 of term (after the Quality team's Learning Walks in weeks 1-3)  
 **Reminder:** mid-September 2026 — Digital Leads to chase non-completers
 
 Build these questions into Microsoft Forms in this exact order. Field ids are for the Hub importer later — they don't appear in the Form itself, just keep this sheet as the reference.
