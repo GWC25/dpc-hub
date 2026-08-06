@@ -178,6 +178,7 @@ const MODULES = {
   cpd:            { label: 'CPD',            icon: '📚', init: () => initCPD() },
   reports:        { label: 'Reports',        icon: '📄', init: () => initReports() },
   library:        { label: 'Resource Library', icon: '📖', init: () => initLibrary() },
+  settings:       { label: 'Settings',        icon: '⚙',  init: () => initSettings() },
   aisupport:      { label: 'AI Support',     icon: '🤖', init: () => initAISupport() },
 };
 
