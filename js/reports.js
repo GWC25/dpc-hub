@@ -275,7 +275,17 @@ function _repCollegeData(opts) {
     }
   });
 
-  return { areas, ragDistribution, movers, calEntries: cal, openAFIsByArea, totalAreas: areas.length };
+  // Session 35: college-wide resource-sharing activity for this period —
+  // reads from library.js, guarded since script load order shouldn't
+  // matter by the time this actually runs (user-triggered, post-load) but
+  // defensive either way.
+  const allShares = typeof _libGetAllShares === 'function' ? _libGetAllShares() : [];
+  const sharesInWindow = allShares.filter(s => _repInWindow(s.date, opts.dateFrom, opts.dateTo));
+  const sharesByArea = {};
+  sharesInWindow.forEach(s => { sharesByArea[s.areaCode] = (sharesByArea[s.areaCode] || 0) + 1; });
+
+  return { areas, ragDistribution, movers, calEntries: cal, openAFIsByArea, totalAreas: areas.length,
+    resourceShares: sharesInWindow, resourceSharesByArea: sharesByArea };
 }
 
 // Area-specific dataset for DL / AP-HoA reports
@@ -300,7 +310,14 @@ function _repAreaData(areaCode, opts) {
     score: dims[d.id]?.score || null,
   }));
 
-  return { area, afis, openAFIs, closedAFIs, staff, cpdEntries, calEntries, ragRows };
+  // Session 35: this area's resource-sharing activity for the period — the
+  // actual "impact evidence" data: a resource shared with named staff, with
+  // context, tied to a date. Sits alongside CPD delivered, same shape as
+  // every other evidence type this report already surfaces.
+  const resourceShares = (typeof _libGetSharesForArea === 'function' ? _libGetSharesForArea(areaCode) : [])
+    .filter(s => _repInWindow(s.date, opts.dateFrom, opts.dateTo));
+
+  return { area, afis, openAFIs, closedAFIs, staff, cpdEntries, calEntries, ragRows, resourceShares };
 }
 
 // ── PREVIEW ────────────────────────────────────────────────────
@@ -346,6 +363,7 @@ function _repPreviewNeil(data, opts) {
     ${opts.highlights ? `<p><strong>Summary:</strong> ${_repEsc(opts.highlights)}</p>` : ''}
     <p>${data.calEntries.length} calendar entries logged this period across ${data.totalAreas} areas.</p>
     ${data.movers.length ? `<p><strong>RAG movers:</strong> ${data.movers.length} dimension movement(s) recorded.</p>` : '<p>No RAG movements recorded this period.</p>'}
+    <p><strong>Resources shared:</strong> ${data.resourceShares.length} this period across ${Object.keys(data.resourceSharesByArea).length} area(s).</p>
     <table class="preview-table" style="width:100%;border-collapse:collapse;margin-top:8px;">
       <thead><tr><th>Code</th><th>Area</th><th>Overall RAG</th><th>Open loops</th></tr></thead>
       <tbody>${rows}</tbody>
@@ -370,6 +388,7 @@ function _repPreviewDL(data, opts) {
     </table>
     <p style="margin-top:8px"><strong>Open loops:</strong> ${data.openAFIs.length} · <strong>Closed this period:</strong> ${data.closedAFIs.length}</p>
     <p><strong>CPD delivered:</strong> ${data.cpdEntries.length} entries this period</p>
+    <p><strong>Resources shared:</strong> ${data.resourceShares.length} this period</p>
   </div>`;
 }
 
@@ -383,6 +402,11 @@ function _repPreviewAPHoA(data, opts) {
     </table>
     <p style="margin-top:8px"><strong>Open loops:</strong> ${data.openAFIs.length} · <strong>Closed this period:</strong> ${data.closedAFIs.length}</p>
     <p><strong>Staff CPD this period:</strong> ${data.cpdEntries.length} entries</p>
+    <p><strong>Resources shared this period (${data.resourceShares.length}):</strong></p>
+    ${data.resourceShares.length ? `<table class="preview-table" style="width:100%;border-collapse:collapse;margin-top:4px;">
+      <thead><tr><th>Resource</th><th>Staff</th><th>Date</th></tr></thead>
+      <tbody>${data.resourceShares.map(s => `<tr><td>${_repEsc(s.resourceTitle)}</td><td>${_repEsc(typeof _libStaffNames === 'function' ? _libStaffNames(s.staffIds) : (s.staffIds||[]).length + ' staff')}</td><td>${_repFmtDate(s.date)}</td></tr>`).join('')}</tbody>
+    </table>` : '<p style="color:var(--color-muted)">None recorded this period.</p>'}
     ${opts.obsFocus ? `<p><strong>Suggested observation focus:</strong> ${_repEsc(opts.obsFocus)}</p>` : ''}
   </div>`;
 }
@@ -404,6 +428,7 @@ function _repPreviewBen(data, opts) {
       <thead><tr><th>RAG level</th><th>Areas</th><th>%</th></tr></thead><tbody>${distRows}</tbody>
     </table>
     <p style="margin-top:8px">${data.movers.length} dimension movement(s) recorded this period across ${data.totalAreas} areas.</p>
+    <p><strong>Resources shared:</strong> ${data.resourceShares.length} this period across ${Object.keys(data.resourceSharesByArea).length} area(s).</p>
     ${opts.risks ? `<p><strong>Risks / escalations:</strong> ${_repEsc(opts.risks)}</p>` : ''}
   </div>`;
 }
@@ -549,6 +574,10 @@ function _repBuildNeilDoc(docx, data, opts) {
   }
   if (opts.blockers) { children.push(_repDocSectionHeading(docx,'Blockers / support needed')); children.push(_repDocPara(docx, opts.blockers)); }
   if (opts.comingUp) { children.push(_repDocSectionHeading(docx,'Coming up')); children.push(_repDocPara(docx, opts.comingUp)); }
+  children.push(_repDocSectionHeading(docx, `Resources shared (${data.resourceShares.length})`));
+  children.push(_repDocPara(docx, data.resourceShares.length
+    ? `${data.resourceShares.length} resource share(s) recorded across ${Object.keys(data.resourceSharesByArea).length} area(s) this period.`
+    : 'No resources shared this period.'));
   children.push(_repDocSectionHeading(docx, 'RAG snapshot — all areas'));
   children.push(_repDocTable(docx, ['Code','Area','Overall RAG','Open loops'], rows, colW));
 
@@ -587,6 +616,12 @@ function _repBuildDLDoc(docx, data, opts) {
   children.push(data.cpdEntries.length
     ? _repDocTable(docx, ['Staff','Course','Date'], data.cpdEntries.map(c => [c.staffName||'—', c.course||'—', _repFmtDate(c.date)]), [2800,3600,1200])
     : _repDocPara(docx,'No CPD recorded this period.'));
+  children.push(_repDocSectionHeading(docx, `Resources shared (${data.resourceShares.length})`));
+  children.push(data.resourceShares.length
+    ? _repDocTable(docx, ['Resource','Staff','Date'],
+        data.resourceShares.map(s => [s.resourceTitle||'—', typeof _libStaffNames === 'function' ? _libStaffNames(s.staffIds) : `${(s.staffIds||[]).length} staff`, _repFmtDate(s.date)]),
+        [3200,2600,1800])
+    : _repDocPara(docx,'No resources shared this period.'));
 
   const doc = new (docx.Document)({
     sections: [{ properties: { page: { margin: { top:1440,bottom:1440,left:1440,right:1440 } } }, children: children.flat() }],
@@ -611,6 +646,12 @@ function _repBuildAPHoADoc(docx, data, opts) {
   children.push(data.cpdEntries.length
     ? _repDocTable(docx, ['Staff','Course','Date'], data.cpdEntries.map(c => [c.staffName||'—', c.course||'—', _repFmtDate(c.date)]), [2800,3600,1200])
     : _repDocPara(docx,'No CPD recorded this period.'));
+  children.push(_repDocSectionHeading(docx, `Resources shared with staff (${data.resourceShares.length})`));
+  children.push(data.resourceShares.length
+    ? _repDocTable(docx, ['Resource','Staff','Date','Context'],
+        data.resourceShares.map(s => [s.resourceTitle||'—', typeof _libStaffNames === 'function' ? _libStaffNames(s.staffIds) : `${(s.staffIds||[]).length} staff`, _repFmtDate(s.date), s.contextNotes||'—']),
+        [2400,1800,1200,2400])
+    : _repDocPara(docx,'No resources shared this period.'));
   if (opts.obsFocus) {
     children.push(_repDocSectionHeading(docx, 'Suggested observation focus'));
     children.push(_repDocPara(docx, opts.obsFocus));
@@ -644,6 +685,10 @@ function _repBuildBenDoc(docx, data, opts) {
   children.push(moverRows.length
     ? _repDocTable(docx, ['Code','Dimension','Previous','Current','Date'], moverRows, [1200,2600,1800,1800,1200])
     : _repDocPara(docx, 'No dimension movements recorded this period.'));
+  children.push(_repDocSectionHeading(docx, `Resources shared (${data.resourceShares.length})`));
+  children.push(_repDocPara(docx, data.resourceShares.length
+    ? `${data.resourceShares.length} resource share(s) recorded across ${Object.keys(data.resourceSharesByArea).length} area(s) this period.`
+    : 'No resources shared this period.'));
   if (opts.risks) { children.push(_repDocSectionHeading(docx,'Risks / escalations')); children.push(_repDocPara(docx, opts.risks)); }
 
   const doc = new (docx.Document)({
