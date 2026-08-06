@@ -116,6 +116,7 @@ window.DPC_DATA = {
   digitalLeads:  { digitalLeads: [] },
   currentFocus:  { focuses: [] },
   notes:         { notes: [] },
+  healthChecks:  { reviews: [] },
 };
 
 // Dirty tracking: which files have unsaved changes
@@ -617,6 +618,20 @@ function saveLibraryShare(share) {
   return shareRecord;
 }
 
+// ── Digital Health Check (Session 36 rebuild) ───────────────────
+function saveHealthCheckReview(review) {
+  if (!window.DPC_DATA.healthChecks) window.DPC_DATA.healthChecks = { reviews: [] };
+  const reviews = window.DPC_DATA.healthChecks.reviews;
+  const idx = reviews.findIndex(r => r.reviewId === review.reviewId);
+  if (idx >= 0) {
+    reviews[idx] = { ...review, lastUpdated: nowISO() };
+  } else {
+    reviews.push({ ...review, createdAt: nowISO(), lastUpdated: nowISO() });
+  }
+  _dirty.add('data-health-checks.json');
+  _writeLocalSnapshot();
+}
+
 // ── Public: save a note (meeting shell / quick note) ──────────
 function saveNote(note) {
   const notes = window.DPC_DATA.notes.notes;
@@ -686,6 +701,7 @@ function _assignToStore(filename, data) {
     'data-current-focus.json': 'currentFocus',
     'data-notes.json':         'notes',
     'data-resource-library.json': 'resourceLibrary',
+    'data-health-checks.json': 'healthChecks',
   };
   const key = keyMap[filename];
   if (key && data) window.DPC_DATA[key] = data;
@@ -705,6 +721,7 @@ function _getDataForFile(filename) {
     'data-current-focus.json': window.DPC_DATA.currentFocus,
     'data-notes.json':         window.DPC_DATA.notes,
     'data-resource-library.json': window.DPC_DATA.resourceLibrary,
+    'data-health-checks.json': window.DPC_DATA.healthChecks,
     [DPC_CONFIG.MANIFEST_FILENAME]: window.DPC_DATA.manifest,
   };
   return keyMap[filename] || null;
