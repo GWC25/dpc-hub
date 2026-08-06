@@ -340,6 +340,11 @@ function _getAreas(includeArchived = false) {
   return includeArchived ? all : all.filter(a => !a.archived);
 }
 function _getArea(code) { return _getAreas(true).find(a => a.areaCode === code) || null; }
+function _getDepartments(areaCode, includeArchived = false) {
+  const area = _getArea(areaCode);
+  const all = (area && area.departments) || [];
+  return includeArchived ? all : all.filter(d => !d.archived);
+}
 function _getAFIs()     { return (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []; }
 
 function _getAreaOpenAFIs(areaCode) {
