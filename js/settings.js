@@ -56,6 +56,17 @@ function initSettings() {
       <button id="dpc-reconnect-btn" type="button" class="btn btn--primary btn--sm">Reconnect to OneDrive folder</button>
     </section>
 
+    <!-- Area Management -->
+    <section style="margin-bottom:var(--space-2xl);padding:var(--space-lg);border:1px solid var(--color-border);border-radius:var(--radius-lg);">
+      <h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-xs);">Area management</h2>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-md);">
+        Renaming an area's code updates every staff record, AFI, Health Check, resource share, CPD entry and calendar entry
+        already linked to it — nothing gets orphaned. Archiving hides an area from selection lists without deleting its history.
+      </p>
+      <button id="dpc-area-add-btn" type="button" class="btn btn--primary btn--sm" style="margin-bottom:var(--space-md);">+ Add area</button>
+      <div id="dpc-area-list"></div>
+    </section>
+
     <!-- Display preferences -->
     <section>
       <h2 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-xs);">Display preferences</h2>
@@ -127,6 +138,8 @@ function initSettings() {
   `;
 
   _dpcRenderConnectionStatus();
+  _dpcRenderAreaList();
+  document.getElementById('dpc-area-add-btn')?.addEventListener('click', _dpcOpenAreaAddForm);
   _dpcSettingsInit();
   document.getElementById('dpc-reconnect-btn')?.addEventListener('click', async () => {
     await reconnectFolder(UI);
@@ -149,6 +162,85 @@ function _dpcRenderConnectionStatus() {
     label.textContent = 'Offline — changes will not be saved until you reconnect.';
   }
 }
+
+// ── Area management (Session 38) ─────────────────────────────────
+function _dpcRenderAreaList() {
+  const container = document.getElementById('dpc-area-list');
+  if (!container) return;
+  const areas = typeof _getAreas === 'function' ? _getAreas(true) : []; // include archived here — this IS the management view
+  container.innerHTML = '';
+
+  areas.sort((a, b) => (a.archived === b.archived ? 0 : a.archived ? 1 : -1) || a.areaCode.localeCompare(b.areaCode))
+    .forEach(area => container.appendChild(_dpcRenderAreaRow(area)));
+}
+
+function _dpcRenderAreaRow(area) {
+  const row = document.createElement('div');
+  row.style.cssText = `display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:var(--space-xs);${area.archived ? 'opacity:0.5;' : ''}`;
+  row.innerHTML = `
+    <input type="text" class="form-input dpc-area-code-input" value="${_dpcEsc(area.areaCode)}" style="width:90px;font-size:var(--text-xs);min-height:36px;" aria-label="Area code for ${_dpcEsc(area.areaName)}">
+    <input type="text" class="form-input dpc-area-name-input" value="${_dpcEsc(area.areaName)}" style="flex:1;font-size:var(--text-xs);min-height:36px;" aria-label="Area name for ${_dpcEsc(area.areaCode)}">
+    <button type="button" class="btn btn--ghost btn--sm dpc-area-save-btn">Save</button>
+    <button type="button" class="btn btn--ghost btn--sm dpc-area-archive-btn">${area.archived ? 'Restore' : 'Archive'}</button>
+  `;
+  const codeInput = row.querySelector('.dpc-area-code-input');
+  const nameInput = row.querySelector('.dpc-area-name-input');
+  const originalCode = area.areaCode;
+
+  row.querySelector('.dpc-area-save-btn').addEventListener('click', () => {
+    const newCode = codeInput.value.trim().toUpperCase();
+    const newName = nameInput.value.trim();
+    if (!newCode || !newName) { if (typeof UI !== 'undefined') UI.showToast('error', 'Area code and name are both required.'); return; }
+
+    if (newCode !== originalCode) {
+      const existing = _getAreas(true).find(a => a.areaCode === newCode);
+      if (existing) { if (typeof UI !== 'undefined') UI.showToast('error', `${newCode} is already in use by another area.`); return; }
+      const result = renameAreaCode(originalCode, newCode);
+      if (typeof UI !== 'undefined') UI.showToast('success', `Renamed ${originalCode} → ${newCode}. ${result.changed} record(s) updated.`);
+    }
+    const areaObj = _getArea(newCode !== originalCode ? newCode : originalCode);
+    if (areaObj) { areaObj.areaName = newName; saveArea(areaObj); }
+    _dpcRenderAreaList();
+  });
+
+  row.querySelector('.dpc-area-archive-btn').addEventListener('click', () => {
+    archiveArea(area.areaCode, !area.archived);
+    if (typeof UI !== 'undefined') UI.showToast('success', area.archived ? `${area.areaCode} restored.` : `${area.areaCode} archived — hidden from selection, history kept.`);
+    _dpcRenderAreaList();
+  });
+
+  return row;
+}
+
+function _dpcOpenAreaAddForm() {
+  const container = document.getElementById('dpc-area-list');
+  if (!container || document.getElementById('dpc-area-new-row')) return;
+  const row = document.createElement('div');
+  row.id = 'dpc-area-new-row';
+  row.style.cssText = 'display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm);border:2px dashed var(--color-teal);border-radius:var(--radius-sm);margin-bottom:var(--space-md);';
+  row.innerHTML = `
+    <input type="text" id="dpc-new-area-code" class="form-input" placeholder="Code" style="width:90px;font-size:var(--text-xs);min-height:36px;">
+    <input type="text" id="dpc-new-area-name" class="form-input" placeholder="Area name" style="flex:1;font-size:var(--text-xs);min-height:36px;">
+    <button type="button" id="dpc-new-area-save" class="btn btn--primary btn--sm">Add</button>
+    <button type="button" id="dpc-new-area-cancel" class="btn btn--ghost btn--sm">Cancel</button>
+  `;
+  container.prepend(row);
+  document.getElementById('dpc-new-area-code').focus();
+
+  document.getElementById('dpc-new-area-cancel').addEventListener('click', () => row.remove());
+  document.getElementById('dpc-new-area-save').addEventListener('click', () => {
+    const code = document.getElementById('dpc-new-area-code').value.trim().toUpperCase();
+    const name = document.getElementById('dpc-new-area-name').value.trim();
+    if (!code || !name) { if (typeof UI !== 'undefined') UI.showToast('error', 'Area code and name are both required.'); return; }
+    if (_getAreas(true).find(a => a.areaCode === code)) { if (typeof UI !== 'undefined') UI.showToast('error', `${code} already exists.`); return; }
+    saveArea({ areaCode: code, areaName: name, campus: '', hoaName: '', digitalLeadId: null, pyramidLevel: 'foundations',
+      ragDimensions: {}, healthChecks: [], activityLog: [], afiRefs: [], actionPoints: [], staffRefs: [], notes: '' });
+    if (typeof UI !== 'undefined') UI.showToast('success', `Added ${code} — ${name}.`);
+    _dpcRenderAreaList();
+  });
+}
+
+function _dpcEsc(str) { if (!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── Display preferences (adapted from Learning Studio settings.js) ──
 function _dpcSafeGet(key, fallback) {
