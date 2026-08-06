@@ -1,11 +1,13 @@
 {
   "_comment": "Canonical source of truth for the staff self-assessment Form. Edit this file to change the Form — Graeme regenerates the MS-Forms build sheet from it. This same structure is what the Hub importer (built later, once responses come back) will map spreadsheet columns against. Do not rename field ids once the Form is published — old responses key against them.",
-
   "cycleId": "2026-27",
-  "focus": ["accessibility", "digital-learning-environments", "digital-skills-capability"],
-  "sendDate": "2026-08-17",
+  "focus": [
+    "accessibility",
+    "digital-learning-environments",
+    "digital-skills-capability"
+  ],
+  "sendDate": "TBC — planned for week 4 of term (after the Quality team's Learning Walks in weeks 1-3)",
   "reminderWindow": "mid-September 2026 — Digital Leads to chase non-completers",
-
   "confidenceScale": {
     "_comment": "Plain language for 2026-27 — staff don't know ETF DTPF yet. Numeric meaning (1-5) is designed to line up with ETF Explore/Adopt/Adapt/Create/Innovate for a future year, so only the labels need to change later, not the data or the code.",
     "1": "Not at all confident — haven't started with this yet",
@@ -14,7 +16,6 @@
     "4": "Confident — can do this independently",
     "5": "Very confident — could support others with this"
   },
-
   "fields": [
     {
       "id": "fullName",
