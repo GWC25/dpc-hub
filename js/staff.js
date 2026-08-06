@@ -50,6 +50,12 @@ function initStaff() {
             <option value="">— Select area —</option>
           </select>
         </div>
+        <div class="form-group" id="staff-department-group" style="display:none;">
+          <label class="form-label form-label--optional" for="staff-department">Department</label>
+          <select class="form-select" id="staff-department">
+            <option value="">— None —</option>
+          </select>
+        </div>
         <div class="form-group">
           <label class="form-label form-label--optional" for="staff-role">Role</label>
           <input class="form-input" type="text" id="staff-role" placeholder="e.g. Lecturer, TLAM, HoA">
@@ -130,7 +136,7 @@ function _renderStaffList() {
       <div style="width:40px;height:40px;border-radius:50%;background:var(--color-teal-lt);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--color-teal);font-size:var(--text-base);flex-shrink:0;">${(s.name||'?')[0].toUpperCase()}</div>
       <div style="flex:1;min-width:0;">
         <p style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_sEsc(s.name)}</p>
-        <p style="font-size:var(--text-xs);color:var(--color-muted);">${_sEsc(s.areaCode||'')} ${s.role?'· '+s.role:''}</p>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);">${_sEsc(s.areaCode||'')}${s.departmentCode?' · '+_sEsc(s.departmentCode):''} ${s.role?'· '+s.role:''}</p>
       </div>
       ${openAFIs>0?`<span style="font-size:10px;font-weight:bold;background:var(--color-amber-lt);color:var(--color-amber);padding:1px 8px;border-radius:999px;flex-shrink:0;">${openAFIs}</span>`:''}
     `;
@@ -165,7 +171,7 @@ function _renderStaffDetailContent(staffId) {
         <div style="width:56px;height:56px;border-radius:50%;background:var(--color-teal-lt);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--color-teal);font-size:var(--text-xl);flex-shrink:0;">${(s.name||'?')[0].toUpperCase()}</div>
         <div>
           <h2 style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">${_sEsc(s.name)}</h2>
-          <p style="font-size:var(--text-sm);color:var(--color-muted);">${_sEsc(s.areaCode||'')} ${s.role?'· '+_sEsc(s.role):''} ${s.etfStage?'· '+etfLabels[s.etfStage]:''}</p>
+          <p style="font-size:var(--text-sm);color:var(--color-muted);">${_sEsc(s.areaCode||'')}${s.departmentCode?' · '+_sEsc(s.departmentCode):''} ${s.role?'· '+_sEsc(s.role):''} ${s.etfStage?'· '+etfLabels[s.etfStage]:''}</p>
         </div>
       </div>
       <button id="staff-edit-btn" type="button" class="btn btn--ghost btn--sm">Edit profile</button>
@@ -321,6 +327,7 @@ function _openStaffModal(staffId=null) {
   document.getElementById('staff-name').value  = s ? s.name : '';
   document.getElementById('staff-area').value  = s ? (s.areaCode||'') : '';
   document.getElementById('staff-role').value  = s ? (s.role||'') : '';
+  _sPopulateDepartmentSelect(s ? s.areaCode : '', s ? s.departmentCode : '');
   document.getElementById('staff-entry').value = s ? (s.entryPathway||'referral') : 'referral';
   document.getElementById('staff-etf').value   = s ? (s.etfStage||'') : '';
   idEl.value = staffId || '';
@@ -344,6 +351,7 @@ function _saveStaffModal() {
     staffId:              existingId || generateId(),
     name,
     areaCode,
+    departmentCode:       document.getElementById('staff-department')?.value || null,
     additionalAreas:      existing?.additionalAreas || [],
     role:                 document.getElementById('staff-role').value.trim(),
     entryPathway:         document.getElementById('staff-entry').value,
@@ -378,9 +386,30 @@ function _saveStaffModal() {
   if (typeof UI!=='undefined') UI.showToast('success', `Profile ${existingId?'updated':'created'}: ${name}`);
 }
 
+// ── Department select (Session 39) ───────────────────────────────
+// Only shown when the selected area actually has departments defined —
+// most areas won't, and this should never force a choice that isn't
+// relevant there.
+function _sPopulateDepartmentSelect(areaCode, selectedCode) {
+  const group = document.getElementById('staff-department-group');
+  const sel = document.getElementById('staff-department');
+  if (!group || !sel) return;
+  const depts = areaCode && typeof _getDepartments === 'function' ? _getDepartments(areaCode) : [];
+  sel.innerHTML = '<option value="">— None —</option>';
+  depts.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.departmentCode;
+    opt.textContent = d.departmentName;
+    if (d.departmentCode === selectedCode) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  group.style.display = depts.length > 0 ? 'block' : 'none';
+}
+
 function _wireStaffEvents() {
   document.getElementById('staff-search')?.addEventListener('input', _renderStaffList);
   document.getElementById('staff-new-btn')?.addEventListener('click', () => _openStaffModal());
+  document.getElementById('staff-area')?.addEventListener('change', e => _sPopulateDepartmentSelect(e.target.value, ''));
   document.getElementById('staff-modal-close')?.addEventListener('click', () => { document.getElementById('staff-modal').style.display='none'; });
   document.getElementById('staff-modal-cancel')?.addEventListener('click', () => { document.getElementById('staff-modal').style.display='none'; });
   document.getElementById('staff-modal-save')?.addEventListener('click', _saveStaffModal);
