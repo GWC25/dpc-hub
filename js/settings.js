@@ -176,12 +176,16 @@ function _dpcRenderAreaList() {
 
 function _dpcRenderAreaRow(area) {
   const row = document.createElement('div');
-  row.style.cssText = `display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:var(--space-xs);${area.archived ? 'opacity:0.5;' : ''}`;
+  row.style.cssText = `padding:var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:var(--space-xs);${area.archived ? 'opacity:0.5;' : ''}`;
   row.innerHTML = `
-    <input type="text" class="form-input dpc-area-code-input" value="${_dpcEsc(area.areaCode)}" style="width:90px;font-size:var(--text-xs);min-height:36px;" aria-label="Area code for ${_dpcEsc(area.areaName)}">
-    <input type="text" class="form-input dpc-area-name-input" value="${_dpcEsc(area.areaName)}" style="flex:1;font-size:var(--text-xs);min-height:36px;" aria-label="Area name for ${_dpcEsc(area.areaCode)}">
-    <button type="button" class="btn btn--ghost btn--sm dpc-area-save-btn">Save</button>
-    <button type="button" class="btn btn--ghost btn--sm dpc-area-archive-btn">${area.archived ? 'Restore' : 'Archive'}</button>
+    <div style="display:flex;align-items:center;gap:var(--space-sm);">
+      <input type="text" class="form-input dpc-area-code-input" value="${_dpcEsc(area.areaCode)}" style="width:90px;font-size:var(--text-xs);min-height:36px;" aria-label="Area code for ${_dpcEsc(area.areaName)}">
+      <input type="text" class="form-input dpc-area-name-input" value="${_dpcEsc(area.areaName)}" style="flex:1;font-size:var(--text-xs);min-height:36px;" aria-label="Area name for ${_dpcEsc(area.areaCode)}">
+      <button type="button" class="btn btn--ghost btn--sm dpc-area-save-btn">Save</button>
+      <button type="button" class="btn btn--ghost btn--sm dpc-area-archive-btn">${area.archived ? 'Restore' : 'Archive'}</button>
+      <button type="button" class="btn btn--ghost btn--sm dpc-dept-toggle-btn">Departments (${(area.departments||[]).filter(d=>!d.archived).length})</button>
+    </div>
+    <div class="dpc-dept-panel" style="display:none;margin:var(--space-sm) 0 0 var(--space-lg);padding-left:var(--space-md);border-left:2px solid var(--color-border);"></div>
   `;
   const codeInput = row.querySelector('.dpc-area-code-input');
   const nameInput = row.querySelector('.dpc-area-name-input');
@@ -209,7 +213,66 @@ function _dpcRenderAreaRow(area) {
     _dpcRenderAreaList();
   });
 
+  const deptPanel = row.querySelector('.dpc-dept-panel');
+  row.querySelector('.dpc-dept-toggle-btn').addEventListener('click', () => {
+    const showing = deptPanel.style.display !== 'none';
+    if (showing) { deptPanel.style.display = 'none'; return; }
+    deptPanel.style.display = 'block';
+    _dpcRenderDeptPanel(deptPanel, area.areaCode);
+  });
+
   return row;
+}
+
+function _dpcRenderDeptPanel(panel, areaCode) {
+  const depts = typeof _getDepartments === 'function' ? _getDepartments(areaCode, true) : [];
+  panel.innerHTML = `
+    ${depts.map(d => `
+      <div class="dpc-dept-row" data-dept-code="${_dpcEsc(d.departmentCode)}" style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:4px;${d.archived ? 'opacity:0.5;' : ''}">
+        <input type="text" class="form-input dpc-dept-code-input" value="${_dpcEsc(d.departmentCode)}" style="width:70px;font-size:10px;min-height:32px;">
+        <input type="text" class="form-input dpc-dept-name-input" value="${_dpcEsc(d.departmentName)}" style="flex:1;font-size:10px;min-height:32px;">
+        <button type="button" class="btn btn--ghost btn--sm dpc-dept-save-btn" style="font-size:10px;">Save</button>
+        <button type="button" class="btn btn--ghost btn--sm dpc-dept-archive-btn" style="font-size:10px;">${d.archived ? 'Restore' : 'Archive'}</button>
+      </div>`).join('')}
+    <div style="display:flex;align-items:center;gap:var(--space-sm);margin-top:var(--space-xs);">
+      <input type="text" id="dpc-new-dept-code" placeholder="Code" class="form-input" style="width:70px;font-size:10px;min-height:32px;">
+      <input type="text" id="dpc-new-dept-name" placeholder="Department name" class="form-input" style="flex:1;font-size:10px;min-height:32px;">
+      <button type="button" id="dpc-new-dept-save" class="btn btn--primary btn--sm" style="font-size:10px;">+ Add</button>
+    </div>
+  `;
+
+  panel.querySelectorAll('.dpc-dept-row').forEach(row => {
+    const originalCode = row.dataset.deptCode;
+    row.querySelector('.dpc-dept-save-btn').addEventListener('click', () => {
+      const newCode = row.querySelector('.dpc-dept-code-input').value.trim().toUpperCase();
+      const newName = row.querySelector('.dpc-dept-name-input').value.trim();
+      if (!newCode || !newName) { if (typeof UI !== 'undefined') UI.showToast('error', 'Department code and name required.'); return; }
+      if (newCode !== originalCode) {
+        const result = renameDepartmentCode(areaCode, originalCode, newCode);
+        if (typeof UI !== 'undefined') UI.showToast('success', `Renamed department ${originalCode} → ${newCode}. ${result.changed} record(s) updated.`);
+      }
+      saveDepartment(areaCode, { departmentCode: newCode !== originalCode ? newCode : originalCode, departmentName: newName });
+      _dpcRenderDeptPanel(panel, areaCode);
+      _dpcRenderAreaList();
+    });
+    row.querySelector('.dpc-dept-archive-btn').addEventListener('click', () => {
+      const dept = _getDepartments(areaCode, true).find(d => d.departmentCode === originalCode);
+      archiveDepartment(areaCode, originalCode, !dept.archived);
+      _dpcRenderDeptPanel(panel, areaCode);
+      _dpcRenderAreaList();
+    });
+  });
+
+  panel.querySelector('#dpc-new-dept-save').addEventListener('click', () => {
+    const code = document.getElementById('dpc-new-dept-code').value.trim().toUpperCase();
+    const name = document.getElementById('dpc-new-dept-name').value.trim();
+    if (!code || !name) { if (typeof UI !== 'undefined') UI.showToast('error', 'Department code and name required.'); return; }
+    if (_getDepartments(areaCode, true).find(d => d.departmentCode === code)) { if (typeof UI !== 'undefined') UI.showToast('error', `${code} already exists in this area.`); return; }
+    saveDepartment(areaCode, { departmentCode: code, departmentName: name });
+    if (typeof UI !== 'undefined') UI.showToast('success', `Added department ${code} — ${name}.`);
+    _dpcRenderDeptPanel(panel, areaCode);
+    _dpcRenderAreaList();
+  });
 }
 
 function _dpcOpenAreaAddForm() {
