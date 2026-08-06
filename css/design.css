@@ -781,3 +781,109 @@ ul, ol { list-style: none; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ==========================================================================
+   Settings — display preferences (Session 34)
+   Adapted from The Learning Studio's settings panel, applied to DPC Hub's
+   own token set rather than copying Learning Studio's variable names.
+   ========================================================================== */
+
+/* Text size: redefines the --text-* tokens themselves via a scale factor,
+   because most of this app sets font-size inline via var(--text-sm) etc.
+   rather than inheriting from body — a flat body font-size override would
+   have barely reached anything. --dpc-text-scale defaults to 1 (no change)
+   when unset, so nothing changes until a preference is actually saved. */
+:root {
+  --dpc-text-scale: 1;
+}
+body {
+  --text-xs:   calc(12px * var(--dpc-text-scale));
+  --text-sm:   calc(14px * var(--dpc-text-scale));
+  --text-base: calc(16px * var(--dpc-text-scale));
+  --text-md:   calc(18px * var(--dpc-text-scale));
+  --text-lg:   calc(20px * var(--dpc-text-scale));
+  --text-xl:   calc(24px * var(--dpc-text-scale));
+  --text-2xl:  calc(28px * var(--dpc-text-scale));
+  --text-3xl:  calc(34px * var(--dpc-text-scale));
+  line-height: var(--user-line-height, var(--line-height));
+  letter-spacing: var(--user-letter-spacing, normal);
+}
+
+/* Font */
+body.font-dyslexia { font-family: 'OpenDyslexic', Arial, sans-serif; }
+body.font-serif     { font-family: Georgia, 'Times New Roman', serif; }
+body.font-mono      { font-family: 'Courier New', monospace; }
+
+/* Colour scheme: redefines the same --color-* tokens every existing inline
+   style already references, so this reaches the whole app without any
+   module needing to change. */
+body.theme-dark {
+  --color-navy:       #E2E8F0;
+  --color-teal:       #2DD4BF;
+  --color-teal-lt:    #134E4A;
+  --color-teal-mid:   #14B8A6;
+  --color-blue:       #60A5FA;
+  --color-blue-lt:    #1E3A5F;
+  --color-green:      #4ADE80;
+  --color-green-lt:   #14321F;
+  --color-amber:      #FBBF24;
+  --color-amber-lt:   #3F2E0A;
+  --color-rose:       #F472B6;
+  --color-rose-lt:    #3F1530;
+  --color-purple:     #A78BFA;
+  --color-purple-lt:  #2E2350;
+  --color-red:        #F87171;
+  --color-red-lt:     #3F1A1A;
+  --color-slate:      #E2E8F0;
+  --color-muted:      #94A3B8;
+  --color-border:     #334155;
+  --color-light:      #1E293B;
+  --color-white:      #0F172A;
+  --color-code-bg:    #1E293B;
+  --color-nav-bg:     #0B1220;
+  --color-nav-text:   #F8FAFC;
+  --color-sidebar-bg: #16213A;
+}
+
+body.theme-high-contrast {
+  --color-navy:       #FFFF00;
+  --color-teal:       #00FFFF;
+  --color-teal-lt:    #003333;
+  --color-blue:       #66CCFF;
+  --color-blue-lt:    #001A33;
+  --color-green:      #00FF00;
+  --color-green-lt:   #003300;
+  --color-amber:      #FFCC00;
+  --color-amber-lt:   #332900;
+  --color-red:        #FF3333;
+  --color-red-lt:     #330000;
+  --color-slate:      #FFFFFF;
+  --color-muted:      #CCCCCC;
+  --color-border:     #FFFFFF;
+  --color-light:      #000000;
+  --color-white:      #000000;
+  --color-nav-bg:     #000000;
+  --color-nav-text:   #FFFF00;
+  --color-sidebar-bg: #000000;
+}
+
+/* Reduce motion */
+body.motion-reduced *,
+body.motion-reduced *::before,
+body.motion-reduced *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Enhanced focus outlines */
+body.enhanced-focus *:focus-visible {
+  outline: 4px solid var(--color-teal) !important;
+  outline-offset: 2px !important;
+}
+
+/* Underline all links */
+body.underline-links a {
+  text-decoration: underline !important;
+}
