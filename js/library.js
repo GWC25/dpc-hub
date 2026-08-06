@@ -12,6 +12,7 @@
 
 let _libCurrentId    = null;
 let _libFilterType   = '';
+let _libFilterTag    = '';
 let _libLSEntriesCache = null; // cached Learning Studio entries, fetched once
 
 function initLibrary() {
@@ -26,6 +27,9 @@ function initLibrary() {
           <option value="learning-studio">Learning Studio</option>
           <option value="linkedin-pathway">LinkedIn Pathway</option>
           <option value="dpc-created">DPC-created</option>
+        </select>
+        <select id="lib-filter-tag" class="form-select" style="width:auto;min-height:40px;font-size:var(--text-sm);" aria-label="Filter by category">
+          <option value="">All categories</option>
         </select>
         <div style="display:flex;gap:var(--space-xs);">
           <button id="lib-new-linkedin" type="button" class="btn btn--primary btn--sm">+ LinkedIn Pathway</button>
@@ -158,46 +162,92 @@ async function _libLoadLearningStudioEntries() {
 }
 
 // ── List ──────────────────────────────────────────────────────
+// Session 33: grouped by type with headings (rather than one flat column),
+// and filterable by category tag as well as type — the two together were
+// the actual ask: "organised and easily filterable by type or problem
+// categories."
+const TYPE_ICONS  = { 'learning-studio': '🧭', 'linkedin-pathway': '💼', 'dpc-created': '✍️' };
+const TYPE_LABELS = { 'learning-studio': 'Learning Studio', 'linkedin-pathway': 'LinkedIn Pathway', 'dpc-created': 'DPC-created' };
+const TYPE_ORDER  = ['linkedin-pathway', 'dpc-created', 'learning-studio']; // your own curated content first
+
 function _renderLibraryList() {
   const list  = document.getElementById('lib-list');
   const empty = document.getElementById('lib-empty');
   if (!list) return;
 
+  _libPopulateTagFilter();
+
   let entries = _libGetAllEntries();
   if (_libFilterType) entries = entries.filter(e => e.type === _libFilterType);
-  entries.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+  if (_libFilterTag)  entries = entries.filter(e => (e.tags || []).includes(_libFilterTag));
 
   list.innerHTML = '';
   if (entries.length === 0) { if (empty) empty.style.display = 'block'; return; }
   if (empty) empty.style.display = 'none';
 
-  const typeIcons  = { 'learning-studio': '🧭', 'linkedin-pathway': '💼', 'dpc-created': '✍️' };
-  const typeLabels = { 'learning-studio': 'Learning Studio', 'linkedin-pathway': 'LinkedIn Pathway', 'dpc-created': 'DPC-created' };
+  const groups = {};
+  entries.forEach(e => { (groups[e.type] = groups[e.type] || []).push(e); });
 
-  entries.forEach(e => {
-    const isActive = _libCurrentId === e.resourceId;
-    const shareCount = _libGetSharesForResource(e.resourceId).length;
-    const item = document.createElement('div');
-    item.role = 'listitem';
-    item.setAttribute('tabindex', '0');
-    item.style.cssText = `
-      padding:var(--space-md);border-radius:var(--radius-md);
-      border:2px solid ${isActive ? 'var(--color-teal)' : 'var(--color-border)'};
-      background:${isActive ? 'var(--color-teal-lt)' : 'var(--color-white)'};
-      cursor:pointer;margin-bottom:var(--space-sm);transition:all 150ms;
-    `;
-    item.innerHTML = `
-      <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:4px;">
-        <span style="font-size:16px;">${typeIcons[e.type] || '📄'}</span>
-        <span style="font-size:var(--text-xs);font-weight:bold;background:var(--color-light);color:var(--color-muted);padding:1px 8px;border-radius:999px;">${typeLabels[e.type] || e.type}</span>
-        ${shareCount > 0 ? `<span style="font-size:var(--text-xs);color:var(--color-teal);margin-left:auto;">${shareCount} share${shareCount !== 1 ? 's' : ''}</span>` : ''}
-      </div>
-      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_libEsc(e.title)}</p>
-    `;
-    item.addEventListener('click', () => _openLibraryDetail(e.resourceId));
-    item.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); _openLibraryDetail(e.resourceId); } });
-    list.appendChild(item);
+  TYPE_ORDER.forEach(type => {
+    const groupEntries = groups[type];
+    if (!groupEntries || groupEntries.length === 0) return;
+    groupEntries.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+
+    const heading = document.createElement('h3');
+    heading.style.cssText = 'font-size:var(--text-xs);font-weight:bold;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.05em;margin:var(--space-lg) 0 var(--space-sm);';
+    heading.textContent = `${TYPE_ICONS[type] || ''} ${TYPE_LABELS[type] || type} (${groupEntries.length})`;
+    list.appendChild(heading);
+
+    groupEntries.forEach(e => {
+      const isActive = _libCurrentId === e.resourceId;
+      const shareCount = _libGetSharesForResource(e.resourceId).length;
+      const item = document.createElement('div');
+      item.role = 'listitem';
+      item.setAttribute('tabindex', '0');
+      item.style.cssText = `
+        padding:var(--space-md);border-radius:var(--radius-md);
+        border:2px solid ${isActive ? 'var(--color-teal)' : 'var(--color-border)'};
+        background:${isActive ? 'var(--color-teal-lt)' : 'var(--color-white)'};
+        cursor:pointer;margin-bottom:var(--space-sm);transition:all 150ms;
+      `;
+      item.innerHTML = `
+        <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:4px;">
+          ${(e.tags || []).slice(0, 2).map(t => `<span style="font-size:10px;background:var(--color-light);color:var(--color-muted);padding:1px 8px;border-radius:999px;">${_libEsc(_libHumanizeTag(t))}</span>`).join('')}
+          ${shareCount > 0 ? `<span style="font-size:var(--text-xs);color:var(--color-teal);margin-left:auto;">${shareCount} share${shareCount !== 1 ? 's' : ''}</span>` : ''}
+        </div>
+        <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_libEsc(e.title)}</p>
+      `;
+      item.addEventListener('click', () => _openLibraryDetail(e.resourceId));
+      item.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); _openLibraryDetail(e.resourceId); } });
+      list.appendChild(item);
+    });
   });
+}
+
+function _libPopulateTagFilter() {
+  const sel = document.getElementById('lib-filter-tag');
+  if (!sel) return;
+  const currentValue = sel.value;
+  const allTags = new Set();
+  _libGetAllEntries().forEach(e => (e.tags || []).forEach(t => allTags.add(t)));
+  const sorted = Array.from(allTags).sort();
+
+  // Only rebuild if the tag set actually changed (avoids losing focus/selection on every render)
+  const existingValues = Array.from(sel.options).slice(1).map(o => o.value).join(',');
+  if (existingValues === sorted.join(',')) return;
+
+  sel.innerHTML = '<option value="">All categories</option>';
+  sorted.forEach(tag => {
+    const opt = document.createElement('option');
+    opt.value = tag;
+    opt.textContent = _libHumanizeTag(tag);
+    sel.appendChild(opt);
+  });
+  if (sorted.includes(currentValue)) sel.value = currentValue;
+}
+
+function _libHumanizeTag(tag) {
+  return String(tag).replace(/-/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase());
 }
 
 // ── Detail ────────────────────────────────────────────────────
@@ -222,7 +272,7 @@ function _openLibraryDetail(resourceId) {
         <h2 style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">${_libEsc(e.title)}</h2>
         ${e.description ? `<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:var(--space-xs);">${_libEsc(e.description)}</p>` : ''}
         <p style="font-size:var(--text-xs);margin-top:var(--space-xs);"><a href="${_libEsc(e.url)}" target="_blank" rel="noopener noreferrer" style="color:var(--color-teal);">${_libEsc(e.url)}</a></p>
-        ${(e.tags || []).length > 0 ? `<div style="margin-top:var(--space-sm);display:flex;gap:4px;flex-wrap:wrap;">${e.tags.map(t => `<span style="font-size:10px;background:var(--color-light);color:var(--color-muted);padding:1px 8px;border-radius:999px;">${_libEsc(t)}</span>`).join('')}</div>` : ''}
+        ${(e.tags || []).length > 0 ? `<div style="margin-top:var(--space-sm);display:flex;gap:4px;flex-wrap:wrap;">${e.tags.map(t => `<span style="font-size:10px;background:var(--color-light);color:var(--color-muted);padding:1px 8px;border-radius:999px;">${_libEsc(_libHumanizeTag(t))}</span>`).join('')}</div>` : ''}
       </div>
       <div style="display:flex;gap:var(--space-sm);flex-shrink:0;">
         ${isManual ? `<button id="lib-edit-btn" type="button" class="btn btn--ghost btn--sm">Edit</button>` : ''}
@@ -355,6 +405,7 @@ function _saveShare() {
 // ── Wire events ───────────────────────────────────────────────
 function _wireLibraryEvents() {
   document.getElementById('lib-filter-type')?.addEventListener('change', e => { _libFilterType = e.target.value; _renderLibraryList(); });
+  document.getElementById('lib-filter-tag')?.addEventListener('change', e => { _libFilterTag = e.target.value; _renderLibraryList(); });
   document.getElementById('lib-new-linkedin')?.addEventListener('click', () => _openEntryModal(LIBRARY_TYPE.LINKEDIN_PATHWAY));
   document.getElementById('lib-new-dpc')?.addEventListener('click', () => _openEntryModal(LIBRARY_TYPE.DPC_CREATED));
 
