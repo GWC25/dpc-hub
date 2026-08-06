@@ -473,6 +473,64 @@ function saveArea(areaData) {
   _writeLocalSnapshot();
 }
 
+// ── Area rename / archive (Session 38) ──────────────────────────
+// Built because the real area structure turned out to be genuinely
+// unsettled — two source documents partially disagreed, several codes
+// are still undecided, and Cass' own doc flags multiple possible future
+// mergers (EFE/EHE, FIP -> four SEND programmes). areaCode is used as a
+// foreign key across staff, AFIs, Health Checks, Resource Library shares,
+// CPD entries and calendar entries — every one of those needs updating
+// together, or a rename silently orphans real people's records.
+//
+// renameAreaCode always cascades through every one of those stores. It
+// does NOT touch data-resource-tag-map.json (Learning Studio matching —
+// not area-specific) or Supabase sync captures (Phase 7, parked, out of
+// scope). If a new record type gains its own areaCode field later,
+// extend the sweep list here — this is the one place it should live.
+function renameAreaCode(oldCode, newCode) {
+  if (!oldCode || !newCode || oldCode === newCode) return { changed: 0 };
+  let changed = 0;
+
+  const area = (window.DPC_DATA.areas.areas || []).find(a => a.areaCode === oldCode);
+  if (area) { area.areaCode = newCode; area.lastUpdated = nowISO(); changed++; }
+  _dirty.add('data-areas.json');
+
+  const sweep = [
+    { store: () => (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [], file: 'data-staff.json' },
+    { store: () => (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || [], file: 'data-afi.json' },
+    { store: () => (window.DPC_DATA.resourceLibrary && window.DPC_DATA.resourceLibrary.shares) || [], file: 'data-resource-library.json' },
+    { store: () => (window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.reviews) || [], file: 'data-health-checks.json' },
+    { store: () => (window.DPC_DATA.cpd && window.DPC_DATA.cpd.deliveredCPD) || [], file: 'data-cpd.json' },
+    { store: () => (window.DPC_DATA.calendar && window.DPC_DATA.calendar.entries) || [], file: 'data-calendar.json' },
+  ];
+
+  sweep.forEach(({ store, file }) => {
+    const records = store();
+    let touchedThisStore = false;
+    records.forEach(r => {
+      if (r.areaCode === oldCode) { r.areaCode = newCode; changed++; touchedThisStore = true; }
+    });
+    if (touchedThisStore) _dirty.add(file);
+  });
+
+  _writeLocalSnapshot();
+  return { changed };
+}
+
+// Soft-hide rather than delete — an area with real linked history (staff,
+// AFIs, Health Checks) should never be silently removed. Archived areas
+// drop out of _getAreas() by default (see areas.js) but every record
+// still pointing at that areaCode stays fully intact and queryable.
+function archiveArea(areaCode, archived = true) {
+  const area = (window.DPC_DATA.areas.areas || []).find(a => a.areaCode === areaCode);
+  if (!area) return false;
+  area.archived = archived;
+  area.lastUpdated = nowISO();
+  _dirty.add('data-areas.json');
+  _writeLocalSnapshot();
+  return true;
+}
+
 // ── Public: save a staff profile ─────────────────────────────
 function saveStaff(staffData) {
   const staff = window.DPC_DATA.staff.staff;
