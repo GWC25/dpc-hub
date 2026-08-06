@@ -1,81 +1,65 @@
-// DPC Hub · js/healthcheck.js · v1.0 · July 2026
-// Health Check module. Upload ingestion (Forms Excel / Moodle format).
-// AI extraction via Anthropic API (Haiku). DPC review and confirm/overwrite.
-// Score writes to area Health Check record. Accessed from Areas or sidebar.
+// DPC Hub · js/healthcheck.js · v2.0 · 31/07/26 · Session 36 rebuild
+// Digital Health Check module — REBUILT to match the real instrument.
+//
+// The v1.0 module (area-level, 5 broad AI-extracted dimensions, written to
+// area.healthChecks[]) was built against the wrong shape. The real,
+// currently-in-use instrument is staff-level, observes one named person
+// per review, scores specific indicator statements (not broad dimensions)
+// across 5 focus areas, and tracks an action point with an escalation
+// level per area. See HC_FOCUS_AREAS in schema.js for the indicator set,
+// faithfully reproduced from the real Microsoft Form.
+//
+// A review can cover 1-5 focus areas in one sitting, matching the Form's
+// own "select an area to review, then choose another or submit" flow.
+// Records are cycle-tagged (HC_CYCLES) — baseline / Nov / Feb-Mar / Jun —
+// so rounds stay comparable but distinct.
+//
+// Data lives in data-health-checks.json (a flat, central list — same
+// denormalised pattern as AFIs and Resource Library shares — not nested
+// under area or staff, so it can be queried by staff, by area, or by
+// cycle equally easily). area.healthChecks[] (the old v1.0 field) is left
+// untouched, not deleted, but nothing writes to it going forward.
+//
+// The "Support Priority Score" concept (weighting a lower practice score
+// more heavily, used in Graeme's existing manual analysis) is implemented
+// here as a documented, adjustable formula — NOT reverse-engineered with
+// full confidence from the baseline spreadsheet. Treat _hcPriorityScore()
+// as a first draft to confirm against known values, not ground truth.
+
+let _hcDraftReview = null; // in-progress review, not yet saved
+let _hcSelectedStaffId = null;
 
 function initHealthChecks() {
   const main = document.getElementById('main-content');
   main.innerHTML = `
     <div id="banner-container" aria-live="polite"></div>
-    <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-sm);">Health Checks</h1>
-    <p style="font-size:var(--text-base);color:var(--color-muted);margin-bottom:var(--space-xl);">Upload a Digital Health Check export to extract scores and generate a provisional RAG assessment for your review.</p>
+    <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-sm);">Digital Health Checks</h1>
+    <p style="font-size:var(--text-base);color:var(--color-muted);margin-bottom:var(--space-xl);">Accessibility and Inclusion Practice Review — staff-level observation across five focus areas.</p>
 
-    <!-- Area selector -->
-    <div style="display:grid;grid-template-columns:300px 1fr;gap:var(--space-xl);align-items:start;">
+    <div style="display:grid;grid-template-columns:320px 1fr;gap:var(--space-xl);align-items:start;">
       <div>
         <div class="form-group">
-          <label class="form-label" for="hc-area-sel">Select area</label>
-          <select class="form-select" id="hc-area-sel" aria-label="Select area for Health Check">
+          <label class="form-label" for="hc-area-sel">Area</label>
+          <select class="form-select" id="hc-area-sel" aria-label="Select area">
             <option value="">— Select area —</option>
           </select>
         </div>
-        <div id="hc-area-history"></div>
+        <div class="form-group">
+          <label class="form-label" for="hc-staff-sel">Staff member</label>
+          <select class="form-select" id="hc-staff-sel" aria-label="Select staff member" disabled>
+            <option value="">— Select area first —</option>
+          </select>
+        </div>
+        <button id="hc-new-review-btn" type="button" class="btn btn--primary btn--sm" style="width:100%;margin-bottom:var(--space-lg);" disabled>+ New review</button>
+        <div id="hc-staff-history"></div>
       </div>
 
       <div id="hc-main-panel">
-        <div id="hc-upload-section" style="display:none;">
-          <h2 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-md);">Upload Health Check</h2>
-
-          <!-- Upload zone -->
-          <div id="hc-drop-zone" style="
-            border:2px dashed var(--color-teal);border-radius:var(--radius-md);
-            padding:var(--space-2xl);text-align:center;
-            background:var(--color-teal-lt);cursor:pointer;
-            transition:background 150ms ease;margin-bottom:var(--space-lg);"
-            role="button" tabindex="0" aria-label="Upload Health Check file — click or drag and drop">
-            <p style="font-size:var(--text-lg);color:var(--color-teal);margin-bottom:var(--space-sm);">📋</p>
-            <p style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-teal);">Drop file here or click to upload</p>
-            <p style="font-size:var(--text-sm);color:var(--color-muted);margin-top:var(--space-xs);">Accepts .xlsx, .csv, or .txt exports from Forms or Moodle</p>
-            <input type="file" id="hc-file-input" accept=".xlsx,.csv,.txt,.xls" style="display:none;" aria-label="Upload Health Check file">
-          </div>
-
-          <!-- Manual text entry (fallback) -->
-          <details style="margin-bottom:var(--space-lg);">
-            <summary style="cursor:pointer;font-size:var(--text-sm);color:var(--color-muted);padding:var(--space-sm) 0;">Or paste Health Check responses as text</summary>
-            <textarea id="hc-text-input" class="form-textarea" rows="8" style="margin-top:var(--space-sm);" placeholder="Paste the Health Check responses here — e.g. copied from a Forms summary, email, or document…"></textarea>
-            <button id="hc-text-extract-btn" type="button" class="btn btn--ghost btn--sm" style="margin-top:var(--space-sm);">Extract from text →</button>
-          </details>
-
-          <div id="hc-processing" style="display:none;text-align:center;padding:var(--space-xl);">
-            <div class="loading-spinner" style="width:32px;height:32px;border-color:rgba(15,118,110,0.2);border-top-color:var(--color-teal);margin:0 auto var(--space-md);"></div>
-            <p style="font-size:var(--text-base);color:var(--color-teal);">Reading file and mapping to framework…</p>
-          </div>
-        </div>
-
-        <!-- Review section -->
-        <div id="hc-review-section" style="display:none;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);">
-            <h2 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);">Review extracted scores</h2>
-            <button id="hc-reset-btn" type="button" class="btn btn--ghost btn--sm">← Upload new file</button>
-          </div>
-          <div style="background:var(--color-amber-lt);border:1px solid var(--color-amber);border-radius:var(--radius-sm);padding:var(--space-md);margin-bottom:var(--space-lg);font-size:var(--text-sm);color:var(--color-amber);">
-            These scores were generated by AI from the uploaded file. Review each one — your professional judgement is always the final word. Confirm or override before saving.
-          </div>
-          <div id="hc-dimension-rows"></div>
-          <div class="form-group" style="margin-top:var(--space-lg);">
-            <label class="form-label form-label--optional" for="hc-context-note">DPC context note</label>
-            <textarea class="form-textarea" id="hc-context-note" rows="2" placeholder="Any context you want to add to the record — e.g. known changes since the check was completed…"></textarea>
-          </div>
-          <div class="btn-row">
-            <button id="hc-save-all" type="button" class="btn btn--primary">Confirm all scores</button>
-          </div>
-        </div>
-
-        <!-- Placeholder when no area selected -->
         <div id="hc-placeholder" style="padding:var(--space-2xl);text-align:center;color:var(--color-muted);">
-          <p style="font-size:48px;margin-bottom:var(--space-md);">📊</p>
-          <p style="font-size:var(--text-base);">Select an area to upload or review its Health Check.</p>
+          <p style="font-size:48px;margin-bottom:var(--space-md);">📋</p>
+          <p style="font-size:var(--text-base);">Select an area and staff member to start or review a Digital Health Check.</p>
         </div>
+        <div id="hc-review-form" style="display:none;"></div>
       </div>
     </div>
   `;
@@ -84,311 +68,357 @@ function initHealthChecks() {
   _wireHCEvents();
 }
 
-// ── Health Check dimensions ───────────────────────────────────
-const HC_DIMENSIONS = [
-  { id:'digitalLearningEnv',    label:'Digital Learning Environment',    desc:'Teams channel structure, resource organisation, navigation.' },
-  { id:'inclusivePractice',     label:'Inclusive Practice',              desc:'UDL, personalisation, SEND support, language and literacy.' },
-  { id:'accessibilityByDesign', label:'Accessibility by Design',         desc:'WCAG compliance, alt text, contrast, accessible resources.' },
-  { id:'staffCapabilityHC',     label:'Staff Digital Capability',        desc:'Staff confidence and use of digital tools for learning.' },
-  { id:'learnerDigitalSkills',  label:'Learner Digital Skills',          desc:'Learner ability to use digital tools independently.' },
-];
-
-// ── Area selector ─────────────────────────────────────────────
+// ── Selectors ─────────────────────────────────────────────────
 function _hcPopulateAreaSelector() {
   const sel = document.getElementById('hc-area-sel');
   if (!sel) return;
-  (_getAreas()||[]).sort((a,b)=>a.areaName.localeCompare(b.areaName)).forEach(area=>{
-    const opt=document.createElement('option');
-    opt.value=area.areaCode; opt.textContent=`${area.areaCode} — ${area.areaName}`; sel.appendChild(opt);
+  (_getAreas() || []).sort((a, b) => a.areaName.localeCompare(b.areaName)).forEach(area => {
+    const opt = document.createElement('option');
+    opt.value = area.areaCode;
+    opt.textContent = `${area.areaCode} — ${area.areaName}`;
+    sel.appendChild(opt);
   });
 }
 
-function _hcShowAreaHistory(areaCode) {
-  const container = document.getElementById('hc-area-history');
+function _hcPopulateStaffSelector(areaCode) {
+  const sel = document.getElementById('hc-staff-sel');
+  const newBtn = document.getElementById('hc-new-review-btn');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Select staff member —</option>';
+  sel.disabled = !areaCode;
+  newBtn.disabled = true;
+  if (!areaCode) return;
+
+  const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  allStaff.filter(s => s.areaCode === areaCode).sort((a, b) => (a.name || '').localeCompare(b.name || '')).forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.staffId;
+    opt.textContent = s.name + (s.role ? ` (${s.role})` : '');
+    sel.appendChild(opt);
+  });
+}
+
+// ── Staff review history (left panel) ────────────────────────────
+function _hcRenderStaffHistory(staffId) {
+  const container = document.getElementById('hc-staff-history');
+  const newBtn = document.getElementById('hc-new-review-btn');
   if (!container) return;
-  const area = _getArea(areaCode);
-  const checks = (area&&area.healthChecks)||[];
-  if (checks.length===0) { container.innerHTML='<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-md);">No Health Checks recorded yet.</p>'; return; }
-  const sorted = checks.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  container.innerHTML=`
-    <h3 style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);margin-top:var(--space-lg);margin-bottom:var(--space-sm);">Previous checks</h3>
-    ${sorted.map(hc=>`
-      <div style="padding:var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:var(--space-xs);">
-        <p style="font-size:var(--text-xs);font-weight:bold;color:var(--color-slate);">${_hcFmtDate(hc.date)}</p>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
-          ${HC_DIMENSIONS.map(d=>{
-            const score=hc.scores&&hc.scores[d.id];
-            const col=score?['','var(--color-red)','var(--color-amber)','var(--color-amber)','var(--color-green)','var(--color-green)'][score]:'var(--color-border)';
-            return `<span style="font-size:10px;background:${col};color:#fff;padding:1px 6px;border-radius:999px;font-weight:bold;" title="${d.label}">${score||'?'}</span>`;
-          }).join('')}
-        </div>
+  newBtn.disabled = !staffId;
+  if (!staffId) { container.innerHTML = ''; return; }
+
+  const reviews = _hcGetReviewsForStaff(staffId).slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  if (reviews.length === 0) {
+    container.innerHTML = '<p style="font-size:var(--text-xs);color:var(--color-muted);">No Health Checks recorded yet.</p>';
+    return;
+  }
+  container.innerHTML = `
+    <h3 style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-sm);">Previous reviews</h3>
+    ${reviews.map(r => `
+      <div class="hc-history-item" data-review-id="${r.reviewId}" style="padding:var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:var(--space-xs);cursor:pointer;">
+        <p style="font-size:var(--text-xs);font-weight:bold;color:var(--color-slate);">${_hcFmtDate(r.date)} · ${_hcCycleLabel(r.cycleId)}</p>
+        <p style="font-size:10px;color:var(--color-muted);">${Object.keys(r.domains || {}).length} area(s) · Priority ${r.supportPriorityScore != null ? r.supportPriorityScore.toFixed(1) : '—'}</p>
       </div>`).join('')}
+  `;
+  container.querySelectorAll('.hc-history-item').forEach(el => {
+    el.addEventListener('click', () => _hcOpenReview(el.dataset.reviewId));
+  });
+}
+
+// ── New review ────────────────────────────────────────────────
+function _hcStartNewReview() {
+  const areaCode = document.getElementById('hc-area-sel').value;
+  const staffId  = document.getElementById('hc-staff-sel').value;
+  if (!areaCode || !staffId) return;
+
+  _hcDraftReview = {
+    reviewId: generateId(),
+    cycleId: HC_CYCLES.BASELINE, // default selection; changeable in the form
+    date: todayISO(),
+    areaCode,
+    staffId,
+    assessorName: '',
+    provision: '',
+    levelOfLearning: '',
+    domains: {},
+    overallReflection: '', keyStrengths: '', areasForImprovement: '', priorityNextSteps: '',
+  };
+  _hcRenderReviewForm();
+}
+
+function _hcOpenReview(reviewId) {
+  const review = _hcGetReview(reviewId);
+  if (!review) return;
+  _hcDraftReview = JSON.parse(JSON.stringify(review)); // work on a copy
+  _hcRenderReviewForm();
+}
+
+// ── Review form ───────────────────────────────────────────────
+function _hcRenderReviewForm() {
+  document.getElementById('hc-placeholder').style.display = 'none';
+  const form = document.getElementById('hc-review-form');
+  form.style.display = 'block';
+  const r = _hcDraftReview;
+  const staff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff || []).find(s => s.staffId === r.staffId);
+  const area = _getArea(r.areaCode);
+
+  const doneDomainIds = Object.keys(r.domains || {});
+
+  form.innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-lg);">
+      <div>
+        <h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">${_hcEsc(staff ? staff.name : '')} — ${_hcEsc(area ? area.areaName : r.areaCode)}</h2>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);">${doneDomainIds.length} of 5 focus areas completed this review</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-lg);">
+      <div class="form-group">
+        <label class="form-label" for="hc-cycle">Cycle</label>
+        <select class="form-select" id="hc-cycle">
+          <option value="${HC_CYCLES.BASELINE}" ${r.cycleId === HC_CYCLES.BASELINE ? 'selected' : ''}>Baseline (2026)</option>
+          <option value="${HC_CYCLES.NOVEMBER}" ${r.cycleId === HC_CYCLES.NOVEMBER ? 'selected' : ''}>November 2026</option>
+          <option value="${HC_CYCLES.FEB_MARCH}" ${r.cycleId === HC_CYCLES.FEB_MARCH ? 'selected' : ''}>Feb/March 2027</option>
+          <option value="${HC_CYCLES.JUNE}" ${r.cycleId === HC_CYCLES.JUNE ? 'selected' : ''}>June 2027</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="hc-date">Date of review</label>
+        <input class="form-input" type="date" id="hc-date" value="${r.date}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="hc-assessor">Name of Assessor</label>
+        <input class="form-input" type="text" id="hc-assessor" value="${_hcEsc(r.assessorName)}" placeholder="Often the Digital Lead, not always">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-lg);">
+      <div class="form-group">
+        <label class="form-label form-label--optional" for="hc-provision">Provision</label>
+        <select class="form-select" id="hc-provision">
+          <option value="">—</option>
+          ${['Further Education','Higher Education','Apprentices','Work-based Learning','Community Education','SEND / FIP','Skills Bootcamp','Other'].map(p => `<option value="${p}" ${r.provision===p?'selected':''}>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label form-label--optional" for="hc-level">Level of learning</label>
+        <select class="form-select" id="hc-level">
+          <option value="">—</option>
+          ${['Entry Level','Level 1','Level 2','Level 3','Level 4','Level 5','Level 6','Level 7','Level 8+','SEND / Non-Quals','Other'].map(l => `<option value="${l}" ${r.levelOfLearning===l?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-sm);">Focus areas</h3>
+    <div id="hc-domain-sections">
+      ${HC_FOCUS_AREAS.map(fa => _hcRenderDomainSection(fa, r.domains[fa.id])).join('')}
+    </div>
+
+    <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin:var(--space-xl) 0 var(--space-sm);">Complete and submit review</h3>
+    <div class="form-group">
+      <label class="form-label form-label--optional" for="hc-overall-reflection">Overall observed reflection</label>
+      <textarea class="form-textarea" id="hc-overall-reflection" rows="2">${_hcEsc(r.overallReflection)}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label form-label--optional" for="hc-key-strengths">Key strengths observed</label>
+      <textarea class="form-textarea" id="hc-key-strengths" rows="2">${_hcEsc(r.keyStrengths)}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label form-label--optional" for="hc-afis">Areas for Improvement (AFIs)</label>
+      <textarea class="form-textarea" id="hc-afis" rows="2">${_hcEsc(r.areasForImprovement)}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label form-label--optional" for="hc-priority-next">Priority next steps and recommendations</label>
+      <textarea class="form-textarea" id="hc-priority-next" rows="2">${_hcEsc(r.priorityNextSteps)}</textarea>
+    </div>
+
+    <p id="hc-save-error" role="alert" style="font-size:var(--text-sm);color:var(--color-red);display:none;margin-bottom:var(--space-md);"></p>
+    <div class="btn-row">
+      <button id="hc-save-btn" type="button" class="btn btn--primary">Save review</button>
+    </div>
+  `;
+
+  _hcWireDomainSections();
+  document.getElementById('hc-save-btn')?.addEventListener('click', _hcSaveReview);
+}
+
+function _hcRenderDomainSection(focusArea, existing) {
+  const d = existing || {};
+  const scores = d.indicatorScores || {};
+  return `
+    <details class="hc-domain-section" data-domain-id="${focusArea.id}" ${existing ? 'open' : ''} style="border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-md);">
+      <summary style="cursor:pointer;padding:var(--space-md);font-weight:bold;color:var(--color-navy);display:flex;align-items:center;justify-content:space-between;">
+        <span>${_hcEsc(focusArea.label)}</span>
+        ${existing ? `<span style="font-size:var(--text-xs);font-weight:normal;color:var(--color-teal);">Avg ${d.avgScore != null ? d.avgScore.toFixed(1) : '—'}</span>` : '<span style="font-size:var(--text-xs);font-weight:normal;color:var(--color-muted);">Not yet reviewed</span>'}
+      </summary>
+      <div style="padding:0 var(--space-md) var(--space-md);">
+        <div class="form-group">
+          <label class="form-label form-label--optional" for="hc-context-${focusArea.id}">Context for this area</label>
+          <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:4px;">Previous actions, historical context, technical issues, constraints, or relevant background.</p>
+          <textarea class="form-textarea" id="hc-context-${focusArea.id}" rows="2">${_hcEsc(d.context || '')}</textarea>
+        </div>
+
+        ${focusArea.indicators.map(ind => `
+          <div class="form-group">
+            <span class="form-label" id="hc-ind-label-${ind.id}">${_hcEsc(ind.label)}</span>
+            <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:4px;">${_hcEsc(ind.desc)}</p>
+            <div role="group" aria-labelledby="hc-ind-label-${ind.id}" class="hc-score-group" data-indicator-id="${ind.id}" style="display:flex;gap:6px;flex-wrap:wrap;">
+              ${[1,2,3,4,5].map(n => `<button type="button" class="btn btn--ghost btn--sm hc-score-btn" data-value="${n}" aria-pressed="${scores[ind.id]===n?'true':'false'}" style="${scores[ind.id]===n?'background:var(--color-teal);color:var(--color-white);':''}">${n} · ${HC_SCORE_LABELS[n]}</button>`).join('')}
+            </div>
+          </div>`).join('')}
+
+        <div class="form-group">
+          <label class="form-label form-label--optional" for="hc-seen-${focusArea.id}">What was seen?</label>
+          <textarea class="form-textarea" id="hc-seen-${focusArea.id}" rows="2">${_hcEsc(d.whatWasSeen || '')}</textarea>
+        </div>
+
+        <div class="form-group">
+          <span class="form-label">Is an action point identified for this area?</span>
+          <div role="group" style="display:flex;gap:var(--space-sm);">
+            <button type="button" class="btn btn--ghost btn--sm hc-action-toggle" data-value="yes" aria-pressed="${d.actionIdentified===true?'true':'false'}" style="${d.actionIdentified===true?'background:var(--color-amber);color:var(--color-white);':''}">Yes</button>
+            <button type="button" class="btn btn--ghost btn--sm hc-action-toggle" data-value="no" aria-pressed="${d.actionIdentified===false?'true':'false'}" style="${d.actionIdentified===false?'background:var(--color-green);color:var(--color-white);':''}">No</button>
+          </div>
+        </div>
+        <div class="hc-action-detail" style="display:${d.actionIdentified ? 'block' : 'none'};">
+          <div class="form-group">
+            <label class="form-label form-label--optional" for="hc-action-level-${focusArea.id}">Level of action required</label>
+            <select class="form-select" id="hc-action-level-${focusArea.id}">
+              <option value="">—</option>
+              <option value="${HC_ACTION_LEVEL.INFORM_ONLY}" ${d.actionLevel===HC_ACTION_LEVEL.INFORM_ONLY?'selected':''}>Inform only</option>
+              <option value="${HC_ACTION_LEVEL.SUPPORT}" ${d.actionLevel===HC_ACTION_LEVEL.SUPPORT?'selected':''}>Support / coaching</option>
+              <option value="${HC_ACTION_LEVEL.TRAINING}" ${d.actionLevel===HC_ACTION_LEVEL.TRAINING?'selected':''}>Training or development</option>
+              <option value="${HC_ACTION_LEVEL.FORMAL_FOLLOWUP}" ${d.actionLevel===HC_ACTION_LEVEL.FORMAL_FOLLOWUP?'selected':''}>Formal follow-up</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label form-label--optional" for="hc-action-desc-${focusArea.id}">Describe the action point(s)</label>
+            <textarea class="form-textarea" id="hc-action-desc-${focusArea.id}" rows="2">${_hcEsc(d.actionDescription || '')}</textarea>
+          </div>
+        </div>
+      </div>
+    </details>
   `;
 }
 
-// ── Wire events ───────────────────────────────────────────────
+function _hcWireDomainSections() {
+  document.querySelectorAll('.hc-score-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const group = btn.closest('.hc-score-group');
+      group.querySelectorAll('.hc-score-btn').forEach(b => {
+        b.setAttribute('aria-pressed', 'false');
+        b.style.background = ''; b.style.color = '';
+      });
+      btn.setAttribute('aria-pressed', 'true');
+      btn.style.background = 'var(--color-teal)'; btn.style.color = 'var(--color-white)';
+    });
+  });
+  document.querySelectorAll('.hc-action-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const group = btn.parentElement;
+      group.querySelectorAll('.hc-action-toggle').forEach(b => { b.setAttribute('aria-pressed','false'); b.style.background=''; b.style.color=''; });
+      btn.setAttribute('aria-pressed', 'true');
+      const isYes = btn.dataset.value === 'yes';
+      btn.style.background = isYes ? 'var(--color-amber)' : 'var(--color-green)';
+      btn.style.color = 'var(--color-white)';
+      const detail = btn.closest('.hc-domain-section').querySelector('.hc-action-detail');
+      if (detail) detail.style.display = isYes ? 'block' : 'none';
+    });
+  });
+}
+
+// ── Save ──────────────────────────────────────────────────────
+function _hcSaveReview() {
+  const r = _hcDraftReview;
+  r.cycleId = document.getElementById('hc-cycle').value;
+  r.date = document.getElementById('hc-date').value;
+  r.assessorName = document.getElementById('hc-assessor').value.trim();
+  r.provision = document.getElementById('hc-provision').value;
+  r.levelOfLearning = document.getElementById('hc-level').value;
+
+  const errEl = document.getElementById('hc-save-error');
+  if (!r.assessorName) { errEl.textContent = 'Please enter the assessor name.'; errEl.style.display = 'block'; return; }
+  if (!r.date) { errEl.textContent = 'Please enter the date of review.'; errEl.style.display = 'block'; return; }
+
+  const domains = {};
+  document.querySelectorAll('.hc-domain-section').forEach(section => {
+    const domainId = section.dataset.domainId;
+    const focusArea = HC_FOCUS_AREAS.find(fa => fa.id === domainId);
+    const indicatorScores = {};
+    let anyScored = false;
+    focusArea.indicators.forEach(ind => {
+      const pressed = section.querySelector(`.hc-score-group[data-indicator-id="${ind.id}"] .hc-score-btn[aria-pressed="true"]`);
+      if (pressed) { indicatorScores[ind.id] = parseInt(pressed.dataset.value); anyScored = true; }
+    });
+    if (!anyScored) return; // this focus area wasn't touched this session — skip it
+
+    const scoreValues = Object.values(indicatorScores);
+    const avgScore = scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length;
+    const lowestScore = Math.min(...scoreValues);
+    const actionBtn = section.querySelector('.hc-action-toggle[aria-pressed="true"]');
+    const actionIdentified = actionBtn ? actionBtn.dataset.value === 'yes' : null;
+
+    domains[domainId] = {
+      context: section.querySelector(`#hc-context-${domainId}`)?.value.trim() || '',
+      indicatorScores,
+      avgScore, lowestScore,
+      whatWasSeen: section.querySelector(`#hc-seen-${domainId}`)?.value.trim() || '',
+      actionIdentified,
+      actionLevel: actionIdentified ? section.querySelector(`#hc-action-level-${domainId}`)?.value || '' : '',
+      actionDescription: actionIdentified ? section.querySelector(`#hc-action-desc-${domainId}`)?.value.trim() || '' : '',
+    };
+  });
+  r.domains = domains;
+
+  r.overallReflection = document.getElementById('hc-overall-reflection').value.trim();
+  r.keyStrengths = document.getElementById('hc-key-strengths').value.trim();
+  r.areasForImprovement = document.getElementById('hc-afis').value.trim();
+  r.priorityNextSteps = document.getElementById('hc-priority-next').value.trim();
+
+  r.supportPriorityScore = _hcPriorityScore(r);
+
+  saveHealthCheckReview(r);
+  errEl.style.display = 'none';
+  _hcRenderStaffHistory(r.staffId);
+  if (typeof UI !== 'undefined') UI.showToast('success', `Health Check saved — ${Object.keys(domains).length} focus area(s) recorded.`);
+}
+
+// Documented, adjustable — see file header. Weights the single lowest
+// indicator score more heavily than the overall average, matching the
+// stated intent behind Graeme's existing manual analysis ("weights lower
+// practice score more heavily"), but the exact original weighting wasn't
+// reverse-engineered with full confidence from the baseline spreadsheet
+// alone. Confirm/adjust once the baseline data is actually imported and
+// can be checked against known values.
+function _hcPriorityScore(review) {
+  const domains = Object.values(review.domains || {});
+  if (domains.length === 0) return null;
+  const avgOfAvgs = domains.reduce((s, d) => s + d.avgScore, 0) / domains.length;
+  const lowestOverall = Math.min(...domains.map(d => d.lowestScore));
+  return (6 - lowestOverall) * 1.0 + (6 - avgOfAvgs) * 0.4;
+}
+
+// ── Wire top-level events ────────────────────────────────────────
 function _wireHCEvents() {
-  document.getElementById('hc-area-sel')?.addEventListener('change', e=>{
-    const areaCode = e.target.value;
-    const upload   = document.getElementById('hc-upload-section');
-    const placeholder=document.getElementById('hc-placeholder');
-    const review   = document.getElementById('hc-review-section');
-    if (!areaCode) {
-      if(upload) upload.style.display='none';
-      if(placeholder) placeholder.style.display='block';
-      return;
-    }
-    if(placeholder) placeholder.style.display='none';
-    if(review) review.style.display='none';
-    if(upload) upload.style.display='block';
-    _hcShowAreaHistory(areaCode);
+  document.getElementById('hc-area-sel')?.addEventListener('change', e => {
+    _hcPopulateStaffSelector(e.target.value);
+    document.getElementById('hc-staff-history').innerHTML = '';
+    document.getElementById('hc-placeholder').style.display = 'block';
+    document.getElementById('hc-review-form').style.display = 'none';
   });
-
-  // File drop zone
-  const dropZone = document.getElementById('hc-drop-zone');
-  const fileInput = document.getElementById('hc-file-input');
-
-  dropZone?.addEventListener('click', ()=>fileInput?.click());
-  dropZone?.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') fileInput?.click(); });
-  dropZone?.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.style.background='#C7E9E5'; });
-  dropZone?.addEventListener('dragleave', ()=>{ dropZone.style.background='var(--color-teal-lt)'; });
-  dropZone?.addEventListener('drop', e=>{ e.preventDefault(); dropZone.style.background='var(--color-teal-lt)'; const f=e.dataTransfer?.files[0]; if(f) _processHCFile(f); });
-  fileInput?.addEventListener('change', e=>{ const f=e.target.files[0]; if(f) _processHCFile(f); });
-
-  // Text extraction
-  document.getElementById('hc-text-extract-btn')?.addEventListener('click', ()=>{
-    const text = document.getElementById('hc-text-input')?.value.trim();
-    if (!text) return;
-    _extractFromText(text);
+  document.getElementById('hc-staff-sel')?.addEventListener('change', e => {
+    _hcSelectedStaffId = e.target.value;
+    _hcRenderStaffHistory(_hcSelectedStaffId);
+    document.getElementById('hc-placeholder').style.display = 'block';
+    document.getElementById('hc-review-form').style.display = 'none';
   });
-
-  // Reset
-  document.getElementById('hc-reset-btn')?.addEventListener('click', ()=>{
-    document.getElementById('hc-review-section').style.display='none';
-    document.getElementById('hc-upload-section').style.display='block';
-    if(document.getElementById('hc-file-input')) document.getElementById('hc-file-input').value='';
-  });
-
-  // Save all
-  document.getElementById('hc-save-all')?.addEventListener('click', _saveHCScores);
+  document.getElementById('hc-new-review-btn')?.addEventListener('click', _hcStartNewReview);
 }
 
-// ── File processing ───────────────────────────────────────────
-async function _processHCFile(file) {
-  const processing = document.getElementById('hc-processing');
-  const upload     = document.getElementById('hc-upload-section');
-  if(processing) processing.style.display='block';
-  if(upload) upload.querySelector('#hc-drop-zone').style.opacity='0.5';
-
-  try {
-    // Read file as text (works for CSV and txt; xlsx will be binary)
-    const text = await _readFileAsText(file);
-    await _extractFromText(text, file.name);
-  } catch(err) {
-    if(processing) processing.style.display='none';
-    if(typeof UI!=='undefined') UI.showToast('error', `Could not read file: ${err.message}`);
-  }
+// ── Helpers ───────────────────────────────────────────────────
+function _hcGetAllReviews() { return (window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.reviews) || []; }
+function _hcGetReview(id) { return _hcGetAllReviews().find(r => r.reviewId === id) || null; }
+function _hcGetReviewsForStaff(staffId) { return _hcGetAllReviews().filter(r => r.staffId === staffId); }
+function _hcGetReviewsForArea(areaCode) { return _hcGetAllReviews().filter(r => r.areaCode === areaCode); }
+function _hcCycleLabel(cycleId) {
+  return { [HC_CYCLES.BASELINE]:'Baseline', [HC_CYCLES.NOVEMBER]:'November', [HC_CYCLES.FEB_MARCH]:'Feb/March', [HC_CYCLES.JUNE]:'June' }[cycleId] || cycleId;
 }
-
-function _readFileAsText(file) {
-  return new Promise((resolve, reject)=>{
-    const reader = new FileReader();
-    reader.onload  = e => resolve(e.target.result);
-    reader.onerror = () => reject(new Error('File read failed'));
-    reader.readAsText(file);
-  });
-}
-
-async function _extractFromText(text, filename='') {
-  const processing = document.getElementById('hc-processing');
-  if(processing) processing.style.display='block';
-
-  try {
-    // Call Anthropic Haiku to map responses to framework dimensions
-    const prompt = `You are analysing a Digital Health Check from an FE college. Extract scores for each dimension.
-
-The five dimensions are:
-1. Digital Learning Environment — Teams channel structure, resource organisation, navigation, accessibility of digital spaces
-2. Inclusive Practice — UDL, personalisation, SEND support, language and literacy embedding
-3. Accessibility by Design — WCAG compliance, alt text, colour contrast, accessible resource creation
-4. Staff Digital Capability — Staff confidence and effective use of digital tools for teaching, learning and assessment
-5. Learner Digital Skills — Learner ability to navigate and use digital tools independently
-
-Score each dimension 1–5 where:
-1 = Immediate concern / not present
-2 = Significant development needed
-3 = Developing / partially in place
-4 = Establishing / mostly in place
-5 = Embedded / consistently strong
-
-Analyse this Health Check data:
----
-${text.substring(0, 3000)}
----
-
-Respond ONLY with valid JSON in this exact format, no other text:
-{
-  "digitalLearningEnv": { "score": 3, "rationale": "brief explanation" },
-  "inclusivePractice": { "score": 3, "rationale": "brief explanation" },
-  "accessibilityByDesign": { "score": 2, "rationale": "brief explanation" },
-  "staffCapabilityHC": { "score": 3, "rationale": "brief explanation" },
-  "learnerDigitalSkills": { "score": 3, "rationale": "brief explanation" }
-}`;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    if (!response.ok) throw new Error(`API error: ${response.status}`);
-    const data = await response.json();
-    const raw  = data.content?.[0]?.text || '';
-
-    // Parse JSON response
-    const clean = raw.replace(/```json|```/g,'').trim();
-    const scores = JSON.parse(clean);
-
-    if(processing) processing.style.display='none';
-    _renderHCReview(scores, filename);
-
-  } catch(err) {
-    if(processing) processing.style.display='none';
-    // Fallback: show manual entry form if API fails
-    console.warn('DPC Hub: HC extraction failed, showing manual entry:', err);
-    _renderHCManualReview(filename);
-  }
-}
-
-// ── Render review panel ───────────────────────────────────────
-function _renderHCReview(scores, source='') {
-  const upload = document.getElementById('hc-upload-section');
-  const review = document.getElementById('hc-review-section');
-  const rows   = document.getElementById('hc-dimension-rows');
-  if(upload) upload.style.display='none';
-  if(review) review.style.display='block';
-  if(!rows) return;
-
-  rows.innerHTML = HC_DIMENSIONS.map(dim=>{
-    const extracted = scores[dim.id] || { score: null, rationale: '' };
-    const score     = extracted.score;
-    return `
-      <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);margin-bottom:var(--space-md);">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-sm);">
-          <div>
-            <h3 style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);">${dim.label}</h3>
-            <p style="font-size:var(--text-xs);color:var(--color-muted);">${dim.desc}</p>
-          </div>
-          <div style="display:flex;gap:var(--space-xs);" role="group" aria-label="Score for ${dim.label}">
-            ${[1,2,3,4,5].map(s=>{
-              const sel = s===score;
-              const bg  = sel ? _ragColour(s) : 'var(--color-white)';
-              const col = sel ? 'var(--color-white)' : 'var(--color-muted)';
-              return `<label style="cursor:pointer;">
-                <input type="radio" name="hc-score-${dim.id}" value="${s}" ${sel?'checked':''} style="position:absolute;opacity:0;width:0;height:0;" aria-label="Score ${s}">
-                <span class="hc-score-btn" data-dim="${dim.id}" data-score="${s}" style="
-                  display:inline-flex;align-items:center;justify-content:center;
-                  width:44px;height:44px;border-radius:var(--radius-sm);
-                  border:2px solid ${sel?_ragColour(s):'var(--color-border)'};
-                  background:${bg};color:${col};
-                  font-weight:var(--font-bold);font-size:var(--text-base);
-                  cursor:pointer;transition:all 150ms;user-select:none;"
-                  aria-hidden="true">${s}</span>
-              </label>`;
-            }).join('')}
-          </div>
-        </div>
-        ${extracted.rationale?`
-          <div style="background:var(--color-teal-lt);border-radius:var(--radius-sm);padding:var(--space-sm);margin-bottom:var(--space-sm);">
-            <p style="font-size:var(--text-xs);color:var(--color-teal);font-weight:bold;margin-bottom:2px;">AI rationale:</p>
-            <p style="font-size:var(--text-sm);color:var(--color-slate);">${_hcEsc(extracted.rationale)}</p>
-          </div>`:''}
-        <label style="display:block;font-size:var(--text-xs);color:var(--color-muted);margin-bottom:4px;" for="hc-rationale-${dim.id}">Your rationale / override note</label>
-        <textarea id="hc-rationale-${dim.id}" rows="2" style="width:100%;padding:var(--space-xs) var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);font:var(--text-sm) Arial,sans-serif;resize:vertical;">${_hcEsc(extracted.rationale||'')}</textarea>
-      </div>`;
-  }).join('');
-
-  // Wire score button visual feedback
-  rows.addEventListener('click', e=>{
-    const btn = e.target.closest('.hc-score-btn');
-    if (!btn) return;
-    const dimId = btn.dataset.dim;
-    const score = parseInt(btn.dataset.score);
-    document.querySelectorAll(`.hc-score-btn[data-dim="${dimId}"]`).forEach(b=>{
-      const s   = parseInt(b.dataset.score);
-      const sel = s===score;
-      b.style.background   = sel ? _ragColour(s) : 'var(--color-white)';
-      b.style.color        = sel ? 'var(--color-white)' : 'var(--color-muted)';
-      b.style.borderColor  = sel ? _ragColour(s) : 'var(--color-border)';
-    });
-    const radio = document.querySelector(`input[name="hc-score-${dimId}"][value="${score}"]`);
-    if(radio) radio.checked=true;
-  });
-}
-
-function _renderHCManualReview(source='') {
-  // No AI extraction — show all dimensions with blank scores for manual entry
-  const blankScores = {};
-  HC_DIMENSIONS.forEach(d=>{ blankScores[d.id]={score:null,rationale:''}; });
-  _renderHCReview(blankScores, source);
-}
-
-// ── Save confirmed scores ─────────────────────────────────────
-function _saveHCScores() {
-  const areaCode = document.getElementById('hc-area-sel')?.value;
-  if (!areaCode) return;
-
-  const area = _getArea(areaCode);
-  if (!area) return;
-
-  const scores = {};
-  HC_DIMENSIONS.forEach(dim=>{
-    const radio = document.querySelector(`input[name="hc-score-${dim.id}"]:checked`);
-    const rationale = document.getElementById(`hc-rationale-${dim.id}`)?.value.trim()||'';
-    if (radio) {
-      scores[dim.id] = { score: parseInt(radio.value), rationale, confirmedAt: nowISO() };
-    }
-  });
-
-  const hcRecord = {
-    hcId:        generateId(),
-    date:        todayISO(),
-    scores,
-    contextNote: document.getElementById('hc-context-note')?.value.trim()||'',
-    confirmedBy: 'DPC',
-    confirmedAt: nowISO(),
-  };
-
-  if (!area.healthChecks) area.healthChecks=[];
-  area.healthChecks.push(hcRecord);
-  area.lastUpdated = nowISO();
-  saveArea(area);
-
-  // Update accessibility dimension on area RAG
-  if (scores.accessibilityByDesign) {
-    if (!area.ragDimensions) area.ragDimensions={};
-    if (!area.ragDimensions.accessibilityInclusion) {
-      area.ragDimensions.accessibilityInclusion={
-        score: scores.accessibilityByDesign.score,
-        rationale: `From Health Check ${todayISO()}: ${scores.accessibilityByDesign.rationale}`,
-        updatedAt: nowISO()
-      };
-      saveArea(area);
-    }
-  }
-
-  if (typeof UI!=='undefined') UI.showToast('success', `Health Check saved for ${areaCode}. ${Object.keys(scores).length} dimensions confirmed.`);
-  _hcShowAreaHistory(areaCode);
-  document.getElementById('hc-review-section').style.display='none';
-  document.getElementById('hc-upload-section').style.display='block';
-}
-
-function _ragColour(score) {
-  return ['','#DC2626','#B45309','#B45309','#15803D','#15803D'][score]||'#64748B';
-}
-function _hcFmtDate(iso){if(!iso)return'';try{return new Date(iso.split('T')[0]+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return iso;}}
-function _hcEsc(str){if(!str)return'';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function _hcFmtDate(iso) { if (!iso) return ''; try { return new Date(iso.split('T')[0] + 'T12:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }); } catch { return iso; } }
+function _hcEsc(str) { if (!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
