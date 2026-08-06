@@ -10,6 +10,97 @@ let _autoSaveTimer  = null;   // setInterval reference
 let _lastSavedSnap  = null;   // JSON string of last saved state (for dirty-check)
 let _pendingBanners = [];     // Banners to show after load (collected during loading)
 
+// ── IndexedDB handle persistence (Session 34) ───────────────────
+// A FileSystemDirectoryHandle cannot be stored in localStorage — it's a
+// live browser object, not a string. The pre-Session-34 code only ever
+// stored a boolean flag + a date there, and never actually restored
+// _folderHandle from anything on page load. Result: within the "still
+// valid" window, the Hub silently ran in offline/default mode on every
+// fresh load, with no error and no warning — explains the recurring
+// "0 areas, 0 staff" loads. IndexedDB can store structured/cloneable
+// objects, including this kind of handle, which is the correct mechanism
+// per the File System Access API spec. queryPermission() (as opposed to
+// requestPermission()) does not require a user gesture, so this silent
+// check is legitimate to run on every page load.
+const _IDB_NAME    = 'dpc-hub-handles';
+const _IDB_STORE    = 'handles';
+const _IDB_KEY      = 'folderHandle';
+
+function _idbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(_IDB_NAME, 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore(_IDB_STORE); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+async function _idbStoreHandle(handle) {
+  try {
+    const db = await _idbOpen();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(_IDB_STORE, 'readwrite');
+      tx.objectStore(_IDB_STORE).put(handle, _IDB_KEY);
+      tx.oncomplete = resolve;
+      tx.onerror    = () => reject(tx.error);
+    });
+  } catch {
+    // IndexedDB unavailable (e.g. private browsing) — silent reconnect
+    // just won't work next time; the existing weekly-picker flow still
+    // does, so this is a soft failure, not a broken app.
+  }
+}
+
+async function _idbGetHandle() {
+  try {
+    const db = await _idbOpen();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(_IDB_STORE, 'readonly');
+      const req = tx.objectStore(_IDB_STORE).get(_IDB_KEY);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror   = () => reject(req.error);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function _idbClearHandle() {
+  try {
+    const db = await _idbOpen();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(_IDB_STORE, 'readwrite');
+      tx.objectStore(_IDB_STORE).delete(_IDB_KEY);
+      tx.oncomplete = resolve;
+      tx.onerror    = () => reject(tx.error);
+    });
+  } catch { /* no-op */ }
+}
+
+// Tries to silently restore a real, still-valid connection from a
+// previously stored handle. Returns true only if _folderHandle is now
+// genuinely usable — never shows any UI, never requires a click.
+async function tryReconnectSilently() {
+  const handle = await _idbGetHandle();
+  if (!handle) return false;
+  try {
+    const perm = await handle.queryPermission({ mode: 'readwrite' });
+    if (perm === 'granted') {
+      _folderHandle = handle;
+      return true;
+    }
+  } catch {
+    // Handle reference is stale (e.g. file moved/deleted) — fall through
+    // to the normal picker flow below.
+  }
+  return false;
+}
+
+// For the Settings tab connection-status display.
+function getConnectionStatus() {
+  return _folderHandle ? 'connected' : 'offline';
+}
+
 // ── Public data store ─────────────────────────────────────────
 // All modules read from and write to window.DPC_DATA.
 // Never access OneDrive files directly from module files — always go through data.js.
@@ -74,6 +165,7 @@ async function selectFolderFirstTime(ui) {
           _folderHandle = handle;
           localStorage.setItem(DPC_CONFIG.LS_KEYS.FOLDER_HANDLE_STORED, 'true');
           localStorage.setItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE, new Date().toISOString());
+          await _idbStoreHandle(handle);
           ui.hideFolderModal();
           resolve(true);
         } catch (err) {
@@ -103,6 +195,7 @@ async function reconnectFolder(ui) {
           const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
           _folderHandle = handle;
           localStorage.setItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE, new Date().toISOString());
+          await _idbStoreHandle(handle);
           ui.hideFolderModal();
           resolve(true);
         } catch (err) {
@@ -323,19 +416,26 @@ async function checkSessionSnapshot(ui) {
 async function loadHub(ui) {
   if (!checkAPISupport()) return false;
 
-  // Clear any stale localStorage folder handle flag if this is truly first time
-  // (handles case where flag is set but no real handle exists)
-  const permState = getPermissionState();
+  // Session 34: try a real, silent reconnect first — this is the fix for
+  // the connection-persistence bug. Only fall back to the old
+  // localStorage-flag-based modal flow if silent reconnect genuinely fails
+  // (first ever visit, permission actually revoked, or IndexedDB
+  // unavailable). Preserves all existing modal/offline behaviour as the
+  // fallback path — nothing already working is being removed.
+  const reconnected = await tryReconnectSilently();
 
-  if (permState === 'first-time') {
-    // Clear any stale flags
-    localStorage.removeItem(DPC_CONFIG.LS_KEYS.FOLDER_HANDLE_STORED);
-    localStorage.removeItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE);
-    await selectFolderFirstTime(ui);
-  } else if (permState === 'expired') {
-    await reconnectFolder(ui);
+  if (!reconnected) {
+    const permState = getPermissionState();
+
+    if (permState === 'first-time') {
+      localStorage.removeItem(DPC_CONFIG.LS_KEYS.FOLDER_HANDLE_STORED);
+      localStorage.removeItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE);
+      await selectFolderFirstTime(ui);
+    } else if (permState === 'expired') {
+      await reconnectFolder(ui);
+    }
+    // If still no folder (offline mode) — continue with defaults
   }
-  // If still no folder (offline mode) — continue with defaults
 
   await loadManifest(ui);
   await loadRequiredFiles(ui);
