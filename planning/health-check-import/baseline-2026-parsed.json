@@ -1,0 +1,1752 @@
+[
+  {
+    "sourceRowId": 3,
+    "assessorName": "Christie Ross",
+    "date": "2026-06-17",
+    "areaName": "BUI",
+    "areaCode": "BUI400",
+    "headOfArea": "Rich Hanney",
+    "staffMemberName": "Lee Baker",
+    "provision": "Apprentices",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Long time tutor, ease of use of teams. No technical issues",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 5,
+          "captionsTranscripts": 4,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 3.8,
+        "lowestScore": 3,
+        "whatWasSeen": "Clear setting out of teams, everything is clearly signposted. Announcements used for important information. Teams name is clear. File permissions set correctly. Needs a bit more support on using the accessability checker, alt text and assignment briefs. Confident on transcripts, and subtitles for videos but needs to check all videos. 100% confident on colour contrast",
+        "actionIdentified": true,
+        "actionLevel": "Support / coaching",
+        "actionDescription": "To use the accessibility tracker to make sure resources are legally complaint. Training will be provided."
+      }
+    },
+    "overallReflection": "Overall, good skills and organisation. More work needed on using the accessablity checker",
+    "keyStrengths": "Very strong organisational skills",
+    "areasForImprovement": "Use of accessablity tracker",
+    "priorityNextSteps": "Training"
+  },
+  {
+    "sourceRowId": 1003,
+    "assessorName": "Christie Ross",
+    "date": "2026-06-22",
+    "areaName": "Building services",
+    "areaCode": "CON500",
+    "headOfArea": "Rich Hanney",
+    "staffMemberName": "Neil Adams",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Tutor for 10+ years knowledge very good, asked for extra support/training. Very organised. half and half apprentices (level 3) and level 2 full time.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 5
+        },
+        "avgScore": 3.8,
+        "lowestScore": 3,
+        "whatWasSeen": "Neil uses what he is used to, make his lessons accessible. Very organised wants more training",
+        "actionIdentified": true,
+        "actionLevel": "Support / coaching",
+        "actionDescription": "Support for making information accessable to all learner, time constraints are an issue"
+      }
+    },
+    "overallReflection": "Neil is working on his accessibility constantly but feels limited by time.  Neil is digitally proficient using technology to assist him in his work i.e trackers, Excel spreadsheets etc. ",
+    "keyStrengths": "Very strong organisational skills \nUsing transcripts and subtitles on videos",
+    "areasForImprovement": "Using the accessibility checker and alt text more consistently.",
+    "priorityNextSteps": "Attend the all staff training in August, ask for any digital support in the meantime,"
+  },
+  {
+    "sourceRowId": 1004,
+    "assessorName": "Christie Ross",
+    "date": "2026-06-22",
+    "areaName": "Carpentry",
+    "areaCode": "CON500",
+    "headOfArea": "Rich Hanney",
+    "staffMemberName": "Liam Chanter",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 2",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Liam is a new member of staff and has yet to make any lessons for learners. ",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 1,
+          "altTextOnImages": 1,
+          "colourContrastChecked": 1,
+          "captionsTranscripts": 1,
+          "accessibleAssignmentBriefs": 1
+        },
+        "avgScore": 1.0,
+        "lowestScore": 1,
+        "whatWasSeen": "Liam is a new member of staff and has not made any lessons for learners yet.",
+        "actionIdentified": true,
+        "actionLevel": "Training or development",
+        "actionDescription": "Training/ support"
+      }
+    },
+    "overallReflection": "Liam is a new member of staff and has not made any content for learners yet",
+    "keyStrengths": "n/a",
+    "areasForImprovement": "Training support",
+    "priorityNextSteps": "Training support"
+  },
+  {
+    "sourceRowId": 1005,
+    "assessorName": "Christie Ross",
+    "date": "2026-06-22",
+    "areaName": "Construction",
+    "areaCode": "CON",
+    "headOfArea": "Rich Hanney",
+    "staffMemberName": "Victoria Howell",
+    "provision": "Management",
+    "levelOfLearning": "Staff",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Vicky is deputy head of construction and sometimes provides training to staff who are neurodivergent.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 2,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 2.6,
+        "lowestScore": 2,
+        "whatWasSeen": "Vicky does not use a lot of videos in her training and does not know about the accessibility trackers available.",
+        "actionIdentified": true,
+        "actionLevel": "Training or development",
+        "actionDescription": "Training and development. To be explored in all staff training in August"
+      }
+    },
+    "overallReflection": "Vicky has limited knowledge of accessibility for her training. Would like and benefit from digital training",
+    "keyStrengths": "Already uses some transcripts in videos",
+    "areasForImprovement": "More training needed on accessability checker, alt text etc",
+    "priorityNextSteps": "Training and support"
+  },
+  {
+    "sourceRowId": 1006,
+    "assessorName": "Christie Ross",
+    "date": "2026-06-22",
+    "areaName": "Construction",
+    "areaCode": "CON300",
+    "headOfArea": "Rich Hanney",
+    "staffMemberName": "Duncan Edwards",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 2",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Duncan teaches brickwork level 2, challenges of this can be that learners will not or do not know how to access work online. Duncan has been teaching for 18 months so is still new to the teaching proces and making learning materials. Duncan is very keen to get everything needed on to digital for ease of access for both staff and learners. ",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 2,
+          "captionsTranscripts": 2,
+          "accessibleAssignmentBriefs": 5
+        },
+        "avgScore": 2.6,
+        "lowestScore": 2,
+        "whatWasSeen": "Duncan has structured his teams so everything is accessible. Wasnt aware about seperate channels for different subjects.",
+        "actionIdentified": true,
+        "actionLevel": "Training or development",
+        "actionDescription": "Training to be given to whole department on accessablity"
+      }
+    },
+    "overallReflection": "Duncan has demonstrated strong digital skills but needs more support with accessability",
+    "keyStrengths": "Digital skills",
+    "areasForImprovement": "Accessibility checker usage",
+    "priorityNextSteps": "Training and support"
+  },
+  {
+    "sourceRowId": 1007,
+    "assessorName": "Christie Ross",
+    "date": "2026-06-22",
+    "areaName": "Construction",
+    "areaCode": "PD tutor (all areas)",
+    "headOfArea": "Rich Hanney",
+    "staffMemberName": "Erin Potter",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 1",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Erin has been with us 8 months and is a newer member of the team.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 2,
+          "captionsTranscripts": 2,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 2.4,
+        "lowestScore": 2,
+        "whatWasSeen": "Erin has good digital skills but has not been made aware of tools such as the accessibility checker to help make her content more accessible. ",
+        "actionIdentified": true,
+        "actionLevel": "Training or development",
+        "actionDescription": "Training and support"
+      }
+    },
+    "overallReflection": "Erin shows great ethic with the content she uses for the learners as she has to teach sensitive subjects sometimes.",
+    "keyStrengths": "Good basic digital skills",
+    "areasForImprovement": "Training on accessability",
+    "priorityNextSteps": "Training and ongoing support"
+  },
+  {
+    "sourceRowId": 1008,
+    "assessorName": "Christie Ross",
+    "date": "2026-06-26",
+    "areaName": "Construction",
+    "areaCode": "CON/BUI",
+    "headOfArea": "Rich Hanney",
+    "staffMemberName": "Rich Hanney",
+    "provision": "Management",
+    "levelOfLearning": "Head of area",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Rich has been head of construction for a number of years and delivers training to staff with different abilities. He is eager to learn how to make his training powerpoints more accesseble",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 1,
+          "captionsTranscripts": 2,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 2.4,
+        "lowestScore": 1,
+        "whatWasSeen": "Rich is aware he needs improvement and wants to support al of CON/BUI to achive this goal",
+        "actionIdentified": true,
+        "actionLevel": "Training or development",
+        "actionDescription": "Training and support"
+      }
+    },
+    "overallReflection": "Rich is aware that he needs to improve and is aware of the accessibility checker and that he needs to use it more. ",
+    "keyStrengths": "Awareness of key training. Willingness to help support others with training needs",
+    "areasForImprovement": "Use of the accessability checker, Alt text on images and colour contrast",
+    "priorityNextSteps": "Training and support"
+  },
+  {
+    "sourceRowId": 1009,
+    "assessorName": "Sean Shearing",
+    "date": "2026-07-02",
+    "areaName": "DCI",
+    "areaCode": "DCI",
+    "headOfArea": "Sean Shearing",
+    "staffMemberName": "Jack Kimmins",
+    "provision": "Higher Education",
+    "levelOfLearning": "Level 6",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This is the first review, Jack has perfect digital skills",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 5,
+          "altTextOnImages": 5,
+          "colourContrastChecked": 5,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 5
+        },
+        "avgScore": 5.0,
+        "lowestScore": 5,
+        "whatWasSeen": "Word document assessment brief",
+        "actionIdentified": false,
+        "actionLevel": null,
+        "actionDescription": null
+      }
+    },
+    "overallReflection": "Nothing was identify by the accessibility checker.",
+    "keyStrengths": "Good fonts, colours, alt text",
+    "areasForImprovement": "N/A",
+    "priorityNextSteps": "Group training session"
+  },
+  {
+    "sourceRowId": 1010,
+    "assessorName": "Sean Shearing",
+    "date": "2026-07-02",
+    "areaName": "IT Digital Computing",
+    "areaCode": "DCI",
+    "headOfArea": "Sean Shearing",
+    "staffMemberName": "Thomas Griffin",
+    "provision": "Higher Education",
+    "levelOfLearning": "Level 4",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This is the first review",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 4,
+          "altTextOnImages": 4,
+          "colourContrastChecked": 5,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 4.4,
+        "lowestScore": 4,
+        "whatWasSeen": "Nothing negative identified by the accessibility checker, very good accessibility practices. Good fonts, colours, alt text.",
+        "actionIdentified": false,
+        "actionLevel": null,
+        "actionDescription": "No action points needed"
+      }
+    },
+    "overallReflection": "Great following of accessibility standards",
+    "keyStrengths": "Great choice of fonts, colour contrast, alt description tags",
+    "areasForImprovement": "No areas for improvement",
+    "priorityNextSteps": null
+  },
+  {
+    "sourceRowId": 1011,
+    "assessorName": "Sean Shearing",
+    "date": "2026-07-02",
+    "areaName": "Digital and Computing",
+    "areaCode": "DCI",
+    "headOfArea": "Sean Shearing",
+    "staffMemberName": "Ben Hobbs",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This is the first review",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 5,
+          "altTextOnImages": 5,
+          "colourContrastChecked": 5,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 5
+        },
+        "avgScore": 5.0,
+        "lowestScore": 5,
+        "whatWasSeen": "Review of work within the ",
+        "actionIdentified": false,
+        "actionLevel": null,
+        "actionDescription": "No action points required, nothing was identified within the checker with the work meeting the required standards."
+      }
+    },
+    "overallReflection": "Review across the work that was provided on the Teams page, looked to review session materials and work",
+    "keyStrengths": "Images were provided with alt-texts, along with suitable colours being used within the work",
+    "areasForImprovement": "Use of additional text and sizes will benefit",
+    "priorityNextSteps": "Group training session to review quality SharePoint resources"
+  },
+  {
+    "sourceRowId": 1012,
+    "assessorName": "Sean Shearing",
+    "date": "2026-07-02",
+    "areaName": "Digital and Computing ",
+    "areaCode": "DCI",
+    "headOfArea": "Sean Shearing",
+    "staffMemberName": "Will Price",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 1",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "First review",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 5,
+          "altTextOnImages": 5,
+          "colourContrastChecked": 5,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 5
+        },
+        "avgScore": 5.0,
+        "lowestScore": 5,
+        "whatWasSeen": "Level 1 Programming, Lesson 1 PowerPoint",
+        "actionIdentified": false,
+        "actionLevel": null,
+        "actionDescription": "None required"
+      }
+    },
+    "overallReflection": "PowerPoint was well designed and incorporated accessibility mindfully. Everything was easily readable on the slide and content was appropriately contrasted for readability",
+    "keyStrengths": "Layout of slides\nNo accessibility notes from PowerPoint - the one that was on there was debunked when the video played as Closed Captions was available that the accessibility checker did not pick up initially\nContent had appropriate contrasting",
+    "areasForImprovement": "N/A",
+    "priorityNextSteps": "Continued use of accessibility checker"
+  },
+  {
+    "sourceRowId": 1013,
+    "assessorName": "Sean Shearing",
+    "date": "2026-07-02",
+    "areaName": "Digital (HE)",
+    "areaCode": "DCI",
+    "headOfArea": "Sean Shearing",
+    "staffMemberName": "Jason Hill",
+    "provision": "Higher Education",
+    "levelOfLearning": "Level 5",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Higher Education (Digital Apprenticeships) - First review",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 4,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 4,
+          "accessibleAssignmentBriefs": 3
+        },
+        "avgScore": 3.6,
+        "lowestScore": 3,
+        "whatWasSeen": "Induction Presentation and associated resources",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Some tags missing/minor suggestions - due to PowerPoint template design (UCW Template)"
+      }
+    },
+    "overallReflection": "All key accessibility actions addressed (some minor/miss-identified detections)",
+    "keyStrengths": "Well designed and laid out resources.",
+    "areasForImprovement": "Templates need reviewing (Using official UCW Template - suggest reviewing across organisation)",
+    "priorityNextSteps": "No further actions - periodic review as necessary "
+  },
+  {
+    "sourceRowId": 1014,
+    "assessorName": "Sean Shearing",
+    "date": "2026-07-02",
+    "areaName": "Digital and Computing",
+    "areaCode": "DCI",
+    "headOfArea": "Sean Shearing",
+    "staffMemberName": "Jonathan Barnett",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This is the first review",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 5,
+          "altTextOnImages": 4,
+          "colourContrastChecked": 5,
+          "captionsTranscripts": 4,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 4.4,
+        "lowestScore": 4,
+        "whatWasSeen": "Powerpoint presentation for Level 3 Computing - Principles of Computer Science\nPowerpoint on C# Introduction",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Some images were missing Alt text "
+      }
+    },
+    "overallReflection": "Reviewed materials and work in particular a primary powerpoint used in sessions.",
+    "keyStrengths": "Most accessibility requirements were hit, including colours and most alt text. Videos included subtitles where used.\nStaff member could identify where to find the accessibility checking tools and how to operate them. ",
+    "areasForImprovement": "Ensure that all documents are fully accessible going forward, in particular ensuring that alt text is present for all images.",
+    "priorityNextSteps": "Group training session to review quality sharepoint resources"
+  },
+  {
+    "sourceRowId": 1015,
+    "assessorName": "Sean Shearing",
+    "date": "2026-07-02",
+    "areaName": "Computing and Digital Technologies",
+    "areaCode": "DCI",
+    "headOfArea": "Sean Shearing",
+    "staffMemberName": "Alan Burnell",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 1",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "First review.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 5,
+          "altTextOnImages": 5,
+          "colourContrastChecked": 5,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 5
+        },
+        "avgScore": 5.0,
+        "lowestScore": 5,
+        "whatWasSeen": "L1 Projects - Week 1 Presentation\nFDSc Assignment Brief",
+        "actionIdentified": false,
+        "actionLevel": null,
+        "actionDescription": "No action points identified at this stage."
+      }
+    },
+    "overallReflection": "Work evidenced shows use of accessibility tools and no issues identified. ",
+    "keyStrengths": "Alt Text used in presentations and correct use of headings used in Word documents",
+    "areasForImprovement": "None identified at this point. ",
+    "priorityNextSteps": "Monitor and ensure standards are maintained. "
+  },
+  {
+    "sourceRowId": 1016,
+    "assessorName": "Sean Shearing",
+    "date": "2026-07-02",
+    "areaName": "DCI",
+    "areaCode": "DCI",
+    "headOfArea": "Sean Shearing",
+    "staffMemberName": "Sam Viner",
+    "provision": "Apprentices",
+    "levelOfLearning": "Level 6",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This is the first review ",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 5,
+          "altTextOnImages": 5,
+          "colourContrastChecked": 5,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 5
+        },
+        "avgScore": 5.0,
+        "lowestScore": 5,
+        "whatWasSeen": "Apprentice witness statement reviewed - hard to read check and contrast applied.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Ensure all apprentice documentation is reviewed and checked for accessibility"
+      }
+    },
+    "overallReflection": "Completed accessibility checker on word document",
+    "keyStrengths": "Able to apply accessibility checker and take action",
+    "areasForImprovement": "To ensure continued use of accessibility checker on all word documentation",
+    "priorityNextSteps": "Continue to monitor standards applied."
+  },
+  {
+    "sourceRowId": 1017,
+    "assessorName": "Sean Shearing",
+    "date": "2026-07-02",
+    "areaName": "Computing and Digital",
+    "areaCode": "DCI100",
+    "headOfArea": "Sean Shearing",
+    "staffMemberName": "Matthew Goodwin",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 2",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This is the first digital health check.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 4,
+          "altTextOnImages": 4,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 4.0,
+        "lowestScore": 3,
+        "whatWasSeen": "Images had meaningful alt text. Most symbols had alt text however 2 / 12 were missing. ",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Ensuring alt text is used on all inserted symbols as well as images. "
+      }
+    },
+    "overallReflection": "Matt reflected on the necessity for alt text on symbols as well as images. ",
+    "keyStrengths": "Images had alt text, text was clear and readable, video resources contained captions. ",
+    "areasForImprovement": "Alt text on symbols / marking things as decorative.",
+    "priorityNextSteps": "Review new lesson materials for alt text on symbols. "
+  },
+  {
+    "sourceRowId": 1018,
+    "assessorName": "Sean Shearing",
+    "date": "2026-07-02",
+    "areaName": "Digital and Computing",
+    "areaCode": "DCI",
+    "headOfArea": "Sean Shearing",
+    "staffMemberName": "Thilini Badathuruge",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This is the first review",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 5,
+          "altTextOnImages": 4,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 3
+        },
+        "avgScore": 4.2,
+        "lowestScore": 3,
+        "whatWasSeen": "Nothing come up on the accessibility checker. ",
+        "actionIdentified": false,
+        "actionLevel": "Formal follow-up",
+        "actionDescription": "When saving the files make sure to save it as a word document. "
+      }
+    },
+    "overallReflection": "The worksheet is a well-designed and curriculum-focused resource that uses a current and engaging case study (Amazon Prime Air UK) to contextualise key concepts within Emerging Issues and Legislation. The activities are appropriately aligned to T Level DPDD content and include a range of command words that promote higher-order thinking skills. The document is provided in an accessible Word format and includes clear sectioning and references. However, there are several accessibility-related areas that would benefit from further refinement to fully align with best practice and the accessibility checklist.",
+    "keyStrengths": "Saved as a Word document (.docx), which supports accessibility tools and editing.\nSections are visually separated and organised logically from societal impacts through to legislation and future applications.",
+    "areasForImprovement": "Headings appear visually formatted; evidence of Word heading styles cannot be confirmed from the document content.\nNo evidence that the Accessibility Checker has been run.\nNo videos are included, therefore not applicable.",
+    "priorityNextSteps": "Apply and verify proper Heading Styles (Heading 1, Heading 2 and Heading 3) throughout the document rather than relying solely on visual formatting.\nConsider adding relevant diagrams or visual representations (with appropriate alt text) to support different learning preferences."
+  },
+  {
+    "sourceRowId": 2009,
+    "assessorName": "Sharon Waters",
+    "date": "2026-07-06",
+    "areaName": "Education and Early Years",
+    "areaCode": "EEY300",
+    "headOfArea": "Jenna Ratcliffe",
+    "staffMemberName": "Rachael Moger",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "First check following delivery of accessibility session",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 2,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 2
+        },
+        "avgScore": 2.4,
+        "lowestScore": 2,
+        "whatWasSeen": "T Level Summer Assignment document shared with learners via Teams.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "reminded to use accessibility checker, specifically headings, colour contrast and alt text."
+      }
+    },
+    "overallReflection": "As this is an initial diagnostic assessment to gain baseline data, documentation may not be fully compliant at this time. Despite a couple of accessibility points, Rach's document has good font size and is well laid out.",
+    "keyStrengths": "Font size 12 point and good contrast for vast majority of document. Numbering and bullet point formatting are correctly used.",
+    "areasForImprovement": "Headings, colour contrast (use of pale font on white background), Alt text on logos.",
+    "priorityNextSteps": "Headings and alt text."
+  },
+  {
+    "sourceRowId": 2010,
+    "assessorName": "Sharon Waters",
+    "date": "2026-07-06",
+    "areaName": "Education and Early Years",
+    "areaCode": "EEY300",
+    "headOfArea": "Jenna Ratcliffe",
+    "staffMemberName": "Kayleigh Rendall",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 2",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "First review following delivery of accessibility tutorial.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 4,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 3.4,
+        "lowestScore": 2,
+        "whatWasSeen": "Assignment workbook document",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Alt text on images, font minimum of 12 point for whole document."
+      }
+    },
+    "overallReflection": "This is the first review following recent training to establish a baseline. Documentation not expected to be fully compliant at this time. ",
+    "keyStrengths": "consistent use of heading styles, good contrast throughout.",
+    "areasForImprovement": "Alt text on all images, ensure fonts are all a minimum of 12 point.",
+    "priorityNextSteps": "Check alt text on all images used in documents."
+  },
+  {
+    "sourceRowId": 2011,
+    "assessorName": "Chrystal Bliss",
+    "date": "2026-07-06",
+    "areaName": "AGF",
+    "areaCode": "Graphics",
+    "headOfArea": "Chrissandra Boxley",
+    "staffMemberName": "Laura Clarke",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Powerpoint for FMP",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 1,
+          "colourContrastChecked": 1
+        },
+        "avgScore": 1.3333333333333333,
+        "lowestScore": 1,
+        "whatWasSeen": "Powerpoint - the brief itself is set out from exam board (cannot be changed as goes against moderation)\n\nThe powerpoint it was clear in terms of layout and presentation however the back ground being black and then writing grey I feel causes concern however it is positive to see highlight on important terms.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Review colour on slides, and consider a learners perspective "
+      }
+    },
+    "overallReflection": "Colours and text are too similar in some areas",
+    "keyStrengths": "The content is well worded and the purpose is clear",
+    "areasForImprovement": "Colour, grey on a black background doesn't work",
+    "priorityNextSteps": "Consider viewing the powerpoint before on a larger screen as it can cause difficultly but ask a co worker to review it"
+  },
+  {
+    "sourceRowId": 2012,
+    "assessorName": "Chrystal ",
+    "date": "2026-07-06",
+    "areaName": "AGF",
+    "areaCode": "Graphics",
+    "headOfArea": "Chrissandra Boxley",
+    "staffMemberName": "Coralie",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Document for vocabulary ",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "colourContrastChecked": 2,
+          "accessibleAssignmentBriefs": 2
+        },
+        "avgScore": 2.3333333333333335,
+        "lowestScore": 2,
+        "whatWasSeen": "Vocab list",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Check subheadings\nCheck subheading colour\nenlarge text"
+      }
+    },
+    "overallReflection": "Clear document in terms of layout, however font could be larger, and subheadings need to be clearer",
+    "keyStrengths": "Layout\nTerms used\nImportant terms bolded",
+    "areasForImprovement": "Subheading colour\nFont too small",
+    "priorityNextSteps": "Address the above"
+  },
+  {
+    "sourceRowId": 2013,
+    "assessorName": "Chrystal",
+    "date": "2026-07-06",
+    "areaName": "AGF",
+    "areaCode": "Fashion",
+    "headOfArea": "Chrissandra Boxley",
+    "staffMemberName": "Amelia Browne",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Good vocabulary support and logical lesson structure.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 2.8,
+        "lowestScore": 2,
+        "whatWasSeen": "Vocabulary list included throughout the lesson.\nKey terminology clearly highlighted in bold.\nStrong overall layout and logical lesson progression.\nEffective use of images to support learning.\nClear task instructions presented in bullet-point format.\nResearch activities encourage independent thinking and evaluation.\nSome slides contain dense text which may create barriers for lower-level readers.\nSubheadings could be clearer and more consistent.\nFont size is small on several slides and could affect readability.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Increase font size throughout the presentation.\nImprove visibility and consistency of subheadings.\nReview colour contrast on slides where text appears over images.\nUse PowerPoint Accessibility Checker before sharing.\nAdd alt text to images where appropriate.\nEnsure video content includes captions or transcripts."
+      }
+    },
+    "overallReflection": "The resource is clear and well organised with a strong layout and effective use of key terminology. Important concepts are highlighted and supported through visual content and structured activities. To further enhance accessibility, larger font sizes, improved subheading visibility and greater use of built-in accessibility features would support a wider range of learners.",
+    "keyStrengths": "Clear and logical layout.\nEffective use of vocational terminology.\nImportant terms highlighted in bold.\nGood use of relevant imagery.\nWell-structured lesson progression.\nEngaging and current topic relevant to learners",
+    "areasForImprovement": "Subheading colour and visibility.\nFont size too small on some slides.\nAccessibility Checker use not evidenced.\nAlt text not evidenced.\nCaptions/transcripts not evidenced for video content.",
+    "priorityNextSteps": "Increase font size across the presentation.\nImprove consistency and visibility of subheadings.\nReview colour contrast against accessibility standards.\nRun Accessibility Checker prior to sharing resources.\nAdd meaningful alt text to images.\nProvide captions or transcripts for video content.\nContinue the good practice of using vocabulary lists and bolded key terminology"
+  },
+  {
+    "sourceRowId": 2014,
+    "assessorName": "Chrystal",
+    "date": "2026-07-06",
+    "areaName": "AGF",
+    "areaCode": "Art",
+    "headOfArea": "Chrissandra Boxley",
+    "staffMemberName": "Kelly and Rachel",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource introduces learners to research methods within Art and Design, covering both primary and secondary research sources. The presentation outlines grading criteria, provides a wide range of research opportunities and directs learners to external sources such as museums, journals, websites and documentaries. The resource is designed to develop independent research skills and contextual understanding.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 2,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 2.6,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear lesson structure and progression.\nDistinction between primary and secondary research methods.\nExtensive range of research sources provided.\nUseful external links and recommended reading.\nClear final research task.\nEffective use of visual imagery.\nAssessment criteria included for Pass, Merit and Distinction.\nSome slides contain large amounts of text which may be difficult for some learners to process.\nSmall font size on assessment criteria slides.\nWhite text over image backgrounds on some slides may impact readability.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Increase font size on assessment criteria slides.\nImprove visibility of key headings and subheadings.\nReview colour contrast on slides containing text over images.\nUse Accessibility Checker prior to sharing.\nAdd meaningful alt text to images.\nProvide accessibility guidance for linked video resources"
+      }
+    },
+    "overallReflection": "The resource is well organised and provides a broad range of valuable research sources suitable for Art and Design learners. It effectively introduces primary and secondary research and clearly identifies expectations. Accessibility could be further enhanced through larger text, improved contrast and greater use of built-in accessibility features.",
+    "keyStrengths": "Clear structure and logical progression.\nStrong range of research opportunities.\nGood use of relevant imagery.\nClear differentiation between primary and secondary research.\nUseful contextual and industry-relevant sources.\nClear research task linked to sketchbook development.",
+    "areasForImprovement": "Font size on criteria slides.\nText-heavy assessment descriptors.\nColour contrast on image-background slides.\nAlt text not evidenced.\nAccessibility Checker not evidenced.\nNo caption/transcript guidance for video resources",
+    "priorityNextSteps": "Increase font size on grading criteria slides.\nSimplify or chunk lengthy assessment descriptors.\nImprove colour contrast where text is displayed over images.\nRun the Accessibility Checker before sharing.\nAdd alt text to all relevant images.\nInclude guidance regarding captions and accessibility of linked video content.\nContinue using clear headings and visual examples to support learner understanding."
+  },
+  {
+    "sourceRowId": 2015,
+    "assessorName": "Chrystal",
+    "date": "2026-07-06",
+    "areaName": "AGF",
+    "areaCode": "Art",
+    "headOfArea": "Chrissandra Boxley",
+    "staffMemberName": "Eva ",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource forms the Final Major Project (FMP) and explores the theme of Distortion through a range of practical, theoretical and contextual investigations. Learners are guided through artist research, photography, observational drawing, experimentation, annotation and final outcomes. The resource encourages independent thinking and creative exploration while providing structured project milestones. A range of visual examples, practical workshops and discussion activities are included throughout",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 2,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 2.6,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear project structure and progression over the duration of the FMP.\nConsistent use of headings and themed sections.\nStrong visual content and artist references.\nClear practical instructions and workshop activities.\nAnnotation prompts provided to support written reflection.\nMultiple ways for learners to generate ideas including mood boards, mind maps and photography.\nGood balance between practical and theoretical activities.\nSome text-heavy slides, particularly within Identity and Media sections.\nLarge volume of information may be overwhelming for some learners.\nLimited evidence of built-in accessibility features such as alt text and accessibility checking.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Increase font size on pages containing extended text.\nBreak larger text sections into smaller chunks or bullet points.\nReview colour contrast where text is placed onto visual backgrounds.\nRun Accessibility Checker before sharing future versions.\nAdd meaningful alt text to images and visual examples.\nConsider providing simplified versions of key task instructions for learners with literacy or processing"
+      }
+    },
+    "overallReflection": "The resource is visually engaging, ambitious and highly relevant to Art and Design learners. It provides extensive opportunities for experimentation, research and independent development. The structure supports project-based learning effectively. Accessibility could be further strengthened through larger font sizes, additional use of accessibility tools and reducing the cognitive load of some text-heavy sections.",
+    "keyStrengths": "Excellent visual presentation.\nClear project journey and progression.\nStrong use of contemporary and historical artist references.\nWell-structured practical tasks.\nEffective annotation prompts supporting reflection.\nMultiple opportunities for independent exploration and creativity.\nStrong vocational relevance and learner engagement",
+    "areasForImprovement": "Font size on some information-heavy pages.\nText density within Identity and Media sections.\nColour contrast on some image-based pages.\nAccessibility Checker not evidenced.\nAlt text not evidenced.\nAlternative formats for multimedia content not evidenced.",
+    "priorityNextSteps": "Increase font size on text-heavy pages.\nBreak extended information into shorter sections and bullet points.\nReview colour contrast throughout the presentation.\nUse PowerPoint/PDF Accessibility Checker before publication.\nAdd alt text to all instructional and contextual images.\nConsider providing vocabulary support sheets and simplified task summaries.\nContinue the strong use of visual examples, practical activities and structured annotation questions."
+  },
+  {
+    "sourceRowId": 2016,
+    "assessorName": "Chrystal",
+    "date": "2026-07-06",
+    "areaName": "PAP",
+    "areaCode": "Performing Arts",
+    "headOfArea": "Chrissandra Boxley",
+    "staffMemberName": "Fiona Philp",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource supports Level 3 Year 2 learners in Unit 11: Investigation and Exploration of Specialist Study and Context. The presentation guides learners through a structured research project exploring the historical development of their performing arts specialism. It includes section-by-section guidance, suggested word counts, sentence starters, bibliography support and glossary development. The resource is designed to scaffold independent research and academic writing while supporting portfolio development.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 2,
+          "accessibleAssignmentBriefs": 5
+        },
+        "avgScore": 3.0,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear learning outcomes linked to the unit.\nExcellent use of section headings and logical progression.\nAssignment broken into manageable sections.\nSuggested word counts provided.\nSentence starters included throughout.\nGlossary task supports subject-specific vocabulary development.\nBibliography guidance supports academic skills.\nVisual imagery used to support engagement.\nResearch expectations clearly explained.\nEmbedded examples of practitioners and companies.\nSome slides contain substantial written information which could benefit from larger font sizes.\nAccessibility features such as alt text and accessibility checking were not evidenced.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run Accessibility Checker before sharing future resources.\nAdd alt text to images and graphics.\nProvide guidance regarding captions and accessibility of linked video resources.\nConsider slightly increasing font size on text-heavy slides to enhance readability"
+      }
+    },
+    "overallReflection": "This is a well-structured and highly accessible assignment resource. Learners are supported through clearly defined stages, sentence starters, glossary development and bibliography guidance. The presentation effectively scaffolds independent research and academic writing. Minor improvements could be made through greater use of built-in accessibility features and slight adjustments to text presentation.",
+    "keyStrengths": "Excellent assignment structure.\nClear learning outcomes.\nEffective scaffolding through sentence starters.\nLogical progression through each section of the task.\nStrong support for academic writing and referencing.\nVocabulary development through glossary task.\nClear expectations and guidance throughout.\nGood use of visual support.",
+    "areasForImprovement": "Accessibility Checker not evidenced.\nAlt text not evidenced.\nCaptions/transcripts not evidenced for linked video resources.\nFont size could be increased slightly on some information-heavy slides.",
+    "priorityNextSteps": "Run Accessibility Checker before sharing resources.\nAdd meaningful alt text to images and graphics.\nEnsure linked video resources include captions or transcript information.\nIncrease font size on information-heavy slides where appropriate.\nContinue the excellent use of scaffolding, sentence starters and glossary-building activities to support learner access and success"
+  },
+  {
+    "sourceRowId": 2017,
+    "assessorName": "Chrystal",
+    "date": "2026-07-06",
+    "areaName": "PAP",
+    "areaCode": "PERFORMING ARTS",
+    "headOfArea": "Chrissandra Boxley",
+    "staffMemberName": "Lisa",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource supports Year 2 Performing Arts learners through audition preparation, contextual research, performance styles, pantomime development, character creation, reflection and evaluation activities. The presentation contains clear learning aims, scaffolded research tasks, reflection opportunities, planning activities and practical application tasks. Learners are supported through structured stages, guiding questions, sentence prompts and alternative methods of evidencing work",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 5
+        },
+        "avgScore": 3.2,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear learning aims and outcomes.\nStrong use of headings and sectioning.\nWell-scaffolded research and reflection tasks.\nGuiding questions used throughout.\nMultiple opportunities for written, practical and video-based evidence.\nFlexibility in how learners can present work.\nAlternative evidence formats provided.\nGood use of contextual and practical learning.\nTasks broken into manageable stages.\nStrong support for reflection and evaluation.\nUse of planning activities and action setting.\nLimited evidence of accessibility features such as alt text and accessibility checking.\nSome slides contain large quantities of text which could be further chunked for learners with processing difficulties.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run Accessibility Checker before sharing resources.\nAdd meaningful alt text to images and graphics.\nConsider providing caption/transcript guidance for learner-generated video work.\nReview text-heavy slides and consider further chunking of content.\nContinue offering alternative methods of submission and presentation."
+      }
+    },
+    "overallReflection": "This is a highly structured and accessible resource which effectively supports learners through a combination of research, practical work, reflection and contextual understanding. Strong scaffolding, varied assessment methods and flexible approaches to evidencing learning provide good accessibility for a wide range of learners. Minor enhancements could be made through increased use of built-in accessibility tools and further reduction of text-heavy sections.",
+    "keyStrengths": "Excellent structure and sequencing.\nClear learning outcomes.\nStrong scaffolding through guiding questions.\nFlexible evidence formats offered.\nEffective support for reflection and evaluation.\nLogical progression from research to application.\nAlternative approaches for learners uncomfortable with video recording.\nClear links between theory and practice.\nStrong support for independent learning and planning.",
+    "areasForImprovement": "Accessibility Checker not evidenced.\nAlt text not evidenced.\nNo caption/transcript guidance for video activities.\nSome slides contain large amounts of text.\nFurther chunking could support learners with literacy or processing needs.",
+    "priorityNextSteps": "Run Microsoft Accessibility Checker before sharing resources.\nAdd meaningful alt text to all images and graphics.\nConsider captioning guidance for learner-created videos.\nBreak larger blocks of text into shorter bullet-point sections where possible.\nContinue using scaffolding, guiding questions and flexible evidence formats.\nMaintain the strong use of reflection, planning and differentiated presentation methods."
+  },
+  {
+    "sourceRowId": 2018,
+    "assessorName": "Chrystal",
+    "date": "2026-07-06",
+    "areaName": "PAP",
+    "areaCode": "Performing Arts",
+    "headOfArea": "Chrissandra Boxley",
+    "staffMemberName": "Joe Miller",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource is a production running order for a Level 2 devised performance, outlining scenes, cast responsibilities, scene changes, props, music cues and performance sequencing. The document provides learners with clear production expectations and identifies responsibilities for individuals during the performance process",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "colourContrastChecked": 4
+        },
+        "avgScore": 3.0,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear scene-by-scene structure.\nLogical running order.\nClear allocation of cast responsibilities.\nUse of bold headings to identify scenes and songs.\nSimple language appropriate for learners.\nEasy-to-follow bullet point format.\nClear identification of props and scene changes.\nHigh contrast between text and background.\nNo unnecessary visual clutter.\nSome learners may benefit from colour-coded sections or larger headings to quickly identify their responsibilities.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Consider using larger section headings.\nIntroduce colour coding for scenes, props and cast responsibilities.\nRun Accessibility Checker before distribution.\nConsider adding page numbers for quick reference during rehearsals and performances."
+      }
+    },
+    "overallReflection": "The resource is clear, concise and easy to follow. Responsibilities, scene changes and performance cues are presented in a logical format which supports learner understanding and participation. Accessibility is generally strong due to the simple structure and high contrast. Minor improvements to navigation and formatting would further enhance usability",
+    "keyStrengths": "Clear and concise layout.\nLogical sequencing of scenes.\nEffective use of headings and bullet points.\nClear cast responsibilities.\nAccessible language.\nGood contrast and readability.\nEasy reference document for rehearsals and performances",
+    "areasForImprovement": "Accessibility Checker not evidenced.\nHeadings could be larger and more visually distinct.\nColour coding could support quicker navigation.\nPage numbering could improve ease of reference.",
+    "priorityNextSteps": "Run Microsoft Accessibility Checker prior to sharing.\nIncrease heading size and visual hierarchy.\nIntroduce colour coding for scenes and responsibilities.\nAdd page numbers for quick navigation.\nContinue using concise language and clear bullet-point formatting."
+  },
+  {
+    "sourceRowId": 2019,
+    "assessorName": "Chrystal Bliss",
+    "date": "2026-07-07",
+    "areaName": "AGF",
+    "areaCode": "Fashion",
+    "headOfArea": "Chrissandra Boxley",
+    "staffMemberName": "Kate ",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource supports Level 3 Fashion learners in developing visual responses to research. The session encourages learners to transform research into drawings, mark-making, collage and texture-based investigations. Activities promote creative exploration and sketchbook development while reinforcing the importance of visual communication within the design process. The lesson includes questioning, practical exploration, annotation and reflection activities.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 4,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 3.0,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear lesson focus and objectives.\nStructured practical tasks with timings.\nStrong use of creative and visual learning approaches.\nOpportunities for collaborative discussion.\nClear links between research and practical development.\nSketchbook annotation guidance provided.\nReflection activity included.\nVariety of practical approaches including drawing, collage and mark making.\nVisual examples used to support understanding.\nSome text-heavy instructions on task slides.\nLimited evidence of embedded accessibility features such as alt text and Accessibility Checker use.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run Microsoft Accessibility Checker before sharing.\nAdd meaningful alt text to instructional and reference images.\nReview colour contrast on slides containing text over images.\nFurther chunk lengthy task instructions into bullet points where appropriate.\nConsider adding a keyword glossary for specialist terminology such as observational drawing, mark making and annotation"
+      }
+    },
+    "overallReflection": "The resource is engaging, well structured and strongly suited to visual learners. Activities encourage creative exploration and provide clear links between research and practical outcomes. Instructions are generally clear and scaffolded. Accessibility could be enhanced through the use of Accessibility Checker, alt text and further simplification of some task instructions.",
+    "keyStrengths": "Clear lesson structure.\nStrong visual and practical focus.\nEffective use of creative exploration techniques.\nGood opportunities for discussion and reflection.\nClear annotation guidance.\nActivities broken into manageable stages with timings.\nRelevant vocational content for Fashion learners.\nEncourages independent thinking and experimentation.",
+    "areasForImprovement": "Accessibility Checker not evidenced.\nAlt text not evidenced.\nSome text-heavy instruction sections.\nReview colour contrast on image-based slides.\nAdditional vocabulary support could further support accessibility",
+    "priorityNextSteps": "Run Microsoft Accessibility Checker before distribution.\nAdd meaningful alt text to images.\nReview colour contrast throughout the presentation.\nFurther chunk task instructions into shorter bullet points.\nAdd a glossary of key creative terms.\nContinue using practical, visual and reflective activities to support learner engagement and understanding."
+  },
+  {
+    "sourceRowId": 2020,
+    "assessorName": "Chrystal",
+    "date": "2026-07-07",
+    "areaName": "PAP",
+    "areaCode": "Performing",
+    "headOfArea": "Chrissandra Boxley",
+    "staffMemberName": "Tom Manning",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource supports learners in analysing protest songs and exploring the relationship between music and politics. Learners are required to listen, reflect, research, analyse meaning and evaluate the contemporary relevance of song messages. The worksheet promotes critical thinking, personal reflection and analytical writing through structured questioning.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 3.0,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear worksheet format.\nNumbered questions support task navigation.\nLogical progression from listening to analysis and evaluation.\nRelevant and engaging topic.\nOpportunities for personal reflection.\nEncourages research and critical thinking.\nAccessible writing spaces provided.\nClear song choices provided.\nQuestions require higher-order thinking and analytical writing.\nSome learners may benefit from vocabulary support for terms such as viewpoint, relevance, theme, message and protest song.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run Accessibility Checker before sharing resources.\nAdd meaningful alt text to decorative and instructional images.\nProvide lyric sheets, captions or transcripts for linked songs.\nInclude a vocabulary bank explaining key terms.\nConsider adding writing frames or sentence starters to support learners with literacy needs."
+      }
+    },
+    "overallReflection": "The worksheet is clearly structured and provides learners with a straightforward framework for analysing protest music. The sequence of questions effectively develops listening, research and evaluative skills. Accessibility could be enhanced through additional literacy support, use of accessibility tools and alternative formats for audio content",
+    "keyStrengths": "Clear task structure.\nNumbered questions support navigation.\nRelevant and engaging content.\nEncourages critical thinking and reflection.\nGood progression from listening to evaluation.\nProvides learner choice through song selection.\nAppropriate links between music, politics and social issues.",
+    "areasForImprovement": "Accessibility Checker not evidenced.\nAlt text not evidenced.\nNo transcripts or lyric sheets provided.\nVocabulary support could be improved.\nSome questions may require additional scaffolding for lower-attaining learners",
+    "priorityNextSteps": "Run Microsoft Accessibility Checker before distribution.\nAdd alt text to all images.\nProvide accessible lyric sheets or transcripts for each song.\nInclude a glossary of key musical and political terms.\nAdd sentence starters or writing frames for analytical responses.\nContinue using clear numbering and structured questioning to support learner understanding."
+  },
+  {
+    "sourceRowId": 2021,
+    "assessorName": "Chrystal",
+    "date": "2026-07-07",
+    "areaName": "AGF HE",
+    "areaCode": "HE ART",
+    "headOfArea": "Chrissandra Boxley",
+    "staffMemberName": "Simon Taylor",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 4",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource supports learners in developing research skills within Art and Design, focusing on sourcing, sorting and synthesising information for portfolio development. The presentation provides a structured approach to research, including research strategies, concept mapping, source evaluation, synthesis and portfolio presentation. The use of case studies, discussion activities and visual examples helps learners understand how research informs creative practice",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 2.8,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear lesson structure and progression.\nStrong use of headings and sectioning.\nEffective case study (Kara Walker) used to contextualise research.\nResearch strategies clearly explained.\nConcept mapping and visual approaches to research included.\nGood use of images and visual examples throughout. [Sourcing,...ign - Copy | PowerPoint]\nEncourages critical thinking and reflection.\nDiscussion opportunities embedded within the session.\nPortfolio examples provided for learners.\nSources and references included.\nSome slides contain lengthy text blocks.\nSpecialist terminology may require additional vocabulary support.\nLimited evidence of accessibility features such as alt text and Accessibility Checker use.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run Microsoft Accessibility Checker before sharing resources.\nAdd meaningful alt text to all images and diagrams.\nReview colour contrast on slides containing white text over coloured or image backgrounds.\nConsider increasing font size on text-heavy slides.\nProvide a glossary or vocabulary support sheet for specialist academic terms such as synthesis, ideation, conceptual depth and credibility.\nBreak larger text sections into shorter bullet points where appropriate."
+      }
+    },
+    "overallReflection": "This is a well-structured and academically robust resource that effectively develops research skills within Art and Design. Learners are supported through visual examples, discussion, case studies and practical research frameworks. Accessibility could be further strengthened through improved contrast, larger text, use of accessibility tools and additional support for specialist vocabulary",
+    "keyStrengths": "Clear logical structure.\nStrong focus on research skills development.\nEffective use of real-world case studies.\nGood use of visual learning strategies.\nEncourages critical thinking and reflection.\nPortfolio examples support learner understanding.\nReferences provided to model academic practice.\nStrong links between research and creative development.",
+    "areasForImprovement": "Accessibility Checker not evidenced.\nAlt text not evidenced.\nSome colour contrast concerns on image-based slides.\nText-heavy slides in places.\nSpecialist vocabulary may require additional learner support.\nCaptions/transcripts not evidenced for linked media resources",
+    "priorityNextSteps": "Run Microsoft Accessibility Checker before distribution.\nAdd meaningful alt text to all images and diagrams.\nReview colour contrast against WCAG 2.2 AA standards.\nIncrease font size where appropriate.\nCreate a glossary of key research terminology.\nFurther chunk larger text sections into shorter bullet points.\nContinue the strong use of visual examples, concept mapping and research frameworks to support learner success"
+  },
+  {
+    "sourceRowId": 2022,
+    "assessorName": "Chrystal",
+    "date": "2026-07-07",
+    "areaName": "AGF HE",
+    "areaCode": "ART HE",
+    "headOfArea": "Chrissandra",
+    "staffMemberName": "Kari Nygard",
+    "provision": "Higher Education",
+    "levelOfLearning": "Level 4",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource is a higher education research session focused on action research, research structure and discussion writing. The presentation supports learners in understanding key elements of research projects, including methodology, findings, discussion and reflection. Learning objectives are clearly identified and linked to assessment outcomes, helping learners understand expectations and progression.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 4,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 3.0,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear learning objectives identified at the start of the session.\nLogical progression through research concepts.\nResearch structure clearly broken into stages.\nEffective use of bullet points and diagrams.\nAction research model clearly explained.\nAssessment links provided through ILOs.\nGood visual support through diagrams and images.\nClear emphasis on reflection and critical thinking.\nAcademic terminology introduced appropriately for higher-level learners.\nSome specialist vocabulary may require clarification for less confident learners.\nNo evidence of Accessibility Checker use or alt text.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run Microsoft Accessibility Checker before sharing.\nAdd meaningful alt text to diagrams and images.\nProvide definitions or a glossary for specialist research terminology such as methodology, literature review and action research.\nContinue using clear headings and structured content delivery."
+      }
+    },
+    "overallReflection": "The resource is clearly structured and supports learners in understanding the research process through logical sequencing and use of visual models. Learning objectives and assessment links are clearly presented, making expectations transparent. Accessibility could be further enhanced through the use of accessibility tools and additional support for specialist vocabulary.",
+    "keyStrengths": "Clear learning objectives.\nLogical progression of content.\nEffective use of diagrams and visual aids.\nStrong links to assessment requirements.\nClear breakdown of research stages.\nEncourages reflective and critical thinking.\nAppropriate academic level for the intended audience",
+    "areasForImprovement": "Accessibility Checker not evidenced.\nAlt text not evidenced.\nSpecialist vocabulary may require additional learner support.\nConsider adding a glossary or key terminology sheet.",
+    "priorityNextSteps": "Run Microsoft Accessibility Checker before sharing resources.\nAdd alt text to all diagrams and images.\nCreate a glossary of research terminology.\nContinue using structured headings and clear learning outcomes.\nMaintain the use of visual models to support understanding of complex research concepts."
+  },
+  {
+    "sourceRowId": 2023,
+    "assessorName": "Eva Jarvis",
+    "date": "2026-07-07",
+    "areaName": "AGF",
+    "areaCode": "Art",
+    "headOfArea": "Chrissandra",
+    "staffMemberName": "Chrystal",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 1",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource supports Level 1 Art & Design learners through a structured eco-friendly soup label design project. Learners develop understanding of sustainability, branding, colour psychology, typography and introductory Photoshop skills. The project is broken into manageable stages with practical workshops, research activities, reflection tasks and opportunities for peer feedback. The resource provides substantial scaffolding suitable for beginner designers",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 3,
+          "accessibleAssignmentBriefs": 5
+        },
+        "avgScore": 3.0,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear project structure with a week-by-week timeline.\nStrong scaffolding suitable for Level 1 learners.\nClear task instructions and expectations.\nPractical, visual learning activities throughout.\nUse of examples from real brands to support understanding.\nColour psychology activities.\nTypography exploration tasks.\nReflection activities embedded within workshops.\nSustainable packaging research task.\nPhotoshop skills introduced through manageable steps.\nOpportunities for peer feedback and presentation skills.\nSome slides contain large amounts of text that could be further reduced.\nColour contrast could be improved on some image-based slides.\nNo evidence of Accessibility Checker use or alt text",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run Microsoft Accessibility Checker prior to sharing.\nAdd meaningful alt text to instructional images and examples.\nReview colour contrast on image-based slides.\nReduce text density on some slides by using shorter bullet points.\nConsider including a key vocabulary list covering terms such as branding, typography, sustainability and colour psychology"
+      }
+    },
+    "overallReflection": "The resource is highly structured and well suited to Level 1 learners. Tasks are scaffolded effectively and broken down into small, manageable stages that support learner confidence and progression. The project uses a strong blend of practical activities, discussion, research and digital skills development. Accessibility could be further enhanced through improved use of accessibility features, colour contrast checks and vocabulary support.",
+    "keyStrengths": "Excellent structure and sequencing.\nClear week-by-week progression.\nStrong differentiation for beginner learners.\nPractical and engaging tasks.\nGood use of real-world examples.\nEffective introduction to Photoshop.\nStrong focus on sustainability.\nReflection and peer feedback opportunities.\nClear links between research, development and final outcomes.",
+    "areasForImprovement": "Accessibility Checker not evidenced.\nAlt text not evidenced.\nSome colour contrast concerns on image-background slides.\nText-heavy slides in places.\nAdditional vocabulary support would benefit some learners.",
+    "priorityNextSteps": "Run Microsoft Accessibility Checker before sharing resources.\nAdd alt text to all images and visual examples.\nReview colour contrast against WCAG 2.2 AA standards.\nSimplify text-heavy slides into shorter bullet points.\nAdd a glossary of key terms such as sustainability, branding, typography and colour psychology.\nContinue using the strong scaffolding and clear activity structure already evident throughout the project."
+  },
+  {
+    "sourceRowId": 2024,
+    "assessorName": "Chrystal",
+    "date": "2026-07-07",
+    "areaName": "AGF",
+    "areaCode": "AGF HE",
+    "headOfArea": "Chrissandra",
+    "staffMemberName": "Michael Sims",
+    "provision": "Higher Education",
+    "levelOfLearning": "Level 4",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource introduces a Higher Education collaboration module focused on collective practice, entrepreneurship, interdisciplinary working and project development within the creative industries. Learners explore examples of collaborative practice, discuss roles and responsibilities, and undertake a practical group task involving motion and chain reactions. The resource encourages teamwork, communication, critical thinking and professional practice.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 2,
+          "accessibleAssignmentBriefs": 3
+        },
+        "avgScore": 2.4,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear introduction to collaboration and collective practice.\nModule timetable provided.\nEffective use of artist and practitioner examples.\nCollaborative discussion tasks included.\nClear practical group activity.\nStrong links to employability and entrepreneurship.\nClear explanation of module aims and outcomes.\nRelevant industry-focused content.\nOpportunities for reflection and teamwork.\nUse of external resources and Padlet activities.\nSome text-heavy module description slides.\nNo evidence of Accessibility Checker use.\nNo evidence of alt text.\nNo evidence of caption or transcript provision for linked videos",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run Accessibility Checker before sharing resources.\nAdd meaningful alt text to images and visual examples.\nProvide captions or transcripts for linked video content.\nChunk longer text sections into shorter bullet points.\nConsider adding a glossary for terms such as entrepreneurship, interdisciplinary practice and collective working"
+      }
+    },
+    "overallReflection": "The resource provides a clear introduction to collaborative practice and effectively links creative working with professional and entrepreneurial development. Activities are engaging and encourage teamwork, communication and critical thinking. Accessibility could be strengthened through greater use of accessibility tools, provision of alternative formats for video content and reduction of text density on some slides.",
+    "keyStrengths": "Clear module overview.\nStrong industry relevance.\nEffective use of collaborative activities.\nGood practitioner and collective examples.\nClear links to employability skills.\nEncourages teamwork and problem solving.\nPractical and engaging task design.\nClear learning purpose and expectations.",
+    "areasForImprovement": "Accessibility Checker not evidenced.\nAlt text not evidenced.\nCaptions/transcripts not evidenced for video content.\nSome text-heavy module information slides.\nAdditional vocabulary support could enhance accessibility.",
+    "priorityNextSteps": "Run Microsoft Accessibility Checker before distribution.\nAdd alt text to all images and visual examples.\nProvide captions or transcripts for all linked video content.\nChunk dense text into shorter sections and bullet points.\nConsider a key terminology sheet for collaborative and entrepreneurial concepts.\nContinue using practical discussion activities and real-world examples to support learner engagement."
+  },
+  {
+    "sourceRowId": 2025,
+    "assessorName": "Chrystal",
+    "date": "2026-07-07",
+    "areaName": "PAP",
+    "areaCode": "DANCE",
+    "headOfArea": "Chrissandra",
+    "staffMemberName": "Rachel Hickie",
+    "provision": "Higher Education",
+    "levelOfLearning": "Level 4",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource explores the psychology of memory and its relationship to learning and remembering choreography. The content is structured around key memory theories, memory types, memory stages and practical applications for dancers. The session uses discussion, quizzes, videos, retrieval activities and real-world examples to support understanding. Subject-specific terminology is introduced and linked directly to performing arts practice.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 2,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 2.6,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear learning objectives.\nLogical progression through the topic.\nStrong links between theory and dance practice.\nVariety of teaching approaches including discussion, quizzes, retrieval practice and videos.\nGood use of examples learners can relate to (Dory, Homer Simpson, Friends).\nOpportunities for active participation and recall.\nMemory techniques explicitly taught.\nStrong subject relevance for dance learners.\nSome text-heavy slides containing complex academic language.\nMultiple videos embedded as part of the lesson.\nVocabulary-rich content that may require additional support for some learners.\nNo evidence of Accessibility Checker use or alt text.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run Accessibility Checker before sharing resources.\nAdd meaningful alt text to images and diagrams.\nProvide captions or transcripts for linked video content.\nSimplify or chunk some of the longer text-heavy slides.\nConsider adding a glossary of key terms such as explicit memory, implicit memory, encoding, storage and retrieval.\nReview colour contrast on selected slides"
+      }
+    },
+    "overallReflection": "This is an engaging and well-structured resource that makes effective links between psychological theory and practical dance application. A range of teaching strategies are used to maintain engagement and reinforce learning. Accessibility would be further enhanced through improved use of accessibility features, vocabulary support and reducing the amount of text on some slides.",
+    "keyStrengths": "Clear lesson organisation.\nStrong links to vocational practice.\nEffective use of quizzes and retrieval activities.\nVariety of teaching and learning approaches.\nGood use of relatable examples.\nOpportunities for discussion and reflection.\nUseful application of theory to choreography and performance.\nStrong learner engagement potential.",
+    "areasForImprovement": "Accessibility Checker not evidenced.\nAlt text not evidenced.\nCaptions/transcripts not evidenced for video content.\nSome text-heavy slides.\nSpecialist terminology may require additional support.\nColour contrast could be reviewed on selected slides.",
+    "priorityNextSteps": "Run Microsoft Accessibility Checker before sharing.\nAdd alt text to all images and diagrams.\nProvide captions or transcripts for video content.\nBreak larger sections of text into shorter bullet points.\nAdd a key terminology glossary or vocabulary support sheet.\nReview colour contrast across the presentation.\nContinue using retrieval practice, discussion and real-world examples to support learner understanding."
+  },
+  {
+    "sourceRowId": 2026,
+    "assessorName": "Chrystal",
+    "date": "2026-07-07",
+    "areaName": "AGF",
+    "areaCode": "TECHs",
+    "headOfArea": "Chrissandra",
+    "staffMemberName": "Rowan",
+    "provision": "Tech screen printing",
+    "levelOfLearning": "All levels",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "This resource is an induction to the screen-printing workshop and introduces learners to workshop rules, health and safety requirements, equipment use, housekeeping procedures and booking processes. The presentation provides clear guidance on safe working practices and expectations before learners access specialist facilities.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 4,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 3.0,
+        "lowestScore": 2,
+        "whatWasSeen": "Clear workshop induction information.\nStrong focus on health and safety.\nInstructions presented in simple language.\nGood use of bullet points.\nClear expectations for behaviour and workshop use.\nSafety information highlighted effectively.\nClear cleaning and housekeeping procedures.\nBooking and access information included.\nLogical progression through induction content.\nSome inconsistency in formatting and capitalisation.\nLimited evidence of accessibility features such as alt text and accessibility checking",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run Accessibility Checker before sharing resources.\nAdd meaningful alt text to images.\nReview formatting consistency across slides.\nIncrease heading size on some slides to improve navigation.\nContinue using bullet points and concise instructions."
+      }
+    },
+    "overallReflection": "The resource is clear, practical and appropriate for an induction session. Health and safety expectations are communicated effectively through concise language and a logical structure. Accessibility could be further improved through the use of Accessibility Checker, alt text and greater consistency in formatting.",
+    "keyStrengths": "Clear and concise presentation.\nStrong health and safety focus.\nGood use of bullet points and short instructions.\nLogical sequence of information.\nAppropriate for the learner level and purpose.\nPractical and easy to follow.",
+    "areasForImprovement": "Accessibility Checker not evidenced.\nAlt text not evidenced.\nFormatting and heading consistency.\nSome headings could be more prominent",
+    "priorityNextSteps": "Run Microsoft Accessibility Checker before sharing.\nAdd alt text to all images and visual content.\nStandardise formatting and heading styles.\nIncrease heading visibility where appropriate.\nContinue using clear, concise instructions and safety-focused content"
+  },
+  {
+    "sourceRowId": 2027,
+    "assessorName": "Aaron Jones",
+    "date": "2026-07-08",
+    "areaName": "Public Services",
+    "areaCode": "PSF",
+    "headOfArea": "Dave Beresford",
+    "staffMemberName": "Aaron Jones",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": null,
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 1,
+          "colourContrastChecked": 2,
+          "captionsTranscripts": 2,
+          "accessibleAssignmentBriefs": 2
+        },
+        "avgScore": 1.8,
+        "lowestScore": 1,
+        "whatWasSeen": "3.2 Global Affairs, the Media and the Uniformed Services ",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run accessibility checker for all handouts, then verify manually "
+      },
+      "digitalOrganisationAndHygiene": {
+        "context": null,
+        "indicatorScores": {
+          "folderStructureLogical": 1,
+          "gdprCompliantSharing": 3,
+          "versionControl": 2,
+          "namingConventions": 2,
+          "resourcesReviewedRegularly": 2
+        },
+        "avgScore": 2.0,
+        "lowestScore": 1,
+        "whatWasSeen": "L3 Protective Services yr 2 Green ",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Clean up redundant files, ensure files are stored in a location where they cannot be edited. Ensure files are easy to navigate"
+      }
+    },
+    "overallReflection": "There are some important areas to improve on to ensure compliance ",
+    "keyStrengths": "Some file names are clear within teams ",
+    "areasForImprovement": "Resources require an accessibility check, teams channels must be made clearer. Use a structured file system at the start of the year that is easy to navigate.",
+    "priorityNextSteps": "Use a structured file system at the start of the year that is easy to navigate. Resources require an accessibility check."
+  },
+  {
+    "sourceRowId": 2028,
+    "assessorName": "Aaron Jones",
+    "date": "2026-07-08",
+    "areaName": "Public Services",
+    "areaCode": "PSF",
+    "headOfArea": "Dave Beresford",
+    "staffMemberName": "David Usher ",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 2",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": null,
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 2,
+          "accessibleAssignmentBriefs": 2
+        },
+        "avgScore": 2.2,
+        "lowestScore": 2,
+        "whatWasSeen": "Map and Navigation review (final assessment)",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Ensure a heading is present that is readable by immersive reader"
+      },
+      "digitalOrganisationAndHygiene": {
+        "context": null,
+        "indicatorScores": {
+          "folderStructureLogical": 1,
+          "gdprCompliantSharing": 1,
+          "versionControl": 3,
+          "namingConventions": 2,
+          "resourcesReviewedRegularly": 2
+        },
+        "avgScore": 1.8,
+        "lowestScore": 1,
+        "whatWasSeen": "wc_stu_25_Protective Services Y1 L2",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Learner work should not be visible and editable in shared files. Class materials folder must be used for resources."
+      }
+    },
+    "overallReflection": "Some key areas to be cleaned up with level 2 assignment briefs to allow for immersive reader to be used more effectively ",
+    "keyStrengths": "Other than immersive reader resources are accessible ",
+    "areasForImprovement": "Teams folders need to be rationalised and learner work musn't be accessible and editable by peers",
+    "priorityNextSteps": "Take part in digital training to ensure knowledge of expectations "
+  },
+  {
+    "sourceRowId": 2029,
+    "assessorName": "Aaron Jones",
+    "date": "2026-07-08",
+    "areaName": "Public Services",
+    "areaCode": "PSF",
+    "headOfArea": "David Beresford",
+    "staffMemberName": "David Beresford",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": null,
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 1,
+          "colourContrastChecked": 2,
+          "captionsTranscripts": 2,
+          "accessibleAssignmentBriefs": 2
+        },
+        "avgScore": 1.8,
+        "lowestScore": 1,
+        "whatWasSeen": "Final Phys prep assignment guidance ",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Use of alt text and headings "
+      },
+      "digitalOrganisationAndHygiene": {
+        "context": null,
+        "indicatorScores": {
+          "folderStructureLogical": 1,
+          "gdprCompliantSharing": 2,
+          "versionControl": 2,
+          "namingConventions": 2,
+          "resourcesReviewedRegularly": 2
+        },
+        "avgScore": 1.8,
+        "lowestScore": 1,
+        "whatWasSeen": "wc_stu_25_Protective Services Year 1 Blue Y1 L3\n\n",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Teams files must be placed in class materials and be clearly organised. Learner work needs to be saved where it cant be accessed/ edited by peers"
+      }
+    },
+    "overallReflection": "There are some key areas that needs to be addressed ",
+    "keyStrengths": "Assignment brief was clear",
+    "areasForImprovement": "Assignment brief should be readable in immersive reader, teams files must be clear, learner work not accessible. Use of class materials folder",
+    "priorityNextSteps": null
+  },
+  {
+    "sourceRowId": 2030,
+    "assessorName": "Ben Holt",
+    "date": "2026-07-08",
+    "areaName": "Motor Vehicle",
+    "areaCode": "EMV300",
+    "headOfArea": "Felix Coles",
+    "staffMemberName": "Tony Lowe",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 2",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": null,
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 3
+        },
+        "avgScore": 3.0,
+        "lowestScore": 3,
+        "whatWasSeen": "No alt text or headings outlined, white background and black text.\nHowever since talking through accessible practice, all new documents are being checked.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Continue to check every new piece of material."
+      }
+    },
+    "overallReflection": "In need of slight tweaks but nothing too major.",
+    "keyStrengths": "Well laid out document, clear font ",
+    "areasForImprovement": "Headings, alt text and colour contrast",
+    "priorityNextSteps": null
+  },
+  {
+    "sourceRowId": 2031,
+    "assessorName": "Ben Holt",
+    "date": "2026-07-08",
+    "areaName": "Motor Vehicle ",
+    "areaCode": "EMV300",
+    "headOfArea": "Felix Coles",
+    "staffMemberName": "Adrian Pitt",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 2",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": null,
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 3.2,
+        "lowestScore": 3,
+        "whatWasSeen": "Document well laid out with clear font and instructions, no images so no alt text required. White background, black text.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Include images, run checker."
+      }
+    },
+    "overallReflection": "Good material, just need to run checker when creating new.",
+    "keyStrengths": null,
+    "areasForImprovement": null,
+    "priorityNextSteps": null
+  },
+  {
+    "sourceRowId": 2032,
+    "assessorName": "Ben Holt",
+    "date": "2026-07-08",
+    "areaName": "Motor Vehicle",
+    "areaCode": "EMV300",
+    "headOfArea": "Felix Coles",
+    "staffMemberName": "Steve Powell",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": null,
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 3
+        },
+        "avgScore": 2.8,
+        "lowestScore": 2,
+        "whatWasSeen": "Plain document with text, no headings or images ",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Run checker on every document, include headings and images. "
+      }
+    },
+    "overallReflection": "Very basic document, but clear information. Just requires some headings and carry out checker.",
+    "keyStrengths": null,
+    "areasForImprovement": null,
+    "priorityNextSteps": null
+  },
+  {
+    "sourceRowId": 2033,
+    "assessorName": "Joseph Bourke-Trotham",
+    "date": "2026-07-08",
+    "areaName": "Puxton Park",
+    "areaCode": "AM100",
+    "headOfArea": "Laura Link",
+    "staffMemberName": "Macaually Anderson",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Accessibility Limitations. Needs work but is hit in areas.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 2
+        },
+        "avgScore": 2.8,
+        "lowestScore": 2,
+        "whatWasSeen": "The work ",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Please ensure all images have Alt text, Titles are present, symbols used over colours and text size."
+      }
+    },
+    "overallReflection": "Macs work needs development but he is more than happy to modify and adapt the content. He fully understands the task and would work not on only this content he has produced, but any other work going forward.",
+    "keyStrengths": "He already adapted his work",
+    "areasForImprovement": "To ensure all his content now has this checked for future content.",
+    "priorityNextSteps": "Learning to use further tools to enhance his teaching."
+  },
+  {
+    "sourceRowId": 2034,
+    "assessorName": "Christie Ross",
+    "date": "2026-07-09",
+    "areaName": "Building services",
+    "areaCode": "BUI450",
+    "headOfArea": "Rich Hanney",
+    "staffMemberName": "Chris Simpson",
+    "provision": "Apprentices",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Chris has worked in construction in a umber of roles over the years he is currently teaching plumbing apprentices.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 2,
+          "colourContrastChecked": 1,
+          "captionsTranscripts": 4,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 2.75,
+        "lowestScore": 1,
+        "whatWasSeen": "Chris is was not aware of the different tools used to make work accesable and is keen to amend this.",
+        "actionIdentified": true,
+        "actionLevel": "Training or development",
+        "actionDescription": "Traing and support to be given on accessability"
+      }
+    },
+    "overallReflection": "Chris was very keen to learn how to make his material more accessable. He had not heard of the accessabilty checker until this point. He also was curious to know if material provded from city and guilds (awarding body) was our responsibilty.",
+    "keyStrengths": "Layout of assignment briefs were clear and well put together",
+    "areasForImprovement": "Overall training on accessibility and ongoing support.",
+    "priorityNextSteps": "Training and support"
+  },
+  {
+    "sourceRowId": 2035,
+    "assessorName": "Sharon Waters",
+    "date": "2026-07-09",
+    "areaName": "Education and Early Years",
+    "areaCode": "EEY300",
+    "headOfArea": "Jenna Ratcliffe",
+    "staffMemberName": "Estelle van Wyk",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 1",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "First review following delivery of accessibility tutorial.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 4,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 3
+        },
+        "avgScore": 3.4,
+        "lowestScore": 3,
+        "whatWasSeen": "Assignment  worksheet",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Headings in tables."
+      },
+      "digitalOrganisationAndHygiene": {
+        "context": "First review following delivery of accessibility tutorial.",
+        "indicatorScores": {
+          "folderStructureLogical": 3,
+          "gdprCompliantSharing": 4,
+          "versionControl": 3,
+          "namingConventions": 4,
+          "resourcesReviewedRegularly": 3
+        },
+        "avgScore": 3.4,
+        "lowestScore": 3,
+        "whatWasSeen": "Level 1 Early Years Team",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "For next year, include channels for each unit. Share class documents before lessons."
+      }
+    },
+    "overallReflection": "Some accessibility adjustments needed, will continue to review documents as sample did not include elements such as images. Teams environment logical structure and not cluttered.",
+    "keyStrengths": "Use of heading on document.  Good colour contrast in worksheet.\nTeam nicely organised.",
+    "areasForImprovement": "Headings within tables.\nChannels within Team for units.",
+    "priorityNextSteps": "Channels in new Teams for new academic year."
+  },
+  {
+    "sourceRowId": 2036,
+    "assessorName": "Sharon Waters",
+    "date": "2026-07-09",
+    "areaName": "Education and Early Years",
+    "areaCode": "EEY300",
+    "headOfArea": "Jenna Ratcliffe",
+    "staffMemberName": "Kayleigh Rendall",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 2",
+    "domains": {
+      "digitalOrganisationAndHygiene": {
+        "context": "First review following delivery of accessibility tutorial.",
+        "indicatorScores": {
+          "folderStructureLogical": 4,
+          "gdprCompliantSharing": 4,
+          "versionControl": 4,
+          "namingConventions": 3,
+          "resourcesReviewedRegularly": 4
+        },
+        "avgScore": 3.8,
+        "lowestScore": 3,
+        "whatWasSeen": "Level 2 Team ",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Channels for individual units. Ensure consistent and clear naming of class resources."
+      }
+    },
+    "overallReflection": "Team is well organised, with individual folders for units within Class Materials. All PowerPoints shared with learners in organised folders. Individual channel for each learner to store assignment work.",
+    "keyStrengths": "Good organisation, Team is easy to navigate.",
+    "areasForImprovement": "Consistent naming of class resources.\nChannels for individual units.",
+    "priorityNextSteps": "Channels for each unit when organising new Team for September."
+  },
+  {
+    "sourceRowId": 2037,
+    "assessorName": "Ben Holt",
+    "date": "2026-07-09",
+    "areaName": "Motor Vehicle",
+    "areaCode": "EMV300",
+    "headOfArea": "Felix Coles",
+    "staffMemberName": "Josh Smith ",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 2",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": null,
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 5,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 3
+        },
+        "avgScore": 3.4,
+        "lowestScore": 3,
+        "whatWasSeen": "Lesson plan on PowerPoint, Great colour contrast choice. Images missing alt text and headings required.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": null
+      }
+    },
+    "overallReflection": "Good piece of work, just need to carry out checker to pick up on few missed parts.",
+    "keyStrengths": null,
+    "areasForImprovement": null,
+    "priorityNextSteps": null
+  },
+  {
+    "sourceRowId": 2038,
+    "assessorName": "Sharon Waters",
+    "date": "2026-07-13",
+    "areaName": "Education and Early Years",
+    "areaCode": "EEY300",
+    "headOfArea": "Jenna Ratcliffe",
+    "staffMemberName": "Rachael Moger",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "digitalOrganisationAndHygiene": {
+        "context": "First review of learning environment, following digital accessibility tutorial.",
+        "indicatorScores": {
+          "folderStructureLogical": 2,
+          "gdprCompliantSharing": 4,
+          "versionControl": 4,
+          "namingConventions": 3,
+          "resourcesReviewedRegularly": 4
+        },
+        "avgScore": 3.4,
+        "lowestScore": 2,
+        "whatWasSeen": "T Level Year 1",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Moving forward, use channels for individual learning units / elements to create easier navigation to learning materials for learners."
+      }
+    },
+    "overallReflection": "Team environment is generally easy to navigate. Posts appear on main General page, including those relating to assignments.  Class materials section has correct permissions and contains folders for each element. ",
+    "keyStrengths": "Documents are usefully named in correct folders, making it easy for learners to find specific content.",
+    "areasForImprovement": "Suggested that for next year, learning materials are located within the individual channels for each element.\nIncluding posts for each lesson within the channel for ease of access by learners.",
+    "priorityNextSteps": "Organising folder for next year's cohort."
+  },
+  {
+    "sourceRowId": 2039,
+    "assessorName": "Sharon Waters",
+    "date": "2026-07-13",
+    "areaName": "Education and Early Years",
+    "areaCode": "EEY300",
+    "headOfArea": "Jenna Ratcliffe",
+    "staffMemberName": "Diane Garrett",
+    "provision": "Apprentices",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "First review following delivery of digital accessibility tutorial",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 4,
+          "accessibleAssignmentBriefs": 2
+        },
+        "avgScore": 3.2,
+        "lowestScore": 2,
+        "whatWasSeen": "Initial assessment brief",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Use Styles for headings and sub-headings.\nEnsure consistent use of alt text on images and Logos."
+      },
+      "digitalOrganisationAndHygiene": {
+        "context": "First review of Teams environment following digital accessibility tutorial",
+        "indicatorScores": {
+          "folderStructureLogical": 2,
+          "gdprCompliantSharing": 4,
+          "versionControl": 4,
+          "namingConventions": 3,
+          "resourcesReviewedRegularly": 3
+        },
+        "avgScore": 3.2,
+        "lowestScore": 2,
+        "whatWasSeen": "Level 3 Supporting Teaching and Learning Team",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Create clear folder structure for different units to allow easier navigation by learners."
+      }
+    },
+    "overallReflection": "Teams has some documentation within Class Materials, but others a re accessible and editable by learners (adults in this case).  For some units the materials are clearly labelled within individual folders. ",
+    "keyStrengths": "Learning materials labelled clearly and usefully. Use of coloured folders to aid navigation. Good, clear communication within main General page to inform learners about room changes, college closures and submission deadlines.",
+    "areasForImprovement": "Ensure each unit has an individual folder within the Class Materials secure folder for placing learning materials.\n\nCreate channel for each unit for ease of navigation by SEND learners.",
+    "priorityNextSteps": "Structuring of folders within class materials.\nCreate channel for each unit."
+  },
+  {
+    "sourceRowId": 2040,
+    "assessorName": "Silvia Bertie",
+    "date": "2026-07-20",
+    "areaName": "CHIL",
+    "areaCode": "SPO",
+    "headOfArea": "Dan Pratlett",
+    "staffMemberName": "Morgan Sealey",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Following the staff training, it was agreed that all newly created documents must be fully accessible and meet the required accessibility standards. While some older presentations currently uploaded are not yet fully accessible, all new briefs and Schemes of Learning have been created in line with accessibility requirements and are fully compliant.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 3.2,
+        "lowestScore": 3,
+        "whatWasSeen": "All newly developed briefs meet accessibility requirements, with compliance confirmed through the appropriate use of the Accessibility Checker.",
+        "actionIdentified": true,
+        "actionLevel": "Inform only",
+        "actionDescription": "Review existing presentations and briefs (where these are not newly created) to ensure they comply with the College’s accessibility standards and design requirements."
+      }
+    },
+    "overallReflection": "Overall I think we are starting in a good way. There is room for improvement but we are working in the correct path.",
+    "keyStrengths": "Effective use of the Accessibility Checker on newly created briefs to identify and address accessibility issues, ensuring content is inclusive and compliant with Accessibility by Design principles.",
+    "areasForImprovement": "Use the Accessibility Checker on all presentations to ensure they meet Accessibility by Design standards.\nRun the Accessibility Checker on both existing and new presentations to ensure full compliance with Accessibility by Design requirements.",
+    "priorityNextSteps": "Ensure that all presentations, both existing and newly created, fully comply with the Accessibility by Design framework."
+  },
+  {
+    "sourceRowId": 2041,
+    "assessorName": "Jed Randall",
+    "date": "2026-07-22",
+    "areaName": "Maths",
+    "areaCode": "EMT",
+    "headOfArea": "Libby Heath-Tavener",
+    "staffMemberName": "Becky Ekland",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 2",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Demo to staff has taken place. Shown accessibility checker and tested on a ppt. Accessible by design shown as well as headings and alt text. ",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 3,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 3
+        },
+        "avgScore": 3.2,
+        "lowestScore": 3,
+        "whatWasSeen": null,
+        "actionIdentified": null,
+        "actionLevel": "Inform only",
+        "actionDescription": null
+      },
+      "promotingAccessiblePractice": {
+        "context": "Training was given in the past on accessibility, this was a long time ago now and refresher is due.",
+        "indicatorScores": {
+          "offersImmersiveReader": 3,
+          "mentionsATTools": 3,
+          "accessibilityUniversal": 3,
+          "learnersPersonalise": 4,
+          "atEmbeddedRoutine": 3
+        },
+        "avgScore": 3.2,
+        "lowestScore": 3,
+        "whatWasSeen": "Use of subtitles on video. ",
+        "actionIdentified": false,
+        "actionLevel": "Inform only",
+        "actionDescription": null
+      },
+      "digitalOrganisationAndHygiene": {
+        "context": "Website areas for M and E looked at. They have aa accessibility reader built in ready for all WC sites. ",
+        "indicatorScores": {
+          "folderStructureLogical": 2,
+          "gdprCompliantSharing": 5,
+          "versionControl": 3,
+          "namingConventions": 2,
+          "resourcesReviewedRegularly": 2
+        },
+        "avgScore": 2.8,
+        "lowestScore": 2,
+        "whatWasSeen": "Ppt used in class. Not shared on Team so learners don't have access to ppt.",
+        "actionIdentified": null,
+        "actionLevel": "Training or development",
+        "actionDescription": null
+      }
+    },
+    "overallReflection": "Materials are paper based and supported by a ppt. Learners don't have access to the ppt on the team. ",
+    "keyStrengths": "Good visuals on ppt and display materials on screen. ",
+    "areasForImprovement": "Alt text, ppt template, sharing files on teams for learners. ",
+    "priorityNextSteps": "Use template in development with M.Filer and the apply to lessons. Start by making ppt accessible fully and then sharing in teams for learners. They need somewhere to navigate and find resources."
+  }
+]
