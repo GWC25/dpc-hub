@@ -335,8 +335,11 @@ function _wireAreasEvents() {
 }
 
 // ── Data helpers ──────────────────────────────────────────────
-function _getAreas()    { return (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || []; }
-function _getArea(code) { return _getAreas().find(a => a.areaCode === code) || null; }
+function _getAreas(includeArchived = false) {
+  const all = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
+  return includeArchived ? all : all.filter(a => !a.archived);
+}
+function _getArea(code) { return _getAreas(true).find(a => a.areaCode === code) || null; }
 function _getAFIs()     { return (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []; }
 
 function _getAreaOpenAFIs(areaCode) {
