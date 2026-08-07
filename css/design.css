@@ -907,3 +907,20 @@ body.underline-links a {
 .hub-sidebar__link--nested {
   padding-left: calc(var(--space-md) + var(--space-sm));
 }
+
+/* ==========================================================================
+   Health Check delta colours (Session 47)
+   Baseline vs current comparison — colour = direction, shade = magnitude.
+   Every one of these 7 pairs verified against the real WCAG relative-
+   luminance contrast formula before use, not eyeballed — all pass AA
+   (4.5:1) for normal text, ranging 5.02:1 to 8.30:1. See the build
+   session notes for the actual numbers. Darker background always pairs
+   with white text once background contrast against dark text would fail.
+   ========================================================================== */
+.hc-delta-decline-light  { background: #FEE2E2; color: #991B1B; }
+.hc-delta-decline-medium { background: #FCA5A5; color: #7F1D1D; }
+.hc-delta-decline-strong { background: #B91C1C; color: #FFFFFF; }
+.hc-delta-neutral        { background: #FEF3C7; color: #78350F; }
+.hc-delta-improve-light  { background: #DCFCE7; color: #14532D; }
+.hc-delta-improve-medium { background: #86EFAC; color: #14532D; }
+.hc-delta-improve-strong { background: #15803D; color: #FFFFFF; }
