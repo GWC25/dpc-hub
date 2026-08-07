@@ -26,6 +26,18 @@
 // full confidence from the baseline spreadsheet. Treat _hcPriorityScore()
 // as a first draft to confirm against known values, not ground truth.
 
+// ── Delta colour classification (Session 47) ──────────────────────
+// Thresholds are a judgement call, documented so they're adjustable:
+// under 0.15 reads as noise/no real change on a 1-5 scale; 0.15-0.6 is a
+// genuine but modest shift; 0.6-1.2 is a clear shift; 1.2+ is dramatic.
+// See css/design.css for the actual verified-WCAG colour values.
+function _hcDeltaClass(delta) {
+  const abs = Math.abs(delta);
+  if (abs < 0.15) return 'hc-delta-neutral';
+  const magnitude = abs < 0.6 ? 'light' : abs < 1.2 ? 'medium' : 'strong';
+  return delta > 0 ? `hc-delta-improve-${magnitude}` : `hc-delta-decline-${magnitude}`;
+}
+
 let _hcDraftReview = null; // in-progress review, not yet saved
 let _hcSelectedStaffId = null;
 
