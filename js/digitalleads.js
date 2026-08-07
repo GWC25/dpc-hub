@@ -111,7 +111,7 @@ function _renderDLList() {
         <div style="width:36px;height:36px;border-radius:50%;background:var(--color-teal-lt);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--color-teal);flex-shrink:0;">${(dl.name||'?')[0].toUpperCase()}</div>
         <div>
           <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_dlEsc(dl.name)}</p>
-          <p style="font-size:var(--text-xs);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')} ${dl.role?'· '+dl.role:''}</p>
+          <p style="font-size:var(--text-xs);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')}${(function(){var a=_getArea(dl.areaCode);return a?' — '+_dlEsc(a.areaName):'';})()} ${dl.role?'· '+dl.role:''}</p>
         </div>
         ${meetings>0?`<span style="margin-left:auto;font-size:10px;background:var(--color-teal-lt);color:var(--color-teal);padding:1px 8px;border-radius:999px;font-weight:bold;">${meetings} mtg${meetings!==1?'s':''}</span>`:''}
       </div>`;
@@ -142,7 +142,7 @@ function _renderDLDetailContent(dlId) {
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-md);">
       <div>
         <h2 style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">${_dlEsc(dl.name)}</h2>
-        <p style="font-size:var(--text-sm);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')} ${dl.role?'· '+_dlEsc(dl.role):''}</p>
+        <p style="font-size:var(--text-sm);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')}${(function(){var a=_getArea(dl.areaCode);return a?' — '+_dlEsc(a.areaName):'';})()} ${dl.role?'· '+_dlEsc(dl.role):''}</p>
       </div>
       <div style="display:flex;gap:var(--space-sm);">
         <button id="dl-edit-btn" type="button" class="btn btn--ghost btn--sm">Edit</button>
