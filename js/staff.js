@@ -190,6 +190,9 @@ function _renderStaffDetailContent(staffId) {
       <button id="staff-save-priorities" type="button" class="btn btn--primary btn--sm" style="margin-top:var(--space-sm);">Save priorities</button>
     </div>
 
+    <!-- Health Check trend summary (Session 42) -->
+    ${_sRenderHCTrendCard(staffId)}
+
     <!-- Open AFIs summary -->
     ${openAFIs.length > 0 ? `
     <div style="background:var(--color-amber-lt);border:1px solid var(--color-amber);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);">
@@ -199,13 +202,13 @@ function _renderStaffDetailContent(staffId) {
 
     <!-- Tabs -->
     <div role="tablist" style="display:flex;border-bottom:2px solid var(--color-border);margin-bottom:var(--space-lg);">
-      ${['history','reflections','afis','notes'].map(tab=>`
+      ${['history','healthchecks','actionplans','reflections','afis','notes'].map(tab=>`
         <button role="tab" type="button" data-staff-tab="${tab}" id="staff-tab-${tab}"
           aria-selected="${tab===_staffTab?'true':'false'}"
           style="padding:10px 16px;border:none;border-bottom:3px solid ${tab===_staffTab?'var(--color-teal)':'transparent'};
           background:none;cursor:pointer;font:${tab===_staffTab?'bold':''} var(--text-sm) Arial,sans-serif;
           color:${tab===_staffTab?'var(--color-teal)':'var(--color-muted)'};min-height:44px;">
-          ${{history:'Touch History',reflections:'Reflections',afis:'Loops',notes:'Notes'}[tab]}
+          ${{history:'Touch History',healthchecks:'Health Checks',actionplans:'Action Plans',reflections:'Reflections',afis:'Loops',notes:'Notes'}[tab]}
         </button>`).join('')}
     </div>
     <div id="staff-tab-panel"></div>
@@ -233,6 +236,43 @@ function _renderStaffTab(tab, staffId) {
             <span style="font-size:var(--text-sm);color:var(--color-slate);margin-left:var(--space-sm);">${_sEsc(t.summary||'')}</span>
           </div>
         </div>`).join('');
+  }
+
+  if (tab === 'healthchecks') {
+    const reviews = (typeof _hcGetReviewsForStaff === 'function' ? _hcGetReviewsForStaff(staffId) : [])
+      .slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    panel.innerHTML = reviews.length === 0
+      ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No Health Checks recorded yet.</p>'
+      : reviews.map(r => {
+          const domains = Object.entries(r.domains || {});
+          return `
+          <div style="padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-sm);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm);">
+              <span style="font-size:var(--text-xs);font-weight:bold;color:var(--color-navy);">${_sFmtDate(r.date)} · ${_sHCCycleLabel(r.cycleId)}</span>
+              <span style="font-size:var(--text-xs);color:var(--color-muted);">Priority ${r.supportPriorityScore != null ? r.supportPriorityScore.toFixed(1) : '—'}</span>
+            </div>
+            ${domains.map(([id, d]) => `
+              <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);padding:2px 0;">
+                <span style="color:var(--color-slate);">${_sEsc(_sHCDomainLabel(id))}</span>
+                <span style="font-weight:bold;color:${d.avgScore >= 4 ? 'var(--color-green)' : d.avgScore >= 3 ? 'var(--color-amber)' : 'var(--color-red)'};">${d.avgScore.toFixed(1)}${d.actionIdentified ? ' · action identified' : ''}</span>
+              </div>`).join('')}
+          </div>`;
+        }).join('');
+  }
+
+  if (tab === 'actionplans') {
+    const allPlans = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [];
+    const plans = allPlans.filter(p => (p.staffIds || []).includes(staffId));
+    const wholeTeamPlans = allPlans.filter(p => p.areaCode === s.areaCode && (!p.staffIds || p.staffIds.length === 0));
+    panel.innerHTML = `
+      ${plans.length === 0 ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No action plans naming this person individually.</p>' : plans.map(p => `
+        <div style="padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-sm);">
+          <p style="font-size:var(--text-xs);font-weight:bold;background:var(--color-light);color:var(--color-muted);padding:1px 8px;border-radius:999px;display:inline-block;margin-bottom:4px;">${_sEsc(p.type||'General')}</p>
+          <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_sEsc(p.focus||p.aim||'Untitled plan')}</p>
+          <p style="font-size:var(--text-xs);color:var(--color-muted);">Target: ${p.targetDate ? _sFmtDate(p.targetDate) : 'No date set'} · ${(p.linkedInstances||[]).length} session(s) assigned</p>
+        </div>`).join('')}
+      ${wholeTeamPlans.length > 0 ? `<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-md);">+ ${wholeTeamPlans.length} whole-team plan(s) for ${_sEsc(s.areaCode)} also apply — see the Area's Action Plan tab.</p>` : ''}
+    `;
   }
 
   if (tab === 'reflections') {
@@ -430,5 +470,61 @@ function _staffPopulateAreaDropdown(selId) {
     opt.value=area.areaCode; opt.textContent=`${area.areaCode} — ${area.areaName}`; sel.appendChild(opt);
   });
 }
+// ── Health Check trend (Session 42) ──────────────────────────────
+// "Baseline and improvement" — compares this person's earliest Health
+// Check (by real date, not by cycle label — cycles can be logged out of
+// strict order) against their most recent, averaged across every domain
+// reviewed on each occasion. Genuinely honest about small samples: with
+// only one review on record, there's nothing yet to compare, and this
+// says so rather than inventing a 0.0 change.
+function _sRenderHCTrendCard(staffId) {
+  const reviews = (typeof _hcGetReviewsForStaff === 'function' ? _hcGetReviewsForStaff(staffId) : [])
+    .slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  if (reviews.length === 0) return '';
+
+  const avgOf = (r) => {
+    const scores = Object.values(r.domains || {}).map(d => d.avgScore).filter(v => v != null);
+    return scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+  };
+
+  const earliest = reviews[0];
+  const latest = reviews[reviews.length - 1];
+  const earliestAvg = avgOf(earliest);
+  const latestAvg = avgOf(latest);
+
+  if (reviews.length === 1 || earliestAvg == null || latestAvg == null) {
+    return `
+    <div style="background:var(--color-light);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);">
+      <p style="font-size:var(--text-sm);color:var(--color-slate);">Health Check baseline: <strong>${earliestAvg != null ? earliestAvg.toFixed(1) : '—'}</strong> (${_sFmtDate(earliest.date)}) — one review on record, nothing to compare against yet.</p>
+    </div>`;
+  }
+
+  const delta = latestAvg - earliestAvg;
+  const deltaColor = delta > 0.05 ? 'var(--color-green)' : delta < -0.05 ? 'var(--color-red)' : 'var(--color-muted)';
+  const deltaSymbol = delta > 0.05 ? '↑' : delta < -0.05 ? '↓' : '→';
+
+  return `
+  <div style="background:var(--color-light);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);display:flex;align-items:center;gap:var(--space-xl);">
+    <div>
+      <p style="font-size:10px;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.04em;">Baseline (${_sFmtDate(earliest.date)})</p>
+      <p style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">${earliestAvg.toFixed(1)}</p>
+    </div>
+    <div style="font-size:var(--text-xl);color:${deltaColor};font-weight:bold;">${deltaSymbol} ${Math.abs(delta).toFixed(1)}</div>
+    <div>
+      <p style="font-size:10px;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.04em;">Latest (${_sFmtDate(latest.date)})</p>
+      <p style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">${latestAvg.toFixed(1)}</p>
+    </div>
+    <div style="margin-left:auto;font-size:var(--text-xs);color:var(--color-muted);">${reviews.length} Health Check${reviews.length!==1?'s':''} on record</div>
+  </div>`;
+}
+
+function _sHCCycleLabel(cycleId) {
+  return { 'baseline-2026':'Baseline', 'nov-2026':'November', 'feb-mar-2027':'Feb/March', 'jun-2027':'June' }[cycleId] || cycleId;
+}
+function _sHCDomainLabel(domainId) {
+  const fa = (typeof HC_FOCUS_AREAS !== 'undefined' ? HC_FOCUS_AREAS : []).find(f => f.id === domainId);
+  return fa ? fa.label : domainId;
+}
+
 function _sFmtDate(iso){if(!iso)return'';try{return new Date(iso.split('T')[0]+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return iso;}}
 function _sEsc(str){if(!str)return'';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
