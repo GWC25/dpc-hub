@@ -10,8 +10,9 @@ function initDigitalLeads() {
     <div id="banner-container" aria-live="polite"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-md);">
       <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);">Digital Leads</h1>
-      <div style="display:flex;gap:var(--space-sm);">
+      <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
         <button id="dl-import-tracker-btn" type="button" class="btn btn--ghost btn--sm">Import HoA / Digital Lead data (2026)</button>
+        <button id="dl-import-confirmed-btn" type="button" class="btn btn--ghost btn--sm">Import confirmed DL Training data (June 2026)</button>
         <button id="dl-new-btn" type="button" class="btn btn--primary btn--sm">+ Add Digital Lead</button>
       </div>
     </div>
@@ -340,6 +341,7 @@ function _saveDL(dl) {
 function _wireDLEvents() {
   document.getElementById('dl-new-btn')?.addEventListener('click',()=>_openDLModal());
   document.getElementById('dl-import-tracker-btn')?.addEventListener('click', _dlOpenTrackerImport);
+  document.getElementById('dl-import-confirmed-btn')?.addEventListener('click', _dlOpenConfirmedImport);
   document.getElementById('dl-modal-close')?.addEventListener('click',()=>document.getElementById('dl-modal').style.display='none');
   document.getElementById('dl-modal-cancel')?.addEventListener('click',()=>document.getElementById('dl-modal').style.display='none');
   document.getElementById('dl-modal-save')?.addEventListener('click',_saveDLModal);
@@ -582,6 +584,167 @@ function _dlCommitTrackerImport() {
 
   if (typeof UI !== 'undefined') {
     UI.showToast('success', `${areasUpdated} area(s) updated, ${dlsCreated} Digital Lead profile(s) created.${skipped>0?` ${skipped} skipped.`:''}`);
+  }
+  document.getElementById('dl-tracker-import-panel').style.display = 'none';
+  _renderDLList();
+}
+
+// ── Confirmed DL Training import (Session 45) ────────────────────
+// Second, more authoritative dataset — supersedes the earlier RAG
+// Summary tracker for HoA/DL names where they conflict. Two real
+// structural decisions embedded in this data, not guessed by this code:
+//   - EFE and EHE both list the SAME HoA and SAME Digital Lead here —
+//     real evidence the earlier AMT merge was correct. Both rows target
+//     areaCode 'AMT' and are deduped into one row below.
+//   - FAU/FCO/FEH/FPL list FOUR DIFFERENT HoAs — the opposite signal —
+//     so they're NOT folded into SEL. This import creates them as real,
+//     separate areas and offers to archive SEL now that it's redundant.
+// PRA / PRS / PM are kept as three separate areas (Graeme's own
+// steer) despite messy overlapping labels in the source spreadsheet.
+let _dlConfirmedData = null;
+
+async function _dlOpenConfirmedImport() {
+  const panel = document.getElementById('dl-tracker-import-panel');
+  if (!panel) return;
+  const showing = panel.style.display !== 'none';
+  if (showing) { panel.style.display = 'none'; return; }
+
+  panel.style.display = 'block';
+  panel.innerHTML = '<p style="color:var(--color-muted);">Loading confirmed data…</p>';
+
+  if (!_dlConfirmedData) {
+    try {
+      const res = await fetch('./planning/dl-confirmed-import/dl-confirmed-2026.json');
+      _dlConfirmedData = res.ok ? await res.json() : [];
+    } catch { _dlConfirmedData = []; }
+  }
+
+  // Dedupe EFE/EHE into one row targeting AMT
+  const seen = new Set();
+  const rows = [];
+  _dlConfirmedData.forEach(r => {
+    if (seen.has(r.targetAreaCode)) return;
+    seen.add(r.targetAreaCode);
+    rows.push(r);
+  });
+
+  const selExists = !!_getArea('SEL');
+
+  panel.innerHTML = `
+    <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md);">
+        <h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">Import confirmed DL Training data — June 2026</h2>
+        <button id="dl-confirmed-close" type="button" class="btn btn--ghost btn--sm">Close</button>
+      </div>
+      <p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-md);">
+        ${rows.length} area(s). New areas (AHE, CTC, FAU, FCO, FEH, FPL) are clearly marked. EXT is unchecked by
+        default — it was noted elsewhere as being retired next year. Nothing saves until you click Import.
+      </p>
+      ${selExists ? `
+        <label style="display:block;font-size:var(--text-sm);color:var(--color-slate);margin-bottom:var(--space-lg);padding:var(--space-sm);background:var(--color-amber-lt);border-radius:var(--radius-sm);">
+          <input type="checkbox" id="dl-archive-sel" checked> Archive SEL now that FAU/FCO/FEH/FPL exist as separate areas
+        </label>` : ''}
+      <button id="dl-confirmed-import-btn" type="button" class="btn btn--primary btn--sm" style="margin-bottom:var(--space-lg);">Import selected</button>
+      <div id="dl-confirmed-rows"></div>
+    </div>
+  `;
+
+  const rowsContainer = document.getElementById('dl-confirmed-rows');
+  rows.forEach((rec, idx) => rowsContainer.appendChild(_dlRenderConfirmedRow(rec, idx)));
+
+  document.getElementById('dl-confirmed-close')?.addEventListener('click', () => { panel.style.display = 'none'; });
+  document.getElementById('dl-confirmed-import-btn')?.addEventListener('click', () => _dlCommitConfirmedImport(rows));
+}
+
+function _dlRenderConfirmedRow(rec, idx) {
+  const isExt = rec.targetAreaCode === 'EXT';
+  const div = document.createElement('div');
+  div.className = 'dl-confirmed-row';
+  div.dataset.idx = idx;
+  div.style.cssText = `padding:var(--space-md);border:1px solid ${rec.isNewArea ? 'var(--color-teal)' : 'var(--color-border)'};border-radius:var(--radius-sm);margin-bottom:var(--space-sm);`;
+  div.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:var(--space-md);">
+      <input type="checkbox" class="dl-confirmed-checkbox" ${isExt ? '' : 'checked'} style="margin-top:6px;">
+      <div style="flex:1;">
+        <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">
+          ${_dlEsc(rec.targetAreaCode)} — ${_dlEsc(rec.dept)}
+          ${rec.isNewArea ? '<span style="font-size:10px;background:var(--color-teal);color:var(--color-white);padding:1px 8px;border-radius:999px;margin-left:6px;">NEW AREA</span>' : ''}
+          ${rec.mergeNote ? '<span style="font-size:10px;background:var(--color-blue);color:var(--color-white);padding:1px 8px;border-radius:999px;margin-left:6px;">MERGED</span>' : ''}
+          ${isExt ? '<span style="font-size:10px;background:var(--color-amber);color:var(--color-white);padding:1px 8px;border-radius:999px;margin-left:6px;">FLAGGED AS RETIRING</span>' : ''}
+        </p>
+        ${rec.mergeNote ? `<p style="font-size:10px;color:var(--color-muted);margin-top:2px;">${_dlEsc(rec.mergeNote)}</p>` : ''}
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-sm);margin-top:var(--space-sm);">
+          <div>
+            <label style="font-size:10px;color:var(--color-muted);display:block;">Head of Area</label>
+            <input type="text" class="form-input dl-confirmed-hoa" value="${_dlEsc(rec.hoa)}" style="min-height:36px;font-size:var(--text-xs);">
+          </div>
+          <div>
+            <label style="font-size:10px;color:var(--color-muted);display:block;">Digital Lead</label>
+            <input type="text" class="form-input dl-confirmed-dl" value="${_dlEsc(rec.dl)}" style="min-height:36px;font-size:var(--text-xs);">
+          </div>
+          <div>
+            <label style="font-size:10px;color:var(--color-muted);display:block;">DL Training booked</label>
+            <input type="text" class="form-input dl-confirmed-training" value="${_dlEsc(rec.training)}" style="min-height:36px;font-size:var(--text-xs);">
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  return div;
+}
+
+function _dlCommitConfirmedImport(rows) {
+  const rowEls = document.querySelectorAll('.dl-confirmed-row');
+  let areasCreated = 0, areasUpdated = 0, dlsHandled = 0, skipped = 0;
+
+  rowEls.forEach(rowEl => {
+    if (!rowEl.querySelector('.dl-confirmed-checkbox').checked) { skipped++; return; }
+    const rec = rows[parseInt(rowEl.dataset.idx)];
+    const hoa = rowEl.querySelector('.dl-confirmed-hoa').value.trim();
+    const dlName = rowEl.querySelector('.dl-confirmed-dl').value.trim();
+    const training = rowEl.querySelector('.dl-confirmed-training').value.trim();
+    const code = rec.targetAreaCode;
+
+    let area = _getArea(code);
+    if (!area) {
+      area = { areaCode: code, areaName: rec.dept, campus: '', hoaName: '', digitalLeadId: null,
+        pyramidLevel: 'foundations', ragDimensions: {}, healthChecks: [], activityLog: [],
+        afiRefs: [], actionPoints: [], staffRefs: [], notes: '' };
+      areasCreated++;
+    } else {
+      areasUpdated++;
+    }
+    area.hoaName = hoa;
+    saveArea(area);
+
+    if (dlName) {
+      let dl = _getAllDLs().find(d => d.areaCode === code);
+      if (dl) {
+        dl.name = dlName;
+        dl.trainingSession = training;
+        saveDigitalLead(dl);
+      } else {
+        dl = { dlId: generateId(), name: dlName, areaCode: code, role: '', trainingSession: training,
+          meetingHistory: [], resourcesCreated: [], progressNotes: [], supportDelivered: [], impactEvidence: [] };
+        const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+        const staffMatch = allStaff.find(s => s.name.toLowerCase() === dlName.toLowerCase() && s.areaCode === code);
+        if (staffMatch) dl.staffId = staffMatch.staffId;
+        saveDigitalLead(dl);
+      }
+      area.digitalLeadId = dl.dlId;
+      saveArea(area);
+      dlsHandled++;
+    }
+  });
+
+  const archiveCheckbox = document.getElementById('dl-archive-sel');
+  let selArchived = false;
+  if (archiveCheckbox && archiveCheckbox.checked && typeof archiveArea === 'function') {
+    selArchived = archiveArea('SEL', true);
+  }
+
+  if (typeof UI !== 'undefined') {
+    UI.showToast('success', `${areasCreated} area(s) created, ${areasUpdated} updated, ${dlsHandled} Digital Lead(s) handled.${selArchived ? ' SEL archived.' : ''}${skipped>0?` ${skipped} skipped.`:''}`);
   }
   document.getElementById('dl-tracker-import-panel').style.display = 'none';
   _renderDLList();
