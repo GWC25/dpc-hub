@@ -117,6 +117,7 @@ window.DPC_DATA = {
   currentFocus:  { focuses: [] },
   notes:         { notes: [] },
   healthChecks:  { reviews: [] },
+  actionPlans:   { plans: [] },
 };
 
 // Dirty tracking: which files have unsaved changes
@@ -600,6 +601,139 @@ function archiveDepartment(areaCode, deptCode, archived = true) {
   return true;
 }
 
+// ── RAG suggestions (Session 41) ─────────────────────────────────
+// Discovered before building this: area.ragDimensions already carries
+// real, human-entered scores WITH rationale text and a full snapshot
+// history (js/rag.js) — 8 dimensions (staffCapability, hoaLeadership,
+// infrastructure, digitalSkillsAssessment, curriculumIntegration,
+// learnerReadiness, accessibilityInclusion, digitalLeadEngagement), not
+// the 5 Health Check focus areas. An earlier draft of this function
+// auto-computed and overwrote area.ragDimensions directly — that would
+// have silently destroyed real rationale someone had written. Rebuilt as
+// advisory only: never writes anything, just returns a suggestion for
+// rag.js's existing "Update RAG scores" modal to show and pre-fill,
+// which the human still has to actively confirm and save.
+//
+// Honest scope, not all 8 dimensions equally: only 'accessibilityInclusion'
+// has a real, direct Hub data source (Health Check indicator scores are
+// specifically about accessible/inclusive digital practice). The other 7
+// genuinely aren't measured by anything in the Hub yet — staffCapability,
+// hoaLeadership and digitalLeadEngagement in particular would need
+// different data (general digital confidence, leadership judgement,
+// Digital Lead activity tracking) that doesn't exist as structured data
+// here. For those, the only honest fallback is area.historicalRAG — one
+// overall figure from the pre-Hub tracker, explicitly labelled as a
+// coarse, non-dimension-specific, lower-confidence guide per Graeme's
+// own framing ("historical is less solid ground, it can guide").
+function getSuggestedRAGScore(areaCode, dimensionId) {
+  if (dimensionId === 'accessibilityInclusion') {
+    const reviews = typeof _hcGetReviewsForArea === 'function' ? _hcGetReviewsForArea(areaCode) : [];
+    const byStaff = {};
+    reviews.forEach(r => {
+      if (!byStaff[r.staffId] || (r.date || '') > (byStaff[r.staffId].date || '')) byStaff[r.staffId] = r;
+    });
+    const allScores = Object.values(byStaff).flatMap(r =>
+      Object.values(r.domains || {}).map(d => d.avgScore).filter(v => v != null)
+    );
+    if (allScores.length > 0) {
+      const avg = allScores.reduce((a, b) => a + b, 0) / allScores.length;
+      return { value: Math.round(avg), source: 'health-check', confidence: 'high', staffCount: Object.keys(byStaff).length };
+    }
+  }
+
+  const area = (window.DPC_DATA.areas.areas || []).find(a => a.areaCode === areaCode);
+  if (area && area.historicalRAG && area.historicalRAG.overall != null) {
+    return { value: area.historicalRAG.overall, source: 'historical', confidence: 'low', staffCount: 0 };
+  }
+
+  return null;
+}
+
+function saveHistoricalRAG(areaCode, overallValue) {
+  const area = (window.DPC_DATA.areas.areas || []).find(a => a.areaCode === areaCode);
+  if (!area) return false;
+  if (!area.historicalRAG) area.historicalRAG = {};
+  area.historicalRAG.overall = overallValue;
+  saveArea(area);
+  return true;
+}
+
+// ── Action Plans (Session 41) ─────────────────────────────────────
+function saveActionPlan(plan) {
+  if (!window.DPC_DATA.actionPlans) window.DPC_DATA.actionPlans = { plans: [] };
+  const plans = window.DPC_DATA.actionPlans.plans;
+  const idx = plans.findIndex(p => p.planId === plan.planId);
+  if (idx >= 0) {
+    plans[idx] = { ...plan, lastUpdated: nowISO() };
+  } else {
+    plans.push({ ...plan, createdAt: nowISO(), lastUpdated: nowISO() });
+  }
+  _dirty.add('data-action-plans.json');
+  _writeLocalSnapshot();
+}
+
+// Assigns a Teach Meet (or any template) to an Action Plan. Creates a
+// real Template instance — same shape templates.js already uses, so it
+// shows up in Templates exactly like one created from there — and a Loop
+// (AFI) that stays open until the plan's work is actually done. Both get
+// linked back onto the plan. Nothing here duplicates existing mechanisms;
+// it wires them together.
+function assignTemplateToActionPlan(planId, templateId, date) {
+  const plan = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans || []).find(p => p.planId === planId);
+  const tmpl = (window.DPC_DATA.templates && window.DPC_DATA.templates.templates || []).find(t => t.templateId === templateId);
+  if (!plan || !tmpl) return null;
+
+  const instanceId = generateId();
+  const instance = {
+    instanceId,
+    templateVersion: tmpl.version || 1,
+    date,
+    areaCode: plan.areaCode,
+    attendeeIds: [], // filled in later via attendance, per Graeme's own note
+    contextNotes: `Assigned from Action Plan: ${plan.focus || plan.type}`,
+    linkedAFIIds: [],
+    reflectionRefs: [],
+  };
+
+  const afi = {
+    afiId: generateId(),
+    areaCode: plan.areaCode,
+    staffId: plan.staffIds && plan.staffIds.length === 1 ? plan.staffIds[0] : null,
+    lraCategoryId: null,
+    lraThemeId: null,
+    lraThemeLabel: null,
+    description: `${tmpl.title || tmpl.templateType}: ${plan.focus || plan.aim || 'Action plan session'}`,
+    digitalOpportunity: null,
+    digitalApplicable: null,
+    rationaleTest: null,
+    status: AFI_STATUS.OPEN,
+    severity: null,
+    closeWindow: plan.targetDate || null,
+    linkedActions: [],
+    evidenceChain: [{ type: 'action-plan', planId: plan.planId, instanceId }],
+    parentObservationId: null,
+    hyperThemeMatch: null,
+    qipRef: null,
+    createdAt: nowISO(),
+    closedAt: null,
+    lastUpdated: nowISO(),
+  };
+
+  instance.linkedAFIIds.push(afi.afiId);
+  if (!tmpl.instances) tmpl.instances = [];
+  tmpl.instances.push(instance);
+  saveTemplate(tmpl);
+  saveAFI(afi);
+
+  if (!plan.linkedInstances) plan.linkedInstances = [];
+  if (!plan.linkedAFIIds) plan.linkedAFIIds = [];
+  plan.linkedInstances.push({ templateId, instanceId, templateType: tmpl.templateType });
+  plan.linkedAFIIds.push(afi.afiId);
+  saveActionPlan(plan);
+
+  return { instance, afi };
+}
+
 // ── Public: save a staff profile ─────────────────────────────
 function saveStaff(staffData) {
   const staff = window.DPC_DATA.staff.staff;
@@ -829,6 +963,7 @@ function _assignToStore(filename, data) {
     'data-notes.json':         'notes',
     'data-resource-library.json': 'resourceLibrary',
     'data-health-checks.json': 'healthChecks',
+    'data-action-plans.json': 'actionPlans',
   };
   const key = keyMap[filename];
   if (key && data) window.DPC_DATA[key] = data;
@@ -849,6 +984,7 @@ function _getDataForFile(filename) {
     'data-notes.json':         window.DPC_DATA.notes,
     'data-resource-library.json': window.DPC_DATA.resourceLibrary,
     'data-health-checks.json': window.DPC_DATA.healthChecks,
+    'data-action-plans.json': window.DPC_DATA.actionPlans,
     [DPC_CONFIG.MANIFEST_FILENAME]: window.DPC_DATA.manifest,
   };
   return keyMap[filename] || null;
