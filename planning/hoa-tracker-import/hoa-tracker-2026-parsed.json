@@ -1,0 +1,240 @@
+[
+  {
+    "code": "AGF",
+    "department": "Arts, Graphics & Fashion",
+    "hoaName": "Chrissandra Boxley",
+    "rag": 3,
+    "digitalLeadRaw": "Chrystal Bliss & Eva Jarvis"
+  },
+  {
+    "code": "AHE",
+    "department": "Access to HE",
+    "hoaName": "Sean Shearing",
+    "rag": 5,
+    "digitalLeadRaw": "Sean Shearing - Will change in July - Confirmed"
+  },
+  {
+    "code": "ANM",
+    "department": "Animal Management",
+    "hoaName": "Laura Link",
+    "rag": 3,
+    "digitalLeadRaw": "Joseph Bourke-Trotham"
+  },
+  {
+    "code": "BUI",
+    "department": "Building Services (Construction)",
+    "hoaName": "Richard Hanney",
+    "rag": 3,
+    "digitalLeadRaw": "Steven Jakeway - Confirmed AND Christie Ross"
+  },
+  {
+    "code": "BUS",
+    "department": "Business & Tourism",
+    "hoaName": "Ben Melhuish",
+    "rag": 2,
+    "digitalLeadRaw": "April Nickells"
+  },
+  {
+    "code": "CED",
+    "department": "Community Education",
+    "hoaName": "Charlotte Hynes",
+    "rag": 5,
+    "digitalLeadRaw": "Marsha Jones"
+  },
+  {
+    "code": "CON",
+    "department": "Construction Trades",
+    "hoaName": "Richard Hanney",
+    "rag": 3,
+    "digitalLeadRaw": "Steven Jakeway - Confirmed AND Christie Ross"
+  },
+  {
+    "code": "CTC",
+    "department": "Construction Training Centre",
+    "hoaName": "John Fowler",
+    "rag": 3,
+    "digitalLeadRaw": "John Fowler, Dave Evans"
+  },
+  {
+    "code": "DCI",
+    "department": "Digital Computing & IT",
+    "hoaName": "Sean Shearing",
+    "rag": 1,
+    "digitalLeadRaw": "Sean Shearing - Confirmed"
+  },
+  {
+    "code": "EEY",
+    "department": "Education & Early Years",
+    "hoaName": "Rachael Moger",
+    "rag": 3,
+    "digitalLeadRaw": "Sharon Walters - confirmed"
+  },
+  {
+    "code": "EFE",
+    "department": "Engineering WBL FE",
+    "hoaName": "Barney Wilis",
+    "rag": 2,
+    "digitalLeadRaw": "Lisa Phillips"
+  },
+  {
+    "code": "EGL",
+    "department": "English",
+    "hoaName": "Libby Heath-Tavener",
+    "rag": 3,
+    "digitalLeadRaw": "Georgina Berritta (LOX)"
+  },
+  {
+    "code": "EHE",
+    "department": "Engineering Higher Education",
+    "hoaName": "Thanos Adamos",
+    "rag": 2,
+    "digitalLeadRaw": "Akshay Ramteke"
+  },
+  {
+    "code": "EMV",
+    "department": "Engineering & Motor Vehicle",
+    "hoaName": "Tish Moodhoo",
+    "rag": 3,
+    "digitalLeadRaw": "Ben Holt - Confirmed"
+  },
+  {
+    "code": "ENG",
+    "department": "Engineering (General)",
+    "hoaName": "Thanos Adamos",
+    "rag": 2,
+    "digitalLeadRaw": "Thanos Adamos"
+  },
+  {
+    "code": "ESO",
+    "department": "ESOL",
+    "hoaName": "Alexia Sporidis",
+    "rag": 4,
+    "digitalLeadRaw": "Florian Zeqaj"
+  },
+  {
+    "code": "EXT",
+    "department": "External Contracts / Provision",
+    "hoaName": "Becky Morris & Ian Oakley",
+    "rag": 4,
+    "digitalLeadRaw": ""
+  },
+  {
+    "code": "FAU",
+    "department": "FIP Autism",
+    "hoaName": "Andy Girling / Jess Gill",
+    "rag": 2,
+    "digitalLeadRaw": ""
+  },
+  {
+    "code": "FCO",
+    "department": "FIP Complex Needs",
+    "hoaName": "Andy Girling",
+    "rag": 3,
+    "digitalLeadRaw": ""
+  },
+  {
+    "code": "FEH",
+    "department": "FIP Supported Employment Excellence",
+    "hoaName": "Jess Gill",
+    "rag": 2,
+    "digitalLeadRaw": "Casie Atkinson or Warren Marsh (TBC)   "
+  },
+  {
+    "code": "FPL",
+    "department": "FIP Pre-Vocational",
+    "hoaName": "Joe Radcliffe",
+    "rag": 3,
+    "digitalLeadRaw": "Becky Salter???"
+  },
+  {
+    "code": "GMA",
+    "department": "Games, Media & Animation",
+    "hoaName": "Gina Hele",
+    "rag": 1,
+    "digitalLeadRaw": "Dan Campbell - Confirmed"
+  },
+  {
+    "code": "HAC",
+    "department": "Health (inc. Health T-Level)",
+    "hoaName": "Dale Bond",
+    "rag": 5,
+    "digitalLeadRaw": "Maria Caudle   "
+  },
+  {
+    "code": "HBH",
+    "department": "Hair, Beauty & Hospitality",
+    "hoaName": "Jenna Ratcliffe",
+    "rag": 1,
+    "digitalLeadRaw": "Tracey White - Confirmed"
+  },
+  {
+    "code": "MAT",
+    "department": "Maths",
+    "hoaName": "Libby Heath-Tavener",
+    "rag": 3,
+    "digitalLeadRaw": "Jed Randall (Multi), Joel Baylis (LOX), Denholm Wilcox (SWSC), Diego Fanhe (KN) - Confirmed"
+  },
+  {
+    "code": "PAP",
+    "department": "Performance & Production",
+    "hoaName": "Chrissandra Boxley",
+    "rag": 4,
+    "digitalLeadRaw": "Chrystal Bliss & Eva Jarvis  - Confirmed"
+  },
+  {
+    "code": "PRA",
+    "department": "Professional Apprenticeships",
+    "hoaName": "Georgina Hayden / Mark Barnett",
+    "rag": 3,
+    "digitalLeadRaw": "Mark Barnett   "
+  },
+  {
+    "code": "PRE",
+    "department": "Employment Services (Pre-employment)",
+    "hoaName": "Laura Taylor",
+    "rag": 3,
+    "digitalLeadRaw": "Paul Haycraft"
+  },
+  {
+    "code": "PRS",
+    "department": "Professional Studies",
+    "hoaName": "Louise Perkins",
+    "rag": 3,
+    "digitalLeadRaw": "Ffion Rose"
+  },
+  {
+    "code": "PSF",
+    "department": "Public Services",
+    "hoaName": "David Beresford",
+    "rag": 5,
+    "digitalLeadRaw": "Aaron Jones"
+  },
+  {
+    "code": "SKB",
+    "department": "Kings Trust (was Bootcamps)",
+    "hoaName": "Becky Morris (day-to-day) Candice Paisley",
+    "rag": 4,
+    "digitalLeadRaw": ""
+  },
+  {
+    "code": "SMS",
+    "department": "Sixth Form",
+    "hoaName": "Maria Miles",
+    "rag": 3,
+    "digitalLeadRaw": "Ethan Shi - Confirmed"
+  },
+  {
+    "code": "SMX",
+    "department": "SOMAX",
+    "hoaName": "John Fowler",
+    "rag": 2,
+    "digitalLeadRaw": "John Fowler, Dave Evans"
+  },
+  {
+    "code": "SPO",
+    "department": "Sport",
+    "hoaName": "Dan Pratlett",
+    "rag": 1,
+    "digitalLeadRaw": "Sylvia Bertie - Confirmed"
+  }
+]
