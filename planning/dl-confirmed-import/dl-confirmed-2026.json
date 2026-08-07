@@ -1,0 +1,331 @@
+[
+  {
+    "code": "AGF",
+    "dept": "Arts, Graphics & Fashion",
+    "hoa": "Chrissandra Boxley",
+    "dl": "Chrystal Bliss",
+    "training": "KN - Thurs 18th June",
+    "targetAreaCode": "AGF",
+    "isNewArea": false
+  },
+  {
+    "code": "AHE",
+    "dept": "Access to HE",
+    "hoa": "Sean Shearing",
+    "dl": "Sean Shearing",
+    "training": "KN - Thurs 18th June",
+    "targetAreaCode": "AHE",
+    "isNewArea": true
+  },
+  {
+    "code": "ANM",
+    "dept": "Animal Management",
+    "hoa": "Laura Link",
+    "dl": "Joseph Bourke-Trotham",
+    "training": "SWS - Tues 16th June",
+    "targetAreaCode": "ANM",
+    "isNewArea": false
+  },
+  {
+    "code": "BUI",
+    "dept": "Building Services (Construction)",
+    "hoa": "Richard Hanney",
+    "dl": "Steven Jakeway",
+    "training": "SWS - Tues 16th June",
+    "targetAreaCode": "BUI",
+    "isNewArea": false
+  },
+  {
+    "code": "BUS",
+    "dept": "Business & Tourism",
+    "hoa": "Ben Melhuish",
+    "dl": "April Nickells, Ben Melhuish",
+    "training": "KN - Thurs 18th June",
+    "targetAreaCode": "BUS",
+    "isNewArea": false
+  },
+  {
+    "code": "CED",
+    "dept": "Community Education",
+    "hoa": "Charlotte Hynes",
+    "dl": "Marsha Jones",
+    "training": "SWS - Tues 16th June",
+    "targetAreaCode": "CED",
+    "isNewArea": false
+  },
+  {
+    "code": "CON",
+    "dept": "Construction Trades",
+    "hoa": "Richard Hanney",
+    "dl": "Christie Ross",
+    "training": "SWS - Tues 16th June",
+    "targetAreaCode": "CON",
+    "isNewArea": false
+  },
+  {
+    "code": "CTC",
+    "dept": "Construction Training Centre",
+    "hoa": "John Fowler",
+    "dl": "John Fowler",
+    "training": "",
+    "targetAreaCode": "CTC",
+    "isNewArea": true
+  },
+  {
+    "code": "DCI",
+    "dept": "Digital Computing & IT",
+    "hoa": "Sean Shearing",
+    "dl": "Sean Shearing",
+    "training": "KN - Thurs 18th June",
+    "targetAreaCode": "DCI",
+    "isNewArea": false
+  },
+  {
+    "code": "EEY",
+    "dept": "Education & Early Years",
+    "hoa": "Rachael Moger",
+    "dl": "Sharon Walters",
+    "training": "KN - Thurs 18th June",
+    "targetAreaCode": "EEY",
+    "isNewArea": false
+  },
+  {
+    "code": "EFE",
+    "dept": "Engineering WBL FE",
+    "hoa": "Thanos Adamos",
+    "dl": "Akshay Ramteke",
+    "training": "KN - Thurs 18th June",
+    "targetAreaCode": "AMT",
+    "mergeNote": "EFE + EHE merged into AMT — same HoA and DL confirms this",
+    "isNewArea": false
+  },
+  {
+    "code": "EGL",
+    "dept": "English",
+    "hoa": "Libby Heath-Tavener",
+    "dl": "Georgina Berritta",
+    "training": "LOX - Thurs 11th June",
+    "targetAreaCode": "EGL",
+    "isNewArea": false
+  },
+  {
+    "code": "EHE",
+    "dept": "Engineering Higher Education",
+    "hoa": "Thanos Adamos",
+    "dl": "Akshay Ramteke",
+    "training": "KN - Thurs 18th June",
+    "targetAreaCode": "AMT",
+    "mergeNote": "EFE + EHE merged into AMT — same HoA and DL confirms this",
+    "isNewArea": false
+  },
+  {
+    "code": "EMV",
+    "dept": "Engineering & Motor Vehicle (200 Latisha / 300 Felix)",
+    "hoa": "Tish Moodhoo",
+    "dl": "Ben Holt",
+    "training": "SWS - Tues 16th June",
+    "targetAreaCode": "EMV",
+    "isNewArea": false
+  },
+  {
+    "code": "ENG",
+    "dept": "Engineering (General)",
+    "hoa": "Thanos Adamos",
+    "dl": "Thanos Adamos",
+    "training": "Not Yet Booked",
+    "targetAreaCode": "ENG",
+    "isNewArea": false
+  },
+  {
+    "code": "ESO",
+    "dept": "ESOL",
+    "hoa": "Alexia Sporidis",
+    "dl": "Florian Zeqaj",
+    "training": "SWS - Tues 16th June",
+    "targetAreaCode": "ESO",
+    "isNewArea": false
+  },
+  {
+    "code": "EXT",
+    "dept": "External Contracts / Provision",
+    "hoa": "Becky Morris & Ian Oakley",
+    "dl": "",
+    "training": "",
+    "targetAreaCode": "EXT",
+    "isNewArea": false
+  },
+  {
+    "code": "FAU",
+    "dept": "FIP Autism",
+    "hoa": "Andy Girling / Jess Gill",
+    "dl": "",
+    "training": "",
+    "targetAreaCode": "FAU",
+    "isNewArea": true
+  },
+  {
+    "code": "FCO",
+    "dept": "FIP Complex Needs",
+    "hoa": "Andy Girling",
+    "dl": "",
+    "training": "",
+    "targetAreaCode": "FCO",
+    "isNewArea": true
+  },
+  {
+    "code": "FEH",
+    "dept": "FIP Supported Employment Excellence",
+    "hoa": "Jess Gill",
+    "dl": "",
+    "training": "",
+    "targetAreaCode": "FEH",
+    "isNewArea": true
+  },
+  {
+    "code": "FPL",
+    "dept": "FIP Pre-Vocational",
+    "hoa": "Joe Radcliffe",
+    "dl": "",
+    "training": "",
+    "targetAreaCode": "FPL",
+    "isNewArea": true
+  },
+  {
+    "code": "GMA",
+    "dept": "Games, Media & Animation",
+    "hoa": "Gina Hele",
+    "dl": "Dan Campbell",
+    "training": "LOX - Thurs 11th June",
+    "targetAreaCode": "GMA",
+    "isNewArea": false
+  },
+  {
+    "code": "HAC",
+    "dept": "Health (inc. Health T-Level)",
+    "hoa": "Dale Bond",
+    "dl": "Katherine Jones",
+    "training": "LOX - Thurs 11th June",
+    "targetAreaCode": "HAC",
+    "isNewArea": false
+  },
+  {
+    "code": "HBH",
+    "dept": "Hair, Beauty & Hospitality",
+    "hoa": "Jenna Ratcliffe",
+    "dl": "Tracey White",
+    "training": "KN - Thurs 18th June",
+    "targetAreaCode": "HBH",
+    "isNewArea": false
+  },
+  {
+    "code": "MAT",
+    "dept": "Maths",
+    "hoa": "Libby Heath-Tavener",
+    "dl": "Jed Randall",
+    "training": "KN - Thurs 18th June",
+    "targetAreaCode": "MAT",
+    "isNewArea": false
+  },
+  {
+    "code": "PAP",
+    "dept": "Performance & Production",
+    "hoa": "Chrissandra Boxley",
+    "dl": "Eva Jarvis",
+    "training": "KN - Thurs 18th June",
+    "targetAreaCode": "PAP",
+    "isNewArea": false
+  },
+  {
+    "code": "PRA",
+    "dept": "Professional Apprenticeships / Project Management",
+    "hoa": "Georgina Hayden / Mark Barnett",
+    "dl": "Mark Barnett",
+    "training": "KN - Thurs 18th June",
+    "targetAreaCode": "PRA",
+    "isNewArea": false
+  },
+  {
+    "code": "PRE",
+    "dept": "Employment Services (Pre-employment)",
+    "hoa": "Laura Taylor",
+    "dl": "Paul Haycraft",
+    "training": "SWS - Tues 16th June",
+    "targetAreaCode": "PRE",
+    "isNewArea": false
+  },
+  {
+    "code": "PRS",
+    "dept": "Professional Studies",
+    "hoa": "Louise Perkins",
+    "dl": "Ffion Rose",
+    "training": "Online training due 24th June",
+    "note": "listed as 'PRS / PRA' in source",
+    "targetAreaCode": "PRS",
+    "isNewArea": false
+  },
+  {
+    "code": "PSF",
+    "dept": "Public Services",
+    "hoa": "David Beresford",
+    "dl": "Aaron Jones",
+    "training": "1:1 6th July",
+    "targetAreaCode": "PSF",
+    "isNewArea": false
+  },
+  {
+    "code": "SKB",
+    "dept": "Kings Trust (was Bootcamps)",
+    "hoa": "Becky Morris (day-to-day), Candice Paisley",
+    "dl": "",
+    "training": "",
+    "note": "source shows 'SKB 300'",
+    "targetAreaCode": "SKB",
+    "isNewArea": false
+  },
+  {
+    "code": "SMS",
+    "dept": "Sixth Form",
+    "hoa": "Maria Miles",
+    "dl": "Ethan Shi",
+    "training": "LOX - Thurs 11th June",
+    "targetAreaCode": "SMS",
+    "isNewArea": false
+  },
+  {
+    "code": "SMX",
+    "dept": "SOMAX (Offsite / Prison)",
+    "hoa": "John Fowler",
+    "dl": "Dave Evans",
+    "training": "",
+    "targetAreaCode": "SMX",
+    "isNewArea": false
+  },
+  {
+    "code": "SPO",
+    "dept": "Sport",
+    "hoa": "Dan Pratlett",
+    "dl": "Sylvia Bertie",
+    "training": "LOX - Thurs 11th June",
+    "targetAreaCode": "SPO",
+    "isNewArea": false
+  },
+  {
+    "code": "PM",
+    "dept": "Project Management",
+    "hoa": "Mark Barnett",
+    "dl": "Mark Barnett",
+    "training": "KN - Thurs 18th June",
+    "note": "source shows this as 'PRA*'",
+    "targetAreaCode": "PM",
+    "isNewArea": false
+  },
+  {
+    "code": "COU",
+    "dept": "FE Counselling",
+    "hoa": "Tasha Thorne",
+    "dl": "Mel Probert",
+    "training": "SWS - Tues 16th June",
+    "targetAreaCode": "COU",
+    "isNewArea": false
+  }
+]
