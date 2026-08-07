@@ -243,6 +243,20 @@ const HC_FOCUS_AREAS = Object.freeze([
   },
 ]);
 
+// ── Action Plans (Session 41) ────────────────────────────────────
+// One per area, per initiative — the container that ties together what
+// the plan is for, who it's for, and what's actually been assigned to
+// deliver it. A Teach Meet assigned to a plan creates two linked things
+// automatically: a real Template instance (js/templates.js already has
+// this mechanism, including a reflection-form URL and attendeeIds for
+// later) and a Loop (AFI) that stays open until the plan's work is done —
+// so an Action Plan is never just a paragraph of intent with nothing
+// tracking whether it actually happened.
+const ACTION_PLAN_STATUS = Object.freeze({
+  ACTIVE:   'active',
+  COMPLETE: 'complete',
+});
+
 // ── Resource Library types (Session 32) ────────────────────────
 // 'learning-studio' entries are never stored in data-resource-library.json —
 // they're computed at render time from data/resource-tag-map.json (the same
@@ -357,6 +371,7 @@ const DEFAULT_DATA = Object.freeze({
   'data-notes.json':        { notes: [] },
   'data-resource-library.json': { entries: [], shares: [] },
   'data-health-checks.json': { reviews: [] },
+  'data-action-plans.json': { plans: [] },
 });
 
 // ── Helper: get LRA theme by ID ───────────────────────────────
