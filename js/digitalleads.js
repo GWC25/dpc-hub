@@ -161,6 +161,12 @@ function _renderDLDetailContent(dlId) {
       </div>
     </div>
 
+    <!-- Area impact (Session 43) — real cross-module data for the DL's
+         area, not a separate parallel tracking system. Health Checks,
+         Loops, Action Plans and Resource shares all already exist; this
+         just surfaces what's already true about the area this DL leads. -->
+    ${_dlRenderAreaImpact(dl.areaCode)}
+
     <!-- Meetings -->
     <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">1:1 meeting history</h3>
     ${meetings.length===0
@@ -324,20 +330,7 @@ function _saveMeeting() {
 }
 
 function _saveDL(dl) {
-  const all=(window.DPC_DATA.digitalLeads&&window.DPC_DATA.digitalLeads.digitalLeads)||[];
-  const idx=all.findIndex(d=>d.dlId===dl.dlId);
-  if(idx>=0) all[idx]=dl; else all.push(dl);
-  window.DPC_DATA.digitalLeads.digitalLeads=all;
-  // Trigger save via a dummy saveStaff call — data.js will write digitalLeads file
-  if(window.DPC_DATA.digitalLeads){
-    // Direct write
-    const entries=window.DPC_DATA.digitalLeads;
-    // Use the generic pattern — mark dirty
-    if(typeof saveArea==='function'){
-      // Piggyback on auto-save — mark dirty directly
-      window._dlDirty=true;
-    }
-  }
+  saveDigitalLead(dl);
 }
 
 function _wireDLEvents() {
@@ -364,5 +357,53 @@ function _dlPopulateAreaDropdown(selId) {
 
 function _getAllDLs(){return(window.DPC_DATA.digitalLeads&&window.DPC_DATA.digitalLeads.digitalLeads)||[];}
 function _getDL(id){return _getAllDLs().find(d=>d.dlId===id)||null;}
+
+// ── Area impact (Session 43) ─────────────────────────────────────
+// "Link into the Digital Health Checks, Action plans, Loops they are
+// involved in, Impact they have overseen" — reads from the same real
+// data every other part of the Hub already reads (data-health-checks,
+// data-afi via areaCode, data-action-plans, data-resource-library), not
+// a second parallel tracking system for Digital Leads specifically.
+function _dlRenderAreaImpact(areaCode) {
+  if (!areaCode) return '';
+
+  const reviews = typeof _hcGetReviewsForArea === 'function' ? _hcGetReviewsForArea(areaCode) : [];
+  const byStaff = {};
+  reviews.forEach(r => { if (!byStaff[r.staffId] || (r.date||'') > (byStaff[r.staffId].date||'')) byStaff[r.staffId] = r; });
+  const latestReviews = Object.values(byStaff);
+  const allScores = latestReviews.flatMap(r => Object.values(r.domains||{}).map(d=>d.avgScore).filter(v=>v!=null));
+  const avgHC = allScores.length > 0 ? (allScores.reduce((a,b)=>a+b,0)/allScores.length).toFixed(1) : null;
+
+  const areaAFIs = ((window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []).filter(a => a.areaCode === areaCode);
+  const openAFIs = areaAFIs.filter(a => a.status !== 'closed').length;
+
+  const areaPlans = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || []).filter(p => p.areaCode === areaCode);
+  const activePlans = areaPlans.filter(p => p.status !== 'complete').length;
+
+  const shares = typeof _libGetSharesForArea === 'function' ? _libGetSharesForArea(areaCode) : [];
+
+  return `
+  <div style="margin-bottom:var(--space-lg);">
+    <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Area impact — ${_dlEsc(areaCode)}</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-sm);">
+      <div style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);">
+        <div style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">${avgHC != null ? avgHC : '—'}</div>
+        <div style="font-size:10px;color:var(--color-muted);">Avg Health Check (${latestReviews.length} staff)</div>
+      </div>
+      <div style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);">
+        <div style="font-size:var(--text-lg);font-weight:bold;color:${openAFIs>0?'var(--color-amber)':'var(--color-green)'};">${openAFIs}</div>
+        <div style="font-size:10px;color:var(--color-muted);">Open loops</div>
+      </div>
+      <div style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);">
+        <div style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">${activePlans}</div>
+        <div style="font-size:10px;color:var(--color-muted);">Active action plans</div>
+      </div>
+      <div style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);">
+        <div style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">${shares.length}</div>
+        <div style="font-size:10px;color:var(--color-muted);">Resources shared</div>
+      </div>
+    </div>
+  </div>`;
+}
 function _dlFmtDate(iso){if(!iso)return'';try{return new Date(iso.split('T')[0]+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return iso;}}
 function _dlEsc(str){if(!str)return'';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
