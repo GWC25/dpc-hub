@@ -43,9 +43,16 @@ function initRAGTab(areaCode) {
         <form id="rag-form" novalidate>
           ${RAG_DIMENSIONS.map(dim => {
             const current = dims[dim.id];
+            const suggestion = typeof getSuggestedRAGScore === 'function' ? getSuggestedRAGScore(areaCode, dim.id) : null;
             return `
             <div style="margin-bottom:var(--space-lg);padding-bottom:var(--space-lg);border-bottom:1px solid var(--color-border);">
               <label style="display:block;font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-sm);">${_escHtml(dim.label)}</label>
+              ${suggestion ? `
+                <p style="font-size:var(--text-xs);color:${suggestion.confidence === 'high' ? 'var(--color-teal)' : 'var(--color-amber)'};margin-bottom:var(--space-sm);">
+                  Suggested: <strong>${suggestion.value}</strong> — ${suggestion.source === 'health-check' ? `from Health Check data (${suggestion.staffCount} staff reviewed)` : 'from historical tracker data — a coarse, single overall figure, not specific to this dimension'}
+                  <button type="button" class="rag-apply-suggestion" data-dim="${dim.id}" data-score="${suggestion.value}" style="margin-left:8px;background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:inherit;">Apply</button>
+                </p>
+              ` : ''}
               <div role="group" aria-label="Score for ${_escHtml(dim.label)}" style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-sm);flex-wrap:wrap;">
                 ${[1,2,3,4,5].map(score => {
                   const selected = current && current.score === score;
@@ -141,6 +148,15 @@ function _wireRAGEvents(areaCode) {
   ['rag-modal','rag-history-modal'].forEach(id => {
     const modal = document.getElementById(id);
     modal?.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+  });
+
+  // Apply a suggested score — selects it, same as clicking the score button
+  // directly. Still requires Save to actually persist anything.
+  document.querySelectorAll('.rag-apply-suggestion').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetBtn = document.querySelector(`.rag-score-btn[data-dim="${btn.dataset.dim}"][data-score="${btn.dataset.score}"]`);
+      targetBtn?.click();
+    });
   });
 
   // Score button visual feedback (clicking label wraps to radio)
