@@ -532,6 +532,48 @@ function archiveArea(areaCode, archived = true) {
   return true;
 }
 
+// ── Area merge (Session 46) ──────────────────────────────────────
+// Different from renameAreaCode: that function changes ONE area's own
+// code and sweeps every linked record to match. This one is for when the
+// target area already exists and the source should be absorbed into it —
+// e.g. consolidating FAU/FCO/FEH/FPL back into SEL. Every linked record
+// (staff, AFIs, Health Checks, resource shares, CPD, calendar) moves from
+// sourceCode to targetCode, then the source area is archived, not
+// deleted — its history stays intact and auditable, it just stops
+// appearing as an active area.
+function mergeAreaInto(sourceCode, targetCode) {
+  if (!sourceCode || !targetCode || sourceCode === targetCode) return { changed: 0 };
+  const target = (window.DPC_DATA.areas.areas || []).find(a => a.areaCode === targetCode);
+  if (!target) return { changed: 0, error: 'Target area does not exist' };
+
+  let changed = 0;
+  const sweep = [
+    { store: () => (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [], file: 'data-staff.json' },
+    { store: () => (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || [], file: 'data-afi.json' },
+    { store: () => (window.DPC_DATA.resourceLibrary && window.DPC_DATA.resourceLibrary.shares) || [], file: 'data-resource-library.json' },
+    { store: () => (window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.reviews) || [], file: 'data-health-checks.json' },
+    { store: () => (window.DPC_DATA.cpd && window.DPC_DATA.cpd.deliveredCPD) || [], file: 'data-cpd.json' },
+    { store: () => (window.DPC_DATA.calendar && window.DPC_DATA.calendar.entries) || [], file: 'data-calendar.json' },
+    { store: () => (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [], file: 'data-action-plans.json' },
+    { store: () => (window.DPC_DATA.digitalLeads && window.DPC_DATA.digitalLeads.digitalLeads) || [], file: 'data-digital-leads.json' },
+  ];
+
+  sweep.forEach(({ store, file }) => {
+    const records = store();
+    let touched = false;
+    records.forEach(r => {
+      if (r.areaCode === sourceCode) { r.areaCode = targetCode; changed++; touched = true; }
+    });
+    if (touched) _dirty.add(file);
+  });
+
+  archiveArea(sourceCode, true);
+  target.lastUpdated = nowISO();
+  _dirty.add('data-areas.json');
+  _writeLocalSnapshot();
+  return { changed };
+}
+
 // ── Departments (Session 39) ─────────────────────────────────────
 // Several areas turned out to be genuinely multi-department in real
 // practice — PAP (Performing Arts / Music), DCI (several digital
