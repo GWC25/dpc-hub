@@ -176,13 +176,13 @@ function _renderAreaDetail(areaCode) {
 
     <!-- Tabs -->
     <div role="tablist" aria-label="Area sections" style="display:flex;border-bottom:2px solid var(--color-border);margin-bottom:var(--space-lg);gap:0;">
-      ${['overview','rag','activity','staff','resources','healthchecks'].map(tab => `
+      ${['overview','rag','activity','staff','resources','healthchecks','actionplan'].map(tab => `
         <button role="tab" type="button" id="tab-${tab}" data-tab="${tab}"
           aria-selected="${tab==='overview'?'true':'false'}"
           style="padding:10px 20px;border:none;border-bottom:3px solid ${tab==='overview'?'var(--color-teal)':'transparent'};
           background:none;cursor:pointer;font:${tab==='overview'?'bold':''} var(--text-base) Arial,sans-serif;
           color:${tab==='overview'?'var(--color-teal)':'var(--color-muted)'};min-height:44px;white-space:nowrap;">
-          ${{overview:'Overview',rag:'RAG Matrix',activity:'Activity Log',staff:'Staff',resources:'Resources Shared',healthchecks:'Health Checks'}[tab]}
+          ${{overview:'Overview',rag:'RAG Matrix',activity:'Activity Log',staff:'Staff',resources:'Resources Shared',healthchecks:'Health Checks',actionplan:'Action Plan'}[tab]}
         </button>`).join('')}
     </div>
 
@@ -343,6 +343,198 @@ function _renderAreaTab(tab, areaCode) {
           }).join('')
       }`;
   }
+
+  if (tab === 'actionplan') {
+    _renderActionPlanTab(panel, areaCode);
+  }
+}
+
+// ── Action Plan tab (Session 41) ──────────────────────────────────
+// Wires together three things that already exist rather than inventing
+// new ones: Templates (js/templates.js — teach-meet template + instance
+// pattern, including the reflection-form URL), Loops (js/afi.js — an
+// open AFI that tracks whether the work actually happened), and Areas.
+// "Assign Teach Meet" on a plan calls assignTemplateToActionPlan()
+// (data.js), which creates a real instance and a real Loop in one step —
+// see that function's own comment for exactly what gets linked.
+function _renderActionPlanTab(panel, areaCode) {
+  const plans = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [])
+    .filter(p => p.areaCode === areaCode)
+    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);">
+      <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);">Action Plan (${plans.length})</h3>
+      <button id="ap-new-btn" type="button" class="btn btn--primary btn--sm">+ New action plan</button>
+    </div>
+    <div id="ap-new-form" style="display:none;"></div>
+    <div id="ap-list"></div>
+  `;
+
+  _renderAPList(areaCode);
+  document.getElementById('ap-new-btn')?.addEventListener('click', () => _renderAPNewForm(areaCode));
+}
+
+function _renderAPList(areaCode) {
+  const container = document.getElementById('ap-list');
+  if (!container) return;
+  const plans = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [])
+    .filter(p => p.areaCode === areaCode)
+    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+  if (plans.length === 0) {
+    container.innerHTML = '<p style="color:var(--color-muted);font-size:var(--text-sm);">No action plans yet for this area.</p>';
+    return;
+  }
+
+  const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  container.innerHTML = plans.map(p => {
+    const staffNames = (p.staffIds || []).map(id => { const s = allStaff.find(x => x.staffId === id); return s ? s.name : id; }).join(', ') || 'Whole team';
+    const openLoops = (p.linkedAFIIds || []).filter(id => {
+      const afi = (window.DPC_DATA.afi && window.DPC_DATA.afi.afis || []).find(a => a.afiId === id);
+      return afi && afi.status !== 'closed';
+    }).length;
+    return `
+      <div class="ap-card" data-plan-id="${p.planId}" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+          <div>
+            <p style="font-size:var(--text-xs);font-weight:bold;background:var(--color-light);color:var(--color-muted);padding:1px 8px;border-radius:999px;display:inline-block;margin-bottom:4px;">${_escHtml(p.type || 'General')}</p>
+            <p style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);">${_escHtml(p.focus || p.aim || 'Untitled plan')}</p>
+            <p style="font-size:var(--text-xs);color:var(--color-muted);">For: ${_escHtml(staffNames)} · Target: ${p.targetDate ? _formatDateShort(p.targetDate) : 'No date set'}</p>
+          </div>
+          ${openLoops > 0 ? `<span style="font-size:var(--text-xs);font-weight:bold;color:var(--color-amber);white-space:nowrap;">${openLoops} open loop${openLoops!==1?'s':''}</span>` : ''}
+        </div>
+        ${p.aim ? `<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:var(--space-sm);"><strong>Aim:</strong> ${_escHtml(p.aim)}</p>` : ''}
+        ${p.successCriteria ? `<p style="font-size:var(--text-sm);color:var(--color-slate);"><strong>Success criteria:</strong> ${_escHtml(p.successCriteria)}</p>` : ''}
+        ${(p.linkedInstances || []).length > 0 ? `<p style="font-size:var(--text-xs);color:var(--color-teal);margin-top:var(--space-sm);">${p.linkedInstances.length} session(s) assigned</p>` : ''}
+        <div class="btn-row" style="margin-top:var(--space-sm);">
+          <button type="button" class="btn btn--ghost btn--sm ap-assign-btn" data-plan-id="${p.planId}">Assign Teach Meet</button>
+        </div>
+        <div class="ap-assign-form" data-plan-id="${p.planId}" style="display:none;margin-top:var(--space-sm);padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-sm);"></div>
+      </div>`;
+  }).join('');
+
+  container.querySelectorAll('.ap-assign-btn').forEach(btn => {
+    btn.addEventListener('click', () => _toggleAPAssignForm(btn.dataset.planId, areaCode));
+  });
+}
+
+function _toggleAPAssignForm(planId, areaCode) {
+  const form = document.querySelector(`.ap-assign-form[data-plan-id="${planId}"]`);
+  if (!form) return;
+  const showing = form.style.display !== 'none';
+  if (showing) { form.style.display = 'none'; return; }
+
+  const teachMeetTemplates = ((window.DPC_DATA.templates && window.DPC_DATA.templates.templates) || [])
+    .filter(t => t.templateType === 'teach-meet');
+
+  if (teachMeetTemplates.length === 0) {
+    form.innerHTML = '<p style="font-size:var(--text-xs);color:var(--color-muted);">No Teach Meet templates exist yet — create one in Templates first.</p>';
+    form.style.display = 'block';
+    return;
+  }
+
+  form.innerHTML = `
+    <div style="display:flex;gap:var(--space-sm);align-items:center;flex-wrap:wrap;">
+      <select class="form-select ap-tmpl-select" style="flex:1;min-height:36px;font-size:var(--text-xs);">
+        ${teachMeetTemplates.map(t => `<option value="${t.templateId}">${_escHtml(t.title || t.templateType)}</option>`).join('')}
+      </select>
+      <input type="date" class="form-input ap-tmpl-date" value="${todayISO()}" style="min-height:36px;font-size:var(--text-xs);">
+      <button type="button" class="btn btn--primary btn--sm ap-tmpl-confirm">Assign</button>
+    </div>
+  `;
+  form.style.display = 'block';
+
+  form.querySelector('.ap-tmpl-confirm').addEventListener('click', () => {
+    const templateId = form.querySelector('.ap-tmpl-select').value;
+    const date = form.querySelector('.ap-tmpl-date').value;
+    if (!date) { if (typeof UI !== 'undefined') UI.showToast('error', 'Please select a date.'); return; }
+
+    const result = assignTemplateToActionPlan(planId, templateId, date);
+    if (result) {
+      if (typeof UI !== 'undefined') UI.showToast('success', 'Teach Meet assigned — session and Loop created.');
+      _renderAPList(areaCode);
+    } else {
+      if (typeof UI !== 'undefined') UI.showToast('error', 'Could not assign — plan or template not found.');
+    }
+  });
+}
+
+function _renderAPNewForm(areaCode) {
+  const container = document.getElementById('ap-new-form');
+  if (!container) return;
+  const showing = container.style.display !== 'none';
+  if (showing) { container.style.display = 'none'; return; }
+
+  const areaStaff = ((window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || []).filter(s => s.areaCode === areaCode);
+
+  container.innerHTML = `
+    <div style="border:2px dashed var(--color-teal);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);">
+      <div class="form-group">
+        <label class="form-label" for="ap-type">Type</label>
+        <select class="form-select" id="ap-type">
+          <option value="Training">Training</option>
+          <option value="Coaching">Coaching</option>
+          <option value="Resource sharing">Resource sharing</option>
+          <option value="Whole team">Whole team</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="ap-focus">Focus</label>
+        <input class="form-input" type="text" id="ap-focus" placeholder="e.g. Accessible resource creation">
+      </div>
+      <div class="form-group">
+        <label class="form-label form-label--optional" for="ap-staff">Staff (leave blank for whole team)</label>
+        <select class="form-select" id="ap-staff" multiple size="4">
+          ${areaStaff.map(s => `<option value="${s.staffId}">${_escHtml(s.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label form-label--optional" for="ap-aim">Aim</label>
+        <textarea class="form-textarea" id="ap-aim" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label form-label--optional" for="ap-success">Success criteria</label>
+        <textarea class="form-textarea" id="ap-success" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label form-label--optional" for="ap-target">Target date</label>
+        <input class="form-input" type="date" id="ap-target">
+      </div>
+      <div class="btn-row">
+        <button type="button" id="ap-save-btn" class="btn btn--primary btn--sm">Save action plan</button>
+        <button type="button" id="ap-cancel-btn" class="btn btn--ghost btn--sm">Cancel</button>
+      </div>
+    </div>
+  `;
+  container.style.display = 'block';
+
+  document.getElementById('ap-cancel-btn').addEventListener('click', () => { container.style.display = 'none'; });
+  document.getElementById('ap-save-btn').addEventListener('click', () => {
+    const focus = document.getElementById('ap-focus').value.trim();
+    if (!focus) { if (typeof UI !== 'undefined') UI.showToast('error', 'Please enter a focus for this plan.'); return; }
+
+    const staffSel = document.getElementById('ap-staff');
+    const staffIds = staffSel ? Array.from(staffSel.selectedOptions).map(o => o.value) : [];
+
+    saveActionPlan({
+      planId: generateId(),
+      areaCode,
+      type: document.getElementById('ap-type').value,
+      focus,
+      staffIds,
+      aim: document.getElementById('ap-aim').value.trim(),
+      successCriteria: document.getElementById('ap-success').value.trim(),
+      targetDate: document.getElementById('ap-target').value || null,
+      status: 'active',
+      linkedInstances: [],
+      linkedAFIIds: [],
+    });
+
+    container.style.display = 'none';
+    _renderAPList(areaCode);
+    if (typeof UI !== 'undefined') UI.showToast('success', `Action plan created: ${focus}`);
+  });
 }
 
 function _detailRow(label, value) {
