@@ -714,6 +714,56 @@ function saveActionPlan(plan) {
   _writeLocalSnapshot();
 }
 
+// ── Action Plan refinement (Session 47) ──────────────────────────
+// "Refined detail by role (me, them, HoA, staff), accountability,
+// timeframes, success criteria" — one plan now holds multiple
+// actionItems, each independently assigned and trackable, rather than
+// the plan-level aim/successCriteria being the only detail available.
+const ACTION_ITEM_ROLE = Object.freeze({
+  DPC: 'dpc', DIGITAL_LEAD: 'digital-lead', HOA: 'hoa', STAFF: 'staff',
+});
+
+function addActionItem(planId, item) {
+  const plan = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans || []).find(p => p.planId === planId);
+  if (!plan) return null;
+  if (!plan.actionItems) plan.actionItems = [];
+  const newItem = { itemId: generateId(), done: false, ...item };
+  plan.actionItems.push(newItem);
+  saveActionPlan(plan);
+  return newItem;
+}
+
+function toggleActionItemDone(planId, itemId, done) {
+  const plan = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans || []).find(p => p.planId === planId);
+  if (!plan || !plan.actionItems) return false;
+  const item = plan.actionItems.find(i => i.itemId === itemId);
+  if (!item) return false;
+  item.done = done;
+  saveActionPlan(plan);
+  return true;
+}
+
+// Closing a plan requires a report — written now, or a placeholder that
+// can be filled in / a fileRef attached later. Never silently closes
+// without SOME record of what happened, since that's the whole point of
+// tracking impact.
+function closeActionPlan(planId, reportText, fileRef = null) {
+  const plan = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans || []).find(p => p.planId === planId);
+  if (!plan) return false;
+  plan.status = 'complete';
+  plan.closureReport = { text: reportText || '', fileRef, closedAt: nowISO() };
+  saveActionPlan(plan);
+  return true;
+}
+
+function reopenActionPlan(planId) {
+  const plan = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans || []).find(p => p.planId === planId);
+  if (!plan) return false;
+  plan.status = 'active';
+  saveActionPlan(plan);
+  return true;
+}
+
 // Assigns a Teach Meet (or any template) to an Action Plan. Creates a
 // real Template instance — same shape templates.js already uses, so it
 // shows up in Templates exactly like one created from there — and a Loop
@@ -808,6 +858,23 @@ function saveDigitalLead(dlData) {
   }
   _dirty.add('data-digital-leads.json');
   _writeLocalSnapshot();
+}
+
+// ── Training history (Session 47) ────────────────────────────────
+// Was a single free-text field (trainingSession). Now a real array, so
+// there's genuinely something to show a history of, not just one line.
+// The old field isn't deleted or force-migrated — a DL profile with just
+// trainingSession set (from the earlier import) still displays that
+// correctly; addTrainingEvent starts building the real array alongside
+// it going forward.
+function addTrainingEvent(dlId, event) {
+  const dl = (window.DPC_DATA.digitalLeads && window.DPC_DATA.digitalLeads.digitalLeads || []).find(d => d.dlId === dlId);
+  if (!dl) return null;
+  if (!dl.trainingHistory) dl.trainingHistory = [];
+  const newEvent = { eventId: generateId(), createdAt: nowISO(), ...event };
+  dl.trainingHistory.push(newEvent);
+  saveDigitalLead(dl);
+  return newEvent;
 }
 
 // ── Public: save an AFI record ────────────────────────────────
