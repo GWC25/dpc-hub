@@ -557,6 +557,7 @@ function _hcRenderImportRow(rec, idx, guess, areas, allStaff) {
           </select>
           <select class="form-select hc-import-staff" style="flex:1;min-height:36px;font-size:var(--text-xs);">
             <option value="">— No staff match —</option>
+            <option value="__create__" ${!guess.staffId ? 'selected' : ''}>+ Create new staff: "${_hcEsc(rec.staffMemberName)}"</option>
             ${allStaff.map(s => `<option value="${s.staffId}" ${s.staffId === guess.staffId ? 'selected' : ''}>${_hcEsc(s.name)} (${s.areaCode})</option>`).join('')}
           </select>
         </div>
@@ -586,7 +587,10 @@ function _hcRenderImportedRow(rec) {
 
 function _hcCommitSelectedImports() {
   const rows = document.querySelectorAll('.hc-import-row');
-  let imported = 0, skipped = 0;
+  let imported = 0, skipped = 0, staffCreated = 0;
+  // Same-batch dedup: if two rows in this import both need to create
+  // "Lee Baker" in area BUI, only create the staff record once, not twice.
+  const newlyCreatedInThisBatch = {};
 
   rows.forEach(row => {
     const checkbox = row.querySelector('.hc-import-checkbox');
@@ -595,9 +599,44 @@ function _hcCommitSelectedImports() {
     const idx = parseInt(row.dataset.idx);
     const rec = _hcBaselineData[idx];
     const areaCode = row.querySelector('.hc-import-area').value;
-    const staffId = row.querySelector('.hc-import-staff').value;
+    let staffId = row.querySelector('.hc-import-staff').value;
 
     if (!areaCode || !staffId) { skipped++; return; }
+
+    if (staffId === '__create__') {
+      if (!areaCode) { skipped++; return; }
+      const dedupeKey = `${rec.staffMemberName.trim().toLowerCase()}|${areaCode}`;
+      if (newlyCreatedInThisBatch[dedupeKey]) {
+        staffId = newlyCreatedInThisBatch[dedupeKey];
+      } else {
+        const newStaff = {
+          staffId: generateId(),
+          name: rec.staffMemberName.trim(),
+          areaCode,
+          departmentCode: null,
+          additionalAreas: [],
+          role: '',
+          entryPathway: 'referral',
+          entryDate: todayISO(),
+          etfStage: null,
+          developmentPriorities: ['', '', ''],
+          confidenceRating: null,
+          touchHistory: [],
+          reflectionRefs: [],
+          afiRefs: [],
+          isAnonymousAtAreaLevel: true,
+          notes: 'Created automatically during Health Check baseline import.',
+          createdAt: nowISO(),
+          lastUpdated: nowISO(),
+        };
+        saveStaff(newStaff);
+        const area = _getArea(areaCode);
+        if (area) { if (!area.staffRefs) area.staffRefs = []; area.staffRefs.push(newStaff.staffId); saveArea(area); }
+        staffId = newStaff.staffId;
+        newlyCreatedInThisBatch[dedupeKey] = staffId;
+        staffCreated++;
+      }
+    }
 
     const review = {
       reviewId: generateId(),
@@ -623,7 +662,7 @@ function _hcCommitSelectedImports() {
 
   if (typeof UI !== 'undefined') {
     UI.showToast(imported > 0 ? 'success' : 'warning',
-      `Imported ${imported} review(s).${skipped > 0 ? ` ${skipped} skipped (area or staff not selected).` : ''}`);
+      `Imported ${imported} review(s).${staffCreated > 0 ? ` ${staffCreated} new staff profile(s) created.` : ''}${skipped > 0 ? ` ${skipped} skipped (area not selected).` : ''}`);
   }
   _hcOpenBaselineImport(); // re-render to show newly-imported rows as done
 }
