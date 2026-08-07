@@ -22,6 +22,10 @@ function initDashboards() {
         style="padding:10px 20px;border:none;border-bottom:3px solid transparent;background:none;cursor:pointer;font:var(--text-base) Arial,sans-serif;color:var(--color-muted);min-height:44px;">
         Loops Overview
       </button>
+      <button role="tab" type="button" id="dash-tab-impact" aria-selected="false" data-dash="impact"
+        style="padding:10px 20px;border:none;border-bottom:3px solid transparent;background:none;cursor:pointer;font:var(--text-base) Arial,sans-serif;color:var(--color-muted);min-height:44px;">
+        Numerical Impact
+      </button>
     </div>
 
     <div id="dash-panel"></div>
@@ -41,6 +45,7 @@ function initDashboards() {
       if(btn.dataset.dash==='rag') _renderDashRAG();
       if(btn.dataset.dash==='hc') _renderDashHC();
       if(btn.dataset.dash==='loops') _renderDashLoops();
+      if(btn.dataset.dash==='impact') _renderDashImpact();
     });
   });
 }
@@ -181,6 +186,80 @@ function _renderRAGTable() {
         }).join('')}
       </tbody>
     </table>
+  `;
+}
+
+// ── Numerical Impact (Session 41) ─────────────────────────────────
+// Replaces the manually-maintained tracker sheet — every number here is
+// computed live from the same data everything else in the Hub already
+// reads (data-health-checks.json, data-resource-library.json, areas),
+// not re-typed or re-uploaded. Matches the shape of the old tracker's
+// own "Numerical Impact" sheet (Problem / Action / Impact by numbers)
+// where that made sense, but sourced from real records throughout.
+function _renderDashImpact() {
+  const panel = document.getElementById('dash-panel');
+  if (!panel) return;
+
+  const areas = _getAreas() || [];
+  const reviews = typeof _hcGetAllReviews === 'function' ? _hcGetAllReviews() : [];
+  const shares = typeof _libGetAllShares === 'function' ? _libGetAllShares() : [];
+
+  const areasChecked = new Set(reviews.map(r => r.areaCode)).size;
+  const staffReviewed = new Set(reviews.map(r => r.staffId)).size;
+
+  let domainsReviewed = 0, actionsIdentified = 0;
+  reviews.forEach(r => {
+    Object.values(r.domains || {}).forEach(d => {
+      domainsReviewed++;
+      if (d.actionIdentified) actionsIdentified++;
+    });
+  });
+
+  const cycleCounts = {};
+  reviews.forEach(r => { cycleCounts[r.cycleId] = (cycleCounts[r.cycleId] || 0) + 1; });
+  const cycleLabels = { 'baseline-2026': 'Baseline (2026)', 'nov-2026': 'November 2026', 'feb-mar-2027': 'Feb/March 2027', 'jun-2027': 'June 2027' };
+
+  panel.innerHTML = `
+    <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-lg);">
+      Live, computed from real records as of ${_formatDateShort(nowISO())} — not a manually maintained figure.
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin-bottom:var(--space-xl);">
+      <div style="padding:var(--space-lg);background:var(--color-teal-lt);border-radius:var(--radius-md);text-align:center;">
+        <div style="font-size:var(--text-2xl);font-weight:bold;color:var(--color-teal);">${reviews.length}</div>
+        <div style="font-size:var(--text-xs);color:var(--color-muted);">Health Checks completed</div>
+      </div>
+      <div style="padding:var(--space-lg);background:var(--color-blue-lt);border-radius:var(--radius-md);text-align:center;">
+        <div style="font-size:var(--text-2xl);font-weight:bold;color:var(--color-blue);">${areasChecked}/${areas.length}</div>
+        <div style="font-size:var(--text-xs);color:var(--color-muted);">Areas checked</div>
+      </div>
+      <div style="padding:var(--space-lg);background:var(--color-light);border-radius:var(--radius-md);text-align:center;">
+        <div style="font-size:var(--text-2xl);font-weight:bold;color:var(--color-navy);">${staffReviewed}</div>
+        <div style="font-size:var(--text-xs);color:var(--color-muted);">Staff reviewed</div>
+      </div>
+      <div style="padding:var(--space-lg);background:var(--color-amber-lt);border-radius:var(--radius-md);text-align:center;">
+        <div style="font-size:var(--text-2xl);font-weight:bold;color:var(--color-amber);">${actionsIdentified}/${domainsReviewed}</div>
+        <div style="font-size:var(--text-xs);color:var(--color-muted);">Action points identified</div>
+      </div>
+    </div>
+
+    <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-sm);">Health Checks by cycle</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:var(--text-sm);margin-bottom:var(--space-xl);">
+      <thead><tr style="border-bottom:2px solid var(--color-border);">
+        <th style="text-align:left;padding:var(--space-sm);color:var(--color-muted);font-size:var(--text-xs);">Cycle</th>
+        <th style="text-align:right;padding:var(--space-sm);color:var(--color-muted);font-size:var(--text-xs);">Reviews completed</th>
+      </tr></thead>
+      <tbody>
+        ${['baseline-2026', 'nov-2026', 'feb-mar-2027', 'jun-2027'].map(cid => `
+          <tr style="border-bottom:1px solid var(--color-border);">
+            <td style="padding:var(--space-sm);color:var(--color-slate);">${cycleLabels[cid]}</td>
+            <td style="padding:var(--space-sm);text-align:right;font-weight:bold;color:var(--color-navy);">${cycleCounts[cid] || 0}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+
+    <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-sm);">Resource sharing activity</h3>
+    <p style="font-size:var(--text-sm);color:var(--color-slate);">${shares.length} resource(s) shared with staff across ${new Set(shares.map(s=>s.areaCode)).size} area(s).</p>
   `;
 }
 
