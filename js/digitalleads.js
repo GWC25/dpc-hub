@@ -10,8 +10,12 @@ function initDigitalLeads() {
     <div id="banner-container" aria-live="polite"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-md);">
       <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);">Digital Leads</h1>
-      <button id="dl-new-btn" type="button" class="btn btn--primary btn--sm">+ Add Digital Lead</button>
+      <div style="display:flex;gap:var(--space-sm);">
+        <button id="dl-import-tracker-btn" type="button" class="btn btn--ghost btn--sm">Import HoA / Digital Lead data (2026)</button>
+        <button id="dl-new-btn" type="button" class="btn btn--primary btn--sm">+ Add Digital Lead</button>
+      </div>
     </div>
+    <div id="dl-tracker-import-panel" style="display:none;margin-bottom:var(--space-2xl);"></div>
 
     <div style="display:grid;grid-template-columns:280px 1fr;gap:var(--space-xl);align-items:start;">
       <div>
@@ -335,6 +339,7 @@ function _saveDL(dl) {
 
 function _wireDLEvents() {
   document.getElementById('dl-new-btn')?.addEventListener('click',()=>_openDLModal());
+  document.getElementById('dl-import-tracker-btn')?.addEventListener('click', _dlOpenTrackerImport);
   document.getElementById('dl-modal-close')?.addEventListener('click',()=>document.getElementById('dl-modal').style.display='none');
   document.getElementById('dl-modal-cancel')?.addEventListener('click',()=>document.getElementById('dl-modal').style.display='none');
   document.getElementById('dl-modal-save')?.addEventListener('click',_saveDLModal);
@@ -407,3 +412,177 @@ function _dlRenderAreaImpact(areaCode) {
 }
 function _dlFmtDate(iso){if(!iso)return'';try{return new Date(iso.split('T')[0]+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return iso;}}
 function _dlEsc(str){if(!str)return'';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── HoA / Digital Lead tracker import (Session 44) ────────────────
+// 34 rows from the real HoA Digital Tracker. 25 match an existing Hub
+// area code cleanly — those are reviewable and importable here. The
+// other 9 are shown for reference only, not imported, because they
+// directly conflict with two consolidation decisions made earlier
+// (EFE/EHE folded into AMT; FAU/FCO/FEH/FPL folded into SEL) — the
+// tracker shows all six as still separately active with distinct real
+// HoAs, which contradicts that merge. Force-importing them would either
+// silently overwrite one HoA's name with another's, or invent a merge
+// that isn't actually confirmed. AHE and CTC are genuinely new areas not
+// yet in the Hub; EXT is explicitly noted in the source data as being
+// retired next year. None of the 9 get written anywhere by this screen —
+// they're listed so the decision can be made with the real data in view,
+// not decided here.
+let _dlTrackerData = null;
+
+async function _dlOpenTrackerImport() {
+  const panel = document.getElementById('dl-tracker-import-panel');
+  if (!panel) return;
+  const showing = panel.style.display !== 'none';
+  if (showing) { panel.style.display = 'none'; return; }
+
+  panel.style.display = 'block';
+  panel.innerHTML = '<p style="color:var(--color-muted);">Loading tracker data…</p>';
+
+  if (!_dlTrackerData) {
+    try {
+      const res = await fetch('./planning/hoa-tracker-import/hoa-tracker-2026-parsed.json');
+      _dlTrackerData = res.ok ? await res.json() : [];
+    } catch { _dlTrackerData = []; }
+  }
+
+  const hubAreaCodes = new Set((_getAreas(true) || []).map(a => a.areaCode));
+  const clean = _dlTrackerData.filter(r => hubAreaCodes.has(r.code));
+  const conflicted = _dlTrackerData.filter(r => !hubAreaCodes.has(r.code));
+
+  panel.innerHTML = `
+    <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md);">
+        <h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">Import HoA / Digital Lead data — 2026</h2>
+        <button id="dl-import-close" type="button" class="btn btn--ghost btn--sm">Close</button>
+      </div>
+      <p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-md);">
+        ${clean.length} area(s) match cleanly and can be reviewed below. Nothing saves until you click Import.
+      </p>
+      <button id="dl-import-selected" type="button" class="btn btn--primary btn--sm" style="margin-bottom:var(--space-lg);">Import selected</button>
+      <div id="dl-import-rows"></div>
+
+      ${conflicted.length > 0 ? `
+        <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-amber);margin:var(--space-xl) 0 var(--space-sm);">Not imported — needs a decision first (${conflicted.length})</h3>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-md);">
+          EFE/EHE and FAU/FCO/FEH/FPL directly conflict with earlier merges into AMT and SEL — the tracker shows them
+          still separately active with different real HoAs. AHE and CTC are new areas not yet in the Hub. EXT is
+          noted as being retired next year. Shown for reference only.
+        </p>
+        ${conflicted.map(r => `
+          <div style="padding:var(--space-sm) var(--space-md);border:1px solid var(--color-amber);background:var(--color-amber-lt);border-radius:var(--radius-sm);margin-bottom:var(--space-xs);font-size:var(--text-xs);">
+            <strong>${_dlEsc(r.code)}</strong> — ${_dlEsc(r.department)} · HoA: ${_dlEsc(r.hoaName)} · DL: ${_dlEsc(r.digitalLeadRaw || '—')} · RAG: ${r.rag ?? '—'}
+          </div>`).join('')}
+      ` : ''}
+    </div>
+  `;
+
+  const rowsContainer = document.getElementById('dl-import-rows');
+  clean.forEach((rec, idx) => rowsContainer.appendChild(_dlRenderTrackerRow(rec, idx)));
+
+  document.getElementById('dl-import-close')?.addEventListener('click', () => { panel.style.display = 'none'; });
+  document.getElementById('dl-import-selected')?.addEventListener('click', _dlCommitTrackerImport);
+}
+
+// Light cleanup only — strips common trailing confirmation markers so the
+// default text is tidier, never attempts to split multiple names apart
+// (formats are inconsistent: "&", ",", "/" all appear) — that stays a
+// manual edit if wanted, safer than guessing wrong.
+function _dlCleanName(raw) {
+  return String(raw || '')
+    .replace(/\s*-\s*Confirmed\s*$/i, '')
+    .replace(/\s*\(Confirmed\)\s*$/i, '')
+    .replace(/\s*\?\?\?\s*$/g, '')
+    .replace(/\s*\(TBC\)\s*$/i, '')
+    .trim();
+}
+
+function _dlRenderTrackerRow(rec, idx) {
+  const area = _getArea(rec.code);
+  const cleanedDL = _dlCleanName(rec.digitalLeadRaw);
+  const multiplePeople = /[&,/]/.test(cleanedDL);
+
+  const div = document.createElement('div');
+  div.className = 'dl-import-row';
+  div.dataset.idx = idx;
+  div.style.cssText = 'padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:var(--space-sm);';
+  div.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:var(--space-md);">
+      <input type="checkbox" class="dl-import-checkbox" checked style="margin-top:6px;">
+      <div style="flex:1;">
+        <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_dlEsc(rec.code)} — ${_dlEsc(area ? area.areaName : rec.department)}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 100px;gap:var(--space-sm);margin-top:var(--space-sm);">
+          <div>
+            <label style="font-size:10px;color:var(--color-muted);display:block;">Head of Area</label>
+            <input type="text" class="form-input dl-import-hoa" value="${_dlEsc(rec.hoaName)}" style="min-height:36px;font-size:var(--text-xs);">
+          </div>
+          <div>
+            <label style="font-size:10px;color:var(--color-muted);display:block;">Digital Lead ${multiplePeople ? '<span style="color:var(--color-amber);">(multiple people listed — check before importing)</span>' : ''}</label>
+            <input type="text" class="form-input dl-import-dl-name" value="${_dlEsc(cleanedDL)}" style="min-height:36px;font-size:var(--text-xs);">
+          </div>
+          <div>
+            <label style="font-size:10px;color:var(--color-muted);display:block;">Historical RAG</label>
+            <select class="form-select dl-import-rag" style="min-height:36px;font-size:var(--text-xs);">
+              <option value="">—</option>
+              ${[1,2,3,4,5].map(n => `<option value="${n}" ${rec.rag===n?'selected':''}>${n}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:var(--space-xs);">
+          <label style="font-size:var(--text-xs);color:var(--color-slate);">
+            <input type="checkbox" class="dl-import-create-dl" ${cleanedDL && !multiplePeople ? 'checked' : ''}> Create a Digital Lead profile for this person
+          </label>
+        </div>
+      </div>
+    </div>
+  `;
+  return div;
+}
+
+function _dlCommitTrackerImport() {
+  const rows = document.querySelectorAll('.dl-import-row');
+  let areasUpdated = 0, dlsCreated = 0, skipped = 0;
+  const hubAreaCodes = new Set((_getAreas(true) || []).map(a => a.areaCode));
+  const clean = _dlTrackerData.filter(r => hubAreaCodes.has(r.code));
+
+  rows.forEach(row => {
+    const checkbox = row.querySelector('.dl-import-checkbox');
+    if (!checkbox.checked) return;
+    const rec = clean[parseInt(row.dataset.idx)];
+    if (!rec) { skipped++; return; }
+
+    const hoaName = row.querySelector('.dl-import-hoa').value.trim();
+    const dlName = row.querySelector('.dl-import-dl-name').value.trim();
+    const ragValue = row.querySelector('.dl-import-rag').value;
+    const createDL = row.querySelector('.dl-import-create-dl').checked;
+
+    const area = _getArea(rec.code);
+    if (area) {
+      area.hoaName = hoaName;
+      saveArea(area);
+      areasUpdated++;
+      if (ragValue) saveHistoricalRAG(rec.code, parseInt(ragValue));
+    }
+
+    if (createDL && dlName) {
+      const existingDL = _getAllDLs().find(d => d.name.toLowerCase() === dlName.toLowerCase() && d.areaCode === rec.code);
+      if (!existingDL) {
+        const newDL = {
+          dlId: generateId(), name: dlName, areaCode: rec.code, role: '',
+          meetingHistory: [], resourcesCreated: [], progressNotes: [], supportDelivered: [], impactEvidence: [],
+        };
+        const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+        const staffMatch = allStaff.find(s => s.name.toLowerCase() === dlName.toLowerCase() && s.areaCode === rec.code);
+        if (staffMatch) newDL.staffId = staffMatch.staffId;
+        saveDigitalLead(newDL);
+        if (area) { area.digitalLeadId = newDL.dlId; saveArea(area); }
+        dlsCreated++;
+      }
+    }
+  });
+
+  if (typeof UI !== 'undefined') {
+    UI.showToast('success', `${areasUpdated} area(s) updated, ${dlsCreated} Digital Lead profile(s) created.${skipped>0?` ${skipped} skipped.`:''}`);
+  }
+  document.getElementById('dl-tracker-import-panel').style.display = 'none';
+  _renderDLList();
+}
