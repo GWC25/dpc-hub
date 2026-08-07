@@ -747,6 +747,27 @@ function saveStaff(staffData) {
   _writeLocalSnapshot();
 }
 
+// ── Public: save a Digital Lead profile (Session 43) ─────────────
+// This function did not exist before. js/digitalleads.js's own _saveDL()
+// only ever mutated window.DPC_DATA in memory and set an unused flag
+// (window._dlDirty, read by nothing) — it never called _dirty.add() or
+// _writeLocalSnapshot(). Every Digital Lead profile, every 1:1 meeting
+// logged, was being silently lost on refresh. Real fix, not a patch: a
+// proper save function matching every other one in this file, with
+// digitalleads.js updated to actually call it.
+function saveDigitalLead(dlData) {
+  if (!window.DPC_DATA.digitalLeads) window.DPC_DATA.digitalLeads = { digitalLeads: [] };
+  const dls = window.DPC_DATA.digitalLeads.digitalLeads;
+  const idx = dls.findIndex(d => d.dlId === dlData.dlId);
+  if (idx >= 0) {
+    dls[idx] = { ...dlData, lastUpdated: nowISO() };
+  } else {
+    dls.push({ ...dlData, createdAt: nowISO(), lastUpdated: nowISO() });
+  }
+  _dirty.add('data-digital-leads.json');
+  _writeLocalSnapshot();
+}
+
 // ── Public: save an AFI record ────────────────────────────────
 function saveAFI(afiData) {
   const afis = window.DPC_DATA.afi.afis;
