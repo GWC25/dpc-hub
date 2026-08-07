@@ -221,16 +221,46 @@ function _renderAreaTab(tab, areaCode) {
   if (tab === 'overview') {
     const openAFIs = _getAreaOpenAFIs(areaCode);
     const afis = _getAFIs().filter(a => a.areaCode === areaCode && a.status !== AFI_STATUS.CLOSED);
+    const areaDLs = _getAllDLs().filter(d => d.areaCode === areaCode);
+    const campuses = ['SWSC', 'Loxton', 'Knightstone', 'Winter Gardens', 'CTC', 'Puxton Park', 'AMTEC', 'AROSFA'];
     panel.innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl);">
         <div>
           <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-md);">Area details</h3>
-          ${_detailRow('Head of Area', area.hoaName || 'Not set')}
-          ${_detailRow('Digital Lead', area.digitalLeadId || 'Not set')}
-          ${_detailRow('Campus', area.campus || 'Not set')}
-          ${_detailRow('Pyramid level', ({foundations:'Foundations',inclusion:'Inclusion',innovation:'Innovation'}[area.pyramidLevel] || 'Not set'))}
-          ${_detailRow('Last updated', area.lastUpdated ? _formatDateShort(area.lastUpdated) : 'Never')}
-          ${area.notes ? `<div style="margin-top:var(--space-md);padding:var(--space-md);background:var(--color-light);border-radius:var(--radius-sm);font-size:var(--text-sm);color:var(--color-slate);">${_escHtml(area.notes)}</div>` : ''}
+
+          <div class="form-group">
+            <label class="form-label" for="area-hoa-input">Head of Area</label>
+            <input class="form-input" type="text" id="area-hoa-input" value="${_escHtml(area.hoaName || '')}">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="area-dl-select">Digital Lead</label>
+            <select class="form-select" id="area-dl-select">
+              <option value="">— None —</option>
+              ${areaDLs.map(d => `<option value="${d.dlId}" ${area.digitalLeadId===d.dlId?'selected':''}>${_escHtml(d.name)}</option>`).join('')}
+            </select>
+            ${areaDLs.length === 0 ? '<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;">No Digital Lead profile exists for this area yet — add one in Digital Leads first.</p>' : ''}
+          </div>
+          <div class="form-group">
+            <label class="form-label form-label--optional" for="area-campus-select">Campus</label>
+            <select class="form-select" id="area-campus-select">
+              <option value="">— Not set —</option>
+              ${campuses.map(c => `<option value="${c}" ${area.campus===c?'selected':''}>${c}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label form-label--optional" for="area-pyramid-select">Pyramid level</label>
+            <select class="form-select" id="area-pyramid-select">
+              <option value="foundations" ${area.pyramidLevel==='foundations'?'selected':''}>Foundations</option>
+              <option value="inclusion" ${area.pyramidLevel==='inclusion'?'selected':''}>Inclusion</option>
+              <option value="innovation" ${area.pyramidLevel==='innovation'?'selected':''}>Innovation</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label form-label--optional" for="area-notes-input">Notes</label>
+            <textarea class="form-textarea" id="area-notes-input" rows="2">${_escHtml(area.notes || '')}</textarea>
+          </div>
+          <button id="area-details-save" type="button" class="btn btn--primary btn--sm">Save changes</button>
+          <p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-sm);">Last updated: ${area.lastUpdated ? _formatDateShort(area.lastUpdated) : 'Never'}</p>
         </div>
         <div>
           <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-md);">Open loops <span style="color:var(--color-amber);">(${openAFIs})</span></h3>
@@ -244,6 +274,17 @@ function _renderAreaTab(tab, areaCode) {
           }
         </div>
       </div>`;
+
+    document.getElementById('area-details-save')?.addEventListener('click', () => {
+      area.hoaName = document.getElementById('area-hoa-input').value.trim();
+      area.digitalLeadId = document.getElementById('area-dl-select').value || null;
+      area.campus = document.getElementById('area-campus-select').value;
+      area.pyramidLevel = document.getElementById('area-pyramid-select').value;
+      area.notes = document.getElementById('area-notes-input').value.trim();
+      saveArea(area);
+      if (typeof UI !== 'undefined') UI.showToast('success', 'Area details saved.');
+      _renderAreaTab('overview', areaCode);
+    });
   }
 
   if (tab === 'rag') {
