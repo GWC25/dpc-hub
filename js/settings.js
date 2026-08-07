@@ -63,7 +63,11 @@ function initSettings() {
         Renaming an area's code updates every staff record, AFI, Health Check, resource share, CPD entry and calendar entry
         already linked to it — nothing gets orphaned. Archiving hides an area from selection lists without deleting its history.
       </p>
-      <button id="dpc-area-add-btn" type="button" class="btn btn--primary btn--sm" style="margin-bottom:var(--space-md);">+ Add area</button>
+      <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-md);">
+        <button id="dpc-area-add-btn" type="button" class="btn btn--primary btn--sm">+ Add area</button>
+        <button id="dpc-area-bulk-btn" type="button" class="btn btn--ghost btn--sm">Bulk add areas</button>
+      </div>
+      <div id="dpc-area-bulk-panel" style="display:none;"></div>
       <div id="dpc-area-list"></div>
     </section>
 
@@ -140,6 +144,7 @@ function initSettings() {
   _dpcRenderConnectionStatus();
   _dpcRenderAreaList();
   document.getElementById('dpc-area-add-btn')?.addEventListener('click', _dpcOpenAreaAddForm);
+  document.getElementById('dpc-area-bulk-btn')?.addEventListener('click', _dpcOpenBulkAddPanel);
   _dpcSettingsInit();
   document.getElementById('dpc-reconnect-btn')?.addEventListener('click', async () => {
     await reconnectFolder(UI);
@@ -273,6 +278,133 @@ function _dpcRenderDeptPanel(panel, areaCode) {
     _dpcRenderDeptPanel(panel, areaCode);
     _dpcRenderAreaList();
   });
+}
+
+// ── Bulk add areas (Session 40) ──────────────────────────────────
+// Pre-filled with the reconciled list from Cass' structure doc cross-
+// checked against the real Learning Walk schedule — not invented here.
+// One line per area: "CODE, Full Name" — add " [archived]" to a line to
+// import it already archived (SMX: flagged by Cass as facing redundancy,
+// absent from the live walk schedule — kept for history, not active use).
+// AMT's code is a best guess for the EFE/EHE -> Advanced Manufacturing
+// (AMTEC) merger — not explicitly confirmed, flagged below, easy to
+// correct via Area management afterwards if wrong.
+const DPC_BULK_AREA_DEFAULT = `AGF, Arts, Graphics & Fashion
+AMT, Advanced Manufacturing (AMTEC)
+ANM, Animal Management
+BUI, Building Services (Construction)
+BUS, Business & Tourism
+CED, Community Education
+CON, Construction Trades
+COU, Counselling
+DCI, Digital Computing & IT
+EEY, Education & Early Years
+EGL, English
+EMV, Engineering & Motor Vehicle
+ENG, Engineering (General/Classroom-based)
+ESO, ESOL
+GMA, Games, Media & Animation
+HAC, Health (incl Health T-level)
+HBH, Hair, Beauty & Hospitality
+MAT, Maths
+NEE, NEET Provision and Engagement
+PAP, Performance & Production (Performing Arts & Music)
+PM, Project Management
+PRA, Professional Apprenticeships
+PRE, Employment Services (Pre-employment)
+PRS, Professional Studies
+PSF, Public Services (Protective Services)
+QUA, Quality (internal classification)
+SEL, SEND (replacing FIP)
+SKB, Skills Bootcamps
+SMS, Sixth Form (incl A-Levels)
+SMX, SOMAX [archived]
+SPO, Sport`;
+
+function _dpcOpenBulkAddPanel() {
+  const panel = document.getElementById('dpc-area-bulk-panel');
+  if (!panel) return;
+  const showing = panel.style.display !== 'none';
+  if (showing) { panel.style.display = 'none'; return; }
+
+  panel.style.display = 'block';
+  panel.innerHTML = `
+    <div style="border:2px dashed var(--color-teal);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-sm);">
+        One area per line: <code>CODE, Full Name</code>. Add <code> [archived]</code> to a line to import it already archived.
+        Review and edit before importing — nothing is saved until you click Import.
+      </p>
+      <p style="font-size:var(--text-xs);color:var(--color-amber);margin-bottom:var(--space-sm);">
+        <strong>AMT</strong>'s code is a best guess for the merged Advanced Manufacturing area — confirm or rename after import.
+      </p>
+      <textarea id="dpc-bulk-area-text" class="form-textarea" rows="14" style="font-family:monospace;font-size:var(--text-xs);width:100%;">${_dpcEsc(DPC_BULK_AREA_DEFAULT)}</textarea>
+      <p id="dpc-bulk-area-error" role="alert" style="font-size:var(--text-sm);color:var(--color-red);display:none;margin-top:var(--space-sm);"></p>
+      <div class="btn-row" style="margin-top:var(--space-sm);">
+        <button id="dpc-bulk-area-import" type="button" class="btn btn--primary btn--sm">Import areas</button>
+        <button id="dpc-bulk-area-cancel" type="button" class="btn btn--ghost btn--sm">Cancel</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('dpc-bulk-area-cancel').addEventListener('click', () => { panel.style.display = 'none'; });
+  document.getElementById('dpc-bulk-area-import').addEventListener('click', _dpcCommitBulkAdd);
+}
+
+function _dpcCommitBulkAdd() {
+  const text = document.getElementById('dpc-bulk-area-text').value;
+  const errEl = document.getElementById('dpc-bulk-area-error');
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
+  const existing = new Set(_getAreas(true).map(a => a.areaCode));
+  const toAdd = [];
+  const skipped = [];
+
+  lines.forEach(line => {
+    const archived = /\[archived\]\s*$/i.test(line);
+    const cleanLine = line.replace(/\[archived\]\s*$/i, '').trim();
+    const commaIdx = cleanLine.indexOf(',');
+    if (commaIdx === -1) { skipped.push(line); return; }
+    const code = cleanLine.slice(0, commaIdx).trim().toUpperCase();
+    const name = cleanLine.slice(commaIdx + 1).trim();
+    if (!code || !name) { skipped.push(line); return; }
+    if (existing.has(code)) { skipped.push(`${line} (code already exists)`); return; }
+    toAdd.push({ code, name, archived });
+    existing.add(code); // guard against duplicate codes within the pasted list itself
+  });
+
+  if (toAdd.length === 0) {
+    errEl.textContent = skipped.length > 0 ? `Nothing to import — all ${skipped.length} line(s) were invalid or already exist.` : 'No valid lines found.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  toAdd.forEach(({ code, name, archived }) => {
+    saveArea({ areaCode: code, areaName: name, campus: '', hoaName: '', digitalLeadId: null, pyramidLevel: 'foundations',
+      ragDimensions: {}, healthChecks: [], activityLog: [], afiRefs: [], actionPoints: [], staffRefs: [], notes: '',
+      archived: archived || false });
+  });
+
+  // Departments already confirmed in conversation — seeded automatically
+  // for the two areas we know are multi-department, so they're not an
+  // extra manual step. Only runs if those exact areas were part of this
+  // import (checking toAdd, not assuming) — harmless no-op otherwise.
+  if (toAdd.some(a => a.code === 'PAP')) {
+    saveDepartment('PAP', { departmentCode: 'PA', departmentName: 'Performing Arts' });
+    saveDepartment('PAP', { departmentCode: 'MUS', departmentName: 'Music' });
+  }
+  if (toAdd.some(a => a.code === 'SEL')) {
+    saveDepartment('SEL', { departmentCode: 'TRAN', departmentName: 'Transition Programmes' });
+    saveDepartment('SEL', { departmentCode: 'SPEC', departmentName: 'Specialist Provision' });
+    saveDepartment('SEL', { departmentCode: 'EMPL', departmentName: 'Supported Employment' });
+    saveDepartment('SEL', { departmentCode: 'PREP', departmentName: 'Prep for Life' });
+  }
+
+  errEl.style.display = 'none';
+  document.getElementById('dpc-area-bulk-panel').style.display = 'none';
+  _dpcRenderAreaList();
+  if (typeof UI !== 'undefined') {
+    UI.showToast('success', `Imported ${toAdd.length} area(s).${skipped.length > 0 ? ` ${skipped.length} line(s) skipped.` : ''}`);
+  }
+  if (skipped.length > 0) console.warn('Bulk area import — skipped lines:', skipped);
 }
 
 function _dpcOpenAreaAddForm() {
