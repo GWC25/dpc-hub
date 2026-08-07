@@ -66,6 +66,7 @@ function initSettings() {
       <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-md);">
         <button id="dpc-area-add-btn" type="button" class="btn btn--primary btn--sm">+ Add area</button>
         <button id="dpc-area-bulk-btn" type="button" class="btn btn--ghost btn--sm">Bulk add areas</button>
+        <button id="dpc-sel-consolidate-btn" type="button" class="btn btn--ghost btn--sm" style="display:none;">Consolidate FAU/FCO/FEH/FPL into SEL</button>
       </div>
       <div id="dpc-area-bulk-panel" style="display:none;"></div>
       <div id="dpc-area-list"></div>
@@ -145,6 +146,7 @@ function initSettings() {
   _dpcRenderAreaList();
   document.getElementById('dpc-area-add-btn')?.addEventListener('click', _dpcOpenAreaAddForm);
   document.getElementById('dpc-area-bulk-btn')?.addEventListener('click', _dpcOpenBulkAddPanel);
+  _dpcWireSELConsolidate();
   _dpcSettingsInit();
   document.getElementById('dpc-reconnect-btn')?.addEventListener('click', async () => {
     await reconnectFolder(UI);
@@ -596,3 +598,29 @@ function _dpcSettingsInit() {
 // Apply preferences immediately on script load, app-wide — not just when
 // the Settings tab is opened.
 _dpcApplyStoredPreferencesOnLoad();
+
+// ── SEND consolidation (Session 46) ──────────────────────────────
+// One-off patch, not a general feature — Graeme's direct steer: SEL
+// should be the single SEND area, in place of the four separate FIP
+// areas an earlier session split it into. Button only shows if any of
+// the four source areas actually still exist, so it disappears on its
+// own once used rather than sitting there as a stale action.
+function _dpcWireSELConsolidate() {
+  const btn = document.getElementById('dpc-sel-consolidate-btn');
+  if (!btn) return;
+  const sources = ['FAU', 'FCO', 'FEH', 'FPL'].filter(code => typeof _getArea === 'function' && _getArea(code));
+  if (sources.length === 0 || (typeof _getArea === 'function' && !_getArea('SEL'))) return;
+  btn.style.display = 'inline-block';
+
+  btn.addEventListener('click', () => {
+    if (!confirm(`Merge ${sources.join(', ')} into SEL? Every staff member, Digital Lead and record in these areas will move to SEL. The source areas will be archived, not deleted.`)) return;
+    let totalChanged = 0;
+    sources.forEach(code => {
+      const result = mergeAreaInto(code, 'SEL');
+      totalChanged += result.changed || 0;
+    });
+    if (typeof UI !== 'undefined') UI.showToast('success', `Consolidated ${sources.length} area(s) into SEL. ${totalChanged} record(s) moved.`);
+    _dpcRenderAreaList();
+    btn.style.display = 'none';
+  });
+}
