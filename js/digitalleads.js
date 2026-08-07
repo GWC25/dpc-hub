@@ -111,7 +111,7 @@ function _renderDLList() {
         <div style="width:36px;height:36px;border-radius:50%;background:var(--color-teal-lt);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--color-teal);flex-shrink:0;">${(dl.name||'?')[0].toUpperCase()}</div>
         <div>
           <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_dlEsc(dl.name)}</p>
-          <p style="font-size:var(--text-xs);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')}${(function(){var a=_getArea(dl.areaCode);return a?' — '+_dlEsc(a.areaName):'';})()} ${dl.role?'· '+dl.role:''}</p>
+          <p style="font-size:var(--text-xs);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')} ${dl.role?'· '+dl.role:''}</p>
         </div>
         ${meetings>0?`<span style="margin-left:auto;font-size:10px;background:var(--color-teal-lt);color:var(--color-teal);padding:1px 8px;border-radius:999px;font-weight:bold;">${meetings} mtg${meetings!==1?'s':''}</span>`:''}
       </div>`;
@@ -142,7 +142,7 @@ function _renderDLDetailContent(dlId) {
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-md);">
       <div>
         <h2 style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">${_dlEsc(dl.name)}</h2>
-        <p style="font-size:var(--text-sm);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')}${(function(){var a=_getArea(dl.areaCode);return a?' — '+_dlEsc(a.areaName):'';})()} ${dl.role?'· '+_dlEsc(dl.role):''}</p>
+        <p style="font-size:var(--text-sm);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')} ${dl.role?'· '+_dlEsc(dl.role):''}</p>
       </div>
       <div style="display:flex;gap:var(--space-sm);">
         <button id="dl-edit-btn" type="button" class="btn btn--ghost btn--sm">Edit</button>
@@ -170,7 +170,7 @@ function _renderDLDetailContent(dlId) {
          area, not a separate parallel tracking system. Health Checks,
          Loops, Action Plans and Resource shares all already exist; this
          just surfaces what's already true about the area this DL leads. -->
-    ${_dlRenderAreaImpact(dl.areaCode)}
+    ${_dlRenderAreaImpact(dl)}
 
     <!-- Meetings -->
     <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">1:1 meeting history</h3>
@@ -235,6 +235,9 @@ function _renderDLDetailContent(dlId) {
   `;
 
   document.getElementById('dl-edit-btn')?.addEventListener('click',()=>_openDLModal(dlId));
+  document.querySelectorAll('.dl-drill-btn').forEach(btn => {
+    btn.addEventListener('click', () => _dlOpenDrill(btn.dataset.drill, dlId));
+  });
   document.getElementById('dl-log-meeting-btn')?.addEventListener('click',()=>{
     document.getElementById('dl-meeting-dl-id').value=dlId;
     document.getElementById('dl-meeting-date').value=todayISO();
@@ -371,7 +374,8 @@ function _getDL(id){return _getAllDLs().find(d=>d.dlId===id)||null;}
 // data every other part of the Hub already reads (data-health-checks,
 // data-afi via areaCode, data-action-plans, data-resource-library), not
 // a second parallel tracking system for Digital Leads specifically.
-function _dlRenderAreaImpact(areaCode) {
+function _dlRenderAreaImpact(dl) {
+  const areaCode = dl.areaCode;
   if (!areaCode) return '';
 
   const reviews = typeof _hcGetReviewsForArea === 'function' ? _hcGetReviewsForArea(areaCode) : [];
@@ -392,24 +396,29 @@ function _dlRenderAreaImpact(areaCode) {
   return `
   <div style="margin-bottom:var(--space-lg);">
     <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Area impact — ${_dlEsc(areaCode)}</h3>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-sm);">
-      <div style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-sm);">
+      <button type="button" class="dl-drill-btn" data-drill="healthcheck" style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);border:none;cursor:pointer;">
         <div style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">${avgHC != null ? avgHC : '—'}</div>
         <div style="font-size:10px;color:var(--color-muted);">Avg Health Check (${latestReviews.length} staff)</div>
-      </div>
-      <div style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);">
+      </button>
+      <button type="button" class="dl-drill-btn" data-drill="training" style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);border:none;cursor:pointer;">
+        <div style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">${(dl.trainingHistory||[]).length || (dl.trainingSession ? 1 : 0)}</div>
+        <div style="font-size:10px;color:var(--color-muted);">Training events</div>
+      </button>
+      <button type="button" class="dl-drill-btn" data-drill="loops" style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);border:none;cursor:pointer;">
         <div style="font-size:var(--text-lg);font-weight:bold;color:${openAFIs>0?'var(--color-amber)':'var(--color-green)'};">${openAFIs}</div>
         <div style="font-size:10px;color:var(--color-muted);">Open loops</div>
-      </div>
-      <div style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);">
+      </button>
+      <button type="button" class="dl-drill-btn" data-drill="actionplans" style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);border:none;cursor:pointer;">
         <div style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">${activePlans}</div>
-        <div style="font-size:10px;color:var(--color-muted);">Active action plans</div>
-      </div>
-      <div style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);">
+        <div style="font-size:10px;color:var(--color-muted);">Action Plans</div>
+      </button>
+      <button type="button" class="dl-drill-btn" data-drill="resources" style="text-align:center;padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-md);border:none;cursor:pointer;">
         <div style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">${shares.length}</div>
         <div style="font-size:10px;color:var(--color-muted);">Resources shared</div>
-      </div>
+      </button>
     </div>
+    <div id="dl-drill-panel" style="display:none;margin-top:var(--space-lg);padding:var(--space-lg);border:1px solid var(--color-border);border-radius:var(--radius-md);"></div>
   </div>`;
 }
 function _dlFmtDate(iso){if(!iso)return'';try{return new Date(iso.split('T')[0]+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return iso;}}
@@ -748,4 +757,269 @@ function _dlCommitConfirmedImport(rows) {
   }
   document.getElementById('dl-tracker-import-panel').style.display = 'none';
   _renderDLList();
+}
+
+// ── Drill-down panels (Session 47) ───────────────────────────────
+function _dlOpenDrill(kind, dlId) {
+  const panel = document.getElementById('dl-drill-panel');
+  if (!panel) return;
+  const dl = _getDL(dlId);
+  if (!dl) return;
+
+  const alreadyShowing = panel.style.display !== 'none' && panel.dataset.kind === kind;
+  if (alreadyShowing) { panel.style.display = 'none'; return; }
+  panel.dataset.kind = kind;
+  panel.style.display = 'block';
+
+  if (kind === 'healthcheck') _dlRenderHCDrill(panel, dl);
+  if (kind === 'training') _dlRenderTrainingDrill(panel, dl);
+  if (kind === 'actionplans') _dlRenderActionPlansDrill(panel, dl);
+  if (kind === 'resources') _dlRenderResourcesDrill(panel, dl);
+  if (kind === 'loops') _dlRenderLoopsDrill(panel, dl);
+}
+
+// ── Health Check drill-down: baseline vs current, per staff ──────
+// Colour = direction (red/yellow/green), shade = magnitude — see
+// _hcDeltaClass in healthcheck.js and the verified-WCAG classes in
+// design.css. "Baseline" here means this person's earliest review by
+// real date, same definition already used on their own Staff page.
+function _dlRenderHCDrill(panel, dl) {
+  const allReviews = (typeof _hcGetReviewsForArea === 'function' ? _hcGetReviewsForArea(dl.areaCode) : []);
+  const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  const staffInArea = allStaff.filter(s => s.areaCode === dl.areaCode);
+
+  const rows = staffInArea.map(s => {
+    const reviews = allReviews.filter(r => r.staffId === s.staffId).sort((a,b) => (a.date||'').localeCompare(b.date||''));
+    if (reviews.length === 0) return null;
+    const avgOf = r => { const v = Object.values(r.domains||{}).map(d=>d.avgScore).filter(x=>x!=null); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null; };
+    const baseline = reviews[0];
+    const current = reviews[reviews.length-1];
+    const baselineAvg = avgOf(baseline);
+    const currentAvg = avgOf(current);
+    if (baselineAvg == null || currentAvg == null) return null;
+    // Only one review on record — baseline and "current" would be the
+    // same review. Showing a delta here would claim a comparison that
+    // hasn't actually happened yet. Same honesty rule as the Staff page's
+    // own trend card.
+    const hasComparison = reviews.length > 1;
+    const delta = hasComparison ? currentAvg - baselineAvg : null;
+    const actions = [];
+    [baseline, current].forEach(r => Object.entries(r.domains||{}).forEach(([id, d]) => {
+      if (d.actionIdentified && d.actionDescription) actions.push(d.actionDescription);
+    }));
+    return { staff: s, baselineAvg, currentAvg, delta, hasComparison, reviewCount: reviews.length, actions: [...new Set(actions)] };
+  }).filter(Boolean);
+
+  panel.innerHTML = `
+    <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Health Check detail — ${_dlEsc(dl.areaCode)}</h4>
+    ${rows.length === 0 ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No staff with more than one review yet — nothing to compare.</p>' : `
+      <table style="width:100%;border-collapse:collapse;font-size:var(--text-sm);">
+        <thead><tr style="border-bottom:2px solid var(--color-border);">
+          <th style="text-align:left;padding:var(--space-sm);font-size:var(--text-xs);color:var(--color-muted);">Staff</th>
+          <th style="text-align:center;padding:var(--space-sm);font-size:var(--text-xs);color:var(--color-muted);">Baseline</th>
+          <th style="text-align:center;padding:var(--space-sm);font-size:var(--text-xs);color:var(--color-muted);">Current</th>
+          <th style="text-align:center;padding:var(--space-sm);font-size:var(--text-xs);color:var(--color-muted);">Change</th>
+          <th style="text-align:left;padding:var(--space-sm);font-size:var(--text-xs);color:var(--color-muted);">Actions required</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr style="border-bottom:1px solid var(--color-border);">
+              <td style="padding:var(--space-sm);color:var(--color-slate);">${_dlEsc(r.staff.name)}</td>
+              <td style="text-align:center;padding:var(--space-sm);">${r.baselineAvg.toFixed(1)}</td>
+              <td style="text-align:center;padding:var(--space-sm);">${r.hasComparison ? r.currentAvg.toFixed(1) : '—'}</td>
+              <td style="text-align:center;padding:var(--space-sm);">
+                ${r.hasComparison
+                  ? `<span class="${typeof _hcDeltaClass==='function'?_hcDeltaClass(r.delta):''}" style="padding:2px 10px;border-radius:999px;font-weight:bold;font-size:var(--text-xs);">${r.delta>0?'+':''}${r.delta.toFixed(1)}</span>`
+                  : '<span style="font-size:10px;color:var(--color-muted);">Baseline only</span>'}
+              </td>
+              <td style="padding:var(--space-sm);font-size:var(--text-xs);color:var(--color-muted);">${r.actions.length ? _dlEsc(r.actions.join('; ')) : '—'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    `}
+  `;
+}
+
+// ── Training drill-down ───────────────────────────────────────────
+function _dlRenderTrainingDrill(panel, dl) {
+  const history = dl.trainingHistory || [];
+  panel.innerHTML = `
+    <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Training history</h4>
+    ${dl.trainingSession && history.length === 0 ? `
+      <div style="padding:var(--space-sm) var(--space-md);background:var(--color-light);border-radius:var(--radius-sm);margin-bottom:var(--space-md);">
+        <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-slate);">Introduction to the Role</p>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);">${_dlEsc(dl.trainingSession)} — imported record</p>
+      </div>` : ''}
+    ${history.length === 0 ? (dl.trainingSession ? '' : '<p style="color:var(--color-muted);font-size:var(--text-sm);">No training events recorded yet.</p>') : history.slice().reverse().map(e => `
+      <div style="padding:var(--space-sm) var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:var(--space-sm);">
+        <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-slate);">${_dlEsc(e.title)}</p>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);">${_dlFmtDate(e.date)}${e.notes ? ' — ' + _dlEsc(e.notes) : ''}</p>
+      </div>`).join('')}
+    <div style="margin-top:var(--space-md);padding:var(--space-md);background:var(--color-light);border-radius:var(--radius-md);">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);">
+        <input type="text" id="dl-train-title" class="form-input" placeholder="Event title, e.g. Teams Fundamentals">
+        <input type="date" id="dl-train-date" class="form-input" value="${todayISO()}">
+      </div>
+      <textarea id="dl-train-notes" class="form-textarea" rows="2" placeholder="Notes (optional)" style="margin-top:var(--space-sm);"></textarea>
+      <button id="dl-train-save" type="button" class="btn btn--primary btn--sm" style="margin-top:var(--space-sm);">+ Add training event</button>
+    </div>
+  `;
+  document.getElementById('dl-train-save')?.addEventListener('click', () => {
+    const title = document.getElementById('dl-train-title').value.trim();
+    if (!title) { if (typeof UI!=='undefined') UI.showToast('error','Please enter an event title.'); return; }
+    addTrainingEvent(dl.dlId, { title, date: document.getElementById('dl-train-date').value, notes: document.getElementById('dl-train-notes').value.trim() });
+    _dlRenderTrainingDrill(panel, _getDL(dl.dlId));
+    if (typeof UI!=='undefined') UI.showToast('success', 'Training event added.');
+  });
+}
+
+// ── Action Plans drill-down: Active + Closed, refined detail ─────
+function _dlRenderActionPlansDrill(panel, dl) {
+  const allPlans = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [];
+  const areaPlans = allPlans.filter(p => p.areaCode === dl.areaCode);
+  const active = areaPlans.filter(p => p.status !== 'complete');
+  const closed = areaPlans.filter(p => p.status === 'complete');
+  const roleLabels = { dpc: 'Me (DPC)', 'digital-lead': 'Digital Lead', hoa: 'Head of Area', staff: 'Staff' };
+
+  panel.innerHTML = `
+    <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Action Plans — ${_dlEsc(dl.areaCode)}</h4>
+    <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-md);">
+      <button type="button" class="btn btn--ghost btn--sm dl-ap-tab" data-ap-tab="active" style="font-weight:bold;">Active (${active.length})</button>
+      <button type="button" class="btn btn--ghost btn--sm dl-ap-tab" data-ap-tab="closed">Closed (${closed.length})</button>
+    </div>
+    <div id="dl-ap-content"></div>
+  `;
+  _dlRenderAPTabContent('active', active, closed, roleLabels, panel, dl);
+  panel.querySelectorAll('.dl-ap-tab').forEach(btn => {
+    btn.addEventListener('click', () => _dlRenderAPTabContent(btn.dataset.apTab, active, closed, roleLabels, panel, dl));
+  });
+}
+
+function _dlRenderAPTabContent(tab, active, closed, roleLabels, panel, dl) {
+  const content = panel.querySelector('#dl-ap-content');
+  const list = tab === 'active' ? active : closed;
+
+  if (list.length === 0) {
+    content.innerHTML = `<p style="color:var(--color-muted);font-size:var(--text-sm);">No ${tab} plans.</p>`;
+    return;
+  }
+
+  content.innerHTML = list.map(p => `
+    <div class="dl-ap-card" data-plan-id="${p.planId}" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_dlEsc(p.focus||p.aim||'Untitled plan')}</p>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-sm);">Target: ${p.targetDate?_dlFmtDate(p.targetDate):'No date'} · Success criteria: ${_dlEsc(p.successCriteria||'—')}</p>
+
+      ${(p.actionItems||[]).length > 0 ? `
+        <table style="width:100%;border-collapse:collapse;font-size:var(--text-xs);margin-bottom:var(--space-sm);">
+          <thead><tr style="border-bottom:1px solid var(--color-border);">
+            <th style="text-align:left;padding:4px;color:var(--color-muted);">Action</th>
+            <th style="text-align:left;padding:4px;color:var(--color-muted);">Role</th>
+            <th style="text-align:left;padding:4px;color:var(--color-muted);">Accountable</th>
+            <th style="text-align:left;padding:4px;color:var(--color-muted);">By</th>
+            <th style="padding:4px;"></th>
+          </tr></thead>
+          <tbody>
+            ${p.actionItems.map(item => `
+              <tr style="border-bottom:1px solid var(--color-border);${item.done?'opacity:0.5;':''}">
+                <td style="padding:4px;">${_dlEsc(item.description)}</td>
+                <td style="padding:4px;">${_dlEsc(roleLabels[item.role]||item.role||'—')}</td>
+                <td style="padding:4px;">${_dlEsc(item.accountableName||'—')}</td>
+                <td style="padding:4px;">${item.timeframe?_dlFmtDate(item.timeframe):'—'}</td>
+                <td style="padding:4px;">
+                  ${tab==='active' ? `<input type="checkbox" class="dl-ap-item-done" data-plan-id="${p.planId}" data-item-id="${item.itemId}" ${item.done?'checked':''}>` : (item.done ? '✓' : '')}
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>` : '<p style="font-size:var(--text-xs);color:var(--color-muted);">No action items yet.</p>'}
+
+      ${tab === 'active' ? `
+        <div class="dl-ap-add-item-form" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:4px;margin-top:var(--space-sm);">
+          <input type="text" class="form-input dl-ap-item-desc" placeholder="Action description" style="min-height:32px;font-size:10px;">
+          <select class="form-select dl-ap-item-role" style="min-height:32px;font-size:10px;">
+            <option value="dpc">Me (DPC)</option>
+            <option value="digital-lead">Digital Lead</option>
+            <option value="hoa">Head of Area</option>
+            <option value="staff">Staff</option>
+          </select>
+          <input type="text" class="form-input dl-ap-item-accountable" placeholder="Accountable" style="min-height:32px;font-size:10px;">
+          <input type="date" class="form-input dl-ap-item-timeframe" style="min-height:32px;font-size:10px;">
+          <button type="button" class="btn btn--ghost btn--sm dl-ap-add-item-btn" data-plan-id="${p.planId}">+ Add</button>
+        </div>
+        <button type="button" class="btn btn--secondary btn--sm dl-ap-close-btn" data-plan-id="${p.planId}" style="margin-top:var(--space-sm);">Close plan</button>
+        <div class="dl-ap-close-form" data-plan-id="${p.planId}" style="display:none;margin-top:var(--space-sm);">
+          <textarea class="form-textarea dl-ap-close-report" rows="2" placeholder="What happened? What was the impact?"></textarea>
+          <button type="button" class="btn btn--primary btn--sm dl-ap-close-confirm" data-plan-id="${p.planId}" style="margin-top:4px;">Confirm close</button>
+        </div>
+      ` : `
+        <div style="background:var(--color-light);border-radius:var(--radius-sm);padding:var(--space-sm);margin-top:var(--space-sm);">
+          <p style="font-size:10px;color:var(--color-muted);text-transform:uppercase;">Closure report — ${p.closureReport?_dlFmtDate(p.closureReport.closedAt):''}</p>
+          <p style="font-size:var(--text-xs);color:var(--color-slate);">${_dlEsc(p.closureReport?.text || 'No report recorded.')}</p>
+        </div>
+      `}
+    </div>`).join('');
+
+  content.querySelectorAll('.dl-ap-item-done').forEach(cb => {
+    cb.addEventListener('change', () => {
+      toggleActionItemDone(cb.dataset.planId, cb.dataset.itemId, cb.checked);
+      _dlOpenDrillRefresh(panel, dl);
+    });
+  });
+  content.querySelectorAll('.dl-ap-add-item-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest('.dl-ap-card');
+      const desc = card.querySelector('.dl-ap-item-desc').value.trim();
+      if (!desc) { if (typeof UI!=='undefined') UI.showToast('error','Please describe the action.'); return; }
+      addActionItem(btn.dataset.planId, {
+        description: desc,
+        role: card.querySelector('.dl-ap-item-role').value,
+        accountableName: card.querySelector('.dl-ap-item-accountable').value.trim(),
+        timeframe: card.querySelector('.dl-ap-item-timeframe').value || null,
+      });
+      _dlOpenDrillRefresh(panel, dl);
+    });
+  });
+  content.querySelectorAll('.dl-ap-close-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const form = content.querySelector(`.dl-ap-close-form[data-plan-id="${btn.dataset.planId}"]`);
+      if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
+  });
+  content.querySelectorAll('.dl-ap-close-confirm').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest('.dl-ap-card');
+      const report = card.querySelector('.dl-ap-close-report').value.trim();
+      closeActionPlan(btn.dataset.planId, report);
+      if (typeof UI!=='undefined') UI.showToast('success', 'Plan closed.');
+      _dlOpenDrillRefresh(panel, dl);
+    });
+  });
+}
+
+function _dlOpenDrillRefresh(panel, dl) {
+  const freshDL = _getDL(dl.dlId) || dl;
+  _dlRenderActionPlansDrill(panel, freshDL);
+}
+
+// ── Simpler drill-downs ────────────────────────────────────────────
+function _dlRenderResourcesDrill(panel, dl) {
+  const shares = typeof _libGetSharesForArea === 'function' ? _libGetSharesForArea(dl.areaCode) : [];
+  panel.innerHTML = `
+    <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Resources shared — ${_dlEsc(dl.areaCode)}</h4>
+    ${shares.length === 0 ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">Nothing shared with this area yet.</p>' : shares.map(s => `
+      <div style="padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border);">
+        <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-slate);">${_dlEsc(s.resourceTitle||'')}</p>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);">${_dlFmtDate(s.date)}${s.contextNotes?' — '+_dlEsc(s.contextNotes):''}</p>
+      </div>`).join('')}
+  `;
+}
+
+function _dlRenderLoopsDrill(panel, dl) {
+  const afis = ((window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []).filter(a => a.areaCode === dl.areaCode && a.status !== 'closed');
+  panel.innerHTML = `
+    <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Open loops — ${_dlEsc(dl.areaCode)}</h4>
+    ${afis.length === 0 ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No open loops for this area.</p>' : afis.map(a => `
+      <div style="padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border);">
+        <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-slate);">${_dlEsc(a.description||a.lraThemeLabel||'')}</p>
+      </div>`).join('')}
+  `;
 }
