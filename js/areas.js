@@ -176,13 +176,13 @@ function _renderAreaDetail(areaCode) {
 
     <!-- Tabs -->
     <div role="tablist" aria-label="Area sections" style="display:flex;border-bottom:2px solid var(--color-border);margin-bottom:var(--space-lg);gap:0;">
-      ${['overview','rag','activity','staff','resources'].map(tab => `
+      ${['overview','rag','activity','staff','resources','healthchecks'].map(tab => `
         <button role="tab" type="button" id="tab-${tab}" data-tab="${tab}"
           aria-selected="${tab==='overview'?'true':'false'}"
           style="padding:10px 20px;border:none;border-bottom:3px solid ${tab==='overview'?'var(--color-teal)':'transparent'};
           background:none;cursor:pointer;font:${tab==='overview'?'bold':''} var(--text-base) Arial,sans-serif;
           color:${tab==='overview'?'var(--color-teal)':'var(--color-muted)'};min-height:44px;white-space:nowrap;">
-          ${{overview:'Overview',rag:'RAG Matrix',activity:'Activity Log',staff:'Staff',resources:'Resources Shared'}[tab]}
+          ${{overview:'Overview',rag:'RAG Matrix',activity:'Activity Log',staff:'Staff',resources:'Resources Shared',healthchecks:'Health Checks'}[tab]}
         </button>`).join('')}
     </div>
 
@@ -308,6 +308,39 @@ function _renderAreaTab(tab, areaCode) {
               ${s.contextNotes?`<p style="font-size:var(--text-xs);color:var(--color-muted);font-style:italic;">${_escHtml(s.contextNotes)}</p>`:''}
             </div>
           </div>`).join('')
+      }`;
+  }
+
+  if (tab === 'healthchecks') {
+    // Reads from healthcheck.js — same reasoning as resources above:
+    // reviews are stored centrally (data-health-checks.json), area is a
+    // filter, not the source of truth. Shows latest review per staff
+    // member so a re-check in a later cycle correctly supersedes an
+    // earlier one rather than listing both.
+    const reviews = typeof _hcGetReviewsForArea === 'function' ? _hcGetReviewsForArea(areaCode) : [];
+    const byStaff = {};
+    reviews.forEach(r => {
+      if (!byStaff[r.staffId] || (r.date || '') > (byStaff[r.staffId].date || '')) byStaff[r.staffId] = r;
+    });
+    const latestReviews = Object.values(byStaff).sort((a, b) => (b.supportPriorityScore || 0) - (a.supportPriorityScore || 0));
+    const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+
+    panel.innerHTML = `
+      <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-md);">Health Checks (${latestReviews.length} staff reviewed)</h3>
+      ${latestReviews.length === 0
+        ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No Health Checks recorded for this area yet.</p>'
+        : latestReviews.map(r => {
+            const staff = allStaff.find(s => s.staffId === r.staffId);
+            const domainCount = Object.keys(r.domains || {}).length;
+            return `
+          <div style="display:flex;gap:var(--space-md);padding:var(--space-md) 0;border-bottom:1px solid var(--color-border);align-items:flex-start;">
+            <span style="font-size:var(--text-xs);color:var(--color-muted);white-space:nowrap;padding-top:2px;min-width:70px;">${_formatDateShort(r.date)}</span>
+            <div style="flex:1;">
+              <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-slate);">${_escHtml(staff ? staff.name : r.staffId)}</p>
+              <p style="font-size:var(--text-xs);color:var(--color-muted);">${domainCount} focus area(s) reviewed · Priority score ${r.supportPriorityScore != null ? r.supportPriorityScore.toFixed(1) : '—'}</p>
+            </div>
+          </div>`;
+          }).join('')
       }`;
   }
 }
