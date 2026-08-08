@@ -92,6 +92,13 @@ function initDigitalLeads() {
   _wireDLEvents();
 }
 
+// ── Campus grouping (Session 49) ─────────────────────────────────
+// Fixed order matches the real campus list, not alphabetical — SWSC
+// first because that's how Graeme listed them. "Unassigned" catches any
+// area with no campus set yet (Area management → Campus dropdown fixes
+// that at the source, not here).
+const DL_CAMPUS_ORDER = ['SWSC', 'Loxton', 'Knightstone', 'Winter Gardens', 'CTC', 'Puxton Park', 'AMTEC', 'AROSFA', 'Unassigned'];
+
 function _renderDLList() {
   const list  = document.getElementById('dl-list');
   const empty = document.getElementById('dl-empty');
@@ -99,25 +106,57 @@ function _renderDLList() {
   const dls = _getAllDLs();
   if (dls.length===0) { if(empty) empty.style.display='block'; list.innerHTML=''; return; }
   if(empty) empty.style.display='none';
-  list.innerHTML='';
-  dls.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).forEach(dl=>{
-    const isActive=_dlCurrentId===dl.dlId;
-    const meetings=(dl.meetingHistory||[]).length;
-    const item=document.createElement('div');
-    item.role='listitem'; item.dataset.dlId=dl.dlId; item.setAttribute('tabindex','0');
-    item.style.cssText=`padding:var(--space-md);border-radius:var(--radius-md);border:2px solid ${isActive?'var(--color-teal)':'var(--color-border)'};background:${isActive?'var(--color-teal-lt)':'var(--color-white)'};cursor:pointer;margin-bottom:var(--space-sm);transition:all 150ms;`;
-    item.innerHTML=`
-      <div style="display:flex;align-items:center;gap:var(--space-sm);">
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--color-teal-lt);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--color-teal);flex-shrink:0;">${(dl.name||'?')[0].toUpperCase()}</div>
-        <div>
-          <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_dlEsc(dl.name)}</p>
-          <p style="font-size:var(--text-xs);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')} ${dl.role?'· '+dl.role:''}</p>
-        </div>
-        ${meetings>0?`<span style="margin-left:auto;font-size:10px;background:var(--color-teal-lt);color:var(--color-teal);padding:1px 8px;border-radius:999px;font-weight:bold;">${meetings} mtg${meetings!==1?'s':''}</span>`:''}
-      </div>`;
-    item.addEventListener('click',()=>_openDLDetail(dl.dlId));
-    item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();_openDLDetail(dl.dlId);}});
-    list.appendChild(item);
+
+  const groups = {};
+  dls.forEach(dl => {
+    const area = _getArea(dl.areaCode);
+    const campus = (area && area.campus) || 'Unassigned';
+    (groups[campus] = groups[campus] || []).push(dl);
+  });
+
+  list.innerHTML = '';
+  DL_CAMPUS_ORDER.forEach(campus => {
+    const campusDLs = groups[campus];
+    if (!campusDLs || campusDLs.length === 0) return;
+    campusDLs.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+
+    const details = document.createElement('details');
+    details.open = true;
+    details.className = 'dl-campus-group';
+    details.style.marginBottom = 'var(--space-md)';
+
+    const summary = document.createElement('summary');
+    summary.style.cssText = 'cursor:pointer;font-size:var(--text-xs);font-weight:bold;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.05em;padding:var(--space-xs) 0;list-style:none;display:flex;align-items:center;gap:6px;';
+    summary.innerHTML = `<span class="dl-campus-chevron" aria-hidden="true">▸</span> ${_dlEsc(campus)} (${campusDLs.length})`;
+    details.appendChild(summary);
+
+    campusDLs.forEach(dl => {
+      const area = _getArea(dl.areaCode);
+      const isActive=_dlCurrentId===dl.dlId;
+      const meetings=(dl.meetingHistory||[]).length;
+      const item=document.createElement('div');
+      item.role='listitem'; item.dataset.dlId=dl.dlId; item.setAttribute('tabindex','0');
+      item.style.cssText=`padding:var(--space-md);border-radius:var(--radius-md);border:2px solid ${isActive?'var(--color-teal)':'var(--color-border)'};background:${isActive?'var(--color-teal-lt)':'var(--color-white)'};cursor:pointer;margin-bottom:var(--space-sm);transition:all 150ms;`;
+      item.innerHTML=`
+        <div style="display:flex;align-items:center;gap:var(--space-sm);">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--color-teal-lt);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--color-teal);flex-shrink:0;">${(dl.name||'?')[0].toUpperCase()}</div>
+          <div>
+            <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_dlEsc(dl.name)}</p>
+            <p style="font-size:var(--text-xs);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')}${area ? ' — ' + _dlEsc(area.areaName) : ''}${dl.role?' · '+_dlEsc(dl.role):''}</p>
+          </div>
+          ${meetings>0?`<span style="margin-left:auto;font-size:10px;background:var(--color-teal-lt);color:var(--color-teal);padding:1px 8px;border-radius:999px;font-weight:bold;">${meetings} mtg${meetings!==1?'s':''}</span>`:''}
+        </div>`;
+      item.addEventListener('click',()=>_openDLDetail(dl.dlId));
+      item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();_openDLDetail(dl.dlId);}});
+      details.appendChild(item);
+    });
+
+    details.addEventListener('toggle', () => {
+      const chevron = summary.querySelector('.dl-campus-chevron');
+      if (chevron) chevron.textContent = details.open ? '▾' : '▸';
+    });
+
+    list.appendChild(details);
   });
 }
 
@@ -142,7 +181,7 @@ function _renderDLDetailContent(dlId) {
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-md);">
       <div>
         <h2 style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">${_dlEsc(dl.name)}</h2>
-        <p style="font-size:var(--text-sm);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')} ${dl.role?'· '+_dlEsc(dl.role):''}</p>
+        <p style="font-size:var(--text-sm);color:var(--color-muted);">${_dlEsc(dl.areaCode||'')}${_getArea(dl.areaCode) ? ' — ' + _dlEsc(_getArea(dl.areaCode).areaName) : ''}${dl.role?' · '+_dlEsc(dl.role):''}</p>
       </div>
       <div style="display:flex;gap:var(--space-sm);">
         <button id="dl-edit-btn" type="button" class="btn btn--ghost btn--sm">Edit</button>
