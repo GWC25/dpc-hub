@@ -223,7 +223,7 @@ function renderPlaceholder(label, icon) {
     </div>`;
 }
 
-function initTasks()        { renderPlaceholder('Tasks', '✓'); }
+// Session 48: initTasks moved to js/tasks.js — real module now, no longer a placeholder.
 function initMeetings()     { renderPlaceholder('Meetings', '💬'); }
 function initNotes()        { renderPlaceholder('Notes', '✏'); }
 
