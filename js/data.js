@@ -764,6 +764,50 @@ function reopenActionPlan(planId) {
   return true;
 }
 
+// ── Auto-generated individual Action Plans (Session 50) ───────────
+// One Health Check review with any actionIdentified domain becomes a
+// real, individual Action Plan for that person — one action item per
+// flagged domain, using the assessor's own actionDescription as the
+// item text, defaulting to Staff as the responsible role since the
+// action was identified as theirs to work on. Nothing invented: if a
+// domain has no actionDescription text, it's skipped rather than
+// creating an empty item.
+function generateActionPlanFromHealthCheck(review, staffId) {
+  const staff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff || []).find(s => s.staffId === staffId);
+  const plan = {
+    planId: generateId(),
+    areaCode: review.areaCode,
+    type: 'Health Check follow-up',
+    focus: staff ? `${staff.name} — Health Check actions (${review.date})` : `Health Check actions (${review.date})`,
+    staffIds: [staffId],
+    aim: 'Address the specific practice gaps identified during this Health Check.',
+    successCriteria: 'Each flagged area scores 4+ (On Track / Confident) at the next Health Check.',
+    targetDate: null,
+    status: 'active',
+    actionItems: [],
+    linkedInstances: [],
+    linkedAFIIds: [],
+    sourceHealthCheckReviewId: review.reviewId,
+  };
+
+  Object.entries(review.domains || {}).forEach(([domainId, d]) => {
+    if (!d.actionIdentified || !d.actionDescription) return;
+    const focusArea = (typeof HC_FOCUS_AREAS !== 'undefined' ? HC_FOCUS_AREAS : []).find(fa => fa.id === domainId);
+    plan.actionItems.push({
+      itemId: generateId(),
+      description: d.actionDescription,
+      role: 'staff',
+      accountableName: staff ? staff.name : '',
+      timeframe: null,
+      done: false,
+      sourceDomain: focusArea ? focusArea.label : domainId,
+    });
+  });
+
+  saveActionPlan(plan);
+  return plan;
+}
+
 // Assigns a Teach Meet (or any template) to an Action Plan. Creates a
 // real Template instance — same shape templates.js already uses, so it
 // shows up in Templates exactly like one created from there — and a Loop
