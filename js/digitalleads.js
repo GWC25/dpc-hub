@@ -880,7 +880,7 @@ function _dlRenderHCDrill(panel, dl) {
         <tbody>
           ${rows.map(r => `
             <tr style="border-bottom:1px solid var(--color-border);">
-              <td style="padding:var(--space-sm);color:var(--color-slate);">${_dlEsc(r.staff.name)}</td>
+              <td style="padding:var(--space-sm);"><a href="#" class="dl-hc-staff-link" data-staff-id="${r.staff.staffId}" style="color:var(--color-teal);text-decoration:underline;">${_dlEsc(r.staff.name)}</a></td>
               <td style="text-align:center;padding:var(--space-sm);">${r.baselineAvg.toFixed(1)}</td>
               <td style="text-align:center;padding:var(--space-sm);">${r.hasComparison ? r.currentAvg.toFixed(1) : '—'}</td>
               <td style="text-align:center;padding:var(--space-sm);">
@@ -894,6 +894,9 @@ function _dlRenderHCDrill(panel, dl) {
       </table>
     `}
   `;
+  panel.querySelectorAll('.dl-hc-staff-link').forEach(link => {
+    link.addEventListener('click', e => { e.preventDefault(); if (typeof openStaffProfile === 'function') openStaffProfile(link.dataset.staffId); });
+  });
 }
 
 // ── Training drill-down ───────────────────────────────────────────
