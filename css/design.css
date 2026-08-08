@@ -924,3 +924,9 @@ body.underline-links a {
 .hc-delta-improve-light  { background: #DCFCE7; color: #14532D; }
 .hc-delta-improve-medium { background: #86EFAC; color: #14532D; }
 .hc-delta-improve-strong { background: #15803D; color: #FFFFFF; }
+
+/* ==========================================================================
+   Digital Leads — campus grouping (Session 49)
+   ========================================================================== */
+.dl-campus-group summary::-webkit-details-marker { display: none; }
+.dl-campus-group summary:focus-visible { outline: 2px solid var(--color-teal); outline-offset: 2px; }
