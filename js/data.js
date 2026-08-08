@@ -772,6 +772,71 @@ function reopenActionPlan(planId) {
 // action was identified as theirs to work on. Nothing invented: if a
 // domain has no actionDescription text, it's skipped rather than
 // creating an empty item.
+// ── Shared Action Plan card rendering (Session 51) ────────────────
+// Built because the same real bug existed in three separate places at
+// once: Staff, Areas, and Digital Leads each had their own copy of
+// "show a plan," and only the Digital Leads version actually showed the
+// real action items — the other two only showed the generic templated
+// aim/successCriteria text, never the specific gaps a Health Check
+// actually flagged. One function now, used everywhere a plan is listed,
+// so this can't quietly drift apart again.
+const ACTION_ITEM_ROLE_LABELS = Object.freeze({
+  dpc: 'Me (DPC)', 'digital-lead': 'Digital Lead', hoa: 'Head of Area', staff: 'Staff',
+});
+
+function renderActionPlanCard(plan, opts = {}) {
+  const esc = opts.esc || ((s) => s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'));
+  const fmtDate = opts.fmtDate || ((iso) => { if (!iso) return ''; try { return new Date(iso.split('T')[0]+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); } catch { return iso; } });
+  const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  const staffNames = (plan.staffIds || []).map(id => { const s = allStaff.find(x => x.staffId === id); return s ? s.name : id; }).join(', ') || 'Whole team';
+  const items = plan.actionItems || [];
+  const openCount = items.filter(i => !i.done).length;
+  // Extension points — callers pass extra HTML in rather than the shared
+  // template being spliced into afterwards, which is fragile and breaks
+  // silently the moment this template's structure changes.
+  const extraBadgeHtml = opts.extraBadgeHtml || '';
+  const footerHtml = opts.footerHtml ? opts.footerHtml(plan) : '';
+
+  return `
+    <div class="ap-shared-card" data-plan-id="${plan.planId}" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <p style="font-size:var(--text-xs);font-weight:bold;background:var(--color-light);color:var(--color-muted);padding:1px 8px;border-radius:999px;display:inline-block;margin-bottom:4px;">${esc(plan.type||'General')}</p>
+          <p style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);">${esc(plan.focus||plan.aim||'Untitled plan')}</p>
+          <p style="font-size:var(--text-xs);color:var(--color-muted);">For: ${esc(staffNames)} · Target: ${plan.targetDate?fmtDate(plan.targetDate):'No date set'}</p>
+        </div>
+        <div style="text-align:right;">
+          ${items.length > 0 ? `<span style="font-size:var(--text-xs);font-weight:bold;color:${openCount>0?'var(--color-amber)':'var(--color-green)'};white-space:nowrap;">${openCount>0?`${openCount} open item${openCount!==1?'s':''}`:'All items complete'}</span>` : ''}
+          ${extraBadgeHtml}
+        </div>
+      </div>
+
+      ${items.length > 0 ? `
+        <table style="width:100%;border-collapse:collapse;font-size:var(--text-xs);margin-top:var(--space-sm);">
+          <thead><tr style="border-bottom:1px solid var(--color-border);">
+            <th style="text-align:left;padding:4px;color:var(--color-muted);">What's actually needed</th>
+            <th style="text-align:left;padding:4px;color:var(--color-muted);">Role</th>
+            <th style="text-align:left;padding:4px;color:var(--color-muted);">Accountable</th>
+            <th style="text-align:left;padding:4px;color:var(--color-muted);">By</th>
+          </tr></thead>
+          <tbody>
+            ${items.map(item => `
+              <tr style="border-bottom:1px solid var(--color-border);${item.done?'opacity:0.5;':''}">
+                <td style="padding:4px;">${esc(item.description)}${item.sourceDomain ? `<br><span style="font-size:10px;color:var(--color-muted);">from ${esc(item.sourceDomain)}</span>` : ''}</td>
+                <td style="padding:4px;">${esc(ACTION_ITEM_ROLE_LABELS[item.role]||item.role||'—')}</td>
+                <td style="padding:4px;">${esc(item.accountableName||'—')}</td>
+                <td style="padding:4px;">${item.timeframe?fmtDate(item.timeframe):'—'}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      ` : `<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-sm);">No specific action items yet — general aim: ${esc(plan.aim||'not set')}</p>`}
+
+      ${plan.successCriteria ? `<p style="font-size:var(--text-xs);color:var(--color-slate);margin-top:var(--space-sm);"><strong>Success criteria:</strong> ${esc(plan.successCriteria)}</p>` : ''}
+      ${(plan.linkedInstances || []).length > 0 ? `<p style="font-size:var(--text-xs);color:var(--color-teal);margin-top:var(--space-sm);">${plan.linkedInstances.length} session(s) already assigned</p>` : ''}
+      ${footerHtml}
+    </div>`;
+}
+
 function generateActionPlanFromHealthCheck(review, staffId) {
   const staff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff || []).find(s => s.staffId === staffId);
   const plan = {
