@@ -259,6 +259,14 @@ function _renderAreaTab(tab, areaCode) {
             <label class="form-label form-label--optional" for="area-notes-input">Notes</label>
             <textarea class="form-textarea" id="area-notes-input" rows="2">${_escHtml(area.notes || '')}</textarea>
           </div>
+          <div class="form-group">
+            <label class="form-label form-label--optional" for="area-historical-rag">Historical RAG (overall, pre-Hub figure)</label>
+            <select class="form-select" id="area-historical-rag">
+              <option value="">— Not set —</option>
+              ${[1,2,3,4,5].map(n => `<option value="${n}" ${(area.historicalRAG&&area.historicalRAG.overall===n)?'selected':''}>${n}</option>`).join('')}
+            </select>
+            <p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;">Used as a coarse fallback suggestion for dimensions with no Health Check data yet — never overwrites real observed data.</p>
+          </div>
           <button id="area-details-save" type="button" class="btn btn--primary btn--sm">Save changes</button>
           <p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-sm);">Last updated: ${area.lastUpdated ? _formatDateShort(area.lastUpdated) : 'Never'}</p>
         </div>
@@ -281,6 +289,12 @@ function _renderAreaTab(tab, areaCode) {
       area.campus = document.getElementById('area-campus-select').value;
       area.pyramidLevel = document.getElementById('area-pyramid-select').value;
       area.notes = document.getElementById('area-notes-input').value.trim();
+      const histRAG = document.getElementById('area-historical-rag').value;
+      if (histRAG) {
+        saveHistoricalRAG(areaCode, parseInt(histRAG));
+      } else if (area.historicalRAG) {
+        delete area.historicalRAG.overall;
+      }
       saveArea(area);
       if (typeof UI !== 'undefined') UI.showToast('success', 'Area details saved.');
       _renderAreaTab('overview', areaCode);
