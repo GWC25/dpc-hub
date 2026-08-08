@@ -225,23 +225,25 @@ function _renderDashImpact() {
     </p>
 
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin-bottom:var(--space-xl);">
-      <div style="padding:var(--space-lg);background:var(--color-teal-lt);border-radius:var(--radius-md);text-align:center;">
+      <button type="button" class="dash-impact-tile" data-drill="reviews" style="padding:var(--space-lg);background:var(--color-teal-lt);border:none;border-radius:var(--radius-md);text-align:center;cursor:pointer;">
         <div style="font-size:var(--text-2xl);font-weight:bold;color:var(--color-teal);">${reviews.length}</div>
         <div style="font-size:var(--text-xs);color:var(--color-muted);">Health Checks completed</div>
-      </div>
-      <div style="padding:var(--space-lg);background:var(--color-blue-lt);border-radius:var(--radius-md);text-align:center;">
+      </button>
+      <button type="button" class="dash-impact-tile" data-drill="areas" style="padding:var(--space-lg);background:var(--color-blue-lt);border:none;border-radius:var(--radius-md);text-align:center;cursor:pointer;">
         <div style="font-size:var(--text-2xl);font-weight:bold;color:var(--color-blue);">${areasChecked}/${areas.length}</div>
         <div style="font-size:var(--text-xs);color:var(--color-muted);">Areas checked</div>
-      </div>
-      <div style="padding:var(--space-lg);background:var(--color-light);border-radius:var(--radius-md);text-align:center;">
+      </button>
+      <button type="button" class="dash-impact-tile" data-drill="staff" style="padding:var(--space-lg);background:var(--color-light);border:none;border-radius:var(--radius-md);text-align:center;cursor:pointer;">
         <div style="font-size:var(--text-2xl);font-weight:bold;color:var(--color-navy);">${staffReviewed}</div>
         <div style="font-size:var(--text-xs);color:var(--color-muted);">Staff reviewed</div>
-      </div>
-      <div style="padding:var(--space-lg);background:var(--color-amber-lt);border-radius:var(--radius-md);text-align:center;">
+      </button>
+      <button type="button" class="dash-impact-tile" data-drill="actions" style="padding:var(--space-lg);background:var(--color-amber-lt);border:none;border-radius:var(--radius-md);text-align:center;cursor:pointer;">
         <div style="font-size:var(--text-2xl);font-weight:bold;color:var(--color-amber);">${actionsIdentified}/${domainsReviewed}</div>
-        <div style="font-size:var(--text-xs);color:var(--color-muted);">Action points identified</div>
-      </div>
+        <div style="font-size:var(--text-xs);color:var(--color-muted);">Action points identified (of ${domainsReviewed} domains reviewed)</div>
+      </button>
     </div>
+
+    <div id="dash-impact-drill" style="display:none;margin-bottom:var(--space-xl);padding:var(--space-lg);border:1px solid var(--color-border);border-radius:var(--radius-md);"></div>
 
     <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-sm);">Health Checks by cycle</h3>
     <table style="width:100%;border-collapse:collapse;font-size:var(--text-sm);margin-bottom:var(--space-xl);">
@@ -261,6 +263,91 @@ function _renderDashImpact() {
     <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-sm);">Resource sharing activity</h3>
     <p style="font-size:var(--text-sm);color:var(--color-slate);">${shares.length} resource(s) shared with staff across ${new Set(shares.map(s=>s.areaCode)).size} area(s).</p>
   `;
+
+  document.querySelectorAll('.dash-impact-tile').forEach(btn => {
+    btn.addEventListener('click', () => _dashRenderImpactDrill(btn.dataset.drill, reviews, areas));
+  });
+}
+
+// ── Numerical Impact drill-down (Session 51) ──────────────────────
+// "48/57 — 57 what?" was a fair question — the label alone didn't say.
+// Now it's spelled out on the tile itself, and every tile opens the
+// records that actually make up the number, not just a bigger number.
+function _dashRenderImpactDrill(kind, reviews, areas) {
+  const panel = document.getElementById('dash-impact-drill');
+  if (!panel) return;
+  const alreadyShowing = panel.style.display !== 'none' && panel.dataset.kind === kind;
+  if (alreadyShowing) { panel.style.display = 'none'; return; }
+  panel.dataset.kind = kind;
+  panel.style.display = 'block';
+
+  const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  const nameOf = (staffId) => { const s = allStaff.find(x => x.staffId === staffId); return s ? s.name : staffId; };
+  const areaNameOf = (code) => { const a = areas.find(x => x.areaCode === code); return a ? a.areaName : code; };
+
+  if (kind === 'reviews' || kind === 'staff') {
+    panel.innerHTML = `
+      <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Every Health Check counted</h4>
+      <table style="width:100%;border-collapse:collapse;font-size:var(--text-xs);">
+        <thead><tr style="border-bottom:1px solid var(--color-border);">
+          <th style="text-align:left;padding:4px;color:var(--color-muted);">Staff</th>
+          <th style="text-align:left;padding:4px;color:var(--color-muted);">Area</th>
+          <th style="text-align:left;padding:4px;color:var(--color-muted);">Date</th>
+          <th style="text-align:left;padding:4px;color:var(--color-muted);">Cycle</th>
+        </tr></thead>
+        <tbody>
+          ${reviews.map(r => `<tr style="border-bottom:1px solid var(--color-border);">
+            <td style="padding:4px;">${nameOf(r.staffId)}</td>
+            <td style="padding:4px;">${r.areaCode} — ${areaNameOf(r.areaCode)}</td>
+            <td style="padding:4px;">${_formatDateShort(r.date)}</td>
+            <td style="padding:4px;">${r.cycleId}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  if (kind === 'areas') {
+    const byArea = {};
+    reviews.forEach(r => { (byArea[r.areaCode] = byArea[r.areaCode] || []).push(r); });
+    panel.innerHTML = `
+      <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Areas checked</h4>
+      ${Object.entries(byArea).map(([code, rs]) => `
+        <p style="font-size:var(--text-sm);color:var(--color-slate);padding:4px 0;border-bottom:1px solid var(--color-border);">
+          <strong>${code}</strong> — ${areaNameOf(code)} — ${new Set(rs.map(r=>r.staffId)).size} staff reviewed
+        </p>`).join('')}`;
+  }
+
+  if (kind === 'actions') {
+    // The "common threads" ask — every real action description, not just
+    // a count, so patterns across areas actually become visible.
+    const actionRows = [];
+    reviews.forEach(r => {
+      Object.entries(r.domains || {}).forEach(([domainId, d]) => {
+        if (d.actionIdentified && d.actionDescription) {
+          const focusArea = (typeof HC_FOCUS_AREAS !== 'undefined' ? HC_FOCUS_AREAS : []).find(fa => fa.id === domainId);
+          actionRows.push({ staffId: r.staffId, areaCode: r.areaCode, domain: focusArea ? focusArea.label : domainId, text: d.actionDescription });
+        }
+      });
+    });
+    panel.innerHTML = `
+      <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Every identified action point</h4>
+      <table style="width:100%;border-collapse:collapse;font-size:var(--text-xs);">
+        <thead><tr style="border-bottom:1px solid var(--color-border);">
+          <th style="text-align:left;padding:4px;color:var(--color-muted);">Staff</th>
+          <th style="text-align:left;padding:4px;color:var(--color-muted);">Area</th>
+          <th style="text-align:left;padding:4px;color:var(--color-muted);">Domain</th>
+          <th style="text-align:left;padding:4px;color:var(--color-muted);">Action</th>
+        </tr></thead>
+        <tbody>
+          ${actionRows.map(a => `<tr style="border-bottom:1px solid var(--color-border);">
+            <td style="padding:4px;">${nameOf(a.staffId)}</td>
+            <td style="padding:4px;">${a.areaCode}</td>
+            <td style="padding:4px;">${a.domain}</td>
+            <td style="padding:4px;">${a.text}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
 }
 
 // ── Health Check Dashboard ────────────────────────────────────
@@ -330,10 +417,10 @@ function _renderDashHC() {
         <tbody>
           ${areas.map((area, ri) => {
             const reviewed = latestPerStaff(area.areaCode);
-            return `<tr style="background:${ri%2===0?'var(--color-light)':'var(--color-white)'};border-bottom:1px solid var(--color-border);">
+            return `<tr class="dash-hc-row" data-area-code="${_dEsc(area.areaCode)}" style="background:${ri%2===0?'var(--color-light)':'var(--color-white)'};border-bottom:1px solid var(--color-border);cursor:pointer;">
               <td style="padding:var(--space-sm) var(--space-md);">
                 <span style="font-size:10px;font-weight:bold;background:var(--color-navy);color:var(--color-white);padding:1px 6px;border-radius:999px;margin-right:4px;">${_dEsc(area.areaCode)}</span>
-                <span style="color:var(--color-slate);">${_dEsc(area.areaName)}</span>
+                <span style="color:var(--color-teal);text-decoration:underline;">${_dEsc(area.areaName)}</span>
               </td>
               <td style="text-align:center;font-size:var(--text-xs);color:var(--color-muted);padding:var(--space-sm);">${reviewed.length}</td>
               ${HC_FOCUS_AREAS.map(fa => {
@@ -351,6 +438,9 @@ function _renderDashHC() {
       </table>
     </div>
   `;
+  document.querySelectorAll('.dash-hc-row').forEach(row => {
+    row.addEventListener('click', () => { if (typeof openAreaProfile === 'function') openAreaProfile(row.dataset.areaCode, 'healthchecks'); });
+  });
 }
 
 // ── Loops Overview Dashboard ──────────────────────────────────
