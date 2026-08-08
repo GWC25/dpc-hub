@@ -311,12 +311,8 @@ function _renderStaffTab(tab, staffId) {
     const plans = allPlans.filter(p => (p.staffIds || []).includes(staffId));
     const wholeTeamPlans = allPlans.filter(p => p.areaCode === s.areaCode && (!p.staffIds || p.staffIds.length === 0));
     panel.innerHTML = `
-      ${plans.length === 0 ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No action plans naming this person individually.</p>' : plans.map(p => `
-        <div style="padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-sm);">
-          <p style="font-size:var(--text-xs);font-weight:bold;background:var(--color-light);color:var(--color-muted);padding:1px 8px;border-radius:999px;display:inline-block;margin-bottom:4px;">${_sEsc(p.type||'General')}</p>
-          <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_sEsc(p.focus||p.aim||'Untitled plan')}</p>
-          <p style="font-size:var(--text-xs);color:var(--color-muted);">Target: ${p.targetDate ? _sFmtDate(p.targetDate) : 'No date set'} · ${(p.linkedInstances||[]).length} session(s) assigned</p>
-        </div>`).join('')}
+      ${plans.length === 0 ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No action plans naming this person individually.</p>'
+        : plans.map(p => typeof renderActionPlanCard === 'function' ? renderActionPlanCard(p, { esc: _sEsc, fmtDate: _sFmtDate }) : '').join('')}
       ${wholeTeamPlans.length > 0 ? `<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-md);">+ ${wholeTeamPlans.length} whole-team plan(s) for ${_sEsc(s.areaCode)} also apply — see the Area's Action Plan tab.</p>` : ''}
     `;
   }
