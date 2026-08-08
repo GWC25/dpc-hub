@@ -334,15 +334,19 @@ function _renderAreaTab(tab, areaCode) {
       ${areaStaff.length === 0
         ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No staff profiles linked to this area yet. Staff profiles are created automatically when you log an Instructional Coaching session or Learning Walk.</p>'
         : areaStaff.map(s => `
-          <div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md) 0;border-bottom:1px solid var(--color-border);">
+          <div class="area-staff-row" data-staff-id="${s.staffId}" style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md) 0;border-bottom:1px solid var(--color-border);cursor:pointer;" tabindex="0" role="button" aria-label="Open ${_escHtml(s.name)}'s profile">
             <div style="width:36px;height:36px;border-radius:50%;background:var(--color-teal-lt);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--color-teal);font-size:var(--text-base);flex-shrink:0;">${(s.name||'?')[0].toUpperCase()}</div>
             <div style="flex:1;">
-              <p style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-slate);">${_escHtml(s.name)}</p>
+              <p style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-teal);text-decoration:underline;">${_escHtml(s.name)}</p>
               <p style="font-size:var(--text-xs);color:var(--color-muted);">${_escHtml(s.role||'')} ${s.etfStage ? '· ETF Stage '+s.etfStage : ''}</p>
             </div>
             ${_getStaffOpenAFIs(s.staffId) > 0 ? `<span style="font-size:var(--text-xs);font-weight:bold;color:var(--color-amber);">${_getStaffOpenAFIs(s.staffId)} open loop${_getStaffOpenAFIs(s.staffId)!==1?'s':''}</span>` : ''}
           </div>`).join('')
       }`;
+    panel.querySelectorAll('.area-staff-row').forEach(row => {
+      row.addEventListener('click', () => { if (typeof openStaffProfile === 'function') openStaffProfile(row.dataset.staffId); });
+      row.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && typeof openStaffProfile === 'function') { e.preventDefault(); openStaffProfile(row.dataset.staffId); } });
+    });
   }
 
   if (tab === 'resources') {
