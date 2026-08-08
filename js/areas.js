@@ -41,6 +41,13 @@ function initAreas() {
   _populateCampusFilter();
   _renderAreasGrid();
   _wireAreasEvents();
+
+  // Cross-module deep link (Session 51)
+  if (window._pendingAreaOpen) {
+    const { areaCode, tab } = window._pendingAreaOpen;
+    window._pendingAreaOpen = null;
+    _openAreaDetail(areaCode, tab);
+  }
 }
 
 // ── Populate campus filter ────────────────────────────────────
@@ -138,19 +145,25 @@ function _buildRagDots(area) {
 }
 
 // ── Area detail ───────────────────────────────────────────────
-function _openAreaDetail(areaCode) {
+function _openAreaDetail(areaCode, tab = 'overview') {
   _areasCurrentArea = areaCode;
-  _areasDetailTab   = 'overview';
+  _areasDetailTab   = tab;
   const grid   = document.getElementById('areas-grid');
   const detail = document.getElementById('area-detail');
   const empty  = document.getElementById('areas-empty');
-  const filters= document.querySelector('[style*="display:flex;align-items:center;justify-content:space-between"]');
 
   if (grid)  grid.style.display   = 'none';
   if (empty) empty.style.display  = 'none';
   if (detail) detail.style.display = 'block';
 
   _renderAreaDetail(areaCode);
+}
+
+// Public: navigate to Areas and open a specific area's tab — same
+// cross-module deep-link pattern as openStaffProfile in staff.js.
+function openAreaProfile(areaCode, tab = 'overview') {
+  window._pendingAreaOpen = { areaCode, tab };
+  navigateTo('areas');
 }
 
 function _renderAreaDetail(areaCode) {
@@ -178,19 +191,19 @@ function _renderAreaDetail(areaCode) {
     <div role="tablist" aria-label="Area sections" style="display:flex;border-bottom:2px solid var(--color-border);margin-bottom:var(--space-lg);gap:0;">
       ${['overview','rag','activity','staff','resources','healthchecks','actionplan'].map(tab => `
         <button role="tab" type="button" id="tab-${tab}" data-tab="${tab}"
-          aria-selected="${tab==='overview'?'true':'false'}"
-          style="padding:10px 20px;border:none;border-bottom:3px solid ${tab==='overview'?'var(--color-teal)':'transparent'};
-          background:none;cursor:pointer;font:${tab==='overview'?'bold':''} var(--text-base) Arial,sans-serif;
-          color:${tab==='overview'?'var(--color-teal)':'var(--color-muted)'};min-height:44px;white-space:nowrap;">
+          aria-selected="${tab===_areasDetailTab?'true':'false'}"
+          style="padding:10px 20px;border:none;border-bottom:3px solid ${tab===_areasDetailTab?'var(--color-teal)':'transparent'};
+          background:none;cursor:pointer;font:${tab===_areasDetailTab?'bold':''} var(--text-base) Arial,sans-serif;
+          color:${tab===_areasDetailTab?'var(--color-teal)':'var(--color-muted)'};min-height:44px;white-space:nowrap;">
           ${{overview:'Overview',rag:'RAG Matrix',activity:'Activity Log',staff:'Staff',resources:'Resources Shared',healthchecks:'Health Checks',actionplan:'Action Plan'}[tab]}
         </button>`).join('')}
     </div>
 
     <!-- Tab panels -->
-    <div id="area-tab-panel" role="tabpanel" aria-labelledby="tab-overview"></div>
+    <div id="area-tab-panel" role="tabpanel" aria-labelledby="tab-${_areasDetailTab}"></div>
   `;
 
-  _renderAreaTab('overview', areaCode);
+  _renderAreaTab(_areasDetailTab, areaCode);
   _wireAreaDetailTabs(areaCode);
 }
 
@@ -446,31 +459,22 @@ function _renderAPList(areaCode) {
     return;
   }
 
-  const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
   container.innerHTML = plans.map(p => {
-    const staffNames = (p.staffIds || []).map(id => { const s = allStaff.find(x => x.staffId === id); return s ? s.name : id; }).join(', ') || 'Whole team';
     const openLoops = (p.linkedAFIIds || []).filter(id => {
       const afi = (window.DPC_DATA.afi && window.DPC_DATA.afi.afis || []).find(a => a.afiId === id);
       return afi && afi.status !== 'closed';
     }).length;
-    return `
-      <div class="ap-card" data-plan-id="${p.planId}" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
-          <div>
-            <p style="font-size:var(--text-xs);font-weight:bold;background:var(--color-light);color:var(--color-muted);padding:1px 8px;border-radius:999px;display:inline-block;margin-bottom:4px;">${_escHtml(p.type || 'General')}</p>
-            <p style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);">${_escHtml(p.focus || p.aim || 'Untitled plan')}</p>
-            <p style="font-size:var(--text-xs);color:var(--color-muted);">For: ${_escHtml(staffNames)} · Target: ${p.targetDate ? _formatDateShort(p.targetDate) : 'No date set'}</p>
-          </div>
-          ${openLoops > 0 ? `<span style="font-size:var(--text-xs);font-weight:bold;color:var(--color-amber);white-space:nowrap;">${openLoops} open loop${openLoops!==1?'s':''}</span>` : ''}
-        </div>
-        ${p.aim ? `<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:var(--space-sm);"><strong>Aim:</strong> ${_escHtml(p.aim)}</p>` : ''}
-        ${p.successCriteria ? `<p style="font-size:var(--text-sm);color:var(--color-slate);"><strong>Success criteria:</strong> ${_escHtml(p.successCriteria)}</p>` : ''}
-        ${(p.linkedInstances || []).length > 0 ? `<p style="font-size:var(--text-xs);color:var(--color-teal);margin-top:var(--space-sm);">${p.linkedInstances.length} session(s) assigned</p>` : ''}
+    return typeof renderActionPlanCard === 'function' ? renderActionPlanCard(p, {
+      esc: _escHtml,
+      fmtDate: _formatDateShort,
+      extraBadgeHtml: openLoops > 0 ? `<div><span style="font-size:var(--text-xs);font-weight:bold;color:var(--color-amber);">${openLoops} open loop${openLoops!==1?'s':''}</span></div>` : '',
+      footerHtml: (plan) => `
         <div class="btn-row" style="margin-top:var(--space-sm);">
-          <button type="button" class="btn btn--ghost btn--sm ap-assign-btn" data-plan-id="${p.planId}">Assign Teach Meet</button>
+          <button type="button" class="btn btn--ghost btn--sm ap-assign-btn" data-plan-id="${plan.planId}">Assign Teach Meet</button>
         </div>
-        <div class="ap-assign-form" data-plan-id="${p.planId}" style="display:none;margin-top:var(--space-sm);padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-sm);"></div>
-      </div>`;
+        <div class="ap-assign-form" data-plan-id="${plan.planId}" style="display:none;margin-top:var(--space-sm);padding:var(--space-sm);background:var(--color-light);border-radius:var(--radius-sm);"></div>
+      `,
+    }) : '';
   }).join('');
 
   container.querySelectorAll('.ap-assign-btn').forEach(btn => {
