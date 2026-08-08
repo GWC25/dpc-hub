@@ -180,7 +180,10 @@ function _renderDLDetailContent(dlId) {
         <div style="padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-sm);">
           <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-xs);">${_dlFmtDate(m.date)}</p>
           ${m.notes?`<p style="font-size:var(--text-sm);color:var(--color-slate);margin-bottom:var(--space-xs);">${_dlEsc(m.notes)}</p>`:''}
-          ${m.actionsAgreed?`<p style="font-size:var(--text-xs);color:var(--color-teal);font-style:italic;">Actions: ${_dlEsc(m.actionsAgreed)}</p>`:''}
+          ${m.actionsAgreed?`
+            <p style="font-size:var(--text-xs);color:var(--color-teal);font-style:italic;margin-bottom:4px;">Actions: ${_dlEsc(m.actionsAgreed)}</p>
+            ${typeof createTaskFromSource === 'function' ? `<button type="button" class="btn btn--ghost btn--sm dl-meeting-create-task" data-meeting-id="${m.meetingId}" style="font-size:10px;">+ Create task from this</button>` : ''}
+          `:''}
         </div>`).join('')}
 
     <!-- Add resource -->
@@ -237,6 +240,20 @@ function _renderDLDetailContent(dlId) {
   document.getElementById('dl-edit-btn')?.addEventListener('click',()=>_openDLModal(dlId));
   document.querySelectorAll('.dl-drill-btn').forEach(btn => {
     btn.addEventListener('click', () => _dlOpenDrill(btn.dataset.drill, dlId));
+  });
+  document.querySelectorAll('.dl-meeting-create-task').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const currentDL = _getDL(dlId);
+      const meeting = (currentDL.meetingHistory||[]).find(m => m.meetingId === btn.dataset.meetingId);
+      if (!meeting) return;
+      const task = createTaskFromSource(
+        { title: meeting.actionsAgreed, date: todayISO(), areaCode: currentDL.areaCode, personRefs: [currentDL.name], notes: `From 1:1 meeting on ${_dlFmtDate(meeting.date)}` },
+        'dl-meeting', { dlId, meetingId: meeting.meetingId }
+      );
+      if (typeof UI !== 'undefined') UI.showToast('success', `Task created: ${task.title}`);
+      btn.textContent = 'Task created ✓';
+      btn.disabled = true;
+    });
   });
   document.getElementById('dl-log-meeting-btn')?.addEventListener('click',()=>{
     document.getElementById('dl-meeting-dl-id').value=dlId;
@@ -926,7 +943,10 @@ function _dlRenderAPTabContent(tab, active, closed, roleLabels, panel, dl) {
                 <td style="padding:4px;">${_dlEsc(item.accountableName||'—')}</td>
                 <td style="padding:4px;">${item.timeframe?_dlFmtDate(item.timeframe):'—'}</td>
                 <td style="padding:4px;">
-                  ${tab==='active' ? `<input type="checkbox" class="dl-ap-item-done" data-plan-id="${p.planId}" data-item-id="${item.itemId}" ${item.done?'checked':''}>` : (item.done ? '✓' : '')}
+                  ${tab==='active' ? `
+                    <input type="checkbox" class="dl-ap-item-done" data-plan-id="${p.planId}" data-item-id="${item.itemId}" ${item.done?'checked':''}>
+                    ${!item.done && typeof createTaskFromSource === 'function' ? `<button type="button" class="dl-ap-item-create-task" data-plan-id="${p.planId}" data-item-id="${item.itemId}" style="font-size:10px;background:none;border:none;color:var(--color-teal);cursor:pointer;text-decoration:underline;margin-left:4px;">task</button>` : ''}
+                  ` : (item.done ? '✓' : '')}
                 </td>
               </tr>`).join('')}
           </tbody>
@@ -962,6 +982,19 @@ function _dlRenderAPTabContent(tab, active, closed, roleLabels, panel, dl) {
     cb.addEventListener('change', () => {
       toggleActionItemDone(cb.dataset.planId, cb.dataset.itemId, cb.checked);
       _dlOpenDrillRefresh(panel, dl);
+    });
+  });
+  content.querySelectorAll('.dl-ap-item-create-task').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const plan = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || []).find(p => p.planId === btn.dataset.planId);
+      const item = plan && (plan.actionItems || []).find(i => i.itemId === btn.dataset.itemId);
+      if (!item) return;
+      const task = createTaskFromSource(
+        { title: item.description, date: item.timeframe || todayISO(), areaCode: plan.areaCode, personRefs: item.accountableName ? [item.accountableName] : [], notes: `From Action Plan: ${plan.focus || plan.aim || ''}` },
+        'action-plan', { planId: plan.planId, itemId: item.itemId }
+      );
+      if (typeof UI !== 'undefined') UI.showToast('success', `Task created: ${task.title}`);
+      btn.textContent = '✓'; btn.disabled = true;
     });
   });
   content.querySelectorAll('.dl-ap-add-item-btn').forEach(btn => {
