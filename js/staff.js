@@ -94,6 +94,23 @@ function initStaff() {
   _staffPopulateAreaDropdown('staff-area');
   _renderStaffList();
   _wireStaffEvents();
+
+  // Cross-module deep link (Session 50) — set by openStaffProfile() from
+  // Areas, Health Checks, or anywhere else that shows a staff name as
+  // clickable text, so clicking a name actually opens that person, not
+  // just the Staff list in general.
+  if (window._pendingStaffOpen) {
+    const targetId = window._pendingStaffOpen;
+    window._pendingStaffOpen = null;
+    _openStaffDetail(targetId);
+  }
+}
+
+// Public: navigate to Staff and open a specific person's profile —
+// callable from any module that displays a staff name.
+function openStaffProfile(staffId) {
+  window._pendingStaffOpen = staffId;
+  navigateTo('staff');
 }
 
 // ── Staff list ────────────────────────────────────────────────
@@ -245,19 +262,48 @@ function _renderStaffTab(tab, staffId) {
       ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No Health Checks recorded yet.</p>'
       : reviews.map(r => {
           const domains = Object.entries(r.domains || {});
+          const anyActions = domains.some(([, d]) => d.actionIdentified);
           return `
-          <div style="padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-sm);">
+          <div style="padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-md);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm);">
-              <span style="font-size:var(--text-xs);font-weight:bold;color:var(--color-navy);">${_sFmtDate(r.date)} · ${_sHCCycleLabel(r.cycleId)}</span>
+              <span style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_sFmtDate(r.date)} · ${_sHCCycleLabel(r.cycleId)}</span>
               <span style="font-size:var(--text-xs);color:var(--color-muted);">Priority ${r.supportPriorityScore != null ? r.supportPriorityScore.toFixed(1) : '—'}</span>
             </div>
-            ${domains.map(([id, d]) => `
-              <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);padding:2px 0;">
-                <span style="color:var(--color-slate);">${_sEsc(_sHCDomainLabel(id))}</span>
-                <span style="font-weight:bold;color:${d.avgScore >= 4 ? 'var(--color-green)' : d.avgScore >= 3 ? 'var(--color-amber)' : 'var(--color-red)'};">${d.avgScore.toFixed(1)}${d.actionIdentified ? ' · action identified' : ''}</span>
-              </div>`).join('')}
+            ${domains.map(([id, d]) => {
+              const focusArea = (typeof HC_FOCUS_AREAS !== 'undefined' ? HC_FOCUS_AREAS : []).find(fa => fa.id === id);
+              const indicatorRows = focusArea ? focusArea.indicators.map(ind => {
+                const score = d.indicatorScores && d.indicatorScores[ind.id];
+                if (score == null) return '';
+                return `<div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;padding-left:var(--space-md);">
+                  <span style="color:var(--color-muted);">${_sEsc(ind.label)}</span>
+                  <span style="font-weight:bold;color:${score >= 4 ? 'var(--color-green)' : score >= 3 ? 'var(--color-amber)' : 'var(--color-red)'};">${score}</span>
+                </div>`;
+              }).join('') : '';
+              return `
+              <details style="margin-bottom:4px;">
+                <summary style="cursor:pointer;display:flex;justify-content:space-between;font-size:var(--text-xs);padding:4px 0;">
+                  <span style="color:var(--color-slate);font-weight:bold;">${_sEsc(_sHCDomainLabel(id))}</span>
+                  <span style="font-weight:bold;color:${d.avgScore >= 4 ? 'var(--color-green)' : d.avgScore >= 3 ? 'var(--color-amber)' : 'var(--color-red)'};">${d.avgScore.toFixed(1)}${d.actionIdentified ? ' ⚑' : ''}</span>
+                </summary>
+                ${indicatorRows}
+                ${d.whatWasSeen ? `<p style="font-size:10px;color:var(--color-muted);padding-left:var(--space-md);margin-top:4px;"><strong>Seen:</strong> ${_sEsc(d.whatWasSeen)}</p>` : ''}
+                ${d.actionIdentified && d.actionDescription ? `<p style="font-size:10px;color:var(--color-amber);padding-left:var(--space-md);margin-top:2px;"><strong>Action required:</strong> ${_sEsc(d.actionDescription)}</p>` : ''}
+              </details>`;
+            }).join('')}
+            ${anyActions ? `<button type="button" class="btn btn--ghost btn--sm s-generate-ap-btn" data-review-id="${r.reviewId}" style="margin-top:var(--space-sm);font-size:10px;">Generate Action Plan from this Health Check</button>` : ''}
           </div>`;
         }).join('');
+
+    panel.querySelectorAll('.s-generate-ap-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const review = (typeof _hcGetReviewsForStaff === 'function' ? _hcGetReviewsForStaff(staffId) : []).find(r => r.reviewId === btn.dataset.reviewId);
+        if (!review || typeof generateActionPlanFromHealthCheck !== 'function') return;
+        const plan = generateActionPlanFromHealthCheck(review, staffId);
+        if (typeof UI !== 'undefined') UI.showToast('success', `Action Plan created with ${plan.actionItems.length} item(s).`);
+        btn.textContent = 'Action Plan created ✓';
+        btn.disabled = true;
+      });
+    });
   }
 
   if (tab === 'actionplans') {
