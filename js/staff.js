@@ -311,10 +311,16 @@ function _renderStaffTab(tab, staffId) {
     const plans = allPlans.filter(p => (p.staffIds || []).includes(staffId));
     const wholeTeamPlans = allPlans.filter(p => p.areaCode === s.areaCode && (!p.staffIds || p.staffIds.length === 0));
     panel.innerHTML = `
-      ${plans.length === 0 ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No action plans naming this person individually.</p>'
-        : plans.map(p => typeof renderActionPlanCard === 'function' ? renderActionPlanCard(p, { esc: _sEsc, fmtDate: _sFmtDate }) : '').join('')}
+      <div id="s-ap-list">
+        ${plans.length === 0 ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No action plans naming this person individually.</p>'
+          : plans.map(p => typeof renderActionPlanCard === 'function' ? renderActionPlanCard(p, { esc: _sEsc, fmtDate: _sFmtDate, editable: true }) : '').join('')}
+      </div>
       ${wholeTeamPlans.length > 0 ? `<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-md);">+ ${wholeTeamPlans.length} whole-team plan(s) for ${_sEsc(s.areaCode)} also apply — see the Area's Action Plan tab.</p>` : ''}
     `;
+    const apList = panel.querySelector('#s-ap-list');
+    if (apList && typeof wireActionPlanCard === 'function') {
+      wireActionPlanCard(apList, { refresh: () => _renderStaffTab(tab, staffId) });
+    }
   }
 
   if (tab === 'reflections') {
