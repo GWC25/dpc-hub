@@ -1,0 +1,79 @@
+1. Project Overview
+Project Name: Digital Impact Hub Current Version: 30.0 (Personal Operating System Edition) Goal: To provide a comprehensive, "Local-First" Single-Page Application (SPA) for a Digital Pedagogy Coach. The tool manages tasks, projects, strategy, meeting notes, and reporting, functioning as a personal operating system without requiring IT server infrastructure. Core Philosophy:
+
+Zero-Infrastructure: Runs entirely in a browser as a single HTML file.
+
+Local-First: Data is stored in a local JSON file (digital-coach-data.json) via the File System Access API.
+
+Governance-Ready: Built to align daily tasks with high-level strategic KPIs and Quality Assurance mechanisms.
+
+2. Technical Architecture
+Stack: HTML5, Tailwind CSS (CDN), Alpine.js (CDN), Chart.js (CDN), Canvas Confetti (CDN).
+
+Data Model: Single JSON object containing:
+
+projects: Array of project objects (Tasks, Updates, Meetings, KPIs).
+
+todos: Array of "Hopper" tasks (Action items).
+
+meetingNotes: Array of notebook entries (Linked to projects/strategy).
+
+calendarEvents: Array of scheduled blocks/meetings.
+
+settings: Configuration for Priorities (Pillars), KPIs, Meeting Categories, QA Sources.
+
+Key Logic:
+
+appData(): The central Alpine.js component managing state.
+
+Reactivity: Updates to arrays (like projects) use spread syntax ([...array]) or reassignment to ensure UI reactivity.
+
+Persistence: window.showOpenFilePicker handles the read/write connection to the local JSON file.
+
+3. Strategic Framework (The "Why")
+The project is structured around 4 Strategic Pillars (consolidated from an initial 7):
+
+Digital Ecosystem & Standards: (Infrastructure, Teams Health Checks, Equipment Audits).
+
+Pedagogy, Assessment & Innovation: (AI, Visualisers, Digital Inking, Autonomous Learning).
+
+Inclusion & Accessibility: (Assistive Tech, Accessibility Toolkit, SEND support).
+
+Capacity Building & Quality Assurance: (Digital Champions, TLA Upskilling, Learning Walks).
+
+Key Performance Indicators (KPIs):
+
+Teaching Quality Indicators, QIP Traction, Staff Capability, Staff Confidence, Student Experience, Retention Proxy, Value for Money, Digital Champions.
+
+4. Current Functionality (The "What")
+Planner: A Kanban-style "Hopper" for tasks vs. a Weekly Calendar for time-blocking.
+
+Dashboard: High-level view of Active Projects, Actions Due, and QIP Traction. Toggle between "Strategy" and "Governance" views.
+
+Projects: Deep management of initiatives with "Micro-Tasks," "Evidence Locker," and "Governance Tags" (KPIs, QA Links).
+
+Meeting Hub: A 3-pane notebook system for categorizing notes (1:1s, HoAs, etc.) and linking them to projects. Includes "Quick Actions" to fire tasks to the Planner.
+
+Timeline (Gantt): Dynamic visual roadmap with "Year/Quarter/Month" zoom levels and "Swimlane" filtering by Strategy or Stand-alone.
+
+Reports: "Deep Dive" analytics allowing drill-down by Dept, Staff, or KPI.
+
+5. Known Issues / Roadmap
+File Permissions: The browser requires the user to re-grant permission to the file on every page reload (Security feature of the API).
+
+Mobile Experience: Optimized for Desktop/Tablet; mobile layout is functional but could be refined.
+
+Future Dev: Potential to add "Recurring Tasks" or "Template Projects" for repeated workflows.
+
+6. Latest Codebase (Version 30.0)
+(Refer to the code block provided in the previous turn for Version 30.0)
+
+Instructions for the Next AI:
+
+Ingest the Version 30.0 Code: This is the source of truth.
+
+Understand the "Local-First" Constraint: Do not suggest database backends (SQL, Firebase) unless explicitly asked. The user values the portability of the single file.
+
+Focus on "Flow": The next phase is about refining the workflow—how the user moves from a Meeting Note -> Action Item -> Scheduled Block -> Completed Evidence.
+
+(Conceptual visualization: Meeting Note -> Quick Action -> Planner Hopper -> Calendar Block -> Project Evidence)

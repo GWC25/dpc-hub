@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Learning Pedagogy — Brand Identity Concepts</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+/* ─────────────────────────────────────────
+   RESET & BASE
+───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:      #23366B;
+  --navy-deep: #161F45;
+  --navy-mid:  #2D4484;
+  --white:     #FFFFFF;
+  --off:       #F4F5F8;
+  --rule:      #DDE1EC;
+  --text:      #1C2340;
+  --muted:     #6B748F;
+  --mono:      'DM Mono', monospace;
+  --serif:     'Cormorant Garamond', Georgia, serif;
+  --sans:      'DM Sans', system-ui, sans-serif;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--sans);
+  background: #ECEEF4;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─────────────────────────────────────────
+   COVER PAGE
+───────────────────────────────────────── */
+.cover {
+  background: var(--navy-deep);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 72px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cover::before {
+  content: '';
+  position: absolute;
+  top: -120px; right: -120px;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.cover::after {
+  content: '';
+  position: absolute;
+  bottom: -80px; left: -80px;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.cover-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cover-wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cover-wordmark .wc {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+}
+.cover-wordmark .dept {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+}
+
+.cover-date {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.3);
+  text-align: right;
+}
+
+.cover-main {
+  position: relative;
+  z-index: 2;
+}
+
+.cover-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.cover-title {
+  font-family: var(--serif);
+  font-size: clamp(48px, 7vw, 96px);
+  font-weight: 600;
+  color: white;
+  line-height: 1.0;
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.cover-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(255,255,255,0.65);
+}
+
+.cover-subtitle {
+  font-family: var(--serif);
+  font-size: clamp(18px, 2.5vw, 28px);
+  font-weight: 400;
+  font-style: italic;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 48px;
+}
+
+.cover-rule {
+  width: 64px;
+  height: 1px;
+  background: rgba(255,255,255,0.2);
+  margin-bottom: 32px;
+}
+
+.cover-desc {
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.55);
+  max-width: 560px;
+  font-weight: 300;
+}
+
+.cover-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  position: relative;
+  z-index: 2;
+}
+
+.cover-bottom .author {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+}
+
+.cover-bottom .page-ref {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.2);
+}
+
+/* ─────────────────────────────────────────
+   SECTION WRAPPER
+───────────────────────────────────────── */
+.section-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 80px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 100px;
+}
+
+/* ─────────────────────────────────────────
+   CONCEPT CARD — SHARED
+───────────────────────────────────────── */
+.concept {
+  background: white;
+  box-shadow: 0 2px 60px rgba(35,54,107,0.08), 0 1px 0 rgba(35,54,107,0.06);
+}
+
+/* ─────────────────────────────────────────
+   CONCEPT HEADER BAR
+───────────────────────────────────────── */
+.concept-bar {
+  background: var(--navy);
+  padding: 20px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.concept-bar .c-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+}
+.concept-bar .c-title-sm {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+}
+
+/* ─────────────────────────────────────────
+   HERO LAYOUT — 2-col: logo left, text right
+   or flipped for variety
+───────────────────────────────────────── */
+.hero {
+  display: grid;
+  min-height: 420px;
+}
+.hero.logo-left  { grid-template-columns: 500px 1fr; }
+.hero.logo-right { grid-template-columns: 1fr 500px; }
+
+.hero-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  overflow: visible;
+}
+
+.hero-text {
+  padding: 56px 56px 56px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-left: 1px solid var(--rule);
+}
+.hero.logo-right .hero-text {
+  border-left: none;
+  border-right: 1px solid var(--rule);
+  padding: 56px 48px 56px 56px;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.hero-name {
+  font-family: var(--serif);
+  font-size: clamp(36px, 4vw, 54px);
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.05;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.hero-name em {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.hero-tagline {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  font-weight: 400;
+}
+
+.hero-rule {
+  width: 40px;
+  height: 2px;
+  background: var(--navy);
+  opacity: 0.2;
+  margin-bottom: 24px;
+}
+
+.hero-body {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #3D4460;
+  font-weight: 400;
+  max-width: 480px;
+}
+
+/* ─────────────────────────────────────────
+   FRAMEWORK STRIP — 3 columns
+───────────────────────────────────────── */
+.framework-strip {
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.f-block {
+  padding: 32px 36px;
+  border-right: 1px solid var(--rule);
+}
+.f-block:last-child { border-right: none; }
+
+.f-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.f-name {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.f-desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* ─────────────────────────────────────────
+   PILLARS STRIP — 4 columns
+───────────────────────────────────────── */
+.pillars-strip {
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--off);
+}
+
+.p-block {
+  padding: 28px 28px;
+  border-right: 1px solid var(--rule);
+}
+.p-block:last-child { border-right: none; }
+
+.p-num {
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--navy);
+  opacity: 0.12;
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.p-name {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 6px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.p-desc {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* ─────────────────────────────────────────
+   RATIONALE BLOCK
+───────────────────────────────────────── */
+.rationale {
+  border-top: 1px solid var(--rule);
+  padding: 40px 48px;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 48px;
+  align-items: start;
+  background: var(--navy-deep);
+}
+
+.rationale-label {
+  padding-top: 4px;
+}
+
+.rationale-label .rl-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.rationale-label .rl-head {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.3;
+}
+
+.rationale-text {
+  font-size: 14px;
+  line-height: 1.85;
+  color: rgba(255,255,255,0.6);
+  font-weight: 300;
+}
+
+.rationale-text strong {
+  color: rgba(255,255,255,0.88);
+  font-weight: 500;
+}
+
+/* ─────────────────────────────────────────
+   CONCEPT 1: THE RIPPLE
+   Accent: teal
+───────────────────────────────────────── */
+.c1-accent { color: #1B9690; }
+.c1-bar { background: var(--navy); }
+.c1-hero-bg { background: #F0F6F6; }
+
+/* ─────────────────────────────────────────
+   CONCEPT 2: THE VENN
+   Accent: warm gold
+───────────────────────────────────────── */
+.c2-accent { color: #B8922A; }
+
+/* ─────────────────────────────────────────
+   CONCEPT 3: THE COMPASS
+   Dark hero bg
+───────────────────────────────────────── */
+.c3-hero-bg { background: var(--navy); }
+.c3-text-override { color: rgba(255,255,255,0.85) !important; }
+.c3-text-override .hero-name { color: white !important; }
+.c3-text-override .hero-tagline { color: rgba(255,255,255,0.5) !important; }
+.c3-text-override .hero-body { color: rgba(255,255,255,0.7) !important; }
+.c3-text-override .hero-rule { background: white !important; opacity: 0.15 !important; }
+.c3-text-override .hero-eyebrow { color: rgba(255,255,255,0.4) !important; }
+.c3-text-override { border-left-color: rgba(255,255,255,0.1) !important; }
+
+/* ─────────────────────────────────────────
+   CONCEPT 4: THE ORBIT
+   Deep dark hero
+───────────────────────────────────────── */
+.c4-hero-bg { background: #0E1730; }
+
+/* ─────────────────────────────────────────
+   CONCEPT 5: THE CONSTELLATION
+   Night sky
+───────────────────────────────────────── */
+.c5-hero-bg { 
+  background: #0A1128;
+  position: relative;
+}
+
+/* ─────────────────────────────────────────
+   CONCEPT 6: THE PRISM
+   Clean white with gold
+───────────────────────────────────────── */
+
+/* ─────────────────────────────────────────
+   FOOTER
+───────────────────────────────────────── */
+.doc-footer {
+  background: var(--navy-deep);
+  padding: 48px 80px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.doc-footer p {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.2);
+  text-transform: uppercase;
+}
+
+@media (max-width: 800px) {
+  .hero.logo-left, .hero.logo-right { grid-template-columns: 1fr; }
+  .hero-text { border-left: none !important; border-right: none !important; border-top: 1px solid var(--rule); }
+  .framework-strip, .pillars-strip { grid-template-columns: 1fr 1fr; }
+  .rationale { grid-template-columns: 1fr; gap: 24px; }
+  .cover { padding: 48px 32px; }
+  .section-wrapper { padding: 48px 20px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     COVER
+═══════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-wordmark">
+      <span class="wc">Weston College</span>
+      <span class="dept">Quality &amp; Digital Innovation</span>
+    </div>
+    <div class="cover-date">February 2026<br>Confidential Draft</div>
+  </div>
+
+  <div class="cover-main">
+    <div class="cover-eyebrow">Brand Identity Exploration</div>
+    <h1 class="cover-title">Digital<br><em>Learning</em><br>Pedagogy</h1>
+    <p class="cover-subtitle">Six Visual Identity Concepts</p>
+    <div class="cover-rule"></div>
+    <p class="cover-desc">This document presents six distinct brand identity concepts for the Digital Learning Pedagogy framework at Weston College. Each concept has been developed to reflect the college's Digital Inclusion Framework — Digital Foundations, Accessible Digital Resources, and Inclusive Pedagogy — and the four strategic pillars that guide the Digital Pedagogy Coach role. A central design principle across all concepts is the deliberate avoidance of hierarchy: no element sits "above" or "before" another. All six are presented with rationale for their strategic fit.</p>
+  </div>
+
+  <div class="cover-bottom">
+    <span class="author">Prepared by Graeme Wright · Digital Pedagogy Coach</span>
+    <span class="page-ref">Six concepts follow</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     CONCEPTS
+═══════════════════════════════════════ -->
+<div class="section-wrapper">
+
+
+<!-- ───────────────────────────────────────
+     CONCEPT 1: THE RIPPLE
+─────────────────────────────────────── -->
+<div class="concept">
+  <div class="concept-bar">
+    <span class="c-num">Concept 01 of 06</span>
+    <span class="c-title-sm">The Ripple</span>
+  </div>
+
+  <div class="hero logo-left">
+    <div class="hero-logo c1-hero-bg">
+      <svg viewBox="0 0 420 420" width="410" height="410" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Ripple logo mark: concentric circles with curved text labels representing the Digital Learning Pedagogy framework">
+        <defs>
+          <!-- Arc paths for curved text — top arc of each ring, anticlockwise sweep for readable text -->
+          <path id="rp-arc1" d="M 210,154 m -56,0 a 56,56 0 0,1 112,0"/>
+          <path id="rp-arc2" d="M 210,124 m -86,0 a 86,86 0 0,1 172,0"/>
+          <path id="rp-arc3" d="M 210,92  m -118,0 a 118,118 0 0,1 236,0"/>
+          <path id="rp-arc4" d="M 210,58  m -152,0 a 152,152 0 0,1 304,0"/>
+        </defs>
+
+        <!-- Faint outermost guide -->
+        <circle cx="210" cy="210" r="195" fill="none" stroke="#1B9690" stroke-width="0.8" opacity="0.1"/>
+        <!-- Ring 4: Capacity & Context — teal -->
+        <circle cx="210" cy="210" r="152" fill="none" stroke="#1B9690" stroke-width="2" opacity="0.4"/>
+        <!-- Ring 3: Inclusive Pedagogy -->
+        <circle cx="210" cy="210" r="118" fill="none" stroke="#1B9690" stroke-width="2.5" opacity="0.55"/>
+        <!-- Ring 2: Accessible Resources -->
+        <circle cx="210" cy="210" r="86"  fill="none" stroke="#23366B" stroke-width="3" opacity="0.65"/>
+        <!-- Ring 1: Digital Foundations -->
+        <circle cx="210" cy="210" r="56"  fill="none" stroke="#23366B" stroke-width="3.5" opacity="0.85"/>
+
+        <!-- Centre disc -->
+        <circle cx="210" cy="210" r="42" fill="#23366B"/>
+        <text x="210" y="203" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="white" font-weight="600" letter-spacing="0.12em">DIGITAL</text>
+        <text x="210" y="217" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="white" font-weight="600" letter-spacing="0.12em">LEARNING</text>
+        <text x="210" y="229" text-anchor="middle" font-family="'DM Mono', monospace" font-size="8"  fill="rgba(255,255,255,0.6)" letter-spacing="0.1em">PEDAGOGY</text>
+
+        <!-- Curved text: Ring 1 — Digital Foundations -->
+        <text font-family="'DM Mono', monospace" font-size="10.5" fill="#23366B" font-weight="700" letter-spacing="0.14em">
+          <textPath href="#rp-arc1" startOffset="50%" text-anchor="middle">DIGITAL FOUNDATIONS</textPath>
+        </text>
+        <!-- Curved text: Ring 2 — Accessible Resources -->
+        <text font-family="'DM Mono', monospace" font-size="11" fill="#23366B" font-weight="700" letter-spacing="0.12em" opacity="0.85">
+          <textPath href="#rp-arc2" startOffset="50%" text-anchor="middle">ACCESSIBLE RESOURCES</textPath>
+        </text>
+        <!-- Curved text: Ring 3 — Inclusive Pedagogy -->
+        <text font-family="'DM Mono', monospace" font-size="11.5" fill="#1B9690" font-weight="700" letter-spacing="0.12em">
+          <textPath href="#rp-arc3" startOffset="50%" text-anchor="middle">INCLUSIVE PEDAGOGY</textPath>
+        </text>
+        <!-- Curved text: Ring 4 — Capacity & Context -->
+        <text font-family="'DM Mono', monospace" font-size="12" fill="#1B9690" font-weight="700" letter-spacing="0.1em" opacity="0.8">
+          <textPath href="#rp-arc4" startOffset="50%" text-anchor="middle">CAPACITY &amp; CONTEXT</textPath>
+        </text>
+
+        <!-- Radial dashed spokes -->
+        <line x1="210" y1="168" x2="210" y2="60"  stroke="#23366B" stroke-width="0.6" stroke-dasharray="2 9" opacity="0.15"/>
+        <line x1="210" y1="252" x2="210" y2="360" stroke="#23366B" stroke-width="0.6" stroke-dasharray="2 9" opacity="0.15"/>
+        <line x1="252" y1="210" x2="360" y2="210" stroke="#23366B" stroke-width="0.6" stroke-dasharray="2 9" opacity="0.15"/>
+        <line x1="168" y1="210" x2="60"  y2="210" stroke="#23366B" stroke-width="0.6" stroke-dasharray="2 9" opacity="0.15"/>
+
+        <!-- Teal accent dots at four cardinal positions of outermost ring -->
+        <circle cx="210" cy="58"  r="6" fill="#1B9690" opacity="0.75"/>
+        <circle cx="362" cy="210" r="6" fill="#1B9690" opacity="0.75"/>
+        <circle cx="210" cy="362" r="6" fill="#1B9690" opacity="0.75"/>
+        <circle cx="58"  cy="210" r="6" fill="#1B9690" opacity="0.75"/>
+      </svg>
+    </div>
+
+    <div class="hero-text">
+      <div class="hero-eyebrow">Concept 01 &mdash; The Ripple</div>
+      <h2 class="hero-name">Every Ring<br><em>Reaches Every Other</em></h2>
+      <p class="hero-tagline">Digital Learning Pedagogy &middot; Weston College</p>
+      <div class="hero-rule"></div>
+      <p class="hero-body">A stone dropped in water sends ripples outward simultaneously — no ring waits for the one before it to finish. This mark takes the three-layer Digital Inclusion Framework and redraws it as concentric rings rather than a pyramid, preserving the content while eliminating the hierarchy. Digital Foundations, Accessible Resources, and Inclusive Pedagogy are present at every point of the circle. An outer ring adds Capacity and Context — the organisational conditions that enable everything else. The centre is not a destination. It is the source.</p>
+    </div>
+  </div>
+
+  <div class="framework-strip">
+    <div class="f-block">
+      <div class="f-label" style="color:#1B9690;">Framework Ring 1</div>
+      <div class="f-name">Digital Foundations</div>
+      <p class="f-desc">Essential capabilities, infrastructure, and digital confidence — Teams environments, equipment, digital hours. The conditions before teaching begins.</p>
+    </div>
+    <div class="f-block">
+      <div class="f-label" style="color:#23366B;">Framework Ring 2</div>
+      <div class="f-name">Accessible Resources</div>
+      <p class="f-desc">Content and platforms designed to remove barriers. Alt text, captions, assistive technology — equitable access as standard practice, not afterthought.</p>
+    </div>
+    <div class="f-block">
+      <div class="f-label" style="color:#23366B;">Framework Ring 3</div>
+      <div class="f-name">Inclusive Pedagogy</div>
+      <p class="f-desc">UDL, hybrid learning, AI-informed assessment. Technology used thoughtfully to meet every learner's needs — the teacher as skilled practitioner.</p>
+    </div>
+  </div>
+
+  <div class="pillars-strip">
+    <div class="p-block"><div class="p-num">01</div><div class="p-name">Digital Ecosystem &amp; Standards</div><p class="p-desc">Teams health, infrastructure, digital hours — the college-wide baseline</p></div>
+    <div class="p-block"><div class="p-num">02</div><div class="p-name">Pedagogy, Assessment &amp; Innovation</div><p class="p-desc">AI, 21CLD, modelling, learner autonomy — high-impact teaching transformation</p></div>
+    <div class="p-block"><div class="p-num">03</div><div class="p-name">Inclusion &amp; Accessibility</div><p class="p-desc">Assistive tech, accessibility toolkit — accessible by design, not retrofit</p></div>
+    <div class="p-block"><div class="p-num">04</div><div class="p-name">Capacity Building &amp; QA</div><p class="p-desc">Digital Champions, CPD pathways — sustaining impact through people</p></div>
+  </div>
+
+  <div class="rationale">
+    <div class="rationale-label">
+      <div class="rl-tag">Strategic Rationale</div>
+      <div class="rl-head">Why The Ripple works for Weston College</div>
+    </div>
+    <div class="rationale-text">
+      The Ripple directly resolves the concern with the pyramid model: <strong>concentric rings carry no implied sequence.</strong> A ripple expands in all directions at once — no ring is "above" or "before" another. Staff and learners can engage with inclusive pedagogy at the same time as building digital foundations; the framework accommodates that reality rather than denying it. The mark also communicates scale: a small intervention at the centre sends effects outward to the whole organisation. The teal accent aligns with the digital and wellbeing qualities of the work, while the Weston navy grounds the mark in institutional identity. This concept also reduces well as a standalone icon — the concentric circles remain legible at badge or favicon size without losing meaning.
+    </div>
+  </div>
+</div>
+
+
+<!-- ───────────────────────────────────────
+     CONCEPT 2: THE VENN
+─────────────────────────────────────── -->
+<div class="concept">
+  <div class="concept-bar">
+    <span class="c-num">Concept 02 of 06</span>
+    <span class="c-title-sm">The Venn</span>
+  </div>
+
+  <div class="hero logo-right">
+    <div class="hero-text">
+      <div class="hero-eyebrow">Concept 02 &mdash; The Venn</div>
+      <h2 class="hero-name">Where Three<br><em>Worlds Meet</em></h2>
+      <p class="hero-tagline">Digital Learning Pedagogy &middot; Weston College</p>
+      <div class="hero-rule"></div>
+      <p class="hero-body">A Venn diagram is one of the most universally understood visual arguments: where three circles overlap, something new and distinct emerges. Here, Digital Foundations, Accessible Digital Resources, and Inclusive Pedagogy are equal spheres. None is larger. None sits above the others. They can be entered at any point — but Digital Learning Pedagogy only fully comes to life where all three are simultaneously present. The intersection is not the end of a journey. It is the place where the real work happens.</p>
+    </div>
+    <div class="hero-logo" style="background:#FBF8F2;">
+      <svg viewBox="0 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Venn logo mark: three overlapping circles of equal size with labels inside each circle representing Digital Foundations, Accessible Resources and Inclusive Pedagogy">
+        <!-- Scaled up: circles r=115, centres spread wider -->
+        <!-- Top circle: cx200, cy155 -->
+        <!-- Bottom-left circle: cx130, cy272 -->
+        <!-- Bottom-right circle: cx270, cy272 -->
+
+        <!-- Three equal circles — subtle fill tints for each -->
+        <circle cx="200" cy="155" r="115" fill="rgba(27,150,144,0.06)"  stroke="#1B9690" stroke-width="2" opacity="0.8"/>
+        <circle cx="130" cy="272" r="115" fill="rgba(35,54,107,0.06)"   stroke="#23366B" stroke-width="2" opacity="0.8"/>
+        <circle cx="270" cy="272" r="115" fill="rgba(184,146,42,0.06)"  stroke="#B8922A" stroke-width="2" opacity="0.8"/>
+
+        <!-- Centre triple-overlap highlight -->
+        <circle cx="200" cy="230" r="36" fill="white" opacity="0.9"/>
+        <circle cx="200" cy="230" r="36" fill="#23366B" opacity="0.05"/>
+        <text x="200" y="222" text-anchor="middle" font-family="'DM Mono', monospace" font-size="8" fill="#23366B" font-weight="600" letter-spacing="0.1em">DIGITAL</text>
+        <text x="200" y="233" text-anchor="middle" font-family="'DM Mono', monospace" font-size="8" fill="#23366B" font-weight="600" letter-spacing="0.1em">LEARNING</text>
+        <text x="200" y="243" text-anchor="middle" font-family="'DM Mono', monospace" font-size="7" fill="#23366B" font-weight="400" letter-spacing="0.08em" opacity="0.7">PEDAGOGY</text>
+
+        <!-- LABEL: Digital Foundations — inside top circle, in its non-overlapping zone -->
+        <!-- Non-overlapping zone: upper region of top circle, approx cy 70-120 -->
+        <text x="200" y="78"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="13" fill="#1B9690" font-weight="700" letter-spacing="0.08em">DIGITAL</text>
+        <text x="200" y="95"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="13" fill="#1B9690" font-weight="700" letter-spacing="0.08em">FOUNDATIONS</text>
+
+        <!-- LABEL: Accessible Resources — inside bottom-left circle, lower-left non-overlapping zone -->
+        <!-- Non-overlapping zone: lower-left region, approx cx 60-120, cy 300-355 -->
+        <text x="88"  y="330" text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="#23366B" font-weight="700" letter-spacing="0.06em">ACCESSIBLE</text>
+        <text x="88"  y="346" text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="#23366B" font-weight="700" letter-spacing="0.06em">RESOURCES</text>
+
+        <!-- LABEL: Inclusive Pedagogy — inside bottom-right circle, lower-right non-overlapping zone -->
+        <!-- Non-overlapping zone: lower-right region, approx cx 280-340, cy 300-355 -->
+        <text x="312" y="330" text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="#B8922A" font-weight="700" letter-spacing="0.06em">INCLUSIVE</text>
+        <text x="312" y="346" text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="#B8922A" font-weight="700" letter-spacing="0.06em">PEDAGOGY</text>
+
+        <!-- Gold accent dots at pairwise intersections — meaningful markers -->
+        <circle cx="160" cy="198" r="6" fill="#B8922A" opacity="0.75"/>
+        <circle cx="240" cy="198" r="6" fill="#B8922A" opacity="0.75"/>
+        <circle cx="200" cy="268" r="6" fill="#B8922A" opacity="0.75"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="framework-strip">
+    <div class="f-block">
+      <div class="f-label" style="color:#B8922A;">Equal Sphere</div>
+      <div class="f-name">Digital Foundations</div>
+      <p class="f-desc">Infrastructure, Teams environments, equipment, digital skills — the preconditions for all digital practice. Present and active alongside everything else.</p>
+    </div>
+    <div class="f-block">
+      <div class="f-label" style="color:#B8922A;">Equal Sphere</div>
+      <div class="f-name">Accessible Resources</div>
+      <p class="f-desc">Content, platforms, and tools designed to remove barriers. SEND support, assistive technology, and accessibility standards applied from the outset.</p>
+    </div>
+    <div class="f-block">
+      <div class="f-label" style="color:#B8922A;">Equal Sphere</div>
+      <div class="f-name">Inclusive Pedagogy</div>
+      <p class="f-desc">The pedagogical practices — UDL, 21CLD, hybrid delivery — that use technology to ensure every learner can access, engage with and succeed in their education.</p>
+    </div>
+  </div>
+
+  <div class="pillars-strip">
+    <div class="p-block"><div class="p-num">01</div><div class="p-name">Digital Ecosystem &amp; Standards</div><p class="p-desc">The infrastructure sphere in action across the college</p></div>
+    <div class="p-block"><div class="p-num">02</div><div class="p-name">Pedagogy, Assessment &amp; Innovation</div><p class="p-desc">The pedagogical sphere — AI, modelling, learner autonomy</p></div>
+    <div class="p-block"><div class="p-num">03</div><div class="p-name">Inclusion &amp; Accessibility</div><p class="p-desc">The accessible resources sphere — toolkit, SEND, UDL</p></div>
+    <div class="p-block"><div class="p-num">04</div><div class="p-name">Capacity Building &amp; QA</div><p class="p-desc">The people and governance that sustain all three spheres</p></div>
+  </div>
+
+  <div class="rationale">
+    <div class="rationale-label">
+      <div class="rl-tag">Strategic Rationale</div>
+      <div class="rl-head">Why The Venn works for Weston College</div>
+    </div>
+    <div class="rationale-text">
+      The Venn is the most immediately legible argument against hierarchy available in visual language. <strong>Three circles of identical size cannot be ranked.</strong> Staff encountering this mark will understand instinctively that digital foundations, accessible resources, and inclusive pedagogy are parallel concerns — not a sequence. Crucially, the golden accent dots at each pairwise intersection are not decorative: they mark where two of the three elements already overlap and create real value, even before all three converge. This gives the mark a second layer of meaning for staff and leaders who engage with it closely. The gold-on-navy palette is distinctive within the Weston colour system without departing from institutional identity. As a logo, the three-circle mark is universally legible at any scale.
+    </div>
+  </div>
+</div>
+
+
+<!-- ───────────────────────────────────────
+     CONCEPT 3: THE COMPASS
+─────────────────────────────────────── -->
+<div class="concept">
+  <div class="concept-bar">
+    <span class="c-num">Concept 03 of 06</span>
+    <span class="c-title-sm">The Compass</span>
+  </div>
+
+  <div class="hero logo-left">
+    <div class="hero-logo c3-hero-bg">
+      <svg viewBox="0 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Compass logo mark: a compass rose with four strategic pillars at cardinal points and framework elements at ordinal positions">
+        <!-- Outer guide circles -->
+        <circle cx="200" cy="200" r="188" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <circle cx="200" cy="200" r="148" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+        <!-- Four major compass points — large confident shapes -->
+        <!-- NORTH — Ecosystem — bright white, dominant -->
+        <polygon points="200,18 185,162 200,144 215,162" fill="white" opacity="0.92"/>
+        <!-- SOUTH — Capacity — slightly dimmer -->
+        <polygon points="200,382 185,238 200,256 215,238" fill="rgba(255,255,255,0.6)"/>
+        <!-- EAST — Pedagogy — teal accent -->
+        <polygon points="382,200 238,185 256,200 238,215" fill="#1B9690" opacity="0.75"/>
+        <!-- WEST — Inclusion — gold accent -->
+        <polygon points="18,200 162,185 144,200 162,215" fill="#B8922A" opacity="0.75"/>
+
+        <!-- Ordinal minor points — slim, subtle -->
+        <polygon points="328,72 226,178 218,168 230,170" fill="rgba(255,255,255,0.25)"/>
+        <polygon points="328,328 226,222 218,232 230,230" fill="rgba(255,255,255,0.25)"/>
+        <polygon points="72,328 174,222 182,232 170,230" fill="rgba(255,255,255,0.25)"/>
+        <polygon points="72,72 174,178 182,168 170,170" fill="rgba(255,255,255,0.25)"/>
+
+        <!-- Centre disc -->
+        <circle cx="200" cy="200" r="54" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+        <circle cx="200" cy="200" r="32" fill="white" opacity="0.96"/>
+        <text x="200" y="193" text-anchor="middle" font-family="'DM Mono', monospace" font-size="8.5" fill="#23366B" font-weight="600" letter-spacing="0.08em">DIGITAL</text>
+        <text x="200" y="204" text-anchor="middle" font-family="'DM Mono', monospace" font-size="8.5" fill="#23366B" font-weight="600" letter-spacing="0.08em">LEARNING</text>
+        <text x="200" y="214" text-anchor="middle" font-family="'DM Mono', monospace" font-size="6.5" fill="#23366B" font-weight="400" letter-spacing="0.08em" opacity="0.7">PEDAGOGY</text>
+
+        <!-- Cardinal labels — outside the arrows, large and readable -->
+        <!-- NORTH: Ecosystem — white -->
+        <text x="200" y="10" text-anchor="middle" font-family="'DM Mono', monospace" font-size="16" fill="white" font-weight="700" letter-spacing="0.08em">ECOSYSTEM</text>
+        <!-- SOUTH: Capacity Building -->
+        <text x="200" y="390" text-anchor="middle" font-family="'DM Mono', monospace" font-size="13" fill="rgba(255,255,255,0.65)" font-weight="600" letter-spacing="0.07em">CAPACITY BUILDING</text>
+        <!-- EAST: Pedagogy — teal -->
+        <text x="398" y="196" text-anchor="end" font-family="'DM Mono', monospace" font-size="13" fill="#1B9690" font-weight="600" letter-spacing="0.06em">PEDAGOGY</text>
+        <!-- WEST: Inclusion — gold -->
+        <text x="2" y="196" font-family="'DM Mono', monospace" font-size="13" fill="#B8922A" font-weight="600" letter-spacing="0.06em">INCLUSION</text>
+
+        <!-- Ordinal labels — framework layer elements, smaller, at 45deg positions -->
+        <!-- NE: Digital Foundations -->
+        <text x="336" y="62"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="rgba(255,255,255,0.5)" font-weight="500" letter-spacing="0.05em">DIGITAL</text>
+        <text x="336" y="75"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="rgba(255,255,255,0.5)" font-weight="500" letter-spacing="0.05em">FOUNDATIONS</text>
+        <!-- SE: Accessible Resources -->
+        <text x="338" y="338" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="rgba(255,255,255,0.5)" font-weight="500" letter-spacing="0.05em">ACCESSIBLE</text>
+        <text x="338" y="351" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="rgba(255,255,255,0.5)" font-weight="500" letter-spacing="0.05em">RESOURCES</text>
+        <!-- SW: Inclusive Pedagogy -->
+        <text x="62"  y="338" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="rgba(255,255,255,0.5)" font-weight="500" letter-spacing="0.05em">INCLUSIVE</text>
+        <text x="62"  y="351" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="rgba(255,255,255,0.5)" font-weight="500" letter-spacing="0.05em">PEDAGOGY</text>
+        <!-- NW: Quality Assurance -->
+        <text x="62"  y="62"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="rgba(255,255,255,0.5)" font-weight="500" letter-spacing="0.05em">QUALITY</text>
+        <text x="62"  y="75"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="rgba(255,255,255,0.5)" font-weight="500" letter-spacing="0.05em">ASSURANCE</text>
+      </svg>
+    </div>
+
+    <div class="hero-text c3-text-override c3-hero-bg" style="border-left: 1px solid rgba(255,255,255,0.1);">
+      <div class="hero-eyebrow" style="color:rgba(255,255,255,0.35);">Concept 03 &mdash; The Compass</div>
+      <h2 class="hero-name" style="color:white;">Navigate<br><em>Your Practice</em></h2>
+      <p class="hero-tagline" style="color:rgba(255,255,255,0.45);">Digital Learning Pedagogy &middot; Weston College</p>
+      <div class="hero-rule" style="background:rgba(255,255,255,0.15); opacity:1;"></div>
+      <p class="hero-body" style="color:rgba(255,255,255,0.65);">A compass has no hierarchy. North is no more important than South, East, or West — each direction is equally essential for navigation. Here, the four cardinal points correspond to the four strategic pillars: Ecosystem, Pedagogy, Inclusion, and Capacity. The ordinal points carry the Digital Inclusion Framework's three elements. Digital Learning Pedagogy sits at the centre — not a summit to be reached, but the orientation carried at all times. The strapline <em>Navigate your practice</em> is purposeful, professional, and applicable across all CPD and staff-facing communications.</p>
+    </div>
+  </div>
+
+  <div class="framework-strip">
+    <div class="f-block">
+      <div class="f-label" style="color:#23366B;">Ordinal Point NE / NW</div>
+      <div class="f-name">Digital Foundations</div>
+      <p class="f-desc">The preconditions of all digital practice — infrastructure, digital skills, Teams environments, and the baseline equipment audit across the college.</p>
+    </div>
+    <div class="f-block">
+      <div class="f-label" style="color:#23366B;">Ordinal Point SE / SW</div>
+      <div class="f-name">Accessible Resources</div>
+      <p class="f-desc">Platforms and content that remove barriers by design — accessibility standards, assistive technology, and SEND-informed approaches embedded throughout.</p>
+    </div>
+    <div class="f-block">
+      <div class="f-label" style="color:#23366B;">Cardinal Points N / S / E / W</div>
+      <div class="f-name">The Four Strategic Pillars</div>
+      <p class="f-desc">Ecosystem &amp; Standards, Pedagogy &amp; Innovation, Inclusion &amp; Accessibility, and Capacity Building &amp; QA — equal directions, all navigated from a shared centre.</p>
+    </div>
+  </div>
+
+  <div class="pillars-strip">
+    <div class="p-block"><div class="p-num">N</div><div class="p-name">Digital Ecosystem &amp; Standards</div><p class="p-desc">Teams, equipment, digital hours — the northern bearing of practice</p></div>
+    <div class="p-block"><div class="p-num">E</div><div class="p-name">Pedagogy, Assessment &amp; Innovation</div><p class="p-desc">AI, 21CLD, modelling — the eastern direction of professional growth</p></div>
+    <div class="p-block"><div class="p-num">W</div><div class="p-name">Inclusion &amp; Accessibility</div><p class="p-desc">Assistive tech, SEND, UDL — the western commitment to equity</p></div>
+    <div class="p-block"><div class="p-num">S</div><div class="p-name">Capacity Building &amp; QA</div><p class="p-desc">Champions, CPD, governance — the southern foundation of sustainability</p></div>
+  </div>
+
+  <div class="rationale">
+    <div class="rationale-label">
+      <div class="rl-tag">Strategic Rationale</div>
+      <div class="rl-head">Why The Compass works for Weston College</div>
+    </div>
+    <div class="rationale-text">
+      The compass is perhaps the most powerful metaphor for professional development: <strong>it provides orientation, not a fixed route.</strong> Staff at different stages of their digital practice will be travelling in different directions — and the compass affirms that all directions are valid. The strapline "Navigate your practice" positions Digital Learning Pedagogy as a set of tools for professional agency rather than a top-down mandate. For leadership reporting, the four cardinal points map cleanly onto the four strategic pillars, making this mark simultaneously a logo and a planning framework. The dark-ground treatment aligns with modern digital presentation environments (Teams backgrounds, projected slides) without requiring colour printing. This concept has the strongest potential as a staff-facing brand identity across lanyards, CPD materials, and communications.
+    </div>
+  </div>
+</div>
+
+
+<!-- ───────────────────────────────────────
+     CONCEPT 4: THE ORBIT
+─────────────────────────────────────── -->
+<div class="concept">
+  <div class="concept-bar">
+    <span class="c-num">Concept 04 of 06</span>
+    <span class="c-title-sm">The Orbit</span>
+  </div>
+
+  <div class="hero" style="grid-template-columns:1fr; display:block;">
+    <div class="hero-text" style="border:none; padding:48px 56px 32px;">
+      <div class="hero-eyebrow">Concept 04 &mdash; The Orbit</div>
+      <h2 class="hero-name">Drawn Together,<br><em>Not Stacked Up</em></h2>
+      <p class="hero-tagline">Digital Learning Pedagogy &middot; Weston College</p>
+      <div class="hero-rule"></div>
+      <p class="hero-body">In a solar system, the sun does not rank above the planets — it simply holds them in relation to each other through gravity. Here, Digital Learning Pedagogy is the gravitational centre: it draws the four strategic pillars and the three framework elements into relationship without ordering them. Each orbiting body is complete in itself; it is their collective arrangement that creates the system. The orbit is also inherently dynamic — things in orbit are always in motion, always returning, never finished.</p>
+    </div>
+    <div class="hero-logo c4-hero-bg" style="justify-content:center; padding:32px 40px; width:100%;">
+      <svg viewBox="0 0 520 340" width="520" height="340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Orbit logo mark: orbital ellipses around a central disc representing Digital Learning Pedagogy as a gravitational centre">
+        <!-- Considered star field -->
+        <circle cx="48"  cy="28"  r="1.2" fill="rgba(255,255,255,0.28)"/>
+        <circle cx="470" cy="20"  r="1.5" fill="rgba(255,255,255,0.32)"/>
+        <circle cx="18"  cy="250" r="1"   fill="rgba(255,255,255,0.22)"/>
+        <circle cx="502" cy="290" r="1.2" fill="rgba(255,255,255,0.28)"/>
+        <circle cx="100" cy="320" r="1.5" fill="rgba(255,255,255,0.22)"/>
+        <circle cx="420" cy="325" r="1"   fill="rgba(255,255,255,0.25)"/>
+        <circle cx="12"  cy="120" r="1.2" fill="rgba(255,255,255,0.22)"/>
+        <circle cx="508" cy="150" r="1"   fill="rgba(255,255,255,0.2)"/>
+        <circle cx="260" cy="14"  r="1"   fill="rgba(255,255,255,0.2)"/>
+
+        <!-- Orbit ellipses — three distinct orbital planes -->
+        <ellipse cx="260" cy="170" rx="230" ry="80" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.2" transform="rotate(-12 260 170)"/>
+        <ellipse cx="260" cy="170" rx="200" ry="65" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.2" transform="rotate(16 260 170)"/>
+        <ellipse cx="260" cy="170" rx="170" ry="55" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.2" transform="rotate(-5 260 170)"/>
+
+        <!-- PILLAR PLANETS — large circles with full text, on outer orbits -->
+        <!-- Ecosystem: top-left -->
+        <circle cx="58"  cy="105" r="44" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.45)" stroke-width="1.5"/>
+        <text x="58"  y="99"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="white" font-weight="600" letter-spacing="0.05em">DIGITAL</text>
+        <text x="58"  y="112" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="white" font-weight="600" letter-spacing="0.05em">ECOSYSTEM</text>
+
+        <!-- Pedagogy: top-right -->
+        <circle cx="462" cy="112" r="44" fill="rgba(27,150,144,0.12)" stroke="#1B9690" stroke-width="1.5" opacity="0.8"/>
+        <text x="462" y="99"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="white" font-weight="600" letter-spacing="0.05em">PEDAGOGY</text>
+        <text x="462" y="112" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="rgba(255,255,255,0.75)" letter-spacing="0.04em">&amp; ASSESSMENT</text>
+        <text x="462" y="124" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="rgba(255,255,255,0.75)" letter-spacing="0.04em">&amp; INNOVATION</text>
+
+        <!-- Inclusion: bottom-right -->
+        <circle cx="440" cy="250" r="44" fill="rgba(184,146,42,0.12)" stroke="#B8922A" stroke-width="1.5" opacity="0.8"/>
+        <text x="440" y="242" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="white" font-weight="600" letter-spacing="0.05em">INCLUSION</text>
+        <text x="440" y="256" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="white" font-weight="600" letter-spacing="0.05em">ACCESSIBILITY</text>
+
+        <!-- Capacity: bottom-left -->
+        <circle cx="80"  cy="248" r="44" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.45)" stroke-width="1.5"/>
+        <text x="80"  y="241" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="white" font-weight="600" letter-spacing="0.05em">CAPACITY</text>
+        <text x="80"  y="255" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="white" font-weight="600" letter-spacing="0.05em">BUILDING</text>
+
+        <!-- FRAMEWORK MOONS — smaller circles on inner orbit -->
+        <!-- Digital Foundations -->
+        <circle cx="180" cy="84"  r="28" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <text x="180" y="79"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="7.5" fill="rgba(255,255,255,0.8)" font-weight="500">DIGITAL</text>
+        <text x="180" y="90"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="7.5" fill="rgba(255,255,255,0.8)" font-weight="500">FOUNDATIONS</text>
+
+        <!-- Accessible Resources -->
+        <circle cx="352" cy="88"  r="28" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <text x="352" y="83"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="7.5" fill="rgba(255,255,255,0.8)" font-weight="500">ACCESSIBLE</text>
+        <text x="352" y="94"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="7.5" fill="rgba(255,255,255,0.8)" font-weight="500">RESOURCES</text>
+
+        <!-- Inclusive Pedagogy -->
+        <circle cx="260" cy="306" r="28" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <text x="260" y="301" text-anchor="middle" font-family="'DM Mono', monospace" font-size="7.5" fill="rgba(255,255,255,0.8)" font-weight="500">INCLUSIVE</text>
+        <text x="260" y="312" text-anchor="middle" font-family="'DM Mono', monospace" font-size="7.5" fill="rgba(255,255,255,0.8)" font-weight="500">PEDAGOGY</text>
+
+        <!-- CENTRE SUN — DLP -->
+        <circle cx="260" cy="170" r="52" fill="#23366B" opacity="0.85"/>
+        <circle cx="260" cy="170" r="52" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+        <text x="260" y="158" text-anchor="middle" font-family="'DM Mono', monospace" font-size="11" fill="white" font-weight="700" letter-spacing="0.1em">DIGITAL</text>
+        <text x="260" y="173" text-anchor="middle" font-family="'DM Mono', monospace" font-size="11" fill="white" font-weight="700" letter-spacing="0.1em">LEARNING</text>
+        <text x="260" y="187" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9"  fill="rgba(255,255,255,0.6)" letter-spacing="0.1em">PEDAGOGY</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="framework-strip">
+    <div class="f-block">
+      <div class="f-label" style="color:#23366B;">Inner Orbit</div>
+      <div class="f-name">Digital Foundations</div>
+      <p class="f-desc">The closest orbit — always proximate, always influencing. Infrastructure, digital skills, and Teams environments that enable everything else in the system.</p>
+    </div>
+    <div class="f-block">
+      <div class="f-label" style="color:#23366B;">Inner Orbit</div>
+      <div class="f-name">Accessible Resources</div>
+      <p class="f-desc">Content and tools in close orbit around the pedagogical centre — accessible by design and always within reach, for every learner and practitioner.</p>
+    </div>
+    <div class="f-block">
+      <div class="f-label" style="color:#23366B;">Outer Orbit</div>
+      <div class="f-name">The Four Strategic Pillars</div>
+      <p class="f-desc">Ecosystem, Pedagogy, Inclusion, and Capacity orbit at the same radius — equal distance from the centre, none privileged above the others.</p>
+    </div>
+  </div>
+
+  <div class="pillars-strip">
+    <div class="p-block"><div class="p-num">01</div><div class="p-name">Digital Ecosystem &amp; Standards</div><p class="p-desc">In orbit — always returning, always in motion</p></div>
+    <div class="p-block"><div class="p-num">02</div><div class="p-name">Pedagogy, Assessment &amp; Innovation</div><p class="p-desc">In orbit — AI, 21CLD, modelling, learner autonomy</p></div>
+    <div class="p-block"><div class="p-num">03</div><div class="p-name">Inclusion &amp; Accessibility</div><p class="p-desc">In orbit — assistive tech, SEND, accessible toolkit</p></div>
+    <div class="p-block"><div class="p-num">04</div><div class="p-name">Capacity Building &amp; QA</div><p class="p-desc">In orbit — Champions, CPD pathways, quality governance</p></div>
+  </div>
+
+  <div class="rationale">
+    <div class="rationale-label">
+      <div class="rl-tag">Strategic Rationale</div>
+      <div class="rl-head">Why The Orbit works for Weston College</div>
+    </div>
+    <div class="rationale-text">
+      The orbital model communicates two things that no pyramid can: <strong>everything moves, and the centre holds.</strong> Digital Learning Pedagogy as a gravitational centre is a compelling reframe — it doesn't sit at the top of a hierarchy, it holds everything in productive relationship. The four strategic pillars orbiting at equal radius makes explicit their equivalence as priorities. The inclined ellipses reflect the reality that different work sits at different angles — there is no single correct plane of operation. The dark, deep-space aesthetic is immediately distinctive and would differentiate Weston's Digital Learning Pedagogy identity from any comparable programme in the FE sector.
+    </div>
+  </div>
+</div>
+
+
+<!-- ───────────────────────────────────────
+     CONCEPT 5: THE CONSTELLATION
+─────────────────────────────────────── -->
+<div class="concept">
+  <div class="concept-bar">
+    <span class="c-num">Concept 05 of 06</span>
+    <span class="c-title-sm">The Constellation</span>
+  </div>
+
+  <div class="hero logo-left">
+    <div class="hero-logo c5-hero-bg">
+      <svg viewBox="0 0 480 460" width="470" height="455" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Constellation logo mark: named stars connected by lines representing the Digital Learning Pedagogy framework">
+        <!-- Night sky background dots -->
+        <circle cx="32"  cy="40"  r="1"   fill="white" opacity="0.3"/>
+        <circle cx="440" cy="30"  r="1.3" fill="white" opacity="0.3"/>
+        <circle cx="18"  cy="220" r="1"   fill="white" opacity="0.25"/>
+        <circle cx="462" cy="280" r="1"   fill="white" opacity="0.25"/>
+        <circle cx="60"  cy="440" r="1.3" fill="white" opacity="0.2"/>
+        <circle cx="420" cy="435" r="1"   fill="white" opacity="0.2"/>
+        <circle cx="455" cy="130" r="1.5" fill="white" opacity="0.3"/>
+        <circle cx="24"  cy="360" r="1"   fill="white" opacity="0.25"/>
+        <!-- Constellation lines drawn BEFORE stars -->
+        <line x1="130" y1="88"  x2="350" y2="88"  stroke="rgba(255,255,255,0.2)"  stroke-width="1.2"/>
+        <line x1="350" y1="88"  x2="420" y2="265" stroke="rgba(255,255,255,0.2)"  stroke-width="1.2"/>
+        <line x1="420" y1="265" x2="240" y2="380" stroke="rgba(255,255,255,0.2)"  stroke-width="1.2"/>
+        <line x1="240" y1="380" x2="60"  y2="265" stroke="rgba(255,255,255,0.2)"  stroke-width="1.2"/>
+        <line x1="60"  y1="265" x2="130" y2="88"  stroke="rgba(255,255,255,0.2)"  stroke-width="1.2"/>
+        <line x1="130" y1="88"  x2="240" y2="230" stroke="rgba(255,255,255,0.1)"  stroke-width="1" stroke-dasharray="4 7"/>
+        <line x1="350" y1="88"  x2="240" y2="230" stroke="rgba(255,255,255,0.1)"  stroke-width="1" stroke-dasharray="4 7"/>
+        <line x1="60"  y1="265" x2="240" y2="230" stroke="rgba(255,255,255,0.1)"  stroke-width="1" stroke-dasharray="4 7"/>
+        <line x1="420" y1="265" x2="240" y2="230" stroke="rgba(255,255,255,0.1)"  stroke-width="1" stroke-dasharray="4 7"/>
+        <line x1="240" y1="380" x2="240" y2="230" stroke="rgba(255,255,255,0.1)"  stroke-width="1" stroke-dasharray="4 7"/>
+        <!-- STAR 1: Digital Foundations top-left -->
+        <circle cx="130" cy="88"  r="28" fill="#23366B" stroke="white" stroke-width="2" opacity="0.95"/>
+        <circle cx="130" cy="88"  r="12" fill="white" opacity="0.95"/>
+        <text x="130" y="43"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="13" fill="white" font-weight="700" letter-spacing="0.06em">DIGITAL</text>
+        <text x="130" y="58"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="13" fill="white" font-weight="700" letter-spacing="0.06em">FOUNDATIONS</text>
+        <!-- STAR 2: Accessible Resources top-right -->
+        <circle cx="350" cy="88"  r="28" fill="#1B9690" stroke="white" stroke-width="2" opacity="0.9"/>
+        <circle cx="350" cy="88"  r="12" fill="white" opacity="0.95"/>
+        <text x="350" y="43"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="13" fill="white" font-weight="700" letter-spacing="0.06em">ACCESSIBLE</text>
+        <text x="350" y="58"  text-anchor="middle" font-family="'DM Mono', monospace" font-size="13" fill="white" font-weight="700" letter-spacing="0.06em">RESOURCES</text>
+        <!-- STAR 3: Digital Ecosystem left -->
+        <circle cx="60"  cy="265" r="24" fill="#23366B" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+        <circle cx="60"  cy="265" r="10" fill="rgba(255,255,255,0.85)"/>
+        <text x="60"  y="237" text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="white" font-weight="600" opacity="0.85">DIGITAL</text>
+        <text x="60"  y="251" text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="white" font-weight="600" opacity="0.85">ECOSYSTEM</text>
+        <!-- STAR 4: Capacity Building right -->
+        <circle cx="420" cy="265" r="24" fill="#B8922A" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+        <circle cx="420" cy="265" r="10" fill="rgba(255,255,255,0.85)"/>
+        <text x="420" y="237" text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="white" font-weight="600" opacity="0.85">CAPACITY</text>
+        <text x="420" y="251" text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="white" font-weight="600" opacity="0.85">BUILDING</text>
+        <!-- STAR 5: Inclusive Pedagogy bottom -->
+        <circle cx="240" cy="380" r="24" fill="#23366B" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+        <circle cx="240" cy="380" r="10" fill="rgba(255,255,255,0.85)"/>
+        <text x="240" y="416" text-anchor="middle" font-family="'DM Mono', monospace" font-size="13" fill="white" font-weight="600" opacity="0.85">INCLUSIVE PEDAGOGY</text>
+        <!-- CENTRE: Digital Learning Pedagogy brightest star -->
+        <circle cx="240" cy="230" r="38" fill="#23366B" opacity="0.5"/>
+        <circle cx="240" cy="230" r="24" fill="#23366B" opacity="0.95"/>
+        <circle cx="240" cy="230" r="24" stroke="white" stroke-width="1.5" fill="none" opacity="0.4"/>
+        <circle cx="240" cy="230" r="9"  fill="white" opacity="0.97"/>
+        <circle cx="240" cy="230" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
+      </svg>
+    </div>
+
+    <div class="hero-text" style="background:var(--navy-deep); border-left: 1px solid rgba(255,255,255,0.08);">
+      <div class="hero-eyebrow" style="color:rgba(255,255,255,0.35);">Concept 05 &mdash; The Constellation</div>
+      <h2 class="hero-name" style="color:white;">Every Star<br><em>Shines Independently</em></h2>
+      <p class="hero-tagline" style="color:rgba(255,255,255,0.4);">Digital Learning Pedagogy &middot; Weston College</p>
+      <div class="hero-rule" style="background:rgba(255,255,255,0.15); opacity:1;"></div>
+      <p class="hero-body" style="color:rgba(255,255,255,0.6);">Stars in a constellation do not rank each other. Each one burns independently, with its own intensity and meaning. Together, they form a pattern that practitioners use to navigate — to orient themselves, to find their position, to plan their journey. The constellation names the stars: Digital Foundations, Accessible Resources, Inclusive Pedagogy, and the four strategic pillars. Digital Learning Pedagogy is the brightest star at the centre — visible in all conditions, the point everything else orients around. The connecting lines are not dependencies. They are relationships.</p>
+    </div>
+  </div>
+
+  <div class="framework-strip" style="background:var(--navy-deep); border-top: 1px solid rgba(255,255,255,0.08);">
+    <div class="f-block" style="border-right: 1px solid rgba(255,255,255,0.08);">
+      <div class="f-label" style="color:rgba(255,255,255,0.4);">Named Star</div>
+      <div class="f-name" style="color:white;">Digital Foundations</div>
+      <p class="f-desc" style="color:rgba(255,255,255,0.5);">Essential capabilities, infrastructure, and confidence — the base stars that anchor the whole constellation in educational reality.</p>
+    </div>
+    <div class="f-block" style="border-right: 1px solid rgba(255,255,255,0.08);">
+      <div class="f-label" style="color:rgba(255,255,255,0.4);">Named Star</div>
+      <div class="f-name" style="color:white;">Accessible Resources</div>
+      <p class="f-desc" style="color:rgba(255,255,255,0.5);">Platforms, content, and assistive technology designed to remove barriers — a star that shines for every learner, not just the majority.</p>
+    </div>
+    <div class="f-block">
+      <div class="f-label" style="color:rgba(255,255,255,0.4);">Named Star</div>
+      <div class="f-name" style="color:white;">Inclusive Pedagogy</div>
+      <p class="f-desc" style="color:rgba(255,255,255,0.5);">UDL, hybrid delivery, AI-informed practice — the pedagogical star that transforms what is delivered into what is actually learned.</p>
+    </div>
+  </div>
+
+  <div class="pillars-strip" style="background:#0E1A3A; border-top: 1px solid rgba(255,255,255,0.06);">
+    <div class="p-block" style="border-right: 1px solid rgba(255,255,255,0.06);"><div class="p-num" style="color:white; opacity:0.15;">01</div><div class="p-name" style="color:rgba(255,255,255,0.75);">Digital Ecosystem &amp; Standards</div><p class="p-desc" style="color:rgba(255,255,255,0.4);">A named star — Teams, equipment, the college-wide baseline</p></div>
+    <div class="p-block" style="border-right: 1px solid rgba(255,255,255,0.06);"><div class="p-num" style="color:white; opacity:0.15;">02</div><div class="p-name" style="color:rgba(255,255,255,0.75);">Pedagogy, Assessment &amp; Innovation</div><p class="p-desc" style="color:rgba(255,255,255,0.4);">A named star — AI, 21CLD, modelling, autonomous learning</p></div>
+    <div class="p-block" style="border-right: 1px solid rgba(255,255,255,0.06);"><div class="p-num" style="color:white; opacity:0.15;">03</div><div class="p-name" style="color:rgba(255,255,255,0.75);">Inclusion &amp; Accessibility</div><p class="p-desc" style="color:rgba(255,255,255,0.4);">A named star — assistive tech, SEND, the toolkit</p></div>
+    <div class="p-block"><div class="p-num" style="color:white; opacity:0.15;">04</div><div class="p-name" style="color:rgba(255,255,255,0.75);">Capacity Building &amp; QA</div><p class="p-desc" style="color:rgba(255,255,255,0.4);">A named star — Champions, CPD, quality governance</p></div>
+  </div>
+
+  <div class="rationale">
+    <div class="rationale-label">
+      <div class="rl-tag">Strategic Rationale</div>
+      <div class="rl-head">Why The Constellation works for Weston College</div>
+    </div>
+    <div class="rationale-text">
+      The constellation metaphor resolves the hierarchy question through a different logic: <strong>stars are not ranked, they are named.</strong> The act of naming a star — Foundations, Accessibility, Pedagogy — is an act of recognition, not comparison. This makes the framework particularly powerful as a staff engagement tool: it invites staff to identify which star they are working at rather than which "level" they have reached. Constellations are also fundamentally about navigation: they exist to help people find their way. The visual identity is premium, distinctive, and immediately differentiates Weston's Digital Learning Pedagogy from anything in the FE sector. The deep-space treatment works exceptionally well on digital screens, Teams backgrounds, and projected presentations.
+    </div>
+  </div>
+</div>
+
+
+<!-- ───────────────────────────────────────
+     CONCEPT 6: THE PRISM
+─────────────────────────────────────── -->
+<div class="concept">
+  <div class="concept-bar">
+    <span class="c-num">Concept 06 of 06</span>
+    <span class="c-title-sm">The Prism</span>
+  </div>
+
+  <div class="hero" style="display:block;">
+    <div class="hero-text" style="border:none; padding:48px 56px 32px;">
+      <div class="hero-eyebrow">Concept 06 &mdash; The Prism</div>
+      <h2 class="hero-name">What Was Always<br><em>There, Revealed</em></h2>
+      <p class="hero-tagline">Digital Learning Pedagogy &middot; Weston College</p>
+      <div class="hero-rule"></div>
+      <p class="hero-body">A prism does not add colour to white light — it reveals the full spectrum that was already present. Digital Learning Pedagogy works in exactly this way: it does not replace excellent teaching and learning; it reveals the depth, range, and capacity that already exists within it. The three faces of the prism are the three layers of the Digital Inclusion Framework. Light enters as Teaching and Learning; it leaves as four distinct, visible strategic pillars. The transformation is not hierarchical. It is optical — inevitable, simultaneous, and complete.</p>
+    </div>
+    <div class="hero-logo" style="background:#F7F4EE; justify-content:center; padding:32px 40px; width:100%;">
+      <svg viewBox="0 0 520 360" width="510" height="350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Prism logo mark: a triangular prism refracting teaching and learning into four coloured strategic pillar beams">
+
+        <!-- Incoming beam — Teaching and Learning -->
+        <line x1="8"   y1="170" x2="148" y2="192" stroke="#23366B" stroke-width="3" opacity="0.4"/>
+        <!-- TLA label: above the incoming beam, clear of the line -->
+        <text x="28" y="156" font-family="'DM Mono', monospace" font-size="15" fill="#23366B" font-weight="600" letter-spacing="0.06em" opacity="0.55">TEACHING &amp; LEARNING</text>
+
+        <!-- Prism triangle: apex (220,24), bottomL (52,296), bottomR (388,296) -->
+        <polygon points="220,24 52,296 388,296" fill="rgba(35,54,107,0.04)" stroke="#23366B" stroke-width="2.2" stroke-linejoin="round"/>
+
+        <!-- DLP label centred inside triangle -->
+        <text x="220" y="185" text-anchor="middle" font-family="'DM Mono', monospace" font-size="11" fill="#23366B" font-weight="500" letter-spacing="0.12em" opacity="0.25">DIGITAL LEARNING PEDAGOGY</text>
+
+        <!-- LEFT FACE LABEL: "Digital Foundations"
+             Left face: apex (220,24) to bottomL (52,296)
+             Midpoint: (136, 160)
+             Direction vector: (52-220, 296-24) = (-168, 272) → angle = atan2(272,-168) ≈ 121.7° from +x
+             For readable text running along the face (bottom to top reading direction): rotate 180-58 = rotate by -58 degrees at midpoint
+             Place text INSIDE triangle, offset to the right of the left edge -->
+        <text text-anchor="middle" font-family="'DM Mono', monospace" font-size="13" fill="#23366B" font-weight="600" letter-spacing="0.07em" opacity="0.65"
+              transform="translate(152,155) rotate(-58)">DIGITAL FOUNDATIONS</text>
+
+        <!-- RIGHT FACE LABEL: "Accessible Resources"
+             Right face: apex (220,24) to bottomR (388,296)
+             Midpoint: (304, 160)
+             Direction vector: (388-220, 296-24) = (168, 272) → angle = atan2(272,168) ≈ 58.3° from +x
+             Text inside, offset left of right edge -->
+        <text text-anchor="middle" font-family="'DM Mono', monospace" font-size="13" fill="#23366B" font-weight="600" letter-spacing="0.07em" opacity="0.65"
+              transform="translate(288,155) rotate(58)">ACCESSIBLE RESOURCES</text>
+
+        <!-- BOTTOM FACE LABEL: "Inclusive Pedagogy" — horizontal, centred on base, INSIDE triangle -->
+        <text x="220" y="282" text-anchor="middle" font-family="'DM Mono', monospace" font-size="14" fill="#23366B" font-weight="600" letter-spacing="0.07em" opacity="0.65">INCLUSIVE PEDAGOGY</text>
+
+        <!-- Refraction point — where beams emerge from right face -->
+        <circle cx="350" cy="192" r="7" fill="#23366B" opacity="0.75"/>
+        <circle cx="350" cy="192" r="4" fill="white" opacity="0.95"/>
+
+        <!-- Four refracted beams — spreading rightward from refraction point -->
+        <!-- Each beam angle calculated, text placed ABOVE or BELOW the beam line, offset slightly, rotated to match -->
+
+        <!-- Beam 1: Ecosystem — navy, upward spread -->
+        <!-- Line from (350,192) to (510,138). Angle = atan2(138-192, 510-350) = atan2(-54,160) ≈ -18.7° -->
+        <line x1="350" y1="192" x2="510" y2="138" stroke="#23366B" stroke-width="3" opacity="0.9"/>
+        <!-- Label above the beam: midpoint ≈ (430,165), text above = rotate(-19) -->
+        <text text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="#23366B" font-weight="700" letter-spacing="0.06em"
+              transform="translate(435,157) rotate(-19)">DIGITAL ECOSYSTEM</text>
+
+        <!-- Beam 2: Pedagogy — teal, gentle upward -->
+        <!-- Line from (350,192) to (510,170). Angle = atan2(170-192, 510-350) = atan2(-22,160) ≈ -7.8° -->
+        <line x1="350" y1="192" x2="510" y2="170" stroke="#1B9690" stroke-width="3" opacity="0.9"/>
+        <text text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="#1B9690" font-weight="700" letter-spacing="0.06em"
+              transform="translate(435,176) rotate(-8)">PEDAGOGY &amp; ASSESSMENT</text>
+
+        <!-- Beam 3: Inclusion — gold, gentle downward -->
+        <!-- Line from (350,192) to (510,214). Angle = atan2(214-192, 510-350) = atan2(22,160) ≈ +7.8° -->
+        <line x1="350" y1="192" x2="510" y2="214" stroke="#B8922A" stroke-width="3" opacity="0.9"/>
+        <text text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="#B8922A" font-weight="700" letter-spacing="0.06em"
+              transform="translate(435,212) rotate(8)">INCLUSION &amp; ACCESS</text>
+
+        <!-- Beam 4: Capacity — sage green, steeper downward -->
+        <!-- Line from (350,192) to (510,246). Angle = atan2(246-192, 510-350) = atan2(54,160) ≈ +18.7° -->
+        <line x1="350" y1="192" x2="510" y2="246" stroke="#5A7A5A" stroke-width="3" opacity="0.9"/>
+        <text text-anchor="middle" font-family="'DM Mono', monospace" font-size="12" fill="#5A7A5A" font-weight="700" letter-spacing="0.06em"
+              transform="translate(435,249) rotate(19)">CAPACITY BUILDING</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="framework-strip">
+    <div class="f-block">
+      <div class="f-label" style="color:#23366B;">Left Face</div>
+      <div class="f-name">Digital Foundations</div>
+      <p class="f-desc">The first surface light meets — essential infrastructure, digital skills, and Teams environments. The physical face of the prism that makes refraction possible.</p>
+    </div>
+    <div class="f-block">
+      <div class="f-label" style="color:#1B8A8A;">Right Face</div>
+      <div class="f-name">Accessible Resources</div>
+      <p class="f-desc">The second surface — content, accessibility standards, and assistive technology. The refracting face that ensures the emerging spectrum reaches every learner.</p>
+    </div>
+    <div class="f-block">
+      <div class="f-label" style="color:#B8922A;">Base Face</div>
+      <div class="f-name">Inclusive Pedagogy</div>
+      <p class="f-desc">The third face — UDL, hybrid delivery, AI-informed practice. The base on which the whole optical structure rests, orientating everything toward learner need.</p>
+    </div>
+  </div>
+
+  <div class="pillars-strip">
+    <div class="p-block"><div class="p-num">01</div><div class="p-name" style="color:#23366B;">Digital Ecosystem &amp; Standards</div><p class="p-desc">The first refracted beam — infrastructure and standards made visible</p></div>
+    <div class="p-block"><div class="p-num">02</div><div class="p-name" style="color:#1B8A8A;">Pedagogy, Assessment &amp; Innovation</div><p class="p-desc">The second beam — AI, 21CLD, and modelling in distinct focus</p></div>
+    <div class="p-block"><div class="p-num">03</div><div class="p-name" style="color:#B8922A;">Inclusion &amp; Accessibility</div><p class="p-desc">The third beam — SEND, assistive tech, and equitable design</p></div>
+    <div class="p-block"><div class="p-num">04</div><div class="p-name" style="color:#5A7A5A;">Capacity Building &amp; QA</div><p class="p-desc">The fourth beam — Champions, CPD, and quality governance</p></div>
+  </div>
+
+  <div class="rationale">
+    <div class="rationale-label">
+      <div class="rl-tag">Strategic Rationale</div>
+      <div class="rl-head">Why The Prism works for Weston College</div>
+    </div>
+    <div class="rationale-text">
+      The prism offers a conceptually distinct argument that no other metaphor makes: <strong>Digital Learning Pedagogy reveals what was already present in great teaching.</strong> This is a respectful and affirming message for staff — it positions digital development not as an external imposition but as a clarifying lens on existing expertise. The incoming beam labelled "TLA" is crucial: it grounds the metaphor in the college's existing language and quality framework. Refraction is simultaneous — all four pillar beams emerge at the same moment, not in sequence — which preserves the non-hierarchical principle. The prism mark is also uniquely bold as a print or screen identity: clean geometric lines that reproduce equally well in full colour, two-colour, or single-colour applications. The four coloured beams directly reflect the colour-coding already in use in the Digital Impact Hub, providing natural system coherence.
+    </div>
+  </div>
+</div>
+
+
+</div><!-- /section-wrapper -->
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════ -->
+<div class="doc-footer">
+  <p>Weston College &mdash; Digital Learning Pedagogy &mdash; Brand Identity Concepts &mdash; February 2026</p>
+  <p>Prepared by Graeme Wright, Digital Pedagogy Coach</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,299 @@
+**DPC Hub**
+
+Project Handoff Document
+
+Graeme Wright  ·  Digital Pedagogy Coach  ·  Weston College Group
+
+New chat handoff  ·  July 2026
+
+*READ THIS FIRST. This document is for a new Claude conversation continuing the DPC Hub build. It contains everything the new Claude needs to know. Do not improvise anything not described here. If in doubt, search the project knowledge files first.*
+
+# **1. Your Role and Purpose**
+
+You are the architect and builder of the DPC Hub. Your counterpart is Graeme Wright, Digital Pedagogy Coach at Weston College Group. You work together as a two-person team: Graeme is the PM and domain expert, you are the technical architect and developer.
+
+## **Your identity in this project**
+
+- You are not a passive assistant. You are the technical lead who designed this system and built it phase by phase.
+
+- You know the codebase in detail. You do not guess — you verify against the repo before making claims.
+
+- You flag risks and ask clarifying questions before building. You never improvise outside agreed scope.
+
+- You write complete files, not snippets. You validate syntax before delivering. You tell Graeme exactly which files to upload.
+
+- You always state clearly what changed and what did not.
+
+## **Graeme****'****s role**
+
+- Digital Pedagogy Coach at Weston College Group, Quality and Innovation team. Not IT.
+
+- Operates across approximately 35 curriculum areas without formal authority — influence through coaching and relational capital.
+
+- Professional identity: TLA first, Digital second. Digital tools amplify TLA outcomes.
+
+- Line manager: Neil Davies (AP Quality). Strategic contact: Ben Manning (VP Quality).
+
+- This work is entirely organic. No governance reviews, no milestone dates, no October review, no pilot framing. Do not reference any of these in any context.
+
+## **Project purpose**
+
+The DPC Hub is Graeme's personal operating system. It runs entirely in the browser using the File System Access API to read and write JSON files stored in his OneDrive. It is not a shared system — it is a private coaching intelligence tool. It helps Graeme track observations, AFI loops, staff development, Digital Lead relationships, and generate reports for different audiences (Neil, Ben, HoAs, DLs).
+
+# **2. What Is Already Built — Phases 1–6**
+
+*Phases 1–6 are complete, deployed, and tested. Do not rebuild or modify these unless a specific bug is reported. Only Phase 7 remains.*
+
+## **Deployment**
+
+| **Live URL** | https://gwc25.github.io/dpc-hub/ |
+| --- | --- |
+| **GitHub repo** | gwc25/dpc-hub (public, GitHub Pages, main branch, root) |
+| **OneDrive data folder** | OneDrive → DPC-Hub → Data |
+| **Tech stack** | Vanilla JS ES6+, no framework, no build step, plain HTML/CSS |
+| **Auth** | SHA-256 password hash in js/config.js |
+| **Data layer** | File System Access API → OneDrive JSON files. Auto-save every 60 seconds. |
+
+## **File inventory — all files in repo**
+
+| **File** | **Phase** | **Status** | **Purpose** |
+| --- | --- | --- | --- |
+| index.html | 1 | ✓ Live | Password entry page |
+| hub.html | 1–6 | ✓ Live | Main app shell — all script tags here |
+| css/design.css | 1 | ✓ Live | All design tokens — no hardcoded colours elsewhere |
+| js/config.js | 1 | ✓ Live | Constants, password hash, Supabase credentials (Phase 7) |
+| js/schema.js | 1 | ✓ Live | LRA taxonomy, enums, helpers — imports nothing |
+| js/data.js | 1 | ✓ Live | Data layer — File System Access API, manifest loading, auto-save |
+| js/app.js | 1–6 | ✓ Live | Module routing, UI helpers, sidebar wiring |
+| js/homepage.js | 2 | ✓ Live | Jobs Board, post-it cards, deadlines, meetings panels |
+| js/calendar.js | 2 | ✓ Live | Week/Month/Year calendar views, entry modal |
+| js/areas.js | 3 | ✓ Live | 35-area grid, area detail, 4 tabs |
+| js/rag.js | 3 | ✓ Live | 8-dimension RAG scoring, snapshot history |
+| js/quickcapture.js | 3 | ✓ Live | Floating FAB, activity logging with Hyper chips + severity |
+| js/heuristic.js | 4 | ✓ Live | 50+ rule engine for coaching questions and AFI auto-drafting |
+| js/learningwalk.js | 4 | ✓ Live | LW modal with LRA tagging, escalate to DevObs |
+| js/devobs.js | 4 | ✓ Live | Full DevObs modal, heuristic questions, AFI review panel |
+| js/afi.js | 4 | ✓ Live | Loops list, lifecycle, evidence chain, action selection |
+| js/staff.js | 5 | ✓ Live | Staff profiles, touch history, development priorities, ETF stage |
+| js/templates.js | 5 | ✓ Live | Teach Meet builder, Coaching Qs, Meeting Agendas, versioning |
+| js/reflections.js | 5 | ✓ Live | Reflection module, metrics, AFI evidence wiring |
+| js/healthcheck.js | 6 | ✓ Live | HC upload, AI extraction (Haiku), review and confirm |
+| js/digitalleads.js | 6 | ✓ Live | DL profiles, 1:1 meetings, resources, progress notes |
+| js/currentfocus.js | 6 | ✓ Live | What/Why/How/Who/Impact focus tracking |
+| js/dashboard.js | 6 | ✓ Live | RAG dashboard, HC dashboard, Loops overview |
+| js/cpd.js | 6 | ✓ Live | My CPD, planned training, CPD delivered |
+| data/areas-seed.json | 1 | ⚠ Needs correction | 35 areas — area codes correct, names may be wrong |
+
+## **Phase 7 — still to build**
+
+| **File** | **Purpose** |
+| --- | --- |
+| js/reports.js | Five audience-specific report outputs: Neil fortnightly, DL area briefing, AP area briefing, HoA area briefing, performance review with AI narrative |
+| hub-lite.html | Mobile companion — Jobs Board surface, calendar surface, Quick Note and Meeting capture buttons. Writes to Supabase. |
+| js/supabase-sync.js | Reads pending Hub Lite captures from Supabase, presents for review, commits to OneDrive on confirmation |
+
+# **3. Architecture — Critical Rules**
+
+*These rules must never be violated. If you are unsure, check the repo before writing code.*
+
+## **One-way import rule**
+
+schema.js → data.js → module files → app.js. Module JS files never import from each other. If a module needs data, it goes through data.js. This is enforced — do not break it.
+
+## **Data files (all in OneDrive/DPC-Hub/Data)**
+
+| **File** | **Key** | **Notes** |
+| --- | --- | --- |
+| dpc-manifest.json | — | Master index. Created on first run. References all data files. |
+| data-areas.json | areaCode | The join key across ALL systems. 35 areas. Needs correction. |
+| data-calendar.json | entryId | Calendar entries and tasks |
+| data-staff.json | staffId | Staff profiles |
+| data-afi.json | afiId | AFI loops (Loops module) |
+| data-reflections.json | reflectionId | Reflections |
+| data-templates.json | templateId | Teach Meet plans, coaching Qs, agendas |
+| data-cpd.json | — | CPD log, planned training, delivered CPD |
+| data-digital-leads.json | dlId | Digital Lead profiles |
+| data-current-focus.json | focusId | Current focus areas |
+
+## **Design token rule**
+
+All colours, spacing, typography, and shadows are defined as CSS custom properties in css/design.css only. No hardcoded values anywhere else. No inline style attributes in HTML. Every colour reference uses var(--color-xxx).
+
+## **WCAG 2.2 AA is a build gate**
+
+Every module must meet WCAG 2.2 AA. Minimum contrast: 4.5:1 normal text, 3:1 large text. Minimum touch target: 44px. All interactive elements have visible focus rings. Colour is never used as the sole means of conveying information — always paired with text labels or aria-labels.
+
+## **File delivery conventions**
+
+- Always state exactly which files changed and which did not.
+
+- Present each changed file individually for download — never zip unless explicitly asked.
+
+- Validate JS syntax with node --check before delivering.
+
+- Never rebuild files that have not changed.
+
+# **4. Pedagogical Framework**
+
+This system is grounded in specific frameworks. References to these must be accurate.
+
+## **LRA Taxonomy 26/27**
+
+7 categories, 30 themes. This is the backbone for all observation, AFI identification, and coaching. It is hardcoded in schema.js as LRA_TAXONOMY. Never invent LRA themes.
+
+| **Category** | **Themes** |
+| --- | --- |
+| CAT1 — Planning and Sequencing | LI, BB, SP, LL |
+| CAT2 — Inclusive TLA & SEND | PL, AR, ARD, LL2, NS |
+| CAT3 — Inclusive Learning Environment | LE, LED, RL, PR, BR, EAS |
+| CAT4 — Modelling and Professional Language | PC, LM, SSL, ISV |
+| CAT5 — Engagement, Collaboration and Independence | AL, AE, SS, CL, LI2, AT |
+| CAT6 — Assessment, Feedback and Progress | CU, EQ, EF, EA, AP |
+| CAT7 — Personal Development and Wellbeing | RTL, RTW, RFL, FS |
+
+## **Hyper focus areas 2025-26 (college priority)**
+
+Three themes are surfaced prominently in all observation tools as the college-wide priority for 2025-26:
+
+- ARD — Accessible by Design (Accessible Resources Digital, CAT2)
+
+- LED — Digital Learning Environment (CAT3)
+
+- AT — Assistive Technology (CAT5)
+
+These appear as pre-checked prominent chips in DevObs, Learning Walk, and Quick Capture. They are defined in schema.js as HYPER_FOCUS.
+
+## **RAG dimensions (8)**
+
+Staff Capability · HoA Leadership · Infrastructure & Devices · Digital Skills Assessment · Curriculum Integration · Learner Readiness · Accessibility & Inclusion · Digital Lead Engagement. Defined in schema.js as RAG_DIMENSIONS. Scored 1–5 with text labels (never colour alone).
+
+## **ETF DTPF stages**
+
+Stages 1–5 (Explore, Adopt, Adapt, Create, Innovate). Used in staff profiles and DevObs context.
+
+## **AFI severity labels (exact — do not change)**
+
+- Strength
+
+- Areas to Strengthen
+
+- Areas for Immediate Improvement
+
+# **5. Seed Data — Needs Correction**
+
+*The current data/areas-seed.json uses placeholder area names. Graeme will provide the correct list. When he does, produce both: (1) corrected areas-seed.json for the GitHub repo, and (2) corrected data-areas.json for OneDrive. Area codes (3 letters) are the join key across all systems — if codes change, all linked data becomes orphaned. Confirm codes carefully before producing the file.*
+
+Each area record has this structure:
+
+{ "areaCode": "BUI", "areaName": "Business & Industry", "campus": "Weston", "hoaName": "", "digitalLeadId": null, "pyramidLevel": "foundations", "ragDimensions": {}, "healthChecks": [], "activityLog": [], "afiRefs": [], "actionPoints": [], "staffRefs": [], "notes": "", "lastUpdated": "" }
+
+The 35 placeholder codes currently in the repo (may need renaming): ACA, AHC, ART, BEA, BUI, CAR, CHI, COG, CON, CRE, CRI, DIG, EAR, ELE, ENG, ENT, FLO, HAI, HBH, HOS, INC, LAW, MAT, MED, MUS, NUR, OUT, PER, PHO, PLA, PUB, SCH, SCI, SPO, TRA
+
+# **6. Phase 7 — What to Build**
+
+## **6.1 js/reports.js**
+
+Five report types, each producing a structured summary for a different audience. Reports are rendered as HTML within the Hub (printable) and optionally downloadable as Word documents. They pull live data from window.DPC_DATA.
+
+| **Report** | **Audience** | **Frequency** | **Key content** |
+| --- | --- | --- | --- |
+| Neil fortnightly | Neil Davies (AP Quality) | Fortnightly | Activities this period, open loops by severity, areas visited, reflections received, upcoming actions |
+| DL area briefing | Digital Lead for a specific area | On demand | That area's RAG scores, open loops, recent activities, resources created, next steps |
+| AP area briefing | AP responsible for an area | On demand | Area RAG summary, open loops, Health Check scores, staff development progress |
+| HoA area briefing | Head of Area | On demand | Accessible summary of digital development progress, no jargon, what's working and what needs attention |
+| Performance review | Self / line manager | Termly | Full activity log, AFI lifecycle data, reflections received, CPD log, AI-generated narrative summary of impact |
+
+## **6.2 hub-lite.html**
+
+A mobile-first companion page. Separate HTML file. No Hub navigation — clean single-column layout. Three surfaces:
+
+- Jobs Board surface — horizontal scrollable row of post-it cards (title, due date, status dot only). Read-only.
+
+- Calendar surface — list of events for today and next 7 days. Read-only.
+
+- Quick Capture — two large buttons: "+ Note" and "+ Meeting shell". Tap, type, save. Writes to Supabase immediately.
+
+Supabase credentials go in js/config.js (SUPABASE_URL and SUPABASE_ANON_KEY). The table is hub_lite_captures with columns: id, captured_at, type (note/meeting), content (JSON), synced_to_hub (boolean).
+
+## **6.3 js/supabase-sync.js**
+
+Reads pending captures from Supabase (synced_to_hub = false). Shows them in the Hub as a notification panel. Graeme reviews each one and clicks Commit to Hub — which writes it to the appropriate OneDrive data file and marks it synced_to_hub = true in Supabase.
+
+# **7. Key Design Decisions — Do Not Revisit**
+
+*These decisions were made deliberately. Do not reopen them unless Graeme explicitly asks.*
+
+| **Decision** | **Rationale** |
+| --- | --- |
+| No framework, no build step | College network may block CDN requests. Plain HTML/CSS/JS loads from GitHub Pages reliably. No npm run build means Graeme can edit files directly. |
+| File System Access API for OneDrive | Keeps sensitive data off the internet. No backend. No authentication complexity. Weekly reconnect is a deliberate security feature. |
+| Area code as join key | Stable identifier across all data files. Never changes once set. Changing it orphans all linked data. |
+| Heuristic rules (not AI) for coaching questions | Deterministic, auditable, no API dependency for core coaching logic. AI is only used for Health Check extraction where pattern recognition adds real value. |
+| WalkThrus excluded by name | Tom Sherrington's WalkThrus are excluded from the resource library by design. Do not add them. |
+| Reflections anonymous at area level | Staff are identified in their profile but reflections are reported anonymously at area level. This is a deliberate trust-building design. |
+| Templates are versioned | Each edit creates a new version. Instances reference their version. Old instances are not broken by template updates. |
+| Anthropic API called directly from browser for HC | GitHub Pages cannot have a backend. The API call uses the anthropic-dangerous-direct-browser-access header. This is acceptable for a private single-user tool on a private college network. |
+
+# **8. Working Style and Conventions**
+
+## **How Graeme communicates**
+
+- Direct and collegial. Plain English. No unnecessary formality.
+
+- He sends screenshots of what he sees. Read them carefully before responding.
+
+- He tests each phase and reports results. A PASS means move on. A FAIL means he describes what went wrong.
+
+- He will say "ready" when he wants you to build. Do not ask unnecessary clarifying questions before starting.
+
+## **How you should communicate**
+
+- State what you're building before you build it.
+
+- State exactly which files changed and which did not — every time.
+
+- Do not produce documentation when asked for code. Do not produce code when asked for documentation.
+
+- When you fix a bug, explain the root cause in one sentence and the fix in one sentence.
+
+- Never use governance review language — no October review, no 3-month, 6-month, 9-month, 12-month reviews, no pilot framing. This programme is organic.
+
+## **Build discipline**
+
+- Validate JS syntax (node --check) before delivering any JS file.
+
+- Present files individually for download — never zip unless asked.
+
+- Never touch files outside the agreed scope for that session.
+
+- If something is ambiguous, flag it before building — not after.
+
+- Read screenshots carefully. The console errors tell you what's wrong.
+
+# **9. First Actions in the New Chat**
+
+## **Step 1 — Confirm what you know**
+
+Search the project knowledge files. Confirm the repo structure, the phase completion status, and the Phase 7 scope. Do not start building until Graeme confirms you have the right picture.
+
+## **Step 2 — Correct the seed data**
+
+Graeme will provide the correct area list (codes, names, campus, HoA names). Produce both files: data/areas-seed.json for the repo, and data-areas.json for OneDrive. Confirm area codes carefully — they are the join key.
+
+## **Step 3 — Build Phase 7**
+
+Start with js/reports.js. Then hub-lite.html. Then js/supabase-sync.js. Test between each. Follow the same build discipline as Phases 1–6.
+
+## **What success looks like**
+
+- All 35 correct areas in the Hub with the right names and codes.
+
+- Five report types rendering correctly from live data.
+
+- Hub Lite loading on mobile, capturing notes and meeting shells to Supabase.
+
+- Supabase sync working — pending captures visible in Hub, committable to OneDrive.
+
+*The DPC Hub is Graeme**'**s operating system. It exists to make invisible coaching work visible, to close AFI loops with evidence, and to tell a coherent story of digital TLA development across Weston College Group. Every line of code serves that purpose.*
+
+DPC Hub  ·  Project Handoff  ·  July 2026  ·  Phases 1–6 complete  ·  Phase 7 remaining

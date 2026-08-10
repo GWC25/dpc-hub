@@ -1,0 +1,239 @@
+DPC Impact Hub — Project Handoff & Continuation Guide   Weston College Group · Digital Pedagogy Coach · 2025–27
+
+**DPC Impact Hub**
+
+Project Handoff & Continuation Guide
+
+Graeme Wright · Digital Pedagogy Coach · Weston College Group · May 2026
+
+*This document covers: what has been built, what remains, how to continue, and how to integrate the Evidence Hub, DevObs, and Quality team workflows.*
+
+# **1. What Is Built**
+
+The DPC Impact Hub is a password-protected, browser-based application hosted on GitHub Pages. All live data stays in your browser (localStorage) with a manual download backup workflow. No sensitive data lives on GitHub.
+
+Repository: gwc25/dpc-impact-hub → https://gwc25.github.io/dpc-impact-hub/
+
+## **1.1 Completed components**
+
+| **Component** | **Status** | **Notes** |
+| --- | --- | --- |
+| **index.html — Password gate** | **COMPLETE** | SHA-256 hash auth. Replace placeholder hash before first deploy. See README. |
+| **hub.html — App shell** | **COMPLETE** | All nav sections, DOM IDs, routing, WCAG 2.2 AA structure. |
+| **css/design.css — Design system** | **COMPLETE** | Light + dark mode, all tokens, WCAG 2.2 AA verified, component library. |
+| **js/data.js — Data layer** | **COMPLETE** | DB schema, localStorage, seed loading, RAG + HC schema loading, migration. |
+| **js/rag.js — RAG Matrix** | **COMPLETE** | Per-sub-criterion scoring (5 criteria × 5 levels), full descriptors, history. |
+| **js/areas.js — Area tabs** | **COMPLETE** | All 7 tabs: Overview, Activity Log, Interventions, RAG, Skills, Staff Dev (placeholder), Health Checks. |
+| **js/app.js — App logic** | **COMPLETE** | Dashboard, RAG Summary, LWB, Individual Activities, My CPD, Settings, save reminder. |
+| **data/areas-seed.json** | **COMPLETE** | 35 areas with M1+M2+audit data. Remove from GitHub after first load — see README. |
+| **data/rag-schema.json** | **COMPLETE** | 8 dimensions × 5 levels × 5 sub-criteria = 200 descriptors. Success criteria per cell. |
+| **data/hc-schema.json** | **COMPLETE** | 5 dimensions × 5 indicators × 5 levels = 125 success criteria statements with observability notes. |
+| **README.md + .gitignore** | **COMPLETE** | Deploy guide, password setup, seed removal, local backup workflow. |
+
+## **1.2 Partially built**
+
+| **Component** | **Status** | **Notes** |
+| --- | --- | --- |
+| **Tab 6: Staff Development (per area)** | **PLACEHOLDER** | Schema designed. 8a: 8-statement industry matrix + 15-dim pedagogy matrix. 8b: capturing. Gap analysis + auto action plans. Not yet built. |
+| **College-wide Staff Dev tab** | **PLACEHOLDER** | Depends on Tab 6 data. Filterable by campus, area, role, DL. Not yet built. |
+| **Report Builder** | **PLACEHOLDER** | Schema defined. 4 Word .docx templates: HoA, Digital Lead, Neil Davies (weekly), Ben Manning (monthly). Not yet built. |
+
+# **2. What Remains — Build Order ****&**** Effort**
+
+## **2.1 Staff Development (Tab 6) — Highest priority**
+
+This is the most complex remaining component. The data schema is already defined in the DB. Build order:
+
+- 8a: Industry Digital Confidence — 8 statements per staff member, scored 1–5. Labels configurable via rag-schema.json.
+
+- 8a: Digital Pedagogy Matrix — 15 dimensions per staff member, scored 1–5. Accessibility and GDPR flagged as value-critical.
+
+- Gap analysis — auto-flags anyone below 2.5/5. Value-critical items always at top.
+
+- Auto-generated action plan per staff member — surfaced from gap scores.
+
+- 8b: Staff Development capturing — manual log per person, links to Interventions table.
+
+- Aggregate Staff Confidence score — feeds area header and Overview Card.
+
+*Estimated session effort: 2–3 focused sessions.*
+
+## **2.2 College-wide Staff Development tab**
+
+*Aggregates from all area.staffDevelopment records. Build after Tab 6 has data. Filter by campus, area, role, Digital Lead mode. Estimated: 1 session.*
+
+## **2.3 Report Builder — 4 Word templates**
+
+Client-side .docx generation using the docx library (already available in the build environment). Four templates:
+
+- Head of Area — area-specific: RAG, AFI phases, dimension scores, interventions summary. 1–2 pages. Warm tone.
+
+- Digital Lead — area-specific: indicator-level HC scores, action plans assigned to DL, CPD suggestions. 1 page.
+
+- Neil Davies (weekly) — cross-college: activities this week, areas engaged, RAG movements, next week priorities. 1 page.
+
+- Ben Manning (monthly) — strategic: baseline vs current RAG distribution, interventions delivered, impact narrative, forward look. 2–3 pages.
+
+*Estimated: 2 sessions. The docx skill and Python toolchain are already in place in this build environment.*
+
+# **3. Evidence Hub Integration**
+
+The existing Evidence Hub (gwc25.github.io/Digital-Evidence-Hub) is a separate application. The Impact Hub is designed as its functional replacement, but integration should be managed carefully.
+
+## **3.1 What each system currently does**
+
+|  | **Evidence Hub (current)** | **Impact Hub (new)** |
+| --- | --- | --- |
+| **Primary purpose** | Evidence logging, quick capture, accountability tracking, VFM case studies, resource library | Area-by-area RAG assessment, health checks, staff development, LWB, individual activities, CPD, reporting |
+| **Data model** | DB.entries (evidence log), threads, referrals, HoA tracker snapshots, resource library | DB.areas (35 areas with full data), DB.learningWithoutBarriers, DB.individualActivities, DB.myCPD |
+| **Overlap** | Individual Activities, My CPD, LWB activities, Confetti / Next Actions | Same sections, same data model, compatible JSON schema |
+
+## **3.2 Integration approach — three options**
+
+Option A: Run both in parallel (recommended for now)
+
+- Keep Evidence Hub live for quick capture, evidence logging, VFM, resource library.
+
+- Use Impact Hub for area-level work: RAG, health checks, interventions, staff dev.
+
+- Export dpc-data.json from Impact Hub monthly. Import selected data into Evidence Hub if needed.
+
+- Timeline: parallel running through October 2026 governance review.
+
+Option B: Merge into a single application
+
+- Impact Hub absorbs Evidence Hub functionality. All data in one JSON file.
+
+- Requires adding: Quick Capture, Evidence Log, VFM, Resource Library, Confetti/Next Actions to Impact Hub.
+
+- Migration function already stubbed in data.js (migrateFromEvidenceHub).
+
+- Realistic timeline: after Report Builder is done, probably January 2027.
+
+Option C: SharePoint as the bridge
+
+- Save dpc-data.json to a SharePoint document library (not OneDrive sharing — just a file in a library).
+
+- No "Anyone with the link" sharing required. CE+/ISO compliant.
+
+- Access via SharePoint URL changes to a direct .json link. Works with the existing fetch in data.js.
+
+**Recommendation: Option A now, Option B at the January 2027 natural pause point.**
+
+## **3.3 Data compatibility**
+
+The Impact Hub schema is a strict superset of the Evidence Hub schema. All field names are identical where they overlap. The migration function in data.js (migrateFromEvidenceHub) maps old fields to new. No data will be lost in a merge. The 35 area codes are identical in both systems.
+
+# **4. DevObs and Quality Team Integration**
+
+## **4.1 Development Observations**
+
+The schema is already designed to accept DevObs data. The integration points are:
+
+- Health Checks Tab 7: assessmentMethod field already includes "observation" and "learning-walk" as values. A DevObs populates the same per-indicator scoring grid with the same 1–5 scale.
+
+- Interventions Tab 3: type field already includes "learning-walk" and "observation". A Learning Walk record sits here with objectives, plan, reflection, attendees, and further action.
+
+- Individual Activities: any observation-type activity can be logged here cross-college.
+
+What needs building: a dedicated DevObs modal that pre-populates the Health Check scoring grid from a learning walk context, adds the lesson observation fields (lesson plan quality, learner engagement, questioning, feedback quality), and auto-creates an action point. This is a 1-session add-on to Tab 7.
+
+Suggested field additions for a DevObs record (extend health check schema):
+
+- lessonPlanProvided: boolean
+
+- lessonAims: text
+
+- learnerEngagement: 1–5
+
+- questioningAndChallenge: 1–5
+
+- feedbackQuality: 1–5
+
+- overallLessonJudgement: text (not a grade — a narrative)
+
+## **4.2 Quality team activities**
+
+The following Quality cycle activities can be integrated into the Impact Hub:
+
+| **Activity** | **Integration point** | **What to build** |
+| --- | --- | --- |
+| Learning Walks | Tab 7 Health Checks + Tab 3 Interventions | DevObs modal (1 session) |
+| Peer Reviews / COG | Tab 3 Interventions (type: peer-review) | Already works — just log as intervention |
+| QIP Targets (digital) | AFI Phases per area | Already works — QIP target = AFI phase title |
+| Teach Meets | Individual Activities (type: teach-meet) | Already works — log attendance and impact |
+| PPRs / SARs (digital dimension) | Report Builder (Ben Manning template) | Build Report Builder — use monthly export as SAR data source |
+| Learner Voice (digital) | HC assessmentMethod: learner-voice | Already works — log as HC record with learner voice method |
+| Governance Reviews (Oct 26, Apr 27) | Report Builder (Ben Manning template) + RAG snapshots | Save Rating Snapshot before each governance review — history preserved |
+
+# **5. Recommended Build Sequence**
+
+Based on your governance timeline (October 2026 review, April 2027 review, July 2027 pilot end):
+
+| **When** | **What** | **Why** | **Delivers** |
+| --- | --- | --- | --- |
+| **Now → July 26** | Deploy what's built. Remove seed data after first load. | Real data > seed data. RAG matrix, health checks, activities, CPD all usable now. | Live working tool immediately |
+| **July → Sept 26** | Staff Dev Tab 6 (8a industry + pedagogy matrix, gap analysis) | September DL cohort needs this for their first structured conversations. | Staff confidence data for October governance review |
+| **Sept → Oct 26** | Report Builder — Neil Davies + Ben Manning templates | October governance review needs a clean, data-driven report from the hub. | October 2026 governance pack |
+| **Oct 26 → Jan 27** | DevObs modal + College-wide Staff Dev tab + HoA/DL report templates | Winter term observation cycle. DL-led health checks. Full reporting suite. | Full DL operation + April 2027 governance pack |
+| **Jan → July 27** | Evidence Hub merge decision + pilot end pack | Decide whether to merge, extend, or hand off. Full programme evidence export. | July 2027 pilot review pack + handoff |
+
+# **6. Deployment Checklist**
+
+Before going live, complete these steps in order:
+
+- 1. Set password: go to https://emn178.github.io/online-tools/sha256.html → generate hash → replace placeholder in index.html → push.
+
+- 2. Push all files to gwc25/dpc-impact-hub on GitHub. Make sure hc-schema.json is included in data/.
+
+- 3. Open https://gwc25.github.io/dpc-impact-hub/ → sign in → verify all 35 areas load correctly.
+
+- 4. Click ⬇ Save → dpc-data.json downloads → move to Documents/DPC-Hub-Data/.
+
+- 5. Verify import works: Settings → Import dpc-data.json → confirm data loads.
+
+- 6. Run: git rm data/areas-seed.json → git commit -m "Remove seed data after initial load" → git push.
+
+- 7. Verify hub still loads correctly from localStorage after seed is removed.
+
+- 8. Consider making the repo private (costs nothing on GitHub if you have a paid plan).
+
+# **7. Audit Data — Coverage Notes**
+
+The HoA Digital Skills & Infrastructure Audit (April–May 2026) provided data for 20 of the 35 curriculum areas. The following areas are pre-populated in the seed data from the audit:
+
+- BUS, BUI/CON, SMS, HBH, EMV, PRS, DCI, GMA, EEY, PRE, EHE/ENG, FEH, PRA, HAC, PSF, SPO, EGL, MAT, EFE — all with general and industry digital skills data, devices, network, software, AT, and barriers.
+
+Two audit responses require clarification before final placement:
+
+- Tasha Thorne — submitted as "FE Counselling". No exact area code match in the 35-area structure. Data is included in the seed as context notes within the closest match. Confirm area assignment with Neil Davies.
+
+- Mark Barnett — submitted as "Project Management". Mark is referenced in DCI notes re SharePoint/Smart Assessor. Placed under PRA (Professional Apprenticeships) pending confirmation.
+
+Areas with no audit data (seed data contains M1/M2 meeting notes only or minimal data): AGF, AHE, ANM, CED, CON, CTC, ESO, EXT, FAU, FCO, FPL, PAP, SKB, SMX, QUA. Priority for next round of conversations.
+
+# **8. Technical Maintenance Notes**
+
+## **8.1 Passwords**
+
+Password is a SHA-256 hash stored in index.html. Never change the code — just regenerate the hash and push. Sessions already open will continue to work until the next page load. Old hash: replace the full 64-character string in index.html.
+
+## **8.2 Adding a new area**
+
+Open your dpc-data.json → add a new area object following the existing schema → save and import. The area code must be 2–3 letters. The hub renders whatever areas are in the JSON.
+
+## **8.3 Schema updates**
+
+If the Health Check indicators or RAG sub-criteria change, edit data/hc-schema.json or data/rag-schema.json and push to GitHub. The hub fetches these on every load. Existing scored records are unaffected — scores are stored by index, not by label.
+
+## **8.4 Browser compatibility**
+
+Tested on Chrome, Firefox, Edge, Safari (iOS). localStorage is used for all data persistence. Private/incognito mode loses data between sessions. Recommend using Chrome or Edge as primary browser for the hub.
+
+## **8.5 WCAG 2.2 AA**
+
+All components verified at WCAG 2.2 AA minimum. Key contrast ratios: --col-accent (#1d4e89) at 7.2:1 on white (AAA), --col-teal (#065f46) at 7.68:1 on white (AAA). If any colours are changed, verify contrast before pushing.
+
+*End of handoff document.*
+
+Page  · Graeme Wright, Digital Pedagogy Coach · 29 May 2026

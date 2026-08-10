@@ -1,0 +1,1009 @@
+**DPC Hub**
+
+Master Blueprint & Build Specification for Code Executor
+
+Graeme Wright  ·  Digital Pedagogy Coach  ·  Quality & Innovation  ·  Weston College Group
+
+Document version: 1.0  ·  Date: July 2026  ·  Status: APPROVED FOR BUILD
+
+**ARCHITECT: Claude (Anthropic)  ·  CODE EXECUTOR: Gemini**
+
+*This document is the single source of truth for the DPC Hub build. The code executor (Gemini) must read this document in full before writing any code. Every architectural decision is locked here. If something is underspecified, stop and flag it — do not improvise. If this document conflicts with any other document, this document wins.*
+
+*Governance note: This work is organic. There are no scheduled review dates, governance milestones, or phase gates tied to calendar dates. Progress is measured by build phase completion, not time elapsed.*
+
+**Document 1 — Vision ****&**** Principles**
+
+**1.1  What this system is**
+
+The DPC Hub is the personal operating system for the Digital Pedagogy Coach (DPC) role at Weston College Group. It is a coaching intelligence platform — not an IT system, not a compliance tracker, not a staff monitoring tool. Its purpose is to capture evidence of practice, support structured professional conversations, close the loop between observation and improvement, and produce meaningful reports for different audiences at different levels of detail.
+
+The DPC role operates across 35 curriculum areas with no formal authority. Influence flows through relational capital, coaching conversations, and making it easy for people to lead in their own areas. The Hub serves that model — it does not replace professional judgement, it informs and evidences it.
+
+**1.2  The two systems**
+
+The DPC Hub is two connected but independent deployments:
+
+- DPC Hub (desktop) — the full system. Runs in Edge on a Windows college laptop. All sensitive data lives here. Password protected. One user: Graeme Wright.
+
+- Hub Lite (mobile) — a surface-layer only companion. Non-confidential data only. Available on phone without opening a laptop. Quick Capture for notes and meeting shells. Calendar surface (what/where/who/date/time only). No drill-down. No sensitive data. Syncs to the Hub on next desktop open.
+
+**1.3  Non-negotiable principles**
+
+| **WCAG 2.2 AA** | Every UI component, every output document, every publicly accessible HTML page meets WCAG 2.2 AA minimum. This is a build gate on every phase, not a final polish. Semi-transparent overlays must be pixel-sampled, not token-estimated. |
+| --- | --- |
+| **Digital supports TLA** | Digital tools support and enhance exceptional teaching, learning and assessment. They do not replace it. The question is always: what is the rationale, and what is the expected impact on learning? |
+| **Evidence must be genuine** | Only real, completed activity is recorded or reported. No overclaiming. No fabrication. QIP contributions are framed honestly. |
+| **Coaching not monitoring** | Staff profiles hold coaching conversation records and development priorities — not HR, capability, or appraisal data. The system must never be used or described as a monitoring tool. |
+| **DPC as quality filter** | All incoming data (Health Check uploads, reflection submissions, Supabase captures) is reviewed by the DPC before entering the permanent record. The DPC's professional judgement is always the final word. |
+| **One source of truth** | Every document references the canonical schema (Document 3). No document restates schema fields — it references them. If the schema changes, bump the version and delete the old copy. |
+| **Files touched once** | Each file is built in one phase and only extended in a later phase with explicit scope. No file is restructured mid-build. |
+| **Stop and flag** | If the executor encounters something underspecified, stop and flag it. Do not improvise. Do not infer. Raise the question. |
+
+**Document 2 — System Architecture**
+
+**2.1  The three-tier data model**
+
+| **Tier 1 — Public content (GitHub repo: dpc-cpd-library)** | WalkThru cards, resource metadata, LinkedIn pathway links, published CPD resources. Not sensitive. Lives in the repo as JSON files. The public CPD Library HTML reads from here. Anyone can access it. Cards added via an admin form that writes to the repo via GitHub API using a personal access token stored in the browser session only — never in any HTML file. |
+| --- | --- |
+| **Tier 2 — Operational data (OneDrive JSON files)** | Staff profiles, AFI records, coaching notes, referral records, activity logs, reflections, Health Check scores, RAG ratings, calendar/task entries, template library, teach meet plans, coaching question sets. Sensitive. Lives on OneDrive as structured JSON files. The Hub loads them via File System Access API (weekly permission grant, Monday morning prompt). Auto-saves every 60 seconds during session. No Supabase, no external database, no CE+ issues. |
+| **Tier 3 — Non-confidential capture (Supabase — Hub Lite only)** | Meeting shells (date, time, person, area, type, free-text note), quick notes, calendar surface entries. No coaching observations, no AFI details, no staff performance data. One-directional: Hub Lite writes to Supabase, Hub desktop reads pending captures on open and prompts DPC to review before committing to Tier 2. |
+
+**2.2  The two GitHub repositories**
+
+| **gwc25/dpc-hub** | The desktop Hub application. All operational modules. Reads from OneDrive JSON (Tier 2). Reads public resource data from dpc-cpd-library repo on load (cached). Password protected. Single user. |
+| --- | --- |
+| **gwc25/dpc-cpd-library** | The public CPD Library. WalkThru cards, resources, LinkedIn pathways, booking link. Publicly accessible. No login. The Hub also reads from this repo's JSON files. Admin form writes new cards here via GitHub API. |
+
+**2.3  OneDrive file structure**
+
+All Tier 2 files live in one OneDrive folder: DPC Hub / Data. The manifest file is the only file the DPC manually selects on Hub open — all others are loaded automatically.
+
+| **dpc-manifest.json** | MASTER INDEX. Lightweight. Contains paths to all other data files, last-sync timestamps, Hub version, and user preferences. This is the only file the DPC selects on open. Everything else is referenced from here. |
+| --- | --- |
+| **data-areas.json** | 35 area records. RAG ratings per dimension, Health Check scores, activity logs, open actions, AFI references, Digital Lead identity, HoA identity, area code. |
+| **data-staff.json** | Staff profiles. Dynamically created. Name, area(s), role, entry pathway, ETF stage, three development priorities, full touch history, reflection references. |
+| **data-afi.json** | All AFI records with full lifecycle. parentObservation, stage, description, digital opportunity, status, closeWindow, evidence chain, linked actions. |
+| **data-calendar.json** | Shadow calendar. Meetings (named people, area, type, date/time, notes ref), tasks (title, project link, start, deadline, status, micro-tasks), dedicated work blocks. |
+| **data-reflections.json** | All reflection submissions. Tagged to event, area, AFI. Named at individual level, anonymous at area level. immediate / follow-up stage. |
+| **data-templates.json** | Teach Meet plans, coaching question sets, meeting agenda templates. Versioned — each edit creates a new version; instances reference the version they used. |
+| **data-cpd.json** | DPC personal CPD log. Events, notes, resources, post-impact confidence rating, actions arising. |
+| **data-digital-leads.json** | Digital Lead profiles. 1:1 meeting history, resources created, progress picture, support delivered, impact evidence. |
+| **data-current-focus.json** | Targeted focus objects. Flexible — area, person, action, or theme. What/Why/How/Who/Impact fields. SEND is first entry September 2026. |
+
+**2.4  File System Access API — weekly permission model**
+
+The Hub uses the File System Access API (supported in Edge and Chrome on Windows) to read and write directly to the OneDrive-synced local folder. No downloads, no uploads, no zip files.
+
+- First use: DPC grants permission to the OneDrive/DPC Hub/Data folder. Permission persists for 7 days.
+
+- Every Monday morning (or first open of the week): Hub detects expired permission and shows a friendly "Good morning — reconnect to your data folder" prompt. DPC clicks once to re-grant. Hub shows a summary of last week's activity as a purposeful start-of-week check-in.
+
+- Auto-save: every 60 seconds during a session, Hub writes changed files only (not all files). A small "Saved ✓" indicator appears briefly.
+
+- If laptop closes without saving: localStorage holds a session snapshot. On next open, Hub detects the snapshot and offers one-click restore.
+
+- Fallback: if File System Access API unavailable (wrong browser, different device): Hub falls back to localStorage only and prompts DPC to reconnect to OneDrive on return to Edge.
+
+**2.5  Supabase schema (Hub Lite only)**
+
+Non-confidential capture only. One table: hub_lite_captures.
+
+| **id** | UUID, auto-generated |
+| --- | --- |
+| **capture_type** | enum: meeting_shell │ quick_note │ calendar_entry |
+| **captured_at** | ISO timestamp |
+| **person_name** | Free text. Non-confidential. |
+| **area_code** | Three-letter code (BUI, CON etc). Non-confidential. |
+| **meeting_type** | Free text or enum. Non-confidential. |
+| **note_text** | Free text. Non-confidential. No coaching observations, no AFI details. |
+| **date_time** | ISO timestamp of the event being captured. |
+| **synced_to_hub** | Boolean. False until DPC reviews and commits on desktop. |
+
+Row-level security: Supabase anon key used for inserts from Hub Lite. Hub desktop reads via service role key stored in dpc-manifest.json (never in any public HTML).
+
+**Document 3 — Canonical Data Schema  [KEYSTONE]**
+
+This is the single source of truth for every data object in the system. All other documents reference this. None restate it. If a field name here conflicts with any other document, this document wins. Version: 1.0 — July 2026.
+
+*EXECUTOR INSTRUCTION: Before writing any code that reads or writes data, re-read this section. Every field name, type, and relationship is locked here. Do not invent fields. Do not rename fields. If a required field is missing from this schema, stop and flag it.*
+
+**3.1  Area record  (data-areas.json → areas[])**
+
+| **areaCode** | String. 3-letter unique identifier. PRIMARY JOIN KEY across all systems. e.g. BUI, CON, HBH. |
+| --- | --- |
+| **areaName** | String. Full curriculum area name. |
+| **hoaName** | String. Head of Area name. |
+| **digitalLeadId** | String. References staff.staffId of the Digital Lead for this area. |
+| **campus** | String. Campus location. |
+| **pyramidLevel** | enum: foundations │ inclusion │ innovation. Current overall assessment. |
+| **ragDimensions** | Object. 8 keys — see 3.1a below. |
+| **healthChecks** | Array of HealthCheckRecord objects — see 3.3. |
+| **activityLog** | Array of ActivityEntry objects — see 3.4. |
+| **afiRefs** | Array of AFI IDs (strings). References data-afi.json. |
+| **actionPoints** | Array of ActionPoint objects — see 3.5. |
+| **staffRefs** | Array of staffId strings. All staff touched in this area. |
+| **notes** | String. Free text area notes. |
+| **lastUpdated** | ISO timestamp. |
+
+**3.1a  RAG Dimensions (ragDimensions object)**
+
+Eight dimensions, each scored 1–5 with rationale and timestamp.
+
+| **staffCapability** | { score: 1-5, rationale: string, updatedAt: ISO } |
+| --- | --- |
+| **hoaLeadership** | { score: 1-5, rationale: string, updatedAt: ISO } |
+| **infrastructure** | { score: 1-5, rationale: string, updatedAt: ISO } |
+| **digitalSkillsAssessment** | { score: 1-5, rationale: string, updatedAt: ISO } |
+| **curriculumIntegration** | { score: 1-5, rationale: string, updatedAt: ISO } |
+| **learnerReadiness** | { score: 1-5, rationale: string, updatedAt: ISO } |
+| **accessibilityInclusion** | { score: 1-5, rationale: string, updatedAt: ISO } |
+| **digitalLeadEngagement** | { score: 1-5, rationale: string, updatedAt: ISO } |
+
+**3.2  Staff Profile  (data-staff.json → staff[])**
+
+| **staffId** | String. UUID. Generated on first creation. |
+| --- | --- |
+| **name** | String. Full name. |
+| **areaCode** | String. Primary area. References areas[].areaCode. |
+| **additionalAreas** | Array of strings. Other areas where this staff member is observed. |
+| **role** | String. e.g. Lecturer, TLAM, HoA, DL. |
+| **entryPathway** | enum: devobs │ learning-walk │ referral │ self-referral │ health-check. How they entered the system. |
+| **entryDate** | ISO date. |
+| **etfStage** | enum: 1 │ 2 │ 3 │ 4 │ 5. DPC assessment of ETF DTPF stage. |
+| **developmentPriorities** | Array of 3 strings. DPC-identified priority development areas. Not necessarily Jisc scores. |
+| **confidenceRating** | Number 1-5. Current self-reported or DPC-assessed confidence. |
+| **touchHistory** | Array of TouchEntry objects — see 3.2a. |
+| **reflectionRefs** | Array of reflection IDs. References data-reflections.json. |
+| **afiRefs** | Array of AFI IDs relevant to this staff member. |
+| **isAnonymousAtAreaLevel** | Boolean. Always true. Name visible only in this profile and to DPC. |
+| **createdAt** | ISO timestamp. |
+| **lastUpdated** | ISO timestamp. |
+
+**3.2a  TouchEntry object**
+
+| **touchId** | String. UUID. |
+| --- | --- |
+| **touchType** | enum: devobs │ learning-walk │ coaching │ teach-meet │ referral │ resource-assigned │ linkedin-pathway │ health-check │ reflection │ work-review. |
+| **date** | ISO date. |
+| **areaCode** | String. |
+| **summary** | String. Brief note. |
+| **linkedAFIId** | String or null. References data-afi.json. |
+| **linkedTemplateId** | String or null. References data-templates.json. |
+| **linkedResourceId** | String or null. References resources.json in dpc-cpd-library repo. |
+
+**3.3  AFI Record  (data-afi.json → afis[])**
+
+AFIs are first-class objects with a full lifecycle. An AFI is not a text note — it is a structured record with linked evidence.
+
+| **afiId** | String. UUID. |
+| --- | --- |
+| **areaCode** | String. The area this AFI belongs to. |
+| **staffId** | String or null. If this AFI relates to a specific staff member. |
+| **lraCategoryId** | String. References LRA category. e.g. CAT1, CAT6. |
+| **lraThemeId** | String. References LRA theme. e.g. CU (Checks for Understanding). |
+| **lraThemeLabel** | String. Human-readable theme label for display. |
+| **description** | String. Plain language description of the TLA gap. |
+| **digitalOpportunity** | String or null. Where digital could support this, if appropriate. Not mandatory. |
+| **digitalApplicable** | Boolean. True if digital is relevant. False is a valid recorded outcome. |
+| **rationaleTest** | String or null. If teacher has non-digital response — is it working? |
+| **status** | enum: open │ actioned │ impact-checked │ closed │ re-opened. |
+| **severity** | enum: strength │ develop │ immediate. Maps to LRA language. |
+| **closeWindow** | String. Expected evidence horizon. e.g. "2-weeks", "6-weeks". Reflects complexity of change. |
+| **linkedActions** | Array of ActionEntry objects — see 3.3a. |
+| **evidenceChain** | Array of EvidenceEntry objects — see 3.3b. |
+| **parentObservationId** | String or null. DevObs or LW that generated this AFI. |
+| **hyperThemeMatch** | String or null. If this maps to one of the three Hyper focus areas: accessible-by-design │ digital-learning-environment │ assistive-technology. |
+| **qipRef** | String or null. QIP reference code if this feeds a QIP action. |
+| **createdAt** | ISO timestamp. |
+| **closedAt** | ISO timestamp or null. |
+| **lastUpdated** | ISO timestamp. |
+
+**3.3a  ActionEntry object (within AFI)**
+
+| **actionId** | String. UUID. |
+| --- | --- |
+| **actionType** | enum: coaching │ teach-meet │ linkedin-pathway │ resource │ training-programme │ referral-out. |
+| **description** | String. |
+| **linkedTemplateId** | String or null. |
+| **linkedResourceId** | String or null. |
+| **linkedPathwayUrl** | String or null. |
+| **targetDate** | ISO date. |
+| **completedAt** | ISO timestamp or null. |
+| **kpiTag** | String or null. KPI reference if applicable. |
+
+**3.3b  EvidenceEntry object (within AFI)**
+
+| **evidenceId** | String. UUID. |
+| --- | --- |
+| **evidenceType** | enum: devobs │ learning-walk │ reflection-immediate │ reflection-follow-up │ health-check-score │ data-point │ staff-voice │ coaching-note. |
+| **date** | ISO date. |
+| **summary** | String. What was observed or recorded. |
+| **sourceId** | String or null. References the source record (DevObs ID, reflection ID etc). |
+| **loopMovement** | enum: opens │ progresses │ closes │ re-opens. What this evidence did to the AFI loop. |
+
+**3.4  ActivityEntry object (within area.activityLog[])**
+
+| **activityId** | String. UUID. |
+| --- | --- |
+| **activityType** | enum: devobs │ learning-walk │ coaching │ teach-meet │ health-check-visit │ referral │ resource-created │ meeting │ cpd-delivered │ work-review │ hoa-meeting │ digital-lead-meeting │ tlam-meeting. |
+| **date** | ISO date. |
+| **areaCode** | String. |
+| **staffIds** | Array of strings. Staff involved. |
+| **lraThemeIds** | Array of strings. LRA themes observed or addressed. |
+| **hyperThemes** | Array of strings. Hyper focus areas: accessible-by-design │ digital-learning-environment │ assistive-technology. |
+| **pyramidLevel** | enum: foundations │ inclusion │ innovation. |
+| **summary** | String. |
+| **afiIdsGenerated** | Array of AFI IDs created from this activity. |
+| **sharedId** | String or null. Links DevObs to its LRA record, or LW to its DevObs follow-up. |
+| **qipRef** | String or null. |
+| **createdAt** | ISO timestamp. |
+
+**3.5  Template object  (data-templates.json → templates[])**
+
+| **templateId** | String. UUID. |
+| --- | --- |
+| **templateType** | enum: teach-meet │ coaching-questions │ meeting-agenda │ observation-framework. |
+| **title** | String. |
+| **version** | Number. Starts at 1. Increments on each edit. Old versions retained in versions[]. |
+| **versions** | Array of VersionSnapshot objects — { versionNumber, savedAt, content }. |
+| **lraCategoryIds** | Array of strings. LRA categories this template addresses. |
+| **lraThemeIds** | Array of strings. LRA themes this template addresses. |
+| **pyramidLevel** | enum: foundations │ inclusion │ innovation │ all. |
+| **tags** | Array of strings. Free text topic tags. |
+| **content** | Object. Type-specific content — see 3.5a (Teach Meet) and 3.5b (Coaching Questions). |
+| **linkedResourceIds** | Array of strings. Resource IDs from dpc-cpd-library. |
+| **linkedPathwayUrls** | Array of strings. LinkedIn Learning pathway URLs. |
+| **isPublic** | Boolean. If true, visible in public CPD Library. |
+| **instances** | Array of TemplateInstance objects — see 3.5c. |
+| **createdAt** | ISO timestamp. |
+| **lastUpdated** | ISO timestamp. |
+
+**3.5a  Teach Meet content object**
+
+| **learningIntentions** | String. What staff attending this session will know or be able to do. |
+| --- | --- |
+| **buildingBlocks** | String. Prerequisite knowledge or context for attendees. |
+| **startingPoints** | String. Where attendees are likely coming in — assumed starting point. |
+| **activities** | Array of { duration: number (mins), description: string, resourceRefs: string[] }. |
+| **assessment** | String. How understanding will be checked during the session. |
+| **lastingLearning** | String. The one thing attendees should leave with and implement. |
+| **facilitatorNotes** | String. Notes for the person running the session. |
+| **reflectionPrompt** | String. The prompt shared with attendees at the end. |
+| **resourceLinks** | Array of { label: string, url: string }. External links used in session. |
+
+**3.5b  Coaching Questions content object**
+
+| **lraThemeId** | String. The LRA theme these questions address. |
+| --- | --- |
+| **etfStage** | Number or null. 1-5. If null, questions apply across all stages. |
+| **context** | enum: digital-present-superficial │ digital-absent │ digital-strong │ non-digital │ any. |
+| **openingQuestions** | Array of strings. |
+| **exploringQuestions** | Array of strings. |
+| **challengingQuestions** | Array of strings. |
+| **closingQuestions** | Array of strings. |
+| **isAIDrafted** | Boolean. True if initially generated by AI — subject to DPC review. |
+| **isApproved** | Boolean. True only after DPC has reviewed and confirmed. |
+| **editHistory** | Array of { editedAt: ISO, editNote: string }. |
+
+**3.5c  TemplateInstance object**
+
+| **instanceId** | String. UUID. |
+| --- | --- |
+| **templateVersion** | Number. Which version of the template this instance used. |
+| **date** | ISO date. |
+| **areaCode** | String. |
+| **attendeeIds** | Array of staffId strings. |
+| **contextNotes** | String. Context-specific notes for this delivery. |
+| **linkedAFIIds** | Array of AFI IDs this instance was created to address. |
+| **reflectionRefs** | Array of reflection IDs submitted after this instance. |
+
+**3.6  Reflection object  (data-reflections.json → reflections[])**
+
+| **reflectionId** | String. UUID. |
+| --- | --- |
+| **stage** | enum: immediate │ follow-up. |
+| **submittedAt** | ISO timestamp. |
+| **eventId** | String. References the ActivityEntry or TemplateInstance this reflection follows. |
+| **areaCode** | String. |
+| **staffId** | String. Named internally. Never exposed at area level. |
+| **linkedAFIId** | String or null. |
+| **responseText** | String. Free text reflection. |
+| **confidenceRating** | Number 1-5. Post-event confidence. |
+| **practiceChangeReported** | Boolean. Did they report a change in practice? |
+| **practiceChangeDescription** | String or null. What changed. |
+| **isAnonymousAtAreaLevel** | Boolean. Always true. |
+
+**3.7  Calendar/Task entry  (data-calendar.json)**
+
+| **entryId** | String. UUID. |
+| --- | --- |
+| **entryType** | enum: meeting │ task │ work-block │ deadline │ micro-task. |
+| **title** | String. |
+| **date** | ISO date. |
+| **startTime** | String HH:MM or null. |
+| **endTime** | String HH:MM or null. |
+| **personRefs** | Array of strings. Names or staffIds of people involved. |
+| **areaCode** | String or null. |
+| **projectRef** | String or null. Free text project or theme reference. |
+| **status** | enum: upcoming │ in-progress │ complete │ overdue. |
+| **microTasks** | Array of { title: string, status: enum, dueDate: ISO }. |
+| **notes** | String or null. |
+| **linkedActivityId** | String or null. If this meeting generated an ActivityEntry. |
+| **kpiTag** | String or null. |
+| **isSurfaceLayerVisible** | Boolean. If true, visible in Hub Lite (title, date, time, who only). |
+
+**3.8  Digital Lead profile  (data-digital-leads.json → digitalLeads[])**
+
+| **dlId** | String. UUID. |
+| --- | --- |
+| **staffId** | String. References data-staff.json. |
+| **areaCode** | String. Their primary area. |
+| **meetingHistory** | Array of { meetingId, date, notes, actionsAgreed, linkedAFIIds }. |
+| **resourcesCreated** | Array of { title, type, date, url, linkedAFIId }. |
+| **progressNotes** | Array of { date, note }. |
+| **supportDelivered** | Array of TouchEntry references. |
+| **impactEvidence** | Array of EvidenceEntry objects. |
+
+**3.9  Current Focus object  (data-current-focus.json → focuses[])**
+
+| **focusId** | String. UUID. |
+| --- | --- |
+| **focusType** | enum: area │ person │ action │ theme. |
+| **title** | String. e.g. "SEND — Digital Accessibility" |
+| **startDate** | ISO date. |
+| **what** | String. What is the focus. |
+| **why** | String. Rationale. |
+| **how** | String. Approach and methods. |
+| **who** | String. People and areas involved. |
+| **impact** | String. How impact will be measured and evidenced. |
+| **linkedAFIIds** | Array of AFI IDs. |
+| **linkedAreaCodes** | Array of area codes. |
+| **status** | enum: active │ complete │ paused. |
+| **reviewDate** | ISO date or null. |
+
+**3.10  LRA Observation taxonomy (hardcoded — not in JSON)**
+
+The LRA taxonomy is hardcoded in the Hub's JavaScript as a constant (LRA_TAXONOMY). It does not change between sessions and does not need to be in a data file. The 26/27 taxonomy has 7 categories and 30 themes:
+
+| **Category** | **Theme ID — Label** | **Description (summary)** |
+| --- | --- | --- |
+| 1. Planning and Sequencing of Learning | LI — Learning Intentions | Clear, limitless, aligned to curriculum knowledge, skills and behaviours. |
+| 1. Planning and Sequencing of Learning | BB — Building Blocks | Step-by-step structure; each task builds on the last. |
+| 1. Planning and Sequencing of Learning | SP — Starting Points | Initial assessment and vocational starting points inform pitch and planning. |
+| 1. Planning and Sequencing of Learning | LL — Lasting Learning | Designed to help learners recall, repeat and gain deeper knowledge over time. |
+| 2. Inclusive TLA & SEND | PL — Personalised Learning | Staff know learners as individuals based on well-informed sources. |
+| 2. Inclusive TLA & SEND | AR — Accessible Resources | Materials clear, easy to use, inclusive in layout and language. |
+| 2. Inclusive TLA & SEND | ARD — Accessible Resources (Digital) | Digital materials meet accessibility standards; AT coaching embedded. |
+| 2. Inclusive TLA & SEND | LL2 — Language & Literacy Skills | Natural opportunities for literacy and language development built in. |
+| 2. Inclusive TLA & SEND | NS — Numeracy Skills | Natural opportunities for numeracy development built in. |
+| 3. Inclusive Learning Environment | LE — Learning Environment | Safe, structured spaces; learners focused, engaged, valued. |
+| 3. Inclusive Learning Environment | LED — Learning Environment (Digital nav) | Learners navigate digital spaces easily; fewest clicks; personalise independently. |
+| 3. Inclusive Learning Environment | RL — Readiness to Learn | R.E.A.D.Y framework; settled environment; learning routines. |
+| 3. Inclusive Learning Environment | PR — Positive Relationships | Trust, motivation and belonging through positive staff-learner relationships. |
+| 3. Inclusive Learning Environment | BR — Behaviour Regulation | Staff support emotion and behaviour management effectively. |
+| 3. Inclusive Learning Environment | EAS — Effective Use of Additional Staff | Learning support and technicians deployed effectively. |
+| 4. Modelling and Professional Language | PC — Professional Communication | Clear, structured, precise explanations; rephrased when needed. |
+| 4. Modelling and Professional Language | LM — Live Modelling and Guided Practice | Staff show HOW (talk-alouds); technical concepts demonstrated accurately. |
+| 4. Modelling and Professional Language | SSL — Subject Specific Language (CBL) | Technical language taught and reinforced; industry-ready vocabulary. |
+| 4. Modelling and Professional Language | ISV — Industry & Sector Vocabulary (WBL) | Learning linked to real-world or workplace scenarios. |
+| 5. Engagement, Collaboration and Independence | AL — Ambitious Learning | High expectations; challenge; success clearly defined as motivation. |
+| 5. Engagement, Collaboration and Independence | AE — Active Engagement | Learners actively do, think, apply; know more, can do more, remember more. |
+| 5. Engagement, Collaboration and Independence | SS — Scaffolding & Support | Support gradually removed; learners succeed and progress independently. |
+| 5. Engagement, Collaboration and Independence | CL — Collaborative Learning | Learners develop knowledge socially; interact positively with peers. |
+| 5. Engagement, Collaboration and Independence | LI2 — Learner Independence | Curriculum structures build confident, autonomous, self-regulating learners. |
+| 5. Engagement, Collaboration and Independence | AT — Assistive Technology | AT positively promoted; aligned to learning intentions and individual needs. |
+| 6. Assessment, Feedback and Progress | CU — Checks for Understanding | Range of techniques; adapted in real time and future sessions. |
+| 6. Assessment, Feedback and Progress | EQ — Effective Questioning | Deep thinking; reasoning; opportunities to say and do it better. |
+| 6. Assessment, Feedback and Progress | EF — Effective Feedback | Timely, aligned to goals; focused on how learners progress and improve. |
+| 6. Assessment, Feedback and Progress | EA — Effective Assessment | Variety of strategies; learners make rapid progress; awarding body met. |
+| 6. Assessment, Feedback and Progress | AP — Adaptive Practice | Misconceptions addressed quickly; reasonable adjustments in place. |
+| 7. Personal Development and Wellbeing | RTL — Ready to Learn | R.E.A.D.Y expectations; IAG, tutorials, target setting; regular attendance. |
+| 7. Personal Development and Wellbeing | RTW — Ready to Work | Employability skills; CEIAG, WEX, IP, WRA, competitive opportunities. |
+| 7. Personal Development and Wellbeing | RFL — Ready for Life | Tutorials: EDI, wellbeing, relationships, SG&P, current affairs, FBV. |
+| 7. Personal Development and Wellbeing | FS — Future Skills | SMART targets; Future Ready framework; Digital, Academic, Professional, Mindset. |
+
+Hyper focus areas for 2025-26 (college-wide priority — these three must be surfaced prominently in DevObs and LW modules):
+
+- ARD — Accessible by Design (maps to CAT2: Accessible Resources Digital)
+
+- LED — Digital Learning Environment (maps to CAT3: Learning Environment Digital nav)
+
+- AT  — Assistive Technology (maps to CAT5: Assistive Technology)
+
+AFI severity language (from LRA file — use exactly these labels):
+
+- Strength — Genuine strengths, no concerns, would recommend as best practice
+
+- Areas to Strengthen — Tweaks for excellence
+
+- Areas for Immediate Improvement — Rapid change needed; training and support required
+
+**Document 4 — Repository ****&**** File Layout**
+
+**4.1  Repository: gwc25/dpc-hub**
+
+Deployed on GitHub Pages. All files below exist in this repo. No file outside this list should be created without updating this document first.
+
+| **index.html** | Password entry page. Minimal. Validates password (hashed, stored in config.js). On success, redirects to hub.html. |
+| --- | --- |
+| **hub.html** | Main Hub shell. Loads navigation, tab containers. Reads manifest, loads data files via File System Access API. Single page application. |
+| **hub-lite-redirect.html** | Thin redirect page. Points mobile users to the Hub Lite URL. |
+| **css/design.css** | All Hub styles. CSS custom properties for theming. WCAG 2.2 AA colour tokens. No inline styles in any HTML or JS file. |
+| **css/hub-lite.css** | Hub Lite styles. Mobile-first. Separate from main design.css. |
+| **js/config.js** | Configuration constants. Password hash, Supabase URL, Supabase anon key (Hub Lite read), GitHub API endpoint for CPD Library. NO secrets that grant write access to sensitive data. |
+| **js/data.js** | Data layer. All read/write operations to OneDrive JSON files. File System Access API logic. Manifest loading. Auto-save scheduler. Session snapshot to localStorage. No UI logic. |
+| **js/schema.js** | Schema constants. LRA_TAXONOMY hardcoded object. AFI_SEVERITY enum. HYPER_FOCUS array. AREA_CODES list. No UI logic. No data operations. |
+| **js/app.js** | Application controller. Tab routing. Module initialisation. Event delegation. Imports from data.js and schema.js only. |
+| **js/homepage.js** | Homepage module. Jobs Board (post-its), upcoming deadlines, upcoming meetings. Reads from data-calendar.json and data-afi.json. |
+| **js/areas.js** | Areas module. 35-area overview. Area detail view. RAG matrix display. Area activity log. |
+| **js/rag.js** | RAG matrix module. 8-dimension scoring. Snapshot history. Rationale entry. |
+| **js/devobs.js** | Development Observation modal. LRA category/theme selection with heuristic follow-up questions. Hyper theme tagging. AFI auto-draft on save. Dual-write to activityLog and afiRecords. |
+| **js/learningwalk.js** | Learning Walk module. Quick capture with LRA theme tagging. Hyper focus areas prominent. Option to escalate to DevObs. |
+| **js/afi.js** | AFI lifecycle module. Status transitions. Evidence chain display. Action selection panel. Loop open/close logic. |
+| **js/templates.js** | Template Library module. Teach Meet plan builder (Six Stages structure). Coaching Question sets (LRA-themed, AI-drafted flagged, DPC approval). Meeting agenda templates. Versioning. Instance creation. |
+| **js/staff.js** | Staff Profile module. Dynamic creation. Touch history. Reflection timeline. Development priorities. ETF stage. |
+| **js/healthcheck.js** | Health Check module. Upload ingestion (Forms Excel / Moodle format). AI extraction via Anthropic API (Haiku). DPC review and confirm/overwrite. Score write to area record. |
+| **js/reflections.js** | Reflection module. Event-linked reflection forms. Immediate and follow-up prompts. Anonymous aggregation at area level. AFI evidence wiring. |
+| **js/calendar.js** | Shadow calendar module. Week/Month/Year views. Task/meeting/work-block creation. Micro-tasks. Deadline tracking. Jobs Board data source. |
+| **js/digital-leads.js** | Digital Leads module. DL profiles. 1:1 meeting records. Resources created. Progress and impact. |
+| **js/cpd.js** | CPD module. DPC personal CPD log. Planned training. CPD delivered to individuals and areas. |
+| **js/current-focus.js** | Current Focus module. Flexible targeted focus objects. What/Why/How/Who/Impact. |
+| **js/reports.js** | Report Builder module. Five audience templates. Word doc generation via docx library (loaded from CDN). AI narrative for performance review. |
+| **js/dashboard.js** | Dashboards module. Area RAG filterable dashboard. Health Check multi-level dashboard (collegiate, area, quality, PLS/Executive/Leadership/Areas). |
+| **js/ai-support.js** | AI Support module. Strengths synthesis. Risk/AFI surfacing. Action plan generation. Report narrative. Anthropic API calls. |
+| **js/notes.js** | Notes module. Quick note taking. Link to meetings, people, projects. |
+| **js/supabase-sync.js** | Supabase sync module. Reads pending Hub Lite captures. Presents to DPC for review. Commits approved items to Tier 2 data files. |
+| **js/quickcapture.js** | Quick Capture widget. Available on homepage and as floating button. Fast activity logging. |
+| **js/heuristic.js** | Heuristic engine. Coaching question decision tree (all rules). AFI auto-draft logic. Resource recommendation matching. Tag-to-resource lookup. No API calls. |
+| **lib/docx.min.js** | docx library for Word document generation. Loaded locally — no CDN dependency for sensitive output. |
+| **data/areas-seed.json** | Seed data for 35 areas. Area codes, names, campus. No scores — those come from DPC input. |
+| **reflection-form.html** | Standalone public-facing reflection form. Accepts query params: eventId, areaCode, staffToken (anonymised). Submits to Supabase hub_lite_captures table. WCAG 2.2 AA. No Hub branding that would identify individuals. |
+| **hub-lite.html** | Hub Lite mobile surface. Homepage post-its (title/date/who only), calendar surface, Quick Capture for notes and meeting shells. Reads from Supabase. No sensitive data. No drill-down. |
+
+**4.2  Repository: gwc25/dpc-cpd-library**
+
+| **index.html** | Public CPD Library. Searchable, filterable. WalkThru cards, resources, LinkedIn pathways, booking link. Heuristic search. WCAG 2.2 AA. |
+| --- | --- |
+| **css/library.css** | Library styles. Clean, readable, accessible. CSS custom properties. |
+| **js/library.js** | Library application logic. Search, filter, card rendering, heuristic matching. |
+| **js/library-heuristic.js** | Heuristic search engine. Trigger word mapping. Tag-to-resource lookup. Shared logic with Hub's heuristic.js (same algorithm, different context). |
+| **js/library-admin.js** | Admin form logic. GitHub API write for new cards. Uses personal access token from browser session only. Not in any public file. |
+| **data/resources.json** | ALL resource content. WalkThru cards, LinkedIn pathway links, DPC-created resources. This is the content keystone for the library. Hub reads from here too. |
+| **data/walkthru-cards.json** | WalkThru card content. 15 practice families, all themes, all Six Stage tags. Separate from resources.json for easier management. |
+| **data/coaching-questions.json** | Public coaching question sets. Approved subsets only (no staff-specific content). |
+| **data/linkedin-pathways.json** | Curated LinkedIn pathway links. Tagged by LRA theme and pyramid level. |
+| **admin/add-card.html** | Admin-only card creation form. Password protected separately. Writes to repo via GitHub API. |
+| **booking.html** | Booking page. Links to Microsoft Bookings for 1:1 coaching. Brief description of what a coaching session involves. |
+
+**Document 5 — Build Conventions**
+
+**5.1  Import rules (one-way dependency)**
+
+This rule prevents circular dependencies and keeps the build coherent across sessions:
+
+- schema.js imports nothing. It exports constants only.
+
+- data.js imports from schema.js only. It exports data operations only.
+
+- heuristic.js imports from schema.js only. It exports heuristic functions only.
+
+- Module JS files (devobs.js, afi.js etc) import from data.js, schema.js, and heuristic.js. They do not import from each other.
+
+- app.js imports from all module files. It is the only file that does.
+
+- No module file imports from app.js. The dependency flows one way: app → modules → data/schema/heuristic.
+
+**5.2  Naming conventions**
+
+| **Files** | kebab-case. e.g. devobs.js, learning-walk.js, hub-lite.html |
+| --- | --- |
+| **JS variables** | camelCase. e.g. areaCode, staffId, lraThemeId |
+| **JS constants** | UPPER_SNAKE_CASE. e.g. LRA_TAXONOMY, HYPER_FOCUS, AFI_SEVERITY |
+| **CSS custom properties** | --color-navy, --color-teal, --spacing-md. Prefix with category. |
+| **JSON keys** | camelCase. Match schema exactly. No exceptions. |
+| **IDs in JSON** | Always UUID v4. Never sequential integers. |
+| **Dates** | Always ISO 8601. e.g. 2026-07-03. Timestamps: 2026-07-03T09:30:00Z |
+| **Enums** | kebab-case strings. e.g. "open", "in-progress", "accessible-by-design" |
+
+**5.3  Accessibility baseline (gate on every UI phase)**
+
+Every UI component must pass these checks before the phase is marked done:
+
+- Colour contrast: minimum 4.5:1 for normal text, 3:1 for large text (WCAG 2.2 AA). Use WebAIM Contrast Checker — pixel-sample backgrounds, do not estimate from CSS tokens alone.
+
+- Keyboard navigation: all interactive elements reachable and operable by keyboard. Focus visible at all times. Tab order logical.
+
+- ARIA: landmark regions on every page (main, nav, aside). Form inputs have associated labels. Modals trap focus. Dynamic content updates announced via aria-live.
+
+- Images and icons: all meaningful images have alt text. Decorative images have alt="".
+
+- Heading hierarchy: one h1 per page. Headings do not skip levels.
+
+- Touch targets (mobile): minimum 44×44px on Hub Lite. No hover-only interactions.
+
+**5.4  Error handling**
+
+- All data.js operations wrapped in try/catch. Errors logged to console with context. User shown a friendly message — never a raw error string.
+
+- File System Access API failures fall back to localStorage gracefully. User notified with clear instruction.
+
+- Supabase failures in Hub Lite show a "Saved locally — will sync later" message. Local backup always attempted first.
+
+- API calls (Anthropic, GitHub) timeout after 15 seconds. User shown a retry option. No silent failures.
+
+- Schema validation on every data load: if a JSON file is missing required fields, log the discrepancy and load with safe defaults rather than crashing.
+
+**5.5  Code style**
+
+- Vanilla JavaScript only in dpc-hub. No frameworks, no build tools, no npm dependencies at runtime.
+
+- ES6+ syntax. Arrow functions, const/let, template literals, destructuring, async/await.
+
+- No inline styles. All styling via CSS custom properties in design.css.
+
+- No inline event handlers in HTML. All events bound in JS via addEventListener.
+
+- Comments on every function: what it does, what it takes, what it returns.
+
+- Version header in every file: // DPC Hub · filename.js · v1.0 · July 2026
+
+**Document 6 — Build Schedule ****&**** Phase Instructions**
+
+Seven phases. Each phase has a precondition (prior phase done-criteria passed), a scope, a file list, build steps, done-criteria including accessibility gate, and a handoff note. No phase starts before its precondition is confirmed.
+
+*EXECUTOR INSTRUCTION: At the start of each phase, re-read Documents 1–5 and this phase**'**s instruction. Do not carry assumptions from a previous session. If the precondition is not met, stop and flag it.*
+
+**PHASE 1 — Foundation: Shell, Data Layer, Schema**
+
+**Precondition**
+
+None. This is the first phase.
+
+**Scope — build**
+
+- index.html — password entry shell
+
+- hub.html — main app shell with navigation skeleton
+
+- css/design.css — full CSS custom property system, WCAG 2.2 AA colour tokens, base layout
+
+- js/config.js — configuration constants
+
+- js/schema.js — LRA_TAXONOMY, AFI_SEVERITY, HYPER_FOCUS, AREA_CODES, all constants from Document 3
+
+- js/data.js — File System Access API logic, manifest loading, auto-save scheduler, localStorage snapshot
+
+- js/app.js — tab routing skeleton, module initialisation stubs
+
+- data/areas-seed.json — 35 areas with codes, names, campus
+
+**Scope — do NOT build in this phase**
+
+- No module JS files beyond app.js stubs
+
+- No Supabase integration
+
+- No content in any tab beyond navigation rendering
+
+**Done-criteria**
+
+- index.html loads, password entry works, redirects to hub.html
+
+- hub.html loads with navigation tabs visible
+
+- File System Access API prompt appears on first load
+
+- Manifest loading function reads dpc-manifest.json correctly from granted folder
+
+- Auto-save fires every 60 seconds (verify via console log)
+
+- localStorage snapshot written on tab close
+
+- WCAG gate: contrast checker passes on all navigation elements and background colours
+
+- No console errors on load
+
+*Handoff: update schema.js version header to v1.0. Confirm LRA_TAXONOMY has all 30 themes from Document 3 Section 3.10.*
+
+**PHASE 2 — Homepage, Calendar, Tasks (Jobs Board)**
+
+**Precondition**
+
+Phase 1 done-criteria confirmed.
+
+**Scope — build**
+
+- js/homepage.js — Jobs Board (post-its), upcoming deadlines (next 14 days), upcoming meetings (next 7 days)
+
+- js/calendar.js — Week/Month/Year views, add/edit/detail for entries, micro-tasks, project linking
+
+- data-calendar.json — initialised with empty structure
+
+**Post-it design spec**
+
+Each task/job appears as a card (post-it style) on the homepage. Card shows: title, due date, linked area or person (if any), status indicator (colour: upcoming=blue, in-progress=amber, overdue=red, complete=green). Click opens full detail modal. Add new post-it via prominent + button. Cards sorted by due date ascending.
+
+**Done-criteria**
+
+- Homepage renders Jobs Board with seed test entries
+
+- Post-it cards show correct fields and status colours
+
+- Click on post-it opens detail modal with full fields editable
+
+- New post-it can be created from homepage and from Tasks section
+
+- Calendar renders in all three views (week/month/year)
+
+- Entry can be added, edited, and deleted
+
+- Upcoming deadlines and meetings sections on homepage populate from calendar data
+
+- WCAG gate: focus visible on all interactive elements, colour contrast passes, keyboard navigable
+
+**PHASE 3 — Areas, RAG Matrix, Quick Capture**
+
+**Precondition**
+
+Phase 2 done-criteria confirmed.
+
+**Scope — build**
+
+- js/areas.js — 35-area overview grid, area detail view, activity log display
+
+- js/rag.js — 8-dimension RAG scoring, snapshot history, rationale entry, trajectory display
+
+- js/quickcapture.js — floating Quick Capture button, activity type selection, LRA theme tagging, saves to area activityLog
+
+- data-areas.json — initialised from areas-seed.json with empty scores
+
+**Done-criteria**
+
+- Areas overview shows all 35 areas with current RAG summary
+
+- Area detail view shows all 8 RAG dimensions with scores, rationale, and last-updated date
+
+- RAG score can be updated; previous scores retained in snapshot history
+
+- Trajectory indicator shows direction of travel where history exists
+
+- Quick Capture opens from floating button, logs an activity to correct area, appears in area activity log
+
+- WCAG gate: RAG colour indicators have text labels (not colour alone), contrast passes
+
+**PHASE 4 — DevObs, Learning Walk, AFI Lifecycle**
+
+**Precondition**
+
+Phase 3 done-criteria confirmed. Neil's final Hyper dropdown wording confirmed (LRA file is the working source — verify exact wording before building dropdown labels).
+
+**Scope — build**
+
+- js/devobs.js — full DevObs modal with LRA category/theme selection, heuristic follow-up questions, Hyper theme tagging (three focus areas prominent), observation rows, AFI auto-draft on save
+
+- js/learningwalk.js — Learning Walk quick capture with LRA tagging, option to escalate to DevObs
+
+- js/afi.js — AFI lifecycle: status transitions, evidence chain display, action selection panel (five options), loop open/close
+
+- js/heuristic.js — coaching question decision tree, AFI auto-draft logic, resource tag matching
+
+**Heuristic AFI auto-draft spec**
+
+When a DevObs is saved with one or more LRA themes tagged:
+
+- For each tagged theme: system evaluates the follow-up question answers
+
+- If answers indicate strength → draft AFI with severity: "Strength"
+
+- If answers indicate partial/developing → draft AFI with severity: "Areas to Strengthen"
+
+- If answers indicate absent/immediate need → draft AFI with severity: "Areas for Immediate Improvement"
+
+- Digital opportunity field auto-populated if theme maps to ARD, LED, or AT
+
+- DPC reviews draft AFI and confirms, edits, or deletes before it is saved
+
+**Done-criteria**
+
+- DevObs modal opens, all 30 LRA themes selectable by category
+
+- Hyper three focus areas (ARD, LED, AT) prominently surfaced at top of theme list
+
+- Follow-up heuristic questions appear after theme selection
+
+- On save, AFI draft appears for DPC review
+
+- Confirmed AFI saved to data-afi.json and referenced in area record
+
+- AFI status can be transitioned through lifecycle
+
+- Evidence chain entries can be added to any AFI
+
+- Action selection panel offers all five intervention types
+
+- Learning Walk logs quickly, LRA themes tagged, escalation to DevObs available
+
+- WCAG gate: modals trap focus, ESC closes, ARIA roles correct
+
+**PHASE 5 — Staff Profiles, Templates, Reflections**
+
+**Precondition**
+
+Phase 4 done-criteria confirmed.
+
+**Scope — build**
+
+- js/staff.js — dynamic profile creation, touch history, development priorities (3), ETF stage, reflection timeline
+
+- js/templates.js — Teach Meet plan builder (Six Stages structure), Coaching Question sets (LRA-themed, AI-draft flagged, DPC approval gate, edit/omit capability), Meeting Agenda templates, Observation Framework templates, versioning, instance creation
+
+- js/reflections.js — event-linked reflection forms, immediate + follow-up stages, follow-up prompt scheduling, anonymous aggregation at area level, AFI evidence wiring
+
+- reflection-form.html — standalone shareable form (separate file, publicly accessible)
+
+**Teach Meet builder spec**
+
+Form organised by Six Stages: Learning Intentions, Building Blocks, Starting Points, Activities, Assessment, Lasting Learning. Each stage has a text area for content and a resource links section (label + URL). Activities section supports multiple timed blocks. Template saved with version number. Instance creation form: add date, area, attendees, context notes, linked AFIs. Editable after creation — each edit increments version; old versions retained.
+
+**Coaching question set spec**
+
+Questions organised by LRA theme. Four question types per set: Opening, Exploring, Challenging, Closing. AI-drafted sets are flagged with a banner: "AI-drafted — pending DPC review." DPC can approve, edit individual questions, omit questions, or add new ones. Only approved sets surface in the heuristic engine. Edit history retained.
+
+**Done-criteria**
+
+- Staff profile created automatically when new name entered in DevObs or LW
+
+- Profile shows full touch history in chronological order
+
+- Three development priorities editable on profile
+
+- ETF stage selectable and displayed
+
+- Teach Meet plan builder follows Six Stages structure, resources addable as links
+
+- Saved template appears in Template Library, filterable by LRA theme
+
+- Template can be edited; version history visible
+
+- Instance created from template with attendees and linked AFI
+
+- Reflection form link generated from instance
+
+- Standalone reflection-form.html accessible without Hub open
+
+- Reflection submission linked to correct event and AFI
+
+- Follow-up reflection prompted at correct interval
+
+- Area overview shows anonymous aggregate reflection themes
+
+- WCAG gate: reflection form fully accessible, form labels correct, no colour-only feedback
+
+**PHASE 6 — Health Checks, Digital Leads, Current Focus, Dashboards, Reports**
+
+**Precondition**
+
+Phase 5 done-criteria confirmed.
+
+**Scope — build**
+
+- js/healthcheck.js — upload ingestion, Anthropic Haiku API extraction, provisional RAG, DPC review/confirm/overwrite
+
+- js/digital-leads.js — DL profiles, 1:1 meeting records, resources created, progress, impact evidence
+
+- js/current-focus.js — flexible focus objects, What/Why/How/Who/Impact, linked AFIs and areas, SEND as first entry
+
+- js/dashboard.js — Area RAG filterable dashboard, Health Check multi-level dashboard
+
+- js/reports.js — five audience Word doc templates, AI narrative for performance review (Anthropic Sonnet)
+
+- js/cpd.js — DPC personal CPD log, planned training, CPD delivered records
+
+- js/notes.js — quick notes, linkable to meetings/people/projects
+
+**Done-criteria**
+
+- Health Check Excel upload processed, AI extraction produces provisional scores for each dimension
+
+- DPC can confirm or overwrite each score with rationale
+
+- Confirmed scores write to area Health Check record
+
+- Area RAG dashboard shows all 35 areas, filterable by dimension, score, AFI status, next action needed
+
+- Health Check dashboard shows collegiate, area, quality views with hierarchical breakdown
+
+- All five report templates generate valid Word documents
+
+- Performance review report includes AI narrative section (Anthropic Sonnet API)
+
+- Digital Lead profile shows full 1:1 history and impact evidence
+
+- Current Focus shows active SEND focus with What/Why/How/Who/Impact
+
+- WCAG gate: dashboard colour indicators have text labels, data tables have correct headers
+
+**PHASE 7 — CPD Library, Hub Lite, Supabase Sync, AI Support**
+
+**Precondition**
+
+Phase 6 done-criteria confirmed.
+
+**Scope — build**
+
+- gwc25/dpc-cpd-library repo: index.html, css/library.css, js/library.js, js/library-heuristic.js, data/resources.json, data/walkthru-cards.json, data/linkedin-pathways.json, admin/add-card.html, booking.html
+
+- hub-lite.html — mobile surface, Supabase-backed, non-confidential only
+
+- css/hub-lite.css — mobile-first styles
+
+- js/supabase-sync.js — reads pending Hub Lite captures, presents for DPC review, commits to Tier 2
+
+- js/ai-support.js — Strengths synthesis, AFI risk surfacing, action plan generation, report narrative
+
+**CPD Library heuristic search spec**
+
+Trigger word mapping drives search results. User types naturally. System tokenises input and matches against a lookup table:
+
+- questioning / cold call / no hands → EQ (Effective Questioning), CAT6, questioning practice family
+
+- feedback / not acting on / marking → EF (Effective Feedback), CAT6, feedback practice family
+
+- not sticking / remember / retention / recall → LL (Lasting Learning), CAT1, retrieval practice family
+
+- accessible / alt text / contrast / screen reader / AT → ARD or AT, CAT2/CAT5
+
+- Teams / channel / navigation / files → LED, CAT3
+
+- modelling / show / demonstrate / worked example → LM, CAT4
+
+- independent / autonomy / self-regulate → LI2, CAT5
+
+- (expandable — full trigger word table in data/trigger-words.json in dpc-cpd-library repo)
+
+**Done-criteria**
+
+- CPD Library loads publicly without login
+
+- Cards filterable by Six Stage, LRA category, resource type
+
+- Heuristic search returns relevant cards from trigger words
+
+- Admin form adds a new card to resources.json via GitHub API
+
+- Hub Lite loads on mobile, shows Jobs Board surface (title/date/who only)
+
+- Hub Lite Quick Capture submits to Supabase without error
+
+- Hub desktop reads pending Supabase captures and presents for DPC review
+
+- Reviewed captures committed to correct Tier 2 data files
+
+- AI Support synthesises strengths from across area records and staff profiles
+
+- WCAG gate: CPD Library and Hub Lite both pass mobile accessibility checks (touch targets 44px+, contrast, focus)
+
+**Document 7 — Testing Protocol**
+
+Each phase has three test types: Seam Tests (does this connect to what came before?), Feature Tests (does the feature work as specified?), and Accessibility Gate (WCAG 2.2 AA). A phase is not done until all three pass.
+
+**What to ignore (known non-issues)**
+
+- Console warnings from browser extensions — not caused by Hub code.
+
+- File System Access API permission prompts — expected behaviour, not an error.
+
+- Minor layout differences between Chrome and Edge — test in Edge (primary browser).
+
+- Supabase "realtime" connection warnings — Hub Lite uses standard fetch, not realtime subscriptions.
+
+- GitHub API rate limit warnings during development — won't affect production usage.
+
+**What signals a genuine problem**
+
+- Any console error that references a Hub JS file — stop and fix before continuing.
+
+- Data not persisting between sessions — File System Access API not writing correctly.
+
+- JSON schema validation failure on load — data file doesn't match Document 3 schema.
+
+- Any WCAG contrast failure — do not proceed to next phase.
+
+- Focus lost after modal closes — ARIA focus management broken.
+
+- AFI ID referenced in area record not found in data-afi.json — referential integrity broken.
+
+**Checks deferred to first real-run (cannot be verified in development)**
+
+- File System Access API weekly permission reset — only testable after 7 days.
+
+- OneDrive sync latency — depends on college network and OneDrive client.
+
+- Supabase from real mobile device on college WiFi — test on physical device, not browser mobile emulation.
+
+- Anthropic API response time under college network conditions.
+
+**Document 8 — Resource Library Specification**
+
+**8.1  WalkThru Card structure  (walkthru-cards.json)**
+
+| **cardId** | String. UUID. |
+| --- | --- |
+| **practiceFamily** | String. e.g. "Questioning", "Feedback", "Retrieval Practice", "Modelling", "Explanation", "Collaborative Learning", "Metacognition", "Vocabulary", "Classroom Climate", "Inclusion & SEND", "Curriculum Planning", "Assessment Design", "Independent Practice", "Formative Assessment", "Behaviour & Routines" |
+| **title** | String. Practice name (our own words — not Sherrington verbatim). |
+| **lraCategoryIds** | Array of strings. LRA categories this maps to. |
+| **lraThemeIds** | Array of strings. LRA themes this most directly addresses. |
+| **sixStages** | Array of strings. Which Six Stages this practice addresses. |
+| **pyramidLevel** | enum: foundations │ inclusion │ innovation │ all. |
+| **description** | String. Brief description in our own words. NOT Sherrington text verbatim. |
+| **steps** | Array of strings. 3-5 steps. Summarised, not reproduced verbatim. |
+| **whatGoodLooksLike** | String. |
+| **watchpoint** | String. What superficial use looks like. |
+| **digitalConnection** | String or null. Where digital genuinely elevates this practice. Not mandatory. |
+| **coachingQuestion** | String. One key coaching question for when this is an AFI. |
+| **sourceRef** | String. e.g. "WalkThrus Vol.1 — Tom Sherrington". Not reproduced content. |
+| **sourceUrl** | String or null. Free/preview URL if available. Null if behind paywall. |
+| **isPublic** | Boolean. True for all library cards. |
+| **tags** | Array of strings. Additional search tags. |
+
+**8.2  The 15 practice families — build priority**
+
+Phase 7 initial population: all 15 families seeded with at least 3 cards each. DPC adds further cards via admin form over time.
+
+| **Priority** | **Practice Family** | **Primary LRA Themes** |
+| --- | --- | --- |
+| 1 — High frequency | Questioning | EQ, CU |
+| 1 — High frequency | Formative Assessment | CU, EA, AP |
+| 1 — High frequency | Feedback | EF, AP |
+| 1 — High frequency | Modelling | LM, PC |
+| 1 — High frequency | Retrieval Practice | LL, AE |
+| 2 — Regular | Explanation | PC, BB |
+| 2 — Regular | Collaborative Learning | CL, AE |
+| 2 — Regular | Independent Practice | LI2, SS |
+| 2 — Regular | Metacognition | SS, LI2, LL |
+| 2 — Regular | Inclusion & SEND | AT, ARD, PL |
+| 3 — Build over time | Vocabulary & Literacy | SSL, LL2 |
+| 3 — Build over time | Curriculum Planning | LI, BB, SP |
+| 3 — Build over time | Assessment Design | EA, EF |
+| 3 — Build over time | Classroom Climate | PR, RL, BR |
+| 3 — Build over time | Behaviour & Routines | BR, RL |
+
+**8.3  LinkedIn Pathway spec**
+
+| **pathwayId** | String. UUID. |
+| --- | --- |
+| **title** | String. e.g. "Making thinking visible in assessment" |
+| **lraThemeIds** | Array of strings. AFI clusters this pathway addresses. |
+| **pyramidLevel** | enum: foundations │ inclusion │ innovation. |
+| **rationale** | String. When to assign this pathway — e.g. "Assign when AFI identifies gap in real-time assessment practice at ETF Stage 1 or 2." |
+| **courseCount** | Number. 2-4 courses. |
+| **totalDurationMins** | Number. Approximate. |
+| **courses** | Array of { title, url, durationMins, publishedYear }. Only courses from 2022 onwards. |
+| **pathwayUrl** | String. LinkedIn Learning shared pathway URL. Added by DPC after creating pathway. |
+| **createdBy** | String. "Graeme Wright" |
+| **createdAt** | ISO date. |
+
+**Document 9 — What Comes Next**
+
+**9.1  Post-build decisions (not in this blueprint)**
+
+| **Evidence Hub merge** | The existing Evidence Hub (gwc25/Digital-Evidence-Hub) runs in parallel until a natural decision point. At that point: Option A (keep parallel), Option B (merge into DPC Hub), Option C (SharePoint bridge). No date set — this is organic. |
+| --- | --- |
+| **Path 2: SharePoint backend** | Microsoft Graph API as central store. Requires institutional backing and IT involvement. Deferred until DPC Hub is proven and a case can be made. No date set. |
+| **LinkedIn pathway content** | DPC creates pathways in LinkedIn Learning and adds URLs to data/linkedin-pathways.json via the admin form. Ongoing — not a build task. |
+| **WalkThru card population** | Initial 15 families seeded in Phase 7. DPC adds cards over time via admin form. Ongoing. |
+| **Coaching question set review** | AI-drafted sets generated in Phase 5. DPC reviews and approves each set before it surfaces in the heuristic engine. Ongoing after Phase 5. |
+| **Hub Lite verbal dictation** | Web Speech API on mobile Chrome for voice-to-text capture. Scoped for a future iteration of Hub Lite after Phase 7 is stable. |
+
+**9.2  Known deferred items**
+
+- Neil's exact Hyper dropdown wording — LRA file (Document 3, Section 3.10) is the working source. Verify exact label wording before Phase 4 build. Update schema.js if any labels differ.
+
+- Area codes for Tasha Thorne (FE Counselling) and Mark Barnett (Project Management, tentative: PRA) — confirm with Neil before areas-seed.json is finalised in Phase 3.
+
+- Digital Lead CPD self-assessment tool — Jisc Discovery Tool → pyramid-level reflection → line manager sign-off Form. Designed but not in this build. Future phase.
+
+- AI Week (November) — Joe Abulgani leading. DPC involvement in digital pedagogy strand. Not a Hub build item.
+
+DPC Hub  ·  Master Blueprint v1.0  ·  Graeme Wright  ·  Weston College Group  ·  July 2026  ·  APPROVED FOR BUILD

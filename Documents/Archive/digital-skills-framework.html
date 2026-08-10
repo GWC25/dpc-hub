@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Skills Framework — Weston College</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1a2744;
+    --navy-mid: #23366b;
+    --teal: #1b9690;
+    --teal-light: #2ab5ae;
+    --gold: #b8922a;
+    --gold-light: #d4a843;
+    --cream: #f8f5ef;
+    --white: #ffffff;
+    --grey-light: #f0ede6;
+    --grey-mid: #c8c4bb;
+    --text-dark: #1a1a2e;
+    --text-mid: #4a4a5a;
+    --text-light: #7a7a8a;
+    --tab-h: 56px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    min-height: 100vh;
+  }
+
+  /* ─── COVER PAGE ─── */
+  .cover {
+    background: var(--navy);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(27,150,144,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: -100px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(184,146,42,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cover-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 40px 64px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .cover-wordmark {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+
+  .cover-wordmark .inst {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.9);
+  }
+
+  .cover-wordmark .dept {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--teal-light);
+    text-transform: uppercase;
+  }
+
+  .cover-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.35);
+    text-align: right;
+    text-transform: uppercase;
+  }
+
+  .cover-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 64px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cover-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--teal-light);
+    margin-bottom: 24px;
+  }
+
+  .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(52px, 8vw, 96px);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.05;
+    margin-bottom: 12px;
+  }
+
+  .cover-title em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+
+  .cover-subtitle {
+    font-family: 'Lato', sans-serif;
+    font-size: 18px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 60px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── TOP 10 GRID on cover ─── */
+  .top10-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-top: 40px;
+  }
+
+  .top10-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 18px 16px;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: default;
+  }
+
+  .top10-card:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(27,150,144,0.4);
+  }
+
+  .top10-card .rank {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--teal);
+    opacity: 0.6;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .top10-card .skill-name {
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .top10-card .skill-desc {
+    font-family: 'Lato', sans-serif;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.4;
+  }
+
+  .top10-card .tag {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: rgba(27,150,144,0.15);
+    color: var(--teal-light);
+  }
+
+  .cover-cta {
+    margin-top: 56px;
+    display: flex; align-items: center; gap: 16px;
+  }
+
+  .btn-explore {
+    background: var(--teal);
+    color: var(--white);
+    border: none;
+    padding: 14px 32px;
+    border-radius: 4px;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-explore:hover { background: var(--teal-light); }
+
+  .cover-nav-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.1em;
+  }
+
+  .cover-footer {
+    padding: 24px 64px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative; z-index: 1;
+  }
+
+  .cover-footer p {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.2);
+  }
+
+  /* ─── SOURCE RIBBON ─── */
+  .source-ribbon {
+    background: rgba(255,255,255,0.03);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 14px 64px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+    position: relative; z-index: 1;
+  }
+
+  .source-ribbon span {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.2);
+  }
+
+  .source-ribbon a {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--teal);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(27,150,144,0.3);
+    transition: color 0.2s;
+  }
+
+  .source-ribbon a:hover { color: var(--teal-light); }
+
+  /* ─── TABBED SECTION ─── */
+  .tabs-section {
+    display: none;
+    background: var(--cream);
+    min-height: 100vh;
+  }
+
+  .tabs-section.active { display: block; }
+
+  .tabs-header {
+    background: var(--navy);
+    padding: 0 48px;
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px solid var(--teal);
+  }
+
+  .tabs-header .back-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 20px var(--tab-h);
+    display: flex; align-items: flex-end; gap: 6px;
+    white-space: nowrap;
+    padding-bottom: 18px;
+    transition: color 0.2s;
+    margin-right: 12px;
+  }
+
+  .tabs-header .back-btn:hover { color: var(--teal-light); }
+
+  .tab-btn {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -3px;
+    cursor: pointer;
+    padding: 20px 22px 17px;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .tab-btn:hover { color: rgba(255,255,255,0.7); }
+  .tab-btn.active {
+    color: var(--teal-light);
+    border-bottom-color: var(--teal-light);
+  }
+
+  .tab-content {
+    display: none;
+    padding: 56px 64px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .tab-content.active { display: block; }
+
+  /* ─── CONTENT STYLES ─── */
+  .section-header {
+    margin-bottom: 48px;
+  }
+
+  .section-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .section-intro {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--text-mid);
+    max-width: 780px;
+    line-height: 1.7;
+  }
+
+  .section-intro a {
+    color: var(--teal);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(27,150,144,0.3);
+  }
+
+  /* ─── SKILL CARDS ─── */
+  .skills-columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+
+  .skills-column {
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  .skills-column-header {
+    padding: 20px 24px;
+    background: var(--navy);
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .col-icon {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .col-icon.learning { background: rgba(27,150,144,0.2); }
+  .col-icon.work { background: rgba(184,146,42,0.2); }
+  .col-icon.society { background: rgba(35,54,107,0.3); }
+
+  .skills-column-header h3 {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  .skill-item {
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--grey-light);
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .skill-item:last-child { border-bottom: none; }
+
+  .skill-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--grey-mid);
+    min-width: 20px;
+    padding-top: 2px;
+  }
+
+  .skill-info h4 {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--navy);
+    margin-bottom: 3px;
+  }
+
+  .skill-info p {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.5;
+  }
+
+  /* ─── SUBJECT TABLE ─── */
+  .subject-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  .subject-row {
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .subject-header {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr 1fr;
+    background: var(--navy);
+    gap: 1px;
+  }
+
+  .subject-header > div {
+    padding: 12px 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .subject-header > div:first-child { color: rgba(255,255,255,0.9); font-weight: 500; }
+
+  .subject-data {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--grey-light);
+  }
+
+  .subject-data > div {
+    background: var(--white);
+    padding: 14px 18px;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.5;
+  }
+
+  .subject-data > div:first-child {
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 14px;
+  }
+
+  .tag-list {
+    display: flex; flex-wrap: wrap; gap: 4px;
+  }
+
+  .stag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.06em;
+  }
+
+  .stag.learning { background: rgba(27,150,144,0.1); color: var(--teal); }
+  .stag.work { background: rgba(184,146,42,0.12); color: var(--gold); }
+  .stag.extra { background: rgba(35,54,107,0.08); color: var(--navy-mid); }
+
+  /* ─── INDUSTRY GRID ─── */
+  .industry-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .industry-card {
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+
+  .industry-card-header {
+    padding: 20px 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .industry-icon {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .industry-card-header h3 {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--white);
+    margin-bottom: 2px;
+  }
+
+  .industry-card-header p {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+  }
+
+  .industry-skills {
+    padding: 8px 0;
+  }
+
+  .ind-skill {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--grey-light);
+  }
+
+  .ind-skill:last-child { border-bottom: none; }
+
+  .ind-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+
+  .ind-skill h5 {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--navy);
+    margin-bottom: 2px;
+  }
+
+  .ind-skill p {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.4;
+  }
+
+  /* ─── FRAMING TAB ─── */
+  .framing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+    margin-bottom: 48px;
+  }
+
+  .framing-card {
+    background: var(--white);
+    border-radius: 8px;
+    border-left: 4px solid var(--teal);
+    padding: 28px 28px 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+
+  .framing-card.gold { border-left-color: var(--gold); }
+  .framing-card.navy { border-left-color: var(--navy-mid); }
+  .framing-card.teal2 { border-left-color: var(--teal-light); }
+
+  .framing-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+
+  .framing-card .framing-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 14px;
+  }
+
+  .framing-card.gold .framing-sub { color: var(--gold); }
+  .framing-card.navy .framing-sub { color: var(--navy-mid); }
+  .framing-card.teal2 .framing-sub { color: var(--teal-light); }
+
+  .framing-card p {
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .framing-example {
+    background: var(--grey-light);
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--navy);
+    line-height: 1.6;
+  }
+
+  .framing-example strong {
+    color: var(--teal);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ─── SOURCES BLOCK ─── */
+  .sources-block {
+    background: var(--navy);
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin-top: 48px;
+  }
+
+  .sources-block h4 {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal-light);
+    margin-bottom: 18px;
+  }
+
+  .sources-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 32px;
+  }
+
+  .source-item {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+
+  .source-item a {
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    color: var(--white);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .source-item a:hover { color: var(--teal-light); border-bottom-color: var(--teal); }
+
+  .source-item span {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1100px) {
+    .top10-grid { grid-template-columns: repeat(5, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .top10-grid { grid-template-columns: repeat(2, 1fr); }
+    .skills-columns { grid-template-columns: 1fr; }
+    .industry-grid { grid-template-columns: 1fr; }
+    .framing-grid { grid-template-columns: 1fr; }
+    .subject-header, .subject-data { grid-template-columns: 1fr; }
+    .subject-header > div:not(:first-child) { display: none; }
+    .tab-content { padding: 32px 24px; }
+    .cover-body, .cover-header { padding: 32px 24px; }
+    .cover-title { font-size: 48px; }
+    .tabs-header { padding: 0 16px; }
+    .sources-list { grid-template-columns: 1fr; }
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--grey-light);
+    margin: 40px 0;
+  }
+
+  .info-box {
+    background: rgba(27,150,144,0.07);
+    border-left: 3px solid var(--teal);
+    border-radius: 0 6px 6px 0;
+    padding: 16px 20px;
+    margin: 24px 0 32px;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.6;
+  }
+
+  .info-box strong { color: var(--navy); }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     COVER PAGE
+════════════════════════════════════════ -->
+<div class="cover" id="cover">
+  <div class="cover-header">
+    <div class="cover-wordmark">
+      <span class="inst">Weston College</span>
+      <span class="dept">Digital Pedagogy · Quality &amp; Innovation</span>
+    </div>
+    <div class="cover-date">March 2026<br>Digital Skills Reference</div>
+  </div>
+
+  <div class="cover-body">
+    <div class="cover-eyebrow">Digital Skills Intelligence Report</div>
+    <div class="cover-title">The Digital<br><em>Skills</em><br>Landscape</div>
+    <div class="cover-subtitle">For Learning · For Work · For Society</div>
+
+    <p style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--teal-light);margin-bottom:20px;">Top 10 Digital Skills — Employment &amp; Life</p>
+
+    <div class="top10-grid">
+      <div class="top10-card">
+        <div class="rank">01</div>
+        <div class="skill-name">Digital Communication &amp; Collaboration</div>
+        <div class="skill-desc">Email, messaging, video calls, shared platforms</div>
+        <span class="tag">Universal</span>
+      </div>
+      <div class="top10-card">
+        <div class="rank">02</div>
+        <div class="skill-name">AI Literacy &amp; Prompt Skills</div>
+        <div class="skill-desc">Using, evaluating and directing AI tools safely</div>
+        <span class="tag">Emerging</span>
+      </div>
+      <div class="top10-card">
+        <div class="rank">03</div>
+        <div class="skill-name">Information &amp; Data Handling</div>
+        <div class="skill-desc">Finding, evaluating, organising and using data</div>
+        <span class="tag">Core</span>
+      </div>
+      <div class="top10-card">
+        <div class="rank">04</div>
+        <div class="skill-name">Online Safety &amp; Cybersecurity Awareness</div>
+        <div class="skill-desc">Protecting identity, data and devices online</div>
+        <span class="tag">Safety</span>
+      </div>
+      <div class="top10-card">
+        <div class="rank">05</div>
+        <div class="skill-name">Digital Productivity Tools</div>
+        <div class="skill-desc">Word processing, spreadsheets, cloud storage, scheduling</div>
+        <span class="tag">Core</span>
+      </div>
+      <div class="top10-card">
+        <div class="rank">06</div>
+        <div class="skill-name">Problem-Solving with Technology</div>
+        <div class="skill-desc">Using digital tools to find solutions and troubleshoot</div>
+        <span class="tag">Applied</span>
+      </div>
+      <div class="top10-card">
+        <div class="rank">07</div>
+        <div class="skill-name">Digital Transactions &amp; Services</div>
+        <div class="skill-desc">Online payments, invoicing, government services, apps</div>
+        <span class="tag">Life &amp; Work</span>
+      </div>
+      <div class="top10-card">
+        <div class="rank">08</div>
+        <div class="skill-name">Creating &amp; Sharing Digital Content</div>
+        <div class="skill-desc">Presentations, media, documents, professional profiles</div>
+        <span class="tag">Creative</span>
+      </div>
+      <div class="top10-card">
+        <div class="rank">09</div>
+        <div class="skill-name">Virtual Collaboration &amp; Remote Working</div>
+        <div class="skill-desc">Digital etiquette, Teams/Zoom, cloud co-working</div>
+        <span class="tag">Work</span>
+      </div>
+      <div class="top10-card">
+        <div class="rank">10</div>
+        <div class="skill-name">Digital Wellbeing &amp; Inclusion Awareness</div>
+        <div class="skill-desc">Screen balance, accessibility, inclusive digital practice</div>
+        <span class="tag">Inclusion</span>
+      </div>
+    </div>
+
+    <div class="cover-cta">
+      <button class="btn-explore" onclick="openTabs()">Explore the Full Framework →</button>
+      <span class="cover-nav-hint">4 detailed tabs · subject mapping · industry skills · framing guide</span>
+    </div>
+  </div>
+
+  <div class="source-ribbon">
+    <span>Live Intelligence Sources:</span>
+    <a href="https://www.gov.uk/government/publications/essential-digital-skills-framework" target="_blank" rel="noopener">DfE Essential Digital Skills Framework</a>
+    <a href="https://futuredotnow.uk/about-us/the-essential-digital-skills-framework/" target="_blank" rel="noopener">FutureDotNow (AI-updated EDS)</a>
+    <a href="https://www.ipsos.com/en-uk/essential-digital-skills-work-2024" target="_blank" rel="noopener">Ipsos / Lloyds EDS Index 2024</a>
+    <a href="https://www.weforum.org/stories/2025/01/future-of-jobs-report-2025-jobs-of-the-future-and-the-skills-you-need-to-get-them/" target="_blank" rel="noopener">WEF Future of Jobs 2025</a>
+    <a href="https://www.weston.ac.uk/what-can-i-study/courses-16-18-year-olds" target="_blank" rel="noopener">Weston College Courses</a>
+    <a href="https://www.weforum.org/stories/2025/04/new-skills-triad-and-future-of-work/" target="_blank" rel="noopener">WEF New Skills Triad 2025</a>
+  </div>
+
+  <div class="cover-footer">
+    <p>Prepared by Graeme Wright · Digital Pedagogy Coach · Weston College</p>
+    <p>Sources: DfE EDS Framework · FutureDotNow · Ipsos/Lloyds · WEF · Weston College</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     TABBED SECTION
+════════════════════════════════════════ -->
+<div class="tabs-section" id="tabsSection">
+  <div class="tabs-header">
+    <button class="back-btn" onclick="closeTabs()">← Cover</button>
+    <button class="tab-btn active" onclick="showTab('tab1',this)">1 · General Digital Skills</button>
+    <button class="tab-btn" onclick="showTab('tab2',this)">2 · Subjects &amp; Courses</button>
+    <button class="tab-btn" onclick="showTab('tab3',this)">3 · Industry-Specific Skills</button>
+    <button class="tab-btn" onclick="showTab('tab4',this)">4 · Framing for Industry</button>
+  </div>
+
+  <!-- ─── TAB 1: General Digital Skills ─── -->
+  <div class="tab-content active" id="tab1">
+    <div class="section-header">
+      <div class="section-eyebrow">Tab 01 of 04</div>
+      <h2 class="section-title">General Digital Skills</h2>
+      <p class="section-intro">
+        Drawn from the <a href="https://www.gov.uk/government/publications/essential-digital-skills-framework" target="_blank">DfE Essential Digital Skills Framework</a> and the <a href="https://futuredotnow.uk/about-us/the-essential-digital-skills-framework/" target="_blank">FutureDotNow AI-updated EDS (2025)</a>, these skills are organised across three contexts: learning, work, and societal inclusion. The five core EDS categories — Communicating, Handling Information & Content, Transacting, Problem Solving, and Being Safe & Legal Online — cut across all three contexts.
+      </p>
+    </div>
+
+    <div class="info-box">
+      <strong>Why this matters at Weston College:</strong> The EIF Toolkit explicitly states that learners must develop "the digital skills needed to study curriculum and learning goals." These 15 foundational skills represent the floor — the minimum every learner should reach regardless of their programme.
+    </div>
+
+    <div class="skills-columns">
+      <!-- FOR LEARNING -->
+      <div class="skills-column">
+        <div class="skills-column-header">
+          <div class="col-icon learning">📚</div>
+          <h3>For Learning</h3>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">01</span>
+          <div class="skill-info"><h4>Navigating Digital Platforms</h4><p>Using VLEs, Teams, SharePoint; accessing learning resources and timetables online.</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">02</span>
+          <div class="skill-info"><h4>Research &amp; Information Literacy</h4><p>Searching effectively, evaluating sources, avoiding misinformation and AI-generated errors.</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">03</span>
+          <div class="skill-info"><h4>Digital Note-taking &amp; Organisation</h4><p>OneNote, cloud documents, folder structures, and version control for assignments.</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">04</span>
+          <div class="skill-info"><h4>Collaborative Digital Working</h4><p>Shared documents, group tasks in Teams or Google Workspace, peer review online.</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">05</span>
+          <div class="skill-info"><h4>AI-Assisted Learning</h4><p>Using AI tools ethically for research, drafting and self-quizzing without plagiarism.</p></div>
+        </div>
+      </div>
+
+      <!-- FOR WORK -->
+      <div class="skills-column">
+        <div class="skills-column-header">
+          <div class="col-icon work">💼</div>
+          <h3>For the World of Work</h3>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">01</span>
+          <div class="skill-info"><h4>Professional Communication</h4><p>Email etiquette, Teams/Zoom calls, digital messaging in workplace contexts.</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">02</span>
+          <div class="skill-info"><h4>Productivity &amp; Office Applications</h4><p>Word processing, spreadsheets, presentations and scheduling tools (Microsoft/Google).</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">03</span>
+          <div class="skill-info"><h4>Digital Transactions &amp; Invoicing</h4><p>Online payments, basic invoicing apps, managing work-related digital finances.</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">04</span>
+          <div class="skill-info"><h4>Data Handling &amp; Record-Keeping</h4><p>Entering, checking and interpreting workplace data; compliant digital record-keeping.</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">05</span>
+          <div class="skill-info"><h4>AI Literacy for the Workplace</h4><p>Using AI assistants, understanding outputs critically, prompt skills and ethical use.</p></div>
+        </div>
+      </div>
+
+      <!-- FOR SOCIETY -->
+      <div class="skills-column">
+        <div class="skills-column-header">
+          <div class="col-icon society">🌐</div>
+          <h3>For Societal Inclusion</h3>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">01</span>
+          <div class="skill-info"><h4>Accessing Public &amp; Government Services</h4><p>HMRC, Universal Credit, NHS booking, local council portals and digital identity.</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">02</span>
+          <div class="skill-info"><h4>Online Safety &amp; Privacy</h4><p>Password management, recognising scams, two-factor authentication, GDPR basics.</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">03</span>
+          <div class="skill-info"><h4>Digital Financial Inclusion</h4><p>Online banking, comparing services, avoiding fraud, energy switching portals.</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">04</span>
+          <div class="skill-info"><h4>Critical Engagement with Media</h4><p>Identifying misinformation, understanding algorithmic bias, responsible social media use.</p></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-number">05</span>
+          <div class="skill-info"><h4>Digital Wellbeing &amp; Accessibility</h4><p>Screen time awareness, assistive technology, designing/using accessible digital content.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sources-block">
+      <h4>Key Sources &amp; Live Links</h4>
+      <div class="sources-list">
+        <div class="source-item">
+          <a href="https://www.gov.uk/government/publications/essential-digital-skills-framework" target="_blank">DfE Essential Digital Skills Framework</a>
+          <span>Government · 5 core categories · Life &amp; Work standards</span>
+        </div>
+        <div class="source-item">
+          <a href="https://futuredotnow.uk/about-us/the-essential-digital-skills-framework/" target="_blank">FutureDotNow — AI-Updated EDS Framework 2025</a>
+          <span>Adds AI literacy, prompt engineering &amp; ethical AI use</span>
+        </div>
+        <div class="source-item">
+          <a href="https://www.ipsos.com/en-uk/essential-digital-skills-work-2024" target="_blank">Ipsos / Lloyds Banking Essential Digital Skills 2024</a>
+          <span>Annual tracking of UK workforce digital capability</span>
+        </div>
+        <div class="source-item">
+          <a href="https://www.goodthingsfoundation.org/policy-and-research/what-works-colab/basic-digital-skills-briefing" target="_blank">Good Things Foundation — Basic Digital Skills Briefing</a>
+          <span>Inclusion, exclusion gaps, community-level context</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TAB 2: Subjects & Courses ─── -->
+  <div class="tab-content" id="tab2">
+    <div class="section-header">
+      <div class="section-eyebrow">Tab 02 of 04</div>
+      <h2 class="section-title">Subjects, Courses &amp; Digital Skills</h2>
+      <p class="section-intro">
+        Mapped to <a href="https://www.weston.ac.uk/what-can-i-study/courses-16-18-year-olds" target="_blank">Weston College's curriculum areas</a>. Each subject area identifies the general digital skills most relevant to learning on that programme, plus subject-specific digital applications and the EDS category they map to. This provides a basis for planning digital hours within Business Plans.
+      </p>
+    </div>
+
+    <div class="subject-grid">
+
+      <!-- Construction -->
+      <div class="subject-row">
+        <div class="subject-header">
+          <div>🔨 Construction &amp; Built Environment</div>
+          <div>Core Digital Skills</div>
+          <div>Subject-Specific Digital Tools</div>
+          <div>EDS Category</div>
+        </div>
+        <div class="subject-data">
+          <div>T Level / L2 / L3 Construction<br><small style="color:var(--text-light)">SWSC · Weston College</small></div>
+          <div><div class="tag-list"><span class="stag learning">Digital communication</span><span class="stag learning">Data handling</span><span class="stag work">Transacting / Invoicing</span></div></div>
+          <div><div class="tag-list"><span class="stag extra">AutoCAD / Revit (BIM)</span><span class="stag extra">Digital measuring devices</span><span class="stag extra">QR clock-in systems</span><span class="stag extra">Sage invoicing</span></div></div>
+          <div><div class="tag-list"><span class="stag work">Problem Solving</span><span class="stag work">Transacting</span><span class="stag learning">Handling Information</span></div></div>
+        </div>
+      </div>
+
+      <!-- Health & Social Care -->
+      <div class="subject-row">
+        <div class="subject-header">
+          <div>🏥 Health &amp; Social Care</div>
+          <div>Core Digital Skills</div>
+          <div>Subject-Specific Digital Tools</div>
+          <div>EDS Category</div>
+        </div>
+        <div class="subject-data">
+          <div>T Level / L2 / L3 Health &amp; Social Care<br><small style="color:var(--text-light)">Knightstone · HALSC</small></div>
+          <div><div class="tag-list"><span class="stag learning">Digital record-keeping</span><span class="stag work">Data handling</span><span class="stag learning">Online research</span></div></div>
+          <div><div class="tag-list"><span class="stag extra">Digital care record systems</span><span class="stag extra">Medication management apps</span><span class="stag extra">NHS digital portals</span><span class="stag extra">ProMonitor-style eILPs</span></div></div>
+          <div><div class="tag-list"><span class="stag work">Handling Information</span><span class="stag work">Being Safe &amp; Legal</span></div></div>
+        </div>
+      </div>
+
+      <!-- Engineering -->
+      <div class="subject-row">
+        <div class="subject-header">
+          <div>⚙️ Engineering &amp; Manufacturing</div>
+          <div>Core Digital Skills</div>
+          <div>Subject-Specific Digital Tools</div>
+          <div>EDS Category</div>
+        </div>
+        <div class="subject-data">
+          <div>T Level / L2 / L3 Engineering<br><small style="color:var(--text-light)">South West Skills Campus</small></div>
+          <div><div class="tag-list"><span class="stag learning">Data analysis</span><span class="stag work">CAD / simulation tools</span><span class="stag learning">Research &amp; documentation</span></div></div>
+          <div><div class="tag-list"><span class="stag extra">CAD / CAM software</span><span class="stag extra">CNC programming interfaces</span><span class="stag extra">IoT sensor data</span><span class="stag extra">Digital quality control systems</span></div></div>
+          <div><div class="tag-list"><span class="stag work">Problem Solving</span><span class="stag learning">Handling Information</span></div></div>
+        </div>
+      </div>
+
+      <!-- Hospitality & Catering -->
+      <div class="subject-row">
+        <div class="subject-header">
+          <div>🍽️ Hospitality &amp; Catering</div>
+          <div>Core Digital Skills</div>
+          <div>Subject-Specific Digital Tools</div>
+          <div>EDS Category</div>
+        </div>
+        <div class="subject-data">
+          <div>L1 / L2 / L3 Hospitality<br><small style="color:var(--text-light)">Knightstone Campus</small></div>
+          <div><div class="tag-list"><span class="stag learning">Digital communication</span><span class="stag work">Transacting &amp; booking</span><span class="stag work">Data entry</span></div></div>
+          <div><div class="tag-list"><span class="stag extra">EPOS &amp; POS systems</span><span class="stag extra">Reservation platforms (OpenTable)</span><span class="stag extra">Allergen management software</span><span class="stag extra">Digital ordering &amp; stocktake apps</span></div></div>
+          <div><div class="tag-list"><span class="stag work">Transacting</span><span class="stag work">Communicating</span></div></div>
+        </div>
+      </div>
+
+      <!-- Hair & Beauty -->
+      <div class="subject-row">
+        <div class="subject-header">
+          <div>✂️ Hair, Beauty &amp; Aesthetics</div>
+          <div>Core Digital Skills</div>
+          <div>Subject-Specific Digital Tools</div>
+          <div>EDS Category</div>
+        </div>
+        <div class="subject-data">
+          <div>L1 / L2 / L3 Hairdressing &amp; Beauty<br><small style="color:var(--text-light)">Knightstone Campus</small></div>
+          <div><div class="tag-list"><span class="stag learning">Content creation</span><span class="stag work">Social media</span><span class="stag work">Booking platforms</span></div></div>
+          <div><div class="tag-list"><span class="stag extra">Salon booking apps (Treatwell/Fresha)</span><span class="stag extra">Instagram / TikTok portfolio</span><span class="stag extra">Client consultation forms (digital)</span><span class="stag extra">Card payment systems</span></div></div>
+          <div><div class="tag-list"><span class="stag work">Communicating</span><span class="stag work">Transacting</span><span class="stag learning">Creating Content</span></div></div>
+        </div>
+      </div>
+
+      <!-- Business -->
+      <div class="subject-row">
+        <div class="subject-header">
+          <div>📊 Business &amp; Professional Services</div>
+          <div>Core Digital Skills</div>
+          <div>Subject-Specific Digital Tools</div>
+          <div>EDS Category</div>
+        </div>
+        <div class="subject-data">
+          <div>T Level / A Level / L3 Business<br><small style="color:var(--text-light)">Winter Gardens · UCW</small></div>
+          <div><div class="tag-list"><span class="stag learning">Spreadsheets</span><span class="stag work">Email &amp; professional comms</span><span class="stag work">Data analysis</span></div></div>
+          <div><div class="tag-list"><span class="stag extra">Xero / QuickBooks</span><span class="stag extra">CRM systems</span><span class="stag extra">Power BI / Excel advanced</span><span class="stag extra">AI drafting tools</span></div></div>
+          <div><div class="tag-list"><span class="stag work">All 5 EDS categories</span></div></div>
+        </div>
+      </div>
+
+      <!-- Creative Arts -->
+      <div class="subject-row">
+        <div class="subject-header">
+          <div>🎨 Creative Arts &amp; Media</div>
+          <div>Core Digital Skills</div>
+          <div>Subject-Specific Digital Tools</div>
+          <div>EDS Category</div>
+        </div>
+        <div class="subject-data">
+          <div>L2 / L3 / A Level / HND Creative<br><small style="color:var(--text-light)">Loxton Campus</small></div>
+          <div><div class="tag-list"><span class="stag learning">Content creation</span><span class="stag learning">Digital research</span><span class="stag work">Portfolio development</span></div></div>
+          <div><div class="tag-list"><span class="stag extra">Adobe Creative Suite</span><span class="stag extra">Canva Pro</span><span class="stag extra">Digital Audio Workstations</span><span class="stag extra">Premiere / DaVinci</span></div></div>
+          <div><div class="tag-list"><span class="stag learning">Creating Content</span><span class="stag work">Problem Solving</span></div></div>
+        </div>
+      </div>
+
+      <!-- Sport -->
+      <div class="subject-row">
+        <div class="subject-header">
+          <div>🏃 Sport, Health &amp; Active Living</div>
+          <div>Core Digital Skills</div>
+          <div>Subject-Specific Digital Tools</div>
+          <div>EDS Category</div>
+        </div>
+        <div class="subject-data">
+          <div>L2 / L3 Sport &amp; Exercise<br><small style="color:var(--text-light)">Loxton Campus</small></div>
+          <div><div class="tag-list"><span class="stag learning">Data handling</span><span class="stag work">Digital communications</span><span class="stag learning">Research</span></div></div>
+          <div><div class="tag-list"><span class="stag extra">Wearable tech &amp; fitness apps</span><span class="stag extra">Video analysis software</span><span class="stag extra">Client management systems</span><span class="stag extra">Online coaching platforms</span></div></div>
+          <div><div class="tag-list"><span class="stag work">Handling Information</span><span class="stag work">Communicating</span></div></div>
+        </div>
+      </div>
+
+      <!-- Animal Care -->
+      <div class="subject-row">
+        <div class="subject-header">
+          <div>🐾 Animal Care &amp; Agriculture</div>
+          <div>Core Digital Skills</div>
+          <div>Subject-Specific Digital Tools</div>
+          <div>EDS Category</div>
+        </div>
+        <div class="subject-data">
+          <div>L1 / L2 / L3 Animal Management<br><small style="color:var(--text-light)">Knightstone Campus</small></div>
+          <div><div class="tag-list"><span class="stag learning">Record-keeping</span><span class="stag work">Data entry</span><span class="stag learning">Research</span></div></div>
+          <div><div class="tag-list"><span class="stag extra">Veterinary record software</span><span class="stag extra">Species identification apps</span><span class="stag extra">Environmental monitoring tools</span></div></div>
+          <div><div class="tag-list"><span class="stag learning">Handling Information</span><span class="stag work">Problem Solving</span></div></div>
+        </div>
+      </div>
+
+    </div><!-- end subject-grid -->
+
+    <div class="sources-block">
+      <h4>Sources</h4>
+      <div class="sources-list">
+        <div class="source-item">
+          <a href="https://www.weston.ac.uk/what-can-i-study/courses-16-18-year-olds" target="_blank">Weston College — 16-18 Course Directory</a>
+          <span>Full list of programmes and study areas</span>
+        </div>
+        <div class="source-item">
+          <a href="https://www.weston.ac.uk/first-day" target="_blank">Weston College — First Day / Course Induction Listings 2025-26</a>
+          <span>Full subject list by campus and level</span>
+        </div>
+        <div class="source-item">
+          <a href="https://www.gov.uk/government/publications/essential-digital-skills-framework" target="_blank">DfE Essential Digital Skills Framework</a>
+          <span>The 5 EDS categories mapped above</span>
+        </div>
+        <div class="source-item">
+          <a href="https://www.ucas.com/explore/search/courses?refinementList%5Buniversity%5D%5B0%5D=University%20Centre%20Weston" target="_blank">University Centre Weston — UCAS Course Listings</a>
+          <span>HE subjects at Weston</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TAB 3: Industry-Specific Skills ─── -->
+  <div class="tab-content" id="tab3">
+    <div class="section-header">
+      <div class="section-eyebrow">Tab 03 of 04</div>
+      <h2 class="section-title">Industry-Specific Digital Skills</h2>
+      <p class="section-intro">
+        These are skills that <strong>go beyond</strong> the general EDS framework — specialist, sector-specific digital competencies that employers expect but that general digital skills qualifications do not cover. These are the skills your curriculum areas need to consciously plan for within their digital hours and programme delivery.
+      </p>
+    </div>
+
+    <div class="info-box">
+      <strong>Note for Digital Pedagogy work:</strong> When working with Heads of Area, these are the skills to audit first. They are not covered by standard EDS or GCSE IT qualifications — they require deliberate, contextualised teaching within the subject programme.
+    </div>
+
+    <div class="industry-grid">
+
+      <!-- Construction -->
+      <div class="industry-card">
+        <div class="industry-card-header" style="background:var(--navy);">
+          <div class="industry-icon" style="background:rgba(184,146,42,0.2);">🔨</div>
+          <div>
+            <h3>Construction &amp; Built Environment</h3>
+            <p>Beyond general digital skills</p>
+          </div>
+        </div>
+        <div class="industry-skills">
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>BIM &amp; CAD Software</h5><p>Building Information Modelling (Revit, AutoCAD) — designing, reading and annotating digital plans.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>Digital Site Management Tools</h5><p>QR code clock-in, digital site diaries, health &amp; safety reporting apps (e.g. Fieldwire, Procore).</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>Digital Measuring &amp; Surveying Devices</h5><p>Laser levels, digital theodolites, drone survey tools — reading and logging outputs digitally.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>Digital Invoicing &amp; Materials Ordering</h5><p>Sage, Xero, or trade-specific ordering portals; raising and tracking purchase orders digitally.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>Sustainability &amp; Carbon Calculation Tools</h5><p>BREEAM digital tools, energy modelling software, materials calculators for green construction.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Health & Social Care -->
+      <div class="industry-card">
+        <div class="industry-card-header" style="background:var(--navy);">
+          <div class="industry-icon" style="background:rgba(27,150,144,0.2);">🏥</div>
+          <div>
+            <h3>Health &amp; Social Care</h3>
+            <p>Beyond general digital skills</p>
+          </div>
+        </div>
+        <div class="industry-skills">
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--teal);"></div>
+            <div><h5>Electronic Patient / Care Record Systems</h5><p>SystmOne, EMIS, Liquid Logic — navigating digital care records securely and accurately.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--teal);"></div>
+            <div><h5>Telehealth &amp; Remote Care Platforms</h5><p>Video consultation platforms, digital monitoring devices, wearable health tech interpretation.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--teal);"></div>
+            <div><h5>Digital Medication Management</h5><p>e-Prescribing systems, medication administration record (MAR) chart software.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--teal);"></div>
+            <div><h5>GDPR &amp; Data Security in Care Contexts</h5><p>NHS-specific data handling compliance, Caldicott principles in digital practice.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Engineering -->
+      <div class="industry-card">
+        <div class="industry-card-header" style="background:var(--navy);">
+          <div class="industry-icon" style="background:rgba(35,54,107,0.3);">⚙️</div>
+          <div>
+            <h3>Engineering &amp; Manufacturing</h3>
+            <p>Beyond general digital skills</p>
+          </div>
+        </div>
+        <div class="industry-skills">
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--navy-mid);"></div>
+            <div><h5>CAD / CAM Systems</h5><p>SolidWorks, Fusion 360, CAM programming for CNC machines — reading and creating digital technical drawings.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--navy-mid);"></div>
+            <div><h5>Industrial IoT &amp; Sensor Data</h5><p>Reading, interpreting and acting on data from IoT-connected machines and quality monitoring systems.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--navy-mid);"></div>
+            <div><h5>ERP / MRP Systems</h5><p>Enterprise resource planning for manufacturing scheduling, materials and production tracking.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--navy-mid);"></div>
+            <div><h5>Digital Quality Control &amp; Testing Tools</h5><p>CMM software, digital inspection tools, non-destructive testing (NDT) digital systems.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hospitality -->
+      <div class="industry-card">
+        <div class="industry-card-header" style="background:var(--navy);">
+          <div class="industry-icon" style="background:rgba(184,146,42,0.15);">🍽️</div>
+          <div>
+            <h3>Hospitality &amp; Catering</h3>
+            <p>Beyond general digital skills</p>
+          </div>
+        </div>
+        <div class="industry-skills">
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>EPOS &amp; POS Systems</h5><p>Electronic point of sale systems — taking orders, processing payments, end-of-day reconciliation.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>Reservation &amp; Property Management</h5><p>OpenTable, ResDiary, Rezlynx — managing bookings, room allocation and CRM functions.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>Online Review &amp; Reputation Management</h5><p>Responding to TripAdvisor/Google reviews, monitoring brand reputation on digital channels.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>Allergen &amp; Food Safety Digital Recording</h5><p>Natasha's Law compliance systems, digital HACCP records, temperature logging apps.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hair & Beauty -->
+      <div class="industry-card">
+        <div class="industry-card-header" style="background:var(--navy);">
+          <div class="industry-icon" style="background:rgba(27,150,144,0.15);">✂️</div>
+          <div>
+            <h3>Hair, Beauty &amp; Aesthetics</h3>
+            <p>Beyond general digital skills</p>
+          </div>
+        </div>
+        <div class="industry-skills">
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--teal);"></div>
+            <div><h5>Salon Booking &amp; Client Management Apps</h5><p>Fresha, Treatwell, Vagaro — online booking, client history records, automated reminders.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--teal);"></div>
+            <div><h5>Visual Portfolio &amp; Social Media Marketing</h5><p>Instagram, TikTok and Pinterest as professional portfolio platforms; paid social basics.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--teal);"></div>
+            <div><h5>Digital Skin Analysis Tools</h5><p>Tablet-based skin consultation apps, before/after documentation for treatment records.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--teal);"></div>
+            <div><h5>Self-Employment Digital Finance</h5><p>HMRC Making Tax Digital, self-assessment, expenses apps (Xero Self-Employed, QuickBooks).</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Creative Arts -->
+      <div class="industry-card">
+        <div class="industry-card-header" style="background:var(--navy);">
+          <div class="industry-icon" style="background:rgba(184,146,42,0.15);">🎨</div>
+          <div>
+            <h3>Creative Arts &amp; Media</h3>
+            <p>Beyond general digital skills</p>
+          </div>
+        </div>
+        <div class="industry-skills">
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>Adobe Creative Suite Proficiency</h5><p>Photoshop, Illustrator, InDesign, Premiere, After Effects — industry-standard creative software.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>AI-Assisted Creative Tools</h5><p>Midjourney, Adobe Firefly, Suno — ethical use of AI in creative production with critical evaluation.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>Digital Rights &amp; IP Management</h5><p>Copyright, Creative Commons, licensing digital work, protecting original creative output.</p></div>
+          </div>
+          <div class="ind-skill">
+            <div class="ind-dot" style="background:var(--gold);"></div>
+            <div><h5>Freelance Platform &amp; Digital Client Management</h5><p>Behance, Upwork, LinkedIn, digital contract and invoice tools for freelance creative practice.</p></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sources-block">
+      <h4>Sources</h4>
+      <div class="sources-list">
+        <div class="source-item">
+          <a href="https://www.weforum.org/stories/2025/01/future-of-jobs-report-2025-jobs-of-the-future-and-the-skills-you-need-to-get-them/" target="_blank">WEF Future of Jobs Report 2025</a>
+          <span>Sector-level skills forecasting to 2030</span>
+        </div>
+        <div class="source-item">
+          <a href="https://www.netsupportsoftware.com/2025112420-essential-digital-skills/" target="_blank">NetSupport — 20 Essential Work Tasks (EDSF)</a>
+          <span>UK government &amp; industry agreed work tasks</span>
+        </div>
+        <div class="source-item">
+          <a href="https://www.lingio.com/blog/skills-in-hospitality-industry" target="_blank">Lingio — Top 18 Hospitality Skills 2025</a>
+          <span>Sector-specific digital skills analysis</span>
+        </div>
+        <div class="source-item">
+          <a href="https://futuredotnow.uk/new-report-charts-path-to-ai-ready-uk-workforce/" target="_blank">FutureDotNow — AI-Ready UK Workforce Report 2025</a>
+          <span>AI literacy requirements by sector</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TAB 4: Framing for Industry ─── -->
+  <div class="tab-content" id="tab4">
+    <div class="section-header">
+      <div class="section-eyebrow">Tab 04 of 04</div>
+      <h2 class="section-title">Framing Digital Skills<br><em>for Industry Needs</em></h2>
+      <p class="section-intro">
+        How you frame digital skills development makes the difference between staff and learners engaging with it or dismissing it. The most effective framing connects a digital skill directly to an industry outcome they already care about. Below are four strategic framing approaches, each with practical examples for Weston College contexts.
+      </p>
+    </div>
+
+    <div class="framing-grid">
+
+      <div class="framing-card">
+        <div class="framing-sub">Framing Approach 1</div>
+        <h3>The Industry Standard Frame</h3>
+        <p>Frame digital skills as <strong>standard professional practice</strong> in that sector — not as technology training, but as what industry employers expect every employee to do on day one.</p>
+        <p>This works particularly well with learners who are resistant to "digital lessons" but respond to employer expectations.</p>
+        <div class="framing-example">
+          <strong>Construction example</strong>
+          Instead of: "Today we're going to learn about QR codes"<br>
+          Say: "Every major contractor now uses digital clock-in. You won't get paid if you can't do this on site."
+        </div>
+      </div>
+
+      <div class="framing-card gold">
+        <div class="framing-sub">Framing Approach 2</div>
+        <h3>The Time-Saving Frame</h3>
+        <p>Frame digital skills as tools that <strong>save time and reduce hassle</strong> in tasks learners will have to do anyway — invoicing, booking, recording, communicating.</p>
+        <p>Effective for vocational learners who see admin as a burden and are motivated by efficiency.</p>
+        <div class="framing-example">
+          <strong>Hair & Beauty example</strong>
+          Instead of: "We're going to learn about booking software"<br>
+          Say: "Fresha automatically sends reminders and takes deposits — you spend less time chasing no-shows and more time with clients."
+        </div>
+      </div>
+
+      <div class="framing-card navy">
+        <div class="framing-sub">Framing Approach 3</div>
+        <h3>The Employability &amp; Earnings Frame</h3>
+        <p>Link digital competence directly to <strong>higher pay, better job prospects, or self-employment viability</strong>. Use Labour Market Intelligence to make the case concrete.</p>
+        <p>Most effective in sectors where wage differentials are visible (e.g. construction site manager vs labourer) and self-employment is common (beauty, creative, construction).</p>
+        <div class="framing-example">
+          <strong>Hospitality example</strong>
+          Instead of: "Learning to use EPOS"<br>
+          Say: "Supervisors who can train staff on digital systems earn £4-6k more than floor staff. This is the skill that moves you into management."
+        </div>
+      </div>
+
+      <div class="framing-card teal2">
+        <div class="framing-sub">Framing Approach 4</div>
+        <h3>The Authentic Context Frame</h3>
+        <p>Teach digital skills <strong>inside real vocational tasks</strong> rather than as separate lessons. The digital skill is invisible — the learner is just doing their job.</p>
+        <p>This is the most powerful approach for learners with low digital confidence or prior negative experiences with technology. The learning happens because the task is meaningful, not because it's a "digital lesson."</p>
+        <div class="framing-example">
+          <strong>Construction example</strong>
+          Instead of: "Digital skills session today"<br>
+          Say: "You need to measure this wall, enter the data into this form, and email it to the project manager. That's today's task." (They've just practised digital measuring, data entry, file handling and email — four EDS categories at once.)
+        </div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section-header" style="margin-bottom:24px;">
+      <div class="section-eyebrow">Strategic Principle</div>
+      <h2 class="section-title" style="font-size:28px;">The Golden Rule of Industry Framing</h2>
+    </div>
+
+    <div class="info-box" style="font-size:15px;padding:20px 24px;">
+      <strong>Never teach the technology. Teach the task that technology enables.</strong><br><br>
+      A construction learner doesn't need to learn "how to use an app." They need to be able to clock in correctly, submit a digital site diary, order materials, and read a BIM drawing. The apps are just how they do it. When digital skills are framed this way, they stop being a separate burden and become invisible, purposeful, and motivating — for learners and for the staff teaching them.
+    </div>
+
+    <div class="sources-block">
+      <h4>Key References &amp; Live Links</h4>
+      <div class="sources-list">
+        <div class="source-item">
+          <a href="https://futuredotnow.uk/about-us/the-essential-digital-skills-framework/" target="_blank">FutureDotNow — Essential Digital Skills Framework</a>
+          <span>The authoritative UK source for EDS framing &amp; messaging</span>
+        </div>
+        <div class="source-item">
+          <a href="https://www.weforum.org/stories/2025/04/new-skills-triad-and-future-of-work/" target="_blank">WEF — The New Skills Triad (AI, Carbon, Virtual Intelligence)</a>
+          <span>Emerging framing for future-of-work digital competencies</span>
+        </div>
+        <div class="source-item">
+          <a href="https://www.ipsos.com/en-uk/essential-digital-skills-work-2024" target="_blank">Ipsos / Lloyds — Essential Digital Skills for Work 2024</a>
+          <span>Live annual tracking data on workforce digital readiness</span>
+        </div>
+        <div class="source-item">
+          <a href="https://www.goodthingsfoundation.org/policy-and-research/what-works-colab/basic-digital-skills-briefing" target="_blank">Good Things Foundation — Digital Skills &amp; Inclusion</a>
+          <span>Inclusion-centred framing &amp; approaches</span>
+        </div>
+        <div class="source-item">
+          <a href="https://www.gov.uk/government/publications/essential-digital-skills-framework" target="_blank">DfE Essential Digital Skills Framework (Gov.UK)</a>
+          <span>Official framework underpinning EDS qualifications</span>
+        </div>
+        <div class="source-item">
+          <a href="https://futuredotnow.uk/new-report-charts-path-to-ai-ready-uk-workforce/" target="_blank">FutureDotNow — AI-Ready Workforce Report Oct 2025</a>
+          <span>Updated framing including AI literacy for all sectors</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end tabs-section -->
+
+<script>
+  function openTabs() {
+    document.getElementById('cover').style.display = 'none';
+    document.getElementById('tabsSection').classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function closeTabs() {
+    document.getElementById('tabsSection').classList.remove('active');
+    document.getElementById('cover').style.display = 'flex';
+    window.scrollTo(0,0);
+  }
+
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+</script>
+</body>
+</html>

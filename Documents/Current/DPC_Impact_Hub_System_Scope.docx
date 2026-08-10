@@ -1,0 +1,342 @@
+**DPC Impact Hub**
+
+Full System Scope & Design Specification
+
+Graeme Wright  ·  Digital Pedagogy Coach  ·  Quality & Innovation  ·  Weston College Group  ·  June 2026
+
+Version 1.0  ·  Living document — updated as the system evolves
+
+*This document captures the full intended scope of the DPC Impact Hub: what it does, what it will do, how the pieces connect, and the design thinking behind the connective wiring. It is both a specification and a record of the design conversations that shaped it.*
+
+**1.  Purpose ****&**** Philosophy**
+
+The DPC Impact Hub is the personal operating system for the Digital Pedagogy Coach role at Weston College Group. It is not an IT system, a compliance tool, or a tracking spreadsheet. It is a coaching intelligence platform — designed to capture evidence of practice, support structured professional conversations, close the loop between observation and improvement, and produce meaningful reports for different audiences.
+
+**Core principles**
+
+- Digital supports and enhances exceptional TLA practice. It does not replace it.
+
+- Evidence must be genuine — only real, completed activity is recorded or reported.
+
+- Coaching without authority — influence through relational capital, not hierarchy.
+
+- Accessibility is non-negotiable throughout — WCAG 2.2 AA minimum on all outputs.
+
+- The system serves the coach, not the other way around. Capture should be fast; insight should be rich.
+
+- Closing the loop is the point. An observation without a follow-through is data without meaning.
+
+**Strategic framework**
+
+All activity maps to the Digital Learning Pyramid: Digital Foundations (Level 1) → Digital Inclusion (Level 2) → Digital Innovation (Level 3). Learning Without Barriers runs through all three levels as a non-negotiable thread. External frameworks referenced: ETF DTPF, DigCompEdu, Jisc Building Digital Capability Discovery Tool, UDL (CAST), Quality First Teaching.
+
+**Architecture**
+
+Local-first, browser-based single-page application. Data stored in localStorage with manual JSON download as backup. Hosted on GitHub Pages (gwc25/dpc-impact-hub). No server, no IT dependency, no individual logins required. Password-protected at entry. WCAG 2.2 AA throughout.
+
+**2.  The Data Model**
+
+Everything in the Hub shares one data store: DPC.DB. All modules read from and write to this single JSON object. The join key across all records is the three-letter area code (e.g. BUI, CON, HBH). This is non-negotiable — area code standardisation is the single most important data integrity action across the whole system.
+
+**Core data objects**
+
+| **DPC.DB.areas[]** | 35 curriculum areas. Each carries: RAG ratings, health check scores, activity log, interventions, staff development records, action points, current actions, Digital Lead identity, HoA identity. |
+| --- | --- |
+| **DPC.DB.staffProfiles[]** | Individual staff records — created dynamically when first encountered via DevObs, LW, referral or coaching. Not pre-populated. See Section 6. |
+| **DPC.DB.individualActivities[]** | Cross-college or non-area activities — DPC CPD, external events, strategic meetings. |
+| **DPC.DB.myCPD[]** | DPC personal CPD log with post-impact confidence ratings. |
+| **DPC.DB.templates[]** | Teach meet plans, coaching question sets, meeting agenda templates, observation frameworks. Reusable across contexts. |
+| **DPC.DB.reflections[]** | Anonymous reflections from staff following coaching, teach meets, CPD. Tagged to event and area. Named at individual profile level, anonymous at area level. |
+| **DPC.DB.afiRecords[]** | First-class AFI objects with full lifecycle — see Section 7. |
+
+**3.  Module Map — Current Status**
+
+| **Module / Feature** | **Status** | **Notes** |
+| --- | --- | --- |
+| RAG Matrix (8 dimensions) | **Built** | *Per-area, per-dimension scoring 1–5. Snapshot function. History preserved.* |
+| Health Check tab | **Built** | *hc-schema.json — 125 success criteria, 5 dimensions × 5 indicators × 5 levels.* |
+| Quick Capture | **Built** | *v1.0 — grouped activity types, tags, pyramid level, recent log.* |
+| Report Builder shell | **Built** | *4 audience templates (Neil weekly, DL area, AP area, Ben monthly). Preview works.* |
+| Areas tab | **Built** | *35 areas with full data structure. Seed data loaded.* |
+| DevObs modal | **Specced** | *Port from Evidence Hub. Dual-write: activityLog + healthChecks.records via sharedId.* |
+| LRA modal | **Specced** | *Port from Evidence Hub. Dual-write: activityLog + interventions via sharedId.* |
+| Staff Development — Tab 6 | **Specced** | *8a industry matrix + pedagogy matrix, gap analysis, auto action plans, CPD log.* |
+| College-wide Staff Dev tab | **Planned** | *Aggregates from all area.staffDevelopment. Filter by campus, area, role, DL.* |
+| Report Builder — 5th template | **Planned** | *Performance review with AI narrative (Anthropic API).* |
+| AFI Lifecycle module | **Planned** | *First-class AFI objects — see Section 7.* |
+| Template Library | **Planned** | *Teach meet plans, coaching questions, agendas — see Section 8.* |
+| Staff Profile pages | **Planned** | *Dynamic creation via DevObs/LW/referral — see Section 6.* |
+| Reflection module | **Planned** | *Anonymous reflections linked to events and AFIs — see Section 9.* |
+| Digital Health Check ingestion | **Planned** | *Upload Forms Excel or Moodle download. AI extraction + provisional RAG. DPC reviews.* |
+| Note Space | **Planned** | *Unstructured capture with uploaded reference document — conferences, CPD, external meetings.* |
+| Evidence Hub merge | **Concept** | *January 2027 natural pause decision point.* |
+
+**4.  Reporting Flows**
+
+One data store feeds all reporting audiences. The principle: capture once, report many ways. No data is entered twice.
+
+**The five audiences**
+
+| **Neil Davies (weekly)** | Cross-college: what happened this week, areas engaged, open actions, RAG movements, coming up. 1 page. Sent fortnightly or weekly as agreed. |
+| --- | --- |
+| **Digital Lead (area report)** | Area-specific: RAG dimension scores, health check indicator detail, current actions, CPD suggestions, coaching focus. 1 page. Shared by Graeme — DL sections removable before sharing. |
+| **AP / HoA (area report)** | Area-specific: RAG trajectory narrative, staff CPD table, interventions delivered, expected impact statements, suggested observation focus. 1–2 pages. |
+| **Ben Manning (monthly)** | Strategic: RAG distribution across all 35 areas, RAG movers, interventions delivered, impact narrative, QIP evidence, forward look. 2–3 pages. Delivered as updated document (not live link). |
+| **Performance review (DPC)** | Full pilot evidence: RAG snapshot history, interventions delivered, impact evidence chain, staff reflections aggregated, AFI closure rate, pyramid level activity breakdown. AI-generated narrative using Anthropic API. |
+
+**What makes reporting meaningful**
+
+Current reports show what happened. The full system will show what changed as a result. The AFI lifecycle module (Section 7) and reflection module (Section 9) are what make the difference — they provide the evidence chain from observation to impact.
+
+- Every report will distinguish: activities completed / AFIs identified / interventions delivered / impact evidenced.
+
+- RAG snapshot history shows trajectory over time — not just current position.
+
+- QIP reference field on any capture item feeds directly into Ben Manning and AP reports as QIP evidence.
+
+- Pyramid level tagging on all captures feeds the strategic overview — how much activity at each level, and where the gaps are.
+
+**5.  Digital Health Check Ingestion**
+
+Digital Leads, HoAs, TLAMs and the DPC can run the Digital Health Check via the Moodle system or Microsoft Forms. The output is downloaded as an Excel file (Forms) or Moodle export. This is uploaded into the Hub.
+
+**Ingestion flow**
+
+- DL or HoA completes the Health Check (25-question Likert scale, 5 dimensions).
+
+- Output downloaded as Excel (Forms) or equivalent Moodle format.
+
+- Uploaded into the Hub via the Health Check tab for the relevant area.
+
+- AI at Haiku level reads the upload and maps responses to the framework dimensions — generates provisional RAG scores with brief rationale for each.
+
+- DPC reviews, confirms or overwrites each score. Professional judgement is always the final word.
+
+- Rationale stored alongside score — reports can state the evidence basis for each rating.
+
+- sharedId links the ingested Health Check to any DevObs or LW that informed it.
+
+**Design principles**
+
+No Microsoft API access required. No individual logins. No sharing permissions. The DPC is the quality assurance layer between the DL self-assessment and the system record. This is appropriate to the role and defensible in an inspection context.
+
+Long-term: if Moodle exports follow a consistent column structure, a field-mapping config will be built in so re-speccing is not required each time.
+
+**6.  Staff Profile Pages**
+
+Staff profiles are not pre-populated. They are created dynamically when a staff member first appears in the system — through a DevObs, Learning Walk, referral, or coaching session. The profile grows as the coaching relationship develops.
+
+**Creation pathways**
+
+- DevObs saved with a new lecturer name → system offers "Create staff profile for [name] in [area]?"
+
+- Referral received from TLAM or HoA → Graeme creates the profile manually, attaches to area, records presenting concern as opening AFI.
+
+- Learning Walk observation naming a staff member → same as DevObs.
+
+- Health Check visit where individual staff are noted → same.
+
+**What a profile holds**
+
+| **Identity** | Name, area(s), role, how they entered the system, date of first contact. |
+| --- | --- |
+| **Development picture** | ETF DTPF stage (Graeme's assessment), three priority development areas (coaching judgement, or derived from Jisc if available), current confidence rating. |
+| **History** | Every touch: DevObs, Learning Walk, coaching session, Teach Meet attended, LinkedIn pathway assigned, resource shared, referral record. Chronological. |
+| **Reflections** | Timestamped. Anonymous at area level. Visible here at individual level. Both immediate and follow-up (see Section 9). |
+| **Impact** | AFI status per development priority. Evidence chain — what was done, what changed, how we know. |
+
+**Privacy framing**
+
+This is a coaching tool, not an HR tool. Records represent professional development conversations and observations. The framing matters both for how the data is used and how it would be described if questioned. The system sits on the DPC's own device, password-protected, not accessible to others.
+
+**7.  AFI Lifecycle — Closing the Loop**
+
+The single most important design decision in the Hub. An AFI is not a text note in an area record. It is a first-class object with a lifecycle, linked evidence, and a defined close condition. This is what transforms the Hub from a capture tool into an impact tool.
+
+**AFI as a structured object**
+
+Every AFI has:
+
+- A TLA root — which of the Six Stages of Learning does this gap sit in? (Learning Intentions / Building Blocks / Starting Points / Activities / Assessment / Lasting Learning)
+
+- A description — plain language, teacher-facing. What is the pedagogical gap?
+
+- A digital opportunity — optional. Where digital could help address this, if appropriate. Not mandatory.
+
+- A rationale test — does the teacher already have a non-digital response? If so, is it working?
+
+- A status — open / actioned / impact-checked / closed / re-opened.
+
+- A closeWindow — expected evidence horizon. Some AFIs close in 2 weeks (hinge point assessment added). Some take 6 weeks (lasting learning change). The close window reflects this.
+
+- An evidence chain — every linked action, reflection, observation, and data point.
+
+**AFI status lifecycle**
+
+| **open** | Identified in DevObs, LW, referral, or Health Check. No action yet taken. |
+| --- | --- |
+| **actioned** | Intervention selected and initiated — coaching session, Teach Meet, LinkedIn pathway, resource shared, training programme. |
+| **impact-checked** | A follow-up observation, reflection, Health Check score, or data point has been recorded against this AFI. |
+| **closed** | Evidence shows the gap is addressed. Rationale recorded. May reopen if follow-up evidence contradicts. |
+| **re-opened** | Subsequent evidence shows the change was not sustained or the gap persists in a different form. |
+
+**From AFI to intervention — the action selection flow**
+
+When an AFI is identified (e.g. at the end of a DevObs), a panel appears: "This observation identified an AFI — what's your response?" The options:
+
+- Book a coaching session — selects a coaching question set matched to the AFI's TLA stage and dimension score (heuristic logic, not AI).
+
+- Run a Teach Meet — selects or creates a Teach Meet plan template linked to the focus.
+
+- Assign a LinkedIn Learning pathway — selects from curated pathways tagged to the relevant stage and topic.
+
+- Share a resource — selects from the resource library, tagged to focus.
+
+- Refer to a training programme — Cognition PPLD, ETF module, Jisc pathway, or equivalent.
+
+Each option generates a linked action record with: parentAFI reference, KPI tag, target review date, and responsible person.
+
+**Heuristic coaching question logic**
+
+Coaching questions are not generic. They adapt based on: (1) which Six Stage the AFI sits in, (2) the dimension score (how far along the development journey the teacher is), and (3) context (is digital already present? Is the teacher resistant, curious, or leading?). Rule-based lookup, not AI. Examples:
+
+- Gap in Assessment stage + no digital present → "At what point in this session could you see what every learner was thinking? What would you do differently if you could?"
+
+- Gap in Assessment stage + digital present but superficial → "The poll gave you the numbers — what did you do differently because of what you saw?"
+
+- Gap in Lasting Learning + teacher at ETF Stage 1 → "If a learner missed this session, what would they find when they opened Teams tonight?"
+
+**8.  Template Library**
+
+Reusable structured documents authored once, deployed in different contexts. Templates are not blank forms — they have content, structure, and intent baked in. An instance is a specific use of a template with context-specific fields completed.
+
+**Template types**
+
+| **Teach Meet plans** | Title, focus (pyramid level / Six Stage / topic), learning outcomes, session structure (timed), resources list, facilitator notes, reflection prompt at end. Bookable — a staff member can be added to an existing plan. |
+| --- | --- |
+| **Coaching question sets** | Organised by Six Stage and development level. Questions grouped: opening / exploring / challenging / closing. Dynamically surfaced based on AFI and dimension score. |
+| **Meeting agendas** | Reusable agenda structures for recurring meeting types: 1:1 with Digital Lead, HoA digital conversation, TLAM update, team Teach Meet, area coaching review. Roll out the same agenda type with different audiences — date, attendees and context fill in; structure is preserved. |
+| **Observation frameworks** | Pre-structured DevObs and LW focuses. Select the focus area, a question set pre-populates the observation rows. Used where there is a known AFI going into the observation. |
+| **Note Space templates** | For conferences, external CPD, attending other meetings. Upload a reference document (agenda, timetable, schedule). Make annotated notes alongside it. Output becomes a structured record. |
+
+**How templates work in practice**
+
+- Graeme authors a Teach Meet plan for "Teams Environments — organising channels for learning."
+
+- The plan is saved to the Template Library with tags: pyramid level = Foundations, Six Stage = Building Blocks, topic = Teams.
+
+- When a DevObs in BUI identifies an AFI in Building Blocks, the system surfaces this template as a suggested response.
+
+- Graeme selects it, adds Christie Ross as the staff member, sets a date. An instance is created in the BUI activity log, linked to the AFI.
+
+- After the Teach Meet, a reflection link is shared. Christie's reflection links back to the AFI. The loop moves from actioned to impact-checked.
+
+**9.  Reflection Module**
+
+Anonymous reflections from staff following coaching sessions, Teach Meets, CPD, and training. Both an impact evidence mechanism and a genuine staff voice instrument.
+
+**Three reflection contexts**
+
+| **Individual (named internally)** | Josh completes a reflection after his 1:1 coaching session. Saved to his named profile in BUI. Visible at individual level with his name. Anonymous at area level — appears as "staff member reflected following coaching session." |
+| --- | --- |
+| **Area / event (anonymous)** | After a BUI Teach Meet, a reflection link is shared with all attendees. No login required. Responses aggregate against the event record. Area Overview shows themes and sentiment without attributing to individuals. |
+| **Cross-college (strategic)** | Aggregated reflections across all areas on a theme feed the Ben Manning monthly report and the performance review evidence pack. |
+
+**Reflection timing — two stages**
+
+- Immediate: short, submitted on the day. "How did this land? What are you going to try?" Captures reaction and intention.
+
+- Follow-up: submitted 2–4 weeks later. "What has actually changed in your practice? What have you noticed?" Captures genuine impact. This is when the AFI loop can close or reopen.
+
+Both stages are prompted automatically. The follow-up reminder surfaces in the Hub against the original event and AFI record.
+
+**Technical approach — shareable in-hub form**
+
+Reflection form is a separate lightweight HTML page on the same GitHub Pages deployment. Accessed via a short URL with query parameters encoding the event ID, area code, and staff identifier (anonymised). On submission, it writes directly to the Hub's localStorage under a pending-reflections key. When the Hub is next opened, it detects pending reflections and imports them in one click — no download, no upload, no Excel.
+
+For area events (Teach Meets), a QR code is generated from within the Hub and displayed at the end of the session. Any device, any browser. Responses are collected and available when the Hub is next opened.
+
+**How reflections feed impact data**
+
+- Reflection tagged to event → event record shows reflection count and aggregate themes.
+
+- Reflection tagged to AFI (via event) → AFI evidence chain gains a staff voice data point.
+
+- Immediate + follow-up pair → system can show: stated intention vs reported practice change.
+
+- Area Overview → aggregate confidence ratings and practice change indicators, anonymous.
+
+- Neil weekly report → "Following the BUI Teach Meet on Teams environments, 4 of 6 staff reported increased confidence; 2 identified a specific change in practice."
+
+- Ben Manning monthly → pyramid-level confidence data across all areas, with trend over time.
+
+**10.  The Six Stages of Learning — Digital Taxonomy**
+
+The Six Stages of Learning (Learning Intentions, Building Blocks, Starting Points, Activities, Assessment, Lasting Learning) provide the pedagogical backbone for all observation, AFI identification, coaching, and template organisation in the Hub. This is the language used in induction — it is already shared across the college.
+
+**Design principles for the taxonomy**
+
+- Digital practices are mapped to stages — not mandated within them. A Mentimeter poll might be the right hinge point tool. It might not. The rationale and expected impact are what matter (Hattie: "know thy impact").
+
+- Observables are written as WalkThru-style descriptors — specific enough to be recognisable in a session, flexible enough to apply across subject contexts (Sherrington).
+
+- The taxonomy operates at three layers: (1) what the teacher does, (2) what the teacher-learner interaction produces, (3) what the learner does independently. Layer 3 is where the most powerful learning happens.
+
+- Student-centred learning is the thread — David Price: "the one who does the work does the learning." Observables at the Activities and Assessment stages are written to foreground what learners are doing, not just what teachers are doing.
+
+- 21CLD dimensions (Collaboration, Knowledge Construction, Self-Regulation, Skilled Communication) map into this taxonomy and provide a learner-quality lens that teacher-behaviour observables alone cannot supply.
+
+- AI for learning is positioned as a tool for visible thinking and metacognition — not content generation. DigCompEdu and Jisc AI Literacy principles underpin this.
+
+**Connection to the Hub**
+
+- Every DevObs observation row is tagged to a Six Stage — this is the dropdown Neil is iterating.
+
+- Every AFI is rooted in a Six Stage — the TLA gap is named before the digital opportunity is offered.
+
+- Every template in the Template Library is tagged to a Six Stage — surfaced when relevant to an AFI.
+
+- Every coaching question set is organised by Six Stage — selected dynamically based on AFI context.
+
+- Every LinkedIn Learning pathway in the resource library is tagged to a Six Stage — recommended when digital CPD is the appropriate response.
+
+**11.  What Is Not In the Hub (and Why)**
+
+| **Achievement ****&**** outcomes data** | Lives in MIS. The Hub holds a reference field (qipRef) and can note trend direction, but does not replicate or store live data. |
+| --- | --- |
+| **Learner voice (direct)** | Learner reflections and voice are captured via existing college mechanisms (surveys, PSHE, tutorials). The Hub holds a field for DPC-observed learner experience but does not collect learner data directly. |
+| **Staff HR records** | The Hub is a coaching tool, not an HR tool. It holds coaching conversation records, development priorities, and impact evidence — not appraisal, capability, or contract data. |
+| **Real-time data feeds** | Century diagnostic scores, Jisc Discovery Tool results, and Moodle data are ingested via upload, not live API. This is intentional — the DPC reviews and contextualises all incoming data before it enters the Hub. |
+| **Shared access for others** | The Hub runs on the DPC's device and is password-protected. No other user accounts. Digital Leads and HoAs interact with the system through forms and uploads that Graeme processes — not by logging in directly. |
+
+**12.  Build Sequence**
+
+Priority order reflects what will deliver most value first and what downstream modules depend on.
+
+| **1. AFI schema** | First-class AFI objects. Everything else depends on this. Define the lifecycle, the fields, the status model. |
+| --- | --- |
+| **2. DevObs modal** | Port from Evidence Hub. Dual-write. Add Six Stage tagging on observation rows. AFI creation on save. |
+| **3. LRA modal** | Port from Evidence Hub. Dual-write. Same Six Stage tagging. |
+| **4. Template Library** | Teach Meet plans, coaching question sets, meeting agendas. AFI → template surfacing logic. |
+| **5. Staff Profile pages** | Dynamic creation. ETF stage, three priorities, full history view, reflection timeline. |
+| **6. Staff Development — Tab 6** | Industry + pedagogy matrices, gap analysis, auto action plans, CPD log. |
+| **7. Reflection module** | In-hub shareable form, immediate + follow-up, anonymous aggregation, AFI wiring. |
+| **8. Digital HC ingestion** | Upload → AI extraction → provisional RAG → DPC review → area record update. |
+| **9. Note Space** | Unstructured capture, uploaded reference document, conference/CPD/external meeting use. |
+| **10. Report Builder expansion** | Fifth template (performance review, AI narrative). HoA and DL reports deepened. |
+| **11. Evidence Hub merge decision** | January 2027 natural pause. Option A (parallel), B (merge), or C (SharePoint bridge). |
+
+**13.  Key Design Decisions — Rationale on Record**
+
+These decisions were made deliberately. Recording the rationale prevents them from being unpicked without thought.
+
+| **localStorage not SharePoint** | CE+/ISO policy blocks OneDrive "Anyone with the link" sharing. localStorage with manual JSON download is compliant, fast, and under the DPC's control. Path 2 (SharePoint via Microsoft Graph API) remains an option for a future phase with institutional backing. |
+| --- | --- |
+| **No individual logins** | Staff interact through forms and uploads. The DPC is the data quality layer. This is appropriate to the coaching role and avoids any perception that the Hub is a surveillance or monitoring system. |
+| **AI at Haiku level for ingestion** | Haiku is fast, cheap, and accurate enough for structured data extraction from known formats (Forms Excel, Moodle export). DPC review is always the final step. Sonnet is reserved for the performance review narrative generation. |
+| **TLA-rooted AFIs** | AFIs are identified at the level of pedagogical practice (Six Stages), not at the level of digital tools. This keeps the coaching conversation grounded in learning rather than technology. |
+| **Heuristic coaching questions, not AI** | Rule-based question sets are predictable, auditable, and do not require API calls in the observation moment. The DPC can also override and add to them. AI question generation is a future possibility, not a current dependency. |
+| **Evidence Hub parallel running** | The Evidence Hub remains live for quick capture, evidence logging, VFM, and resource library. The Impact Hub handles area-level work. Merge at January 2027 natural pause. |
+| **Six Stages as the shared language** | These are already used in induction at Weston College. Adopting them as the backbone of the Hub's taxonomy means the system speaks the same language as teachers, TLAMs, and HoAs — no new framework to learn. |
+
+DPC Impact Hub · Full System Scope · Graeme Wright · Weston College Group · June 2026 · v1.0

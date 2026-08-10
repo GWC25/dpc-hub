@@ -1,0 +1,247 @@
+# HoA Digital Skills & Infrastructure Audit Form
+
+Setup Guide for Microsoft Forms
+
+## Quick Overview
+
+This form collects comprehensive digital skills and infrastructure data from all 34 curriculum areas. HoAs fill it in themselves (15–20 mins) with the Digital Skills Framework as reference. Responses auto-populate a SharePoint list or downloadable Excel for your manual sync into the tracker.
+
+## Step-by-Step Setup
+
+- Open forms.office.com and sign in with your college account
+
+- Click "New Form"
+
+- Copy this title: "HoA Digital Skills & Infrastructure Audit"
+
+- Copy this description: "Digital skills mapping and infrastructure assessment for your curriculum area. Uses the Weston College Digital Skills Framework as reference. Takes 15–20 minutes."
+
+- Set to "Collaborators can edit form" (allows HoAs to revisit and update)
+
+## Form Questions — Copy & Paste
+
+### SECTION 1: RESPONDENT INFO
+
+Q1: Your Curriculum Area
+
+Type: Short answer | Required | Placeholder: "e.g. Engineering & Motor Vehicle [EMV]"
+
+Q2: Your Name
+
+Type: Short answer | Required
+
+### SECTION 2: DIGITAL SKILLS FOR LEARNERS & STAFF
+
+Add Section Break
+
+Heading: "Section 1: Digital Skills for Your Learners & Staff"
+
+Description: "Reference: Digital Skills Framework Tab 2 (All Subjects & Curriculum Areas) and Tab 3 (Industry-Specific Digital Skills)."
+
+Q3: Core Digital Skills for Learners
+
+Type: Long answer | Required
+
+Instructions: "List 3–5 digital skills your learners MUST develop to succeed in your industry or next progression route. Include both general EDS skills (communication, data handling, AI literacy) and industry-specific tools (e.g. CAD, diagnostic software, clinical systems). Be as specific as possible."
+
+Note: "Examples from the framework: Construction learners need CAD/BIM, digital site diaries, QR clock-in systems. Health learners need electronic patient records (SystmOne/EMIS), telehealth platforms. Creative learners need Adobe Suite, version control, AI-assisted design tools."
+
+Q4: How Have These Skills Been Baselined?
+
+Type: Long answer | Optional
+
+Instructions: "How do you currently measure or track whether your learners are developing these skills? (e.g. entry diagnostic, end-of-unit assessment, placement feedback, employer feedback, portfolio evidence)"
+
+Q5: Staff Digital Capability Needed
+
+Type: Long answer | Required
+
+Instructions: "What digital skills do YOUR STAFF need to teach these competently? (e.g. ability to use the industry-standard tools themselves, confidence with digital assessment, ability to troubleshoot learner digital problems, knowledge of AI in your sector)"
+
+Q6: Staff Readiness — Current State
+
+Type: Long answer | Optional
+
+Instructions: "Where are your staff currently on the journey? Are they confident with these tools? Where are the gaps? (Reference: Framework Tab 7 — Teacher Digital Skills Progression)"
+
+### SECTION 3: HARDWARE INFRASTRUCTURE
+
+Add Section Break
+
+Heading: "Section 2: Hardware Infrastructure"
+
+Description: "Assess your current device access and what you need."
+
+Q7: Devices — Current State
+
+Type: Long answer | Required | Instructions: "What devices do your learners currently have access to in college? (e.g. college PCs, tablets, laptops, industry-specific equipment like diagnostic tools, VR headsets, 3D printers)"
+
+Q8: Devices — What You Need
+
+Type: Long answer | Optional | Instructions: "What devices or equipment would significantly improve your teaching and learner outcomes? What's missing or out of date?"
+
+Q9: Network & Connectivity
+
+Type: Long answer | Optional | Instructions: "Are there connectivity issues in your teaching spaces? (e.g. Wi-Fi strength, bandwidth, mobile signal, printing infrastructure)"
+
+### SECTION 4: SOFTWARE & LEARNING TOOLS
+
+Add Section Break
+
+Heading: "Section 3: Software & Learning Tools"
+
+Description: "Map your current software provision against what you need."
+
+Q10: Software — Currently Available
+
+Type: Long answer | Required | Instructions: "What software or digital tools do your learners currently have access to? (Include: VLE, Teams, Microsoft 365, industry-specific applications, simulation software, design tools, any sector-specific platforms)"
+
+Q11: Software — Critical Gaps
+
+Type: Long answer | Optional | Instructions: "What industry-standard tools are you NOT able to access right now but NEED? (e.g. CAD software, diagnostic platforms, design suites, data analysis tools). What would unlock better learning?"
+
+Q12: VLE & Digital Learning Environment
+
+Type: Long answer | Optional | Instructions: "How are you currently using your VLE (Moodle/Canvas)? Is it functioning well for your area? Any gaps in digital delivery infrastructure?"
+
+### SECTION 5: ACCESSIBILITY & ASSISTIVE TECHNOLOGY
+
+Add Section Break
+
+Heading: "Section 4: Accessibility & Assistive Technology"
+
+Description: "Assess your current support for learners with SEND and accessibility needs."
+
+Q13: Assistive Technology — Currently Available
+
+Type: Long answer | Optional | Instructions: "What assistive technology or accessibility tools do you currently have available for learners with SEND? (e.g. Read&Write, Immersive Reader, speech-to-text, eye-gaze software, switch access, adapted keyboards)"
+
+Q14: Accessibility — Barriers for Learners
+
+Type: Long answer | Optional | Instructions: "Are there learners in your area who cannot access digital resources or tools due to accessibility issues? What's blocking them? (Reference: Framework Tab 5 — SEND & Inclusion)"
+
+### SECTION 6: BARRIERS & BLOCKERS
+
+Add Section Break
+
+Heading: "Section 5: Barriers & Blockers"
+
+Description: "Be honest about what's preventing you from delivering industry-standard digital skills."
+
+Q15–Q19: Barrier questions (Device Access, Software Licensing, Staff Capability, Network, Other)
+
+Type: Long answer | Optional each
+
+(See setup guide in outputs folder for full text of each — they follow the same pattern: "How does [barrier] hinder your teaching?")
+
+### SECTION 7: IMPACT & EVIDENCE
+
+Add Section Break
+
+Heading: "Section 6: Impact & Evidence"
+
+Description: "Tell us about the impact digital skills are having (or could have) on your learners."
+
+Q20: Current Impact — What's Working?
+
+Type: Long answer | Optional
+
+Instructions: "What digital approaches or tools are currently having a positive impact on your learners? Can you give a concrete example? (e.g. employer feedback, progression rates, learner confidence, assessment outcomes)"
+
+Q21: Potential Impact — If We Resolved the Barriers
+
+Type: Long answer | Optional
+
+Instructions: "If we removed the top barriers (better devices, staff CPD, software access), what difference would it make to your learners' outcomes?"
+
+### SECTION 8: SUPPORT & NEXT STEPS
+
+Add Section Break
+
+Heading: "Section 7: Support & Next Steps"
+
+Description: "What support would help most?"
+
+Q22: What Support Would Help Most?
+
+Type: Long answer | Optional
+
+Q23: Anything Else?
+
+Type: Long answer | Optional
+
+## After Creating the Form
+
+### 1. Add Hyperlinks to the Framework
+
+In each section description, add clickable links to the Digital Skills Framework tabs. You can do this directly in Forms by pasting the link URL.
+
+- Tab 2 (All Subjects): https://gwc25.github.io/Digital-Skills-Framework/#tab02
+
+- Tab 3 (Industry-Specific): https://gwc25.github.io/Digital-Skills-Framework/#tab03
+
+- Tab 5 (SEND & Inclusion): https://gwc25.github.io/Digital-Skills-Framework/#tab05
+
+- Tab 7 (Teacher Skills): https://gwc25.github.io/Digital-Skills-Framework/#tab07
+
+### 2. Share the Form
+
+- Click "Share" in the top right, copy the link
+
+- Send to all HoAs with a covering email (see template below)
+
+- Set deadline (suggest end of Friday this week)
+
+### 3. Collect & Review Responses
+
+- In Forms, click "Responses" tab to see live responses
+
+- Click "Open in Excel" to download all responses
+
+- Manually sync key findings into your HoA tracker (barriers, skills gaps, infrastructure needs)
+
+## Email Template to HoAs
+
+Subject: Digital Skills & Infrastructure Audit — Please Complete by Friday
+
+Hi [HoA Name],
+
+As part of the Digital Leads Programme planning, we're running a digital skills and infrastructure audit across all 34 curriculum areas. This helps us understand what you need, what's working, and what barriers we need to tackle together.
+
+Please fill in this form by end of day Friday. It takes 15–20 minutes. As you fill it in, you'll see prompts to reference the Digital Skills Framework — this gives you concrete examples of what we're asking for rather than generic questions.
+
+[FORM LINK]
+
+The form covers:
+
+- Digital skills your learners and staff need
+
+- Current hardware (devices)
+
+- Software and learning tools you have access to
+
+- Accessibility and assistive technology
+
+- Real barriers preventing you from delivering digital skills (devices, licensing, staff, network, etc.)
+
+- Impact you're already seeing from digital approaches
+
+This is your honest input — we want to hear what's actually happening in your area, not what you think we want to hear. The barriers section especially: we need to know what's hindering you so we can do something about it.
+
+Questions? Email me or catch me before Heads Together next Wednesday.
+
+Graeme
+
+## Troubleshooting
+
+### HoAs can't edit/submit after initial submission
+
+Make sure you turned on "Collaborators can edit form" when you created it.
+
+### Links to the framework tabs don't work
+
+Make sure the URLs have the correct anchor tags (#tab02, #tab03, etc.). Test them in a new browser tab before sharing the form.
+
+### Excel download has empty rows
+
+This is normal in Forms — it includes section breaks as rows. Just filter them out when syncing into your tracker.

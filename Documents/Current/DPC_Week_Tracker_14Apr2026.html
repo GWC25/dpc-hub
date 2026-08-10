@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week Plan · w/c 14 April 2026 · DPC</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
+
+:root {
+  --bg:       #f4f3ef;
+  --surface:  #ffffff;
+  --border:   #e2e0d8;
+  --text:     #1a1916;
+  --muted:    #6b6860;
+  --accent:   #1d4e89;
+  --font:     'DM Sans', sans-serif;
+  --mono:     'DM Mono', monospace;
+  --display:  'DM Serif Display', serif;
+
+  /* RAG palette */
+  --r1-bg: #fef2f2; --r1-border: #fca5a5; --r1-text: #991b1b; --r1-pill: #dc2626;
+  --r2-bg: #fff7ed; --r2-border: #fdba74; --r2-text: #9a3412; --r2-pill: #ea580c;
+  --r3-bg: #fefce8; --r3-border: #fde047; --r3-text: #854d0e; --r3-pill: #ca8a04;
+  --r4-bg: #f0fdf4; --r4-border: #86efac; --r4-text: #166534; --r4-pill: #16a34a;
+  --r5-bg: #eff6ff; --r5-border: #93c5fd; --r5-text: #1e40af; --r5-pill: #2563eb;
+
+  /* owner colours */
+  --ai-c:   #6d28d9; --ai-bg:   #ede9fe;
+  --you-c:  #0f766e; --you-bg:  #ccfbf1;
+  --both-c: #b45309; --both-bg: #fef3c7;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+.hdr {
+  background: var(--accent);
+  color: #fff;
+  padding: 0 1.5rem;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.hdr-left h1 { font-size: .95rem; font-weight: 600; }
+.hdr-left p  { font-size: .7rem; opacity: .7; font-family: var(--mono); }
+.hdr-right   { display: flex; align-items: center; gap: .75rem; }
+.progress-ring { font-size: .8rem; font-family: var(--mono); background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); border-radius: 99px; padding: 3px 12px; }
+.progress-ring b { font-weight: 700; }
+
+/* ── MAIN ── */
+.main { max-width: 1200px; margin: 0 auto; padding: 1.25rem 1.25rem 4rem; }
+
+/* ── LEGEND ROW ── */
+.legend-row {
+  display: flex; gap: 1.5rem; flex-wrap: wrap;
+  margin-bottom: 1rem;
+  font-size: .72rem; color: var(--muted);
+  align-items: center;
+}
+.legend-row strong { color: var(--text); font-size: .72rem; }
+.l-group { display: flex; gap: .75rem; align-items: center; }
+.l-item  { display: flex; gap: 5px; align-items: center; }
+.l-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.l-dot    { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.sep { color: var(--border); }
+
+/* ── STATS ROW ── */
+.stats { display: flex; gap: .6rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.stat {
+  background: var(--surface); border: .5px solid var(--border);
+  border-radius: 8px; padding: .6rem .9rem; text-align: center; min-width: 80px;
+}
+.stat-n { font-size: 1.4rem; font-weight: 700; font-family: var(--display); line-height: 1; }
+.stat-l { font-size: .65rem; color: var(--muted); margin-top: .2rem; }
+
+/* ── CALENDAR GRID ── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: .6rem;
+}
+@media (max-width: 700px) {
+  .cal-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 400px) {
+  .cal-grid { grid-template-columns: 1fr; }
+}
+
+.day-col {
+  background: var(--surface);
+  border: .5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 300px;
+}
+.day-hdr {
+  padding: .55rem .75rem;
+  border-bottom: .5px solid var(--border);
+  background: var(--bg);
+}
+.day-name { font-size: .8rem; font-weight: 600; }
+.day-date { font-size: .68rem; color: var(--muted); font-family: var(--mono); }
+.day-cards { padding: .5rem .4rem; display: flex; flex-direction: column; gap: .35rem; }
+
+/* ── CALENDAR CARD CHIP ── */
+.chip {
+  border-radius: 7px;
+  padding: .45rem .6rem;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: filter .12s, transform .1s;
+  position: relative;
+  user-select: none;
+}
+.chip:hover { filter: brightness(.95); transform: translateY(-1px); }
+.chip:active { transform: translateY(0); }
+.chip.done-chip { opacity: .45; }
+.chip.done-chip::after {
+  content: '✓';
+  position: absolute; top: 4px; right: 6px;
+  font-size: .65rem; font-weight: 700;
+  color: #15803d;
+}
+.chip-title { font-size: .72rem; font-weight: 600; line-height: 1.3; padding-right: 10px; }
+.chip-meta  { display: flex; gap: 4px; margin-top: .25rem; flex-wrap: wrap; align-items: center; }
+.chip-badge {
+  font-size: .6rem; font-family: var(--mono); font-weight: 500;
+  padding: 1px 6px; border-radius: 99px; white-space: nowrap; line-height: 1.5;
+}
+.b-ai   { background: #ede9fe; color: #5b21b6; }
+.b-you  { background: #ccfbf1; color: #0f766e; }
+.b-both { background: #fef3c7; color: #92400e; }
+.b-dur  { background: var(--bg); color: var(--muted); border: .5px solid var(--border); }
+
+/* RAG chip colours */
+.rag-1 { background: var(--r1-bg); border-left-color: var(--r1-pill); }
+.rag-2 { background: var(--r2-bg); border-left-color: var(--r2-pill); }
+.rag-3 { background: var(--r3-bg); border-left-color: var(--r3-pill); }
+.rag-4 { background: var(--r4-bg); border-left-color: var(--r4-pill); }
+.rag-5 { background: var(--r5-bg); border-left-color: var(--r5-pill); }
+
+/* ── MODAL OVERLAY ── */
+.overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(15,15,15,.45);
+  align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border-radius: 14px;
+  width: 100%; max-width: 620px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  animation: pop .18s ease;
+}
+@keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.modal-hdr {
+  padding: 1.1rem 1.25rem .75rem;
+  border-bottom: .5px solid var(--border);
+  display: flex; align-items: flex-start; gap: .75rem;
+}
+.modal-rag-bar {
+  width: 5px; border-radius: 99px; flex-shrink: 0; align-self: stretch; min-height: 36px;
+}
+.modal-titles { flex: 1; min-width: 0; }
+.modal-title  { font-size: 1rem; font-weight: 600; line-height: 1.35; }
+.modal-sub    { font-size: .78rem; color: var(--muted); margin-top: .2rem; }
+.modal-close {
+  background: var(--bg); border: .5px solid var(--border);
+  border-radius: 99px; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: .85rem; color: var(--muted);
+  flex-shrink: 0; margin-left: .5rem;
+  transition: background .12s;
+}
+.modal-close:hover { background: var(--border); }
+
+.modal-badges {
+  padding: .6rem 1.25rem;
+  display: flex; gap: .4rem; flex-wrap: wrap;
+  border-bottom: .5px solid var(--border);
+}
+.m-badge {
+  font-size: .68rem; font-family: var(--mono); font-weight: 500;
+  padding: 2px 9px; border-radius: 99px;
+}
+.mb-rag1 { background: var(--r1-bg); color: var(--r1-text); border: .5px solid var(--r1-border); }
+.mb-rag2 { background: var(--r2-bg); color: var(--r2-text); border: .5px solid var(--r2-border); }
+.mb-rag3 { background: var(--r3-bg); color: var(--r3-text); border: .5px solid var(--r3-border); }
+.mb-rag4 { background: var(--r4-bg); color: var(--r4-text); border: .5px solid var(--r4-border); }
+.mb-rag5 { background: var(--r5-bg); color: var(--r5-text); border: .5px solid var(--r5-border); }
+.mb-ai   { background: #ede9fe; color: #5b21b6; }
+.mb-you  { background: #ccfbf1; color: #0f766e; }
+.mb-both { background: #fef3c7; color: #92400e; }
+.mb-dur  { background: var(--bg); color: var(--muted); border: .5px solid var(--border); }
+
+.modal-body { padding: 1rem 1.25rem; }
+
+.m-section { margin-bottom: 1rem; }
+.m-label {
+  font-size: .63rem; font-family: var(--mono); font-weight: 500;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: .4rem;
+}
+
+/* prompt */
+.prompt-box {
+  background: #f8f7f4;
+  border: .5px solid var(--border);
+  border-left: 3px solid #6d28d9;
+  border-radius: 6px;
+  padding: .65rem .75rem;
+  font-size: .76rem; font-family: var(--mono);
+  color: var(--text); line-height: 1.6;
+  white-space: pre-wrap; word-break: break-word;
+}
+.copy-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: .35rem;
+  font-size: .7rem; color: var(--accent);
+  background: none; border: .5px solid var(--accent);
+  border-radius: 99px; padding: 2px 10px;
+  cursor: pointer; font-family: var(--font);
+  transition: background .12s, color .12s;
+}
+.copy-btn:hover { background: var(--accent); color: #fff; }
+.copy-btn.copied { background: #15803d; border-color: #15803d; color: #fff; }
+
+/* questions */
+.qs { list-style: none; padding: 0; }
+.qs li {
+  font-size: .78rem; color: var(--muted);
+  padding: .3rem 0 .3rem .9rem;
+  border-bottom: .5px dashed var(--border);
+  line-height: 1.45; position: relative;
+}
+.qs li:last-child { border-bottom: none; }
+.qs li::before {
+  content: '?'; position: absolute; left: 0; top: .33rem;
+  color: #c2410c; font-weight: 700; font-size: .68rem;
+}
+
+/* notes */
+.notes-ta {
+  width: 100%; min-height: 72px; padding: .5rem .6rem;
+  font-family: var(--font); font-size: .78rem;
+  background: var(--bg); border: .5px solid var(--border);
+  border-radius: 6px; color: var(--text); resize: vertical; line-height: 1.5;
+}
+.notes-ta:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.notes-ta::placeholder { color: var(--muted); }
+
+/* done toggle */
+.done-toggle {
+  display: flex; align-items: center; gap: .6rem;
+  margin-top: .25rem; padding: .65rem 0; border-top: .5px solid var(--border);
+}
+.done-toggle input[type=checkbox] { width: 18px; height: 18px; accent-color: #15803d; cursor: pointer; }
+.done-toggle label { font-size: .8rem; color: var(--muted); cursor: pointer; }
+
+/* evidence hub panel */
+.hub-panel {
+  margin-top: 1.5rem;
+  background: #eff6ff;
+  border: .5px solid #bfdbfe;
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+}
+.hub-panel h3 { font-size: .78rem; font-weight: 600; color: var(--accent); margin-bottom: .5rem; }
+.hub-panel ul { list-style: none; padding: 0; }
+.hub-panel li {
+  font-size: .77rem; color: var(--text);
+  padding: .3rem 0 .3rem .85rem;
+  border-bottom: .5px dashed #bfdbfe;
+  line-height: 1.4; position: relative;
+}
+.hub-panel li:last-child { border-bottom: none; }
+.hub-panel li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: .7rem; top: .33rem; font-weight: 600; }
+.hub-panel strong { color: var(--accent); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+</style>
+</head>
+<body>
+
+<header class="hdr" role="banner">
+  <div class="hdr-left">
+    <h1>Week Plan · w/c 14 April 2026</h1>
+    <p>Digital Pedagogy Coach · Weston College Group</p>
+  </div>
+  <div class="hdr-right">
+    <div class="progress-ring"><b id="done-n">0</b> / <span id="tot-n">0</span> done</div>
+  </div>
+</header>
+
+<main class="main">
+  <h2 class="sr-only">Weekly calendar action tracker for Digital Pedagogy Coach, Weston College, w/c 14 April 2026</h2>
+
+  <!-- LEGEND -->
+  <div class="legend-row" role="note" aria-label="Colour legend">
+    <strong>Priority (RAG):</strong>
+    <div class="l-group">
+      <div class="l-item"><div class="l-swatch" style="background:#dc2626"></div>1 — do today</div>
+      <div class="l-item"><div class="l-swatch" style="background:#ea580c"></div>2 — urgent</div>
+      <div class="l-item"><div class="l-swatch" style="background:#ca8a04"></div>3 — this week</div>
+      <div class="l-item"><div class="l-swatch" style="background:#16a34a"></div>4 — in hand</div>
+      <div class="l-item"><div class="l-swatch" style="background:#2563eb"></div>5 — when confirmed</div>
+    </div>
+    <div class="sep">·</div>
+    <strong>Owner:</strong>
+    <div class="l-group">
+      <div class="l-item"><div class="l-dot" style="background:#6d28d9"></div>AI</div>
+      <div class="l-item"><div class="l-dot" style="background:#0f766e"></div>You</div>
+      <div class="l-item"><div class="l-dot" style="background:#b45309"></div>Together</div>
+    </div>
+    <div class="sep">·</div>
+    <div class="l-item" style="opacity:.5"><div class="l-swatch" style="background:#aaa;border-radius:50%"></div>faded = done</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="s-tot">0</div><div class="stat-l">total</div></div>
+    <div class="stat"><div class="stat-n" style="color:#15803d" id="s-done">0</div><div class="stat-l">done</div></div>
+    <div class="stat"><div class="stat-n" style="color:#6d28d9" id="s-ai">0</div><div class="stat-l">AI handles</div></div>
+    <div class="stat"><div class="stat-n" style="color:#0f766e" id="s-you">0</div><div class="stat-l">you lead</div></div>
+    <div class="stat"><div class="stat-n" style="color:#b45309" id="s-both">0</div><div class="stat-l">together</div></div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="cal-grid" id="cal-grid" role="grid" aria-label="Week calendar">
+    <div class="day-col">
+      <div class="day-hdr"><div class="day-name">Monday</div><div class="day-date">14 Apr</div></div>
+      <div class="day-cards" id="day-mon"></div>
+    </div>
+    <div class="day-col">
+      <div class="day-hdr"><div class="day-name">Tuesday</div><div class="day-date">15 Apr</div></div>
+      <div class="day-cards" id="day-tue"></div>
+    </div>
+    <div class="day-col">
+      <div class="day-hdr"><div class="day-name">Wednesday</div><div class="day-date">16 Apr</div></div>
+      <div class="day-cards" id="day-wed"></div>
+    </div>
+    <div class="day-col">
+      <div class="day-hdr"><div class="day-name">Thursday</div><div class="day-date">17 Apr</div></div>
+      <div class="day-cards" id="day-thu"></div>
+    </div>
+    <div class="day-col">
+      <div class="day-hdr"><div class="day-name">Friday</div><div class="day-date">18 Apr</div></div>
+      <div class="day-cards" id="day-fri"></div>
+    </div>
+  </div>
+
+  <!-- EVIDENCE HUB -->
+  <div class="hub-panel" role="complementary" aria-labelledby="hub-h">
+    <h3 id="hub-h">Evidence Hub — log these this week</h3>
+    <ul>
+      <li><strong>Three agreed documents</strong> (Accessibility resource, Digital Strategy/toolkit, 10 Responsibilities) — log all three as evidence entries with reviewer name and date. Accountability-level items.</li>
+      <li><strong>Ben Manning meeting (Fri 24 Apr)</strong> — pre-log now with provisional agenda. Update outcomes on Friday. KPI links: QIP Traction · Staff Capability.</li>
+      <li><strong>ESOL (ESO) HoA Tracker</strong> — Quick Capture push after the meeting. Note team session date, Digital Lead status (John TBC), IT escalation. RAG stays 4.</li>
+      <li><strong>Sport (SPO) HoA Tracker</strong> — log outreach attempt this week even if no meeting results. Dated contact record protects you if Dan Pratlett stays hard to engage.</li>
+      <li><strong>Neil Davies — working pattern discussion</strong> — log as a meeting record. Outcome: agreed in principle. Action: confirm in writing.</li>
+      <li><strong>Digital Leads Training Plan</strong> — log as completed Staff Development deliverable under Accountability 3. Note: reviewed by Neil, date agreed.</li>
+      <li><strong>Digital Lead one-pager</strong> — once shared with TLAMs, log immediately. Named milestone for the July 2026 governance review under Accountability 3.</li>
+      <li><strong>Century meeting setup</strong> — once arranged, log as planned meeting. Link to Accountability 9. Action: confirm E&amp;M team training date.</li>
+    </ul>
+  </div>
+</main>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
+  <div class="modal" id="modal">
+    <div class="modal-hdr">
+      <div class="modal-rag-bar" id="m-ragbar"></div>
+      <div class="modal-titles">
+        <div class="modal-title" id="modal-title-text"></div>
+        <div class="modal-sub"  id="modal-sub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-badges" id="modal-badges"></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const STORE = 'dpc-cal-apr14';
+
+/* ── RAG META ── */
+const RAG = {
+  1: { label:'Priority 1 — do today',    bar:'#dc2626', cls:'rag-1', mbcls:'mb-rag1' },
+  2: { label:'Priority 2 — urgent',      bar:'#ea580c', cls:'rag-2', mbcls:'mb-rag2' },
+  3: { label:'Priority 3 — this week',   bar:'#ca8a04', cls:'rag-3', mbcls:'mb-rag3' },
+  4: { label:'Priority 4 — in hand',     bar:'#16a34a', cls:'rag-4', mbcls:'mb-rag4' },
+  5: { label:'Priority 5 — when confirmed', bar:'#2563eb', cls:'rag-5', mbcls:'mb-rag5' },
+};
+
+const OWNER = {
+  ai:   { label:'AI handles it',  cls:'b-ai',   mbcls:'mb-ai'   },
+  you:  { label:'You lead it',    cls:'b-you',  mbcls:'mb-you'  },
+  both: { label:'Together',       cls:'b-both', mbcls:'mb-both' },
+};
+
+/* ── ACTION DATA ── */
+const ACTIONS = [
+  {
+    id:'1', days:['mon'],
+    rag:1, owner:'you', dur:'30 min',
+    title:'Review & personalise the Digital Leads Training Plan',
+    sub:'Word doc delivered — read before sharing with Ben Manning or TLAMs',
+    prompt: null,
+    questions:[
+      'Does the Jisc line manager accountability model match how Neil frames it? Adjust Section 4.4 if needed.',
+      'Any Digital Lead names in the tables that need correcting against what you know?',
+      'Is the Century train-the-trainer chain (Libby → E&M team) confirmed or still provisional?',
+      'Is "fully fledged programme" language consistent throughout — anything still sounding provisional?',
+      'Does the governance review timeline (July 2026 / Jan 2027 / July 2027) match what Neil has communicated?',
+    ],
+    notes:'',
+  },
+  {
+    id:'2', days:['mon'],
+    rag:1, owner:'you', dur:'15 min',
+    title:'File the three agreed key documents',
+    sub:'Accessibility resource · Digital Strategy/toolkit · 10 key responsibilities — save as evidence, update toolkit RAG',
+    prompt: null,
+    questions:[
+      'Have all three been saved in OneDrive with a version date in the filename?',
+      'Does the Digital Pedagogy Toolkit JSON need updating to reflect these as complete?',
+      'Who reviewed and agreed them — is that recorded anywhere for governance?',
+      'Should any go to Neil or Ben for formal sign-off before treating as baseline?',
+    ],
+    notes:'',
+  },
+  {
+    id:'3', days:['mon'],
+    rag:1, owner:'you', dur:'10 min',
+    title:'Working pattern follow-up with Neil',
+    sub:'Flexible working agreed in principle — confirm arrangements',
+    prompt: null,
+    questions:[
+      'Has anything been confirmed in writing or is this still informal?',
+      'Does this need logging via HR / iTrent or is a line manager email sufficient?',
+      'Are there weeks this term where the arrangement might be tested — flag in advance?',
+    ],
+    notes:'',
+  },
+  {
+    id:'4', days:['mon','tue'],
+    rag:2, owner:'ai', dur:'15 min',
+    title:'ESOL meeting prep — Alexia Sporidis',
+    sub:'RAG 4 · IT infrastructure concerns · Teams & Accessibility refresher booked · SpringPod in play',
+    prompt:`I am meeting Alexia Sporidis, Head of Area for ESOL at Weston College, to complete our initial Digital Pedagogy meeting. Context: RAG 4, major IT infrastructure concerns raised previously, SpringPod Virtual Work Experience discussed, team booked for a Teams and Accessibility refresher post-Easter. Generate: (1) a structured 30-minute meeting agenda; (2) 8 open questions to help me understand current digital barriers, staff confidence levels, how learners use digital tools in ESOL contexts, and how Century could work for general digital skills tracking with an ESOL cohort of varied prior experience. Include one question specifically about absent learner strategies.`,
+    questions:[
+      'Has Alexia confirmed the team session date post-Easter?',
+      'What\'s the status of the SpringPod investigation — handed to Liam Fisher?',
+      'Is John (TBC) still the Digital Lead candidate?',
+      'Any update on the IT infrastructure issue — has it been escalated?',
+    ],
+    notes:'',
+  },
+  {
+    id:'5', days:['mon','tue'],
+    rag:2, owner:'ai', dur:'15 min',
+    title:'Sport meeting prep — Dan Pratlett',
+    sub:'No RAG yet · No meeting held · Wearables, Hudl, Dartfish relevant · Meeting declined or needs rearranging',
+    prompt:`I need to arrange and prepare for an initial Digital Pedagogy meeting with Dan Pratlett, Head of Area for Sport at Weston College. He has not engaged yet — the original meeting was declined or needs rearranging. Sport-specific digital context includes wearable tech such as Garmin and Catapult, and video analysis tools such as Hudl and Dartfish, plus performance data. Please draft: (1) a short, non-pressuring email to arrange the meeting explaining what it involves and the benefit to him; (2) a 30-minute agenda for when we meet; (3) 6 open questions to understand what specialist digital skills are embedded in the Sport curriculum. Tone: collegial, not bureaucratic.`,
+    questions:[
+      'Is Dan Pratlett still the correct HoA for Sport?',
+      'Is there a TLAM with a relationship with him — worth going through them first?',
+      'Is there a reason the first meeting was declined — anything to be aware of?',
+    ],
+    notes:'',
+  },
+  {
+    id:'6', days:['tue','wed'],
+    rag:2, owner:'you', dur:'20 min',
+    title:'Century meeting setup — Libby & Sam',
+    sub:'Arrange train-the-trainer: Century rep (Sam) → Libby → E&M team · Confirm before May half-term',
+    prompt: null,
+    questions:[
+      'Do you have Sam\'s direct contact at Century — or through a central account manager?',
+      'What\'s Libby\'s availability before May half-term?',
+      'Is this standalone or combined with the wider E&M Century rollout conversation?',
+      'What does the E&M team need to be able to do after training — set diagnostics, run reports, or both?',
+      'Do you need a SharePoint link set up for E&M before the session?',
+    ],
+    notes:'',
+  },
+  {
+    id:'7', days:['wed'],
+    rag:1, owner:'ai', dur:'20 min',
+    title:'One-page toolkit overview for Ben Manning',
+    sub:'Crisp summary: what you\'ve done, the Digital Learning Pyramid, what you\'re proposing on the 24th',
+    prompt:`Write a one-page briefing note for Ben Manning, VP Quality at Weston College. Topic: the Digital Pedagogy Programme and proposed Digital Toolkit. Structure: (1) what the programme has delivered so far this term — 3 bullet points max; (2) what the Digital Toolkit is and how it relates to the Digital Learning Pyramid (three levels: Digital Foundations, Digital Inclusion, Digital Innovation); (3) what I am proposing for the Fri 24 April meeting — two or three discussion points. Tone: confident, peer-level, not defensive. No jargon. Max one A4 side.`,
+    questions:[
+      'What 3 things from this term are you most confident citing as evidence of impact?',
+      'What do you want Ben to agree, approve, or note by the end of the meeting?',
+      'Any sensitivities — things he\'s likely to question or push back on?',
+    ],
+    notes:'',
+  },
+  {
+    id:'8', days:['wed'],
+    rag:1, owner:'ai', dur:'15 min',
+    title:'Century vs JISC — analysis brief',
+    sub:'Clear distinction for a senior leader: purpose, audience, accountability model, fit for purpose',
+    prompt:`Write a short briefing (max 250 words) for a senior FE leader explaining the difference between the Jisc Discovery Tool and Century Tech for digital skills tracking at a college. Cover: (1) what each tool does and who it is for — Jisc for staff, Century for learners; (2) how they complement rather than duplicate each other; (3) the accountability gap with Jisc — individual data is private so tracking must go through line managers; (4) Century's role tracking both General Digital Skills via Initial Assessment at E3/L1 and Specialist Digital Skills mapped by HoA per curriculum area. Plain English. No acronyms without explanation.`,
+    questions:[],
+    notes:'',
+  },
+  {
+    id:'9', days:['wed','thu'],
+    rag:3, owner:'ai', dur:'20 min',
+    title:'Digital Lead role one-pager',
+    sub:'Share with TLAMs · Due end of April · Accountability 3 milestone',
+    prompt:`Create a one-page Digital Lead role description for Weston College\'s Digital Pedagogy Programme. Cover: what a Digital Lead is — a named teaching or support staff member per curriculum area, not a management grade; the 6 core responsibilities — run the Teams Digital Health Check termly, be first point of contact for digital queries in the team, share good practice, support the HoA with digital data in QIPs and Business Plans, complete the Digital Lead CPD pathway, attend termly Digital Leads network meetings; what the role is not — not IT support, not management, not Digital Champions which is a separate learner-facing future initiative; what support they get from the Digital Pedagogy Coach; how it connects to the college quality cycle. Designed to be shared with TLAMs. A4 format, professional, WCAG 2.2 AA accessible.`,
+    questions:[
+      'Do TLAMs need to see a draft before it goes out, or can you send direct?',
+      'Should this be emailed or shared via a Teams post to TLAMs?',
+    ],
+    notes:'',
+  },
+  {
+    id:'10', days:['thu'],
+    rag:2, owner:'both', dur:'20 min',
+    title:'Meeting crib sheet — Ben Manning 24 Apr',
+    sub:'Talking points, likely questions from Ben, what you want to walk away with',
+    prompt:`I have a meeting with Ben Manning, VP Quality at Weston College, on Friday 24 April to review core priorities and propose a Digital Toolkit. I am the Digital Pedagogy Coach, embedded in the Quality and Innovation team. Create a crib sheet with: (1) my three opening points — what I have done, what I am proposing, what I need; (2) four likely questions from Ben and how I would answer each; (3) what a successful outcome looks like — what I want agreed or noted. Keep it to one side of A4, scannable in two minutes before I walk in.`,
+    questions:[
+      'What is the one thing you most want to land in this meeting?',
+      'What does Ben already know vs what will be new to him?',
+      'Is the agenda set or is it open — do you need to shape it?',
+    ],
+    notes:'',
+  },
+  {
+    id:'11', days:['thu'],
+    rag:5, owner:'both', dur:'15 min prep',
+    title:'Learning Tech & Quality priorities meeting prep',
+    sub:'ND to arrange · Be ready with clear role boundary statements before you walk in',
+    prompt:`I am attending a meeting to clarify roles and responsibilities between Learning Technology and Quality and TLA at Weston College. I am the Digital Pedagogy Coach. Draft four clear statements defining what my role does versus what Learning Technology does, specifically around: digital skills coaching versus technical support; pedagogical use of tools versus procurement and maintenance; accessibility by design versus assistive technology licensing; Digital Leads programme versus IT helpdesk. Framing should be complementary not competitive. Each statement should be one or two sentences, plain English.`,
+    questions:[
+      'Has Neil confirmed a date?',
+      'Who from Learning Tech is attending — do you know their position on the boundaries?',
+      'Is there anything specific Neil wants you to raise or lead on?',
+    ],
+    notes:'',
+  },
+  {
+    id:'12', days:['fri'],
+    rag:1, owner:'you', dur:'1 hr',
+    title:'Ben Manning meeting — Digital Toolkit review',
+    sub:'Review core priorities · Propose Digital Toolkit · Use your crib sheet from Thursday',
+    prompt: null,
+    questions:[
+      'Have you read through the one-pager and crib sheet this morning?',
+      'What\'s the one outcome you\'re protecting if the conversation goes long?',
+      'Take notes — log in Evidence Hub straight after while it\'s fresh.',
+    ],
+    notes:'',
+  },
+];
+
+/* ── STATE ── */
+let state = {};
+try { state = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch(e) {}
+
+function save() {
+  try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(e) {}
+}
+
+/* ── BUILD CHIPS ── */
+const DAY_IDS = { mon:'day-mon', tue:'day-tue', wed:'day-wed', thu:'day-thu', fri:'day-fri' };
+
+function buildChip(action) {
+  const s = state[action.id] || { done: false, notes: '' };
+  const r = RAG[action.rag];
+  const o = OWNER[action.owner];
+
+  const chip = document.createElement('div');
+  chip.className = `chip ${r.cls}${s.done ? ' done-chip' : ''}`;
+  chip.setAttribute('role', 'button');
+  chip.setAttribute('tabindex', '0');
+  chip.setAttribute('aria-label', `${action.title} — click for details`);
+  chip.dataset.id = action.id;
+
+  chip.innerHTML = `
+    <div class="chip-title">${action.title}</div>
+    <div class="chip-meta">
+      <span class="chip-badge ${o.cls}">${o.label}</span>
+      <span class="chip-badge b-dur">${action.dur}</span>
+    </div>`;
+
+  chip.addEventListener('click', () => openModal(action.id));
+  chip.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(action.id); } });
+  return chip;
+}
+
+function renderCalendar() {
+  Object.values(DAY_IDS).forEach(id => { document.getElementById(id).innerHTML = ''; });
+  ACTIONS.forEach(a => {
+    a.days.forEach(day => {
+      const container = document.getElementById(DAY_IDS[day]);
+      if (container) container.appendChild(buildChip(a));
+    });
+  });
+  updateStats();
+}
+
+/* ── STATS ── */
+function updateStats() {
+  const total = ACTIONS.length;
+  const done  = ACTIONS.filter(a => (state[a.id] || {}).done).length;
+  const ai    = ACTIONS.filter(a => a.owner === 'ai').length;
+  const you   = ACTIONS.filter(a => a.owner === 'you').length;
+  const both  = ACTIONS.filter(a => a.owner === 'both').length;
+
+  document.getElementById('s-tot').textContent  = total;
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('s-ai').textContent   = ai;
+  document.getElementById('s-you').textContent  = you;
+  document.getElementById('s-both').textContent = both;
+  document.getElementById('done-n').textContent = done;
+  document.getElementById('tot-n').textContent  = total;
+}
+
+/* ── MODAL ── */
+let currentId = null;
+
+function openModal(id) {
+  currentId = id;
+  const action = ACTIONS.find(a => a.id === id);
+  const s = state[id] || { done: false, notes: '' };
+  const r = RAG[action.rag];
+  const o = OWNER[action.owner];
+
+  document.getElementById('modal-title-text').textContent = action.title;
+  document.getElementById('modal-sub').textContent = action.sub;
+  document.getElementById('m-ragbar').style.background = r.bar;
+
+  // badges
+  const badges = document.getElementById('modal-badges');
+  badges.innerHTML = `
+    <span class="m-badge ${r.mbcls}">${r.label}</span>
+    <span class="m-badge ${o.mbcls}">${o.label}</span>
+    <span class="m-badge mb-dur">${action.dur}</span>
+    <span class="m-badge mb-dur">${action.days.map(d => d.charAt(0).toUpperCase()+d.slice(1)).join(' + ')}</span>`;
+
+  // body
+  const body = document.getElementById('modal-body');
+  let html = '';
+
+  if (action.prompt) {
+    html += `<div class="m-section">
+      <div class="m-label">AI prompt — paste into a new chat</div>
+      <div class="prompt-box" id="modal-prompt">${escHtml(action.prompt)}</div>
+      <button class="copy-btn" onclick="copyModalPrompt(this)">Copy prompt ↗</button>
+    </div>`;
+  }
+
+  if (action.questions.length) {
+    const qlabel = action.owner === 'you' ? 'Questions to answer first' :
+                   action.owner === 'ai'  ? 'Give me this context first' :
+                                            'Answer these before running the prompt';
+    html += `<div class="m-section">
+      <div class="m-label">${qlabel}</div>
+      <ul class="qs">${action.questions.map(q => `<li>${escHtml(q)}</li>`).join('')}</ul>
+    </div>`;
+  }
+
+  html += `<div class="m-section">
+    <div class="m-label">Notes</div>
+    <textarea class="notes-ta" id="modal-notes" placeholder="Add notes here — saved automatically…" aria-label="Notes for this action">${escHtml(s.notes || '')}</textarea>
+  </div>
+  <div class="done-toggle">
+    <input type="checkbox" id="modal-done" ${s.done ? 'checked' : ''} aria-label="Mark this action as complete">
+    <label for="modal-done">Mark as done</label>
+  </div>`;
+
+  body.innerHTML = html;
+
+  document.getElementById('modal-notes').addEventListener('input', function() {
+    if (!state[currentId]) state[currentId] = {};
+    state[currentId].notes = this.value;
+    save();
+  });
+
+  document.getElementById('modal-done').addEventListener('change', function() {
+    if (!state[currentId]) state[currentId] = {};
+    state[currentId].done = this.checked;
+    save();
+    renderCalendar();
+  });
+
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('modal').focus();
+  document.addEventListener('keydown', escListener);
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  document.removeEventListener('keydown', escListener);
+  currentId = null;
+}
+
+function escListener(e) { if (e.key === 'Escape') closeModal(); }
+
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function copyModalPrompt(btn) {
+  const el = document.getElementById('modal-prompt');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    btn.textContent = 'Copied ✓'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy prompt ↗'; btn.classList.remove('copied'); }, 2200);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = el.textContent; ta.style.position = 'absolute'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = 'Copied ✓'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy prompt ↗'; btn.classList.remove('copied'); }, 2200);
+  });
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── INIT ── */
+renderCalendar();
+</script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Impact Hub v30.0 (Operating System)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        [x-cloak] { display: none !important; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; color: black; }
+            .break-avoid { break-inside: avoid; }
+        }
+        /* Professional Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .slide-over-enter-active, .slide-over-leave-active { transition: transform 0.3s ease-in-out; }
+        .slide-over-enter-start, .slide-over-leave-end { transform: translateX(100%); }
+        
+        .gantt-grid { display: grid; gap: 0; } 
+        .gantt-row { display: contents; } 
+        .gantt-cell { background: #fff; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; height: 44px; }
+        
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: white; border-left: 4px solid #2563eb; padding: 12px 20px; border-radius: 4px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); transform: translateX(100%); transition: transform 0.3s ease-out; display: flex; align-items: center; gap: 10px; min-width: 250px; }
+        .toast.show { transform: translateX(0); }
+        
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+    </style>
+</head>
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden" x-data="appData()" x-init="init()">
+
+    <header class="bg-white border-b border-slate-200 h-16 flex justify-between items-center px-6 shadow-sm z-30 no-print">
+        <div class="flex items-center gap-3">
+            <div class="bg-slate-900 text-white w-8 h-8 rounded flex items-center justify-center font-bold text-sm">DC</div>
+            <div>
+                <h1 class="font-bold text-slate-800 leading-none">Digital Impact Hub</h1>
+                <p class="text-[10px] text-slate-400 uppercase tracking-wide mt-0.5">OS v30.0</p>
+            </div>
+        </div>
+        <nav class="hidden md:flex gap-1" x-show="fileHandle">
+            <template x-for="item in navItems">
+                <button @click="switchView(item.id)" 
+                        :class="view === item.id ? 'bg-slate-100 text-blue-700 font-bold' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'"
+                        class="px-4 py-2 rounded text-sm transition flex items-center gap-2">
+                    <i :class="item.icon"></i> <span x-text="item.label"></span>
+                </button>
+            </template>
+        </nav>
+        <div class="flex items-center gap-3">
+            <template x-if="!fileHandle">
+                <button @click="openFile()" class="text-xs bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded font-bold shadow transition flex items-center gap-2 animate-pulse"><i class="fas fa-plug"></i> Connect Data</button>
+            </template>
+            <template x-if="fileHandle">
+                <div class="flex items-center gap-3">
+                    <span class="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 font-bold flex items-center gap-1"><i class="fas fa-circle text-[6px]"></i> LIVE</span>
+                    <button @click="saveToFile()" class="text-xs bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-3 py-2 rounded font-bold transition"><i class="fas fa-save mr-1"></i> Save</button>
+                </div>
+            </template>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto relative p-6">
+        
+        <div x-show="!fileHandle" class="h-full flex flex-col items-center justify-center">
+            <div class="bg-white p-12 rounded-2xl shadow-xl border border-slate-200 text-center max-w-lg">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl"><i class="fas fa-cloud-upload-alt"></i></div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Welcome Back</h2>
+                <p class="text-slate-500 mb-8 text-sm leading-relaxed">Connect to your <strong>digital-coach-data.json</strong> file to load your workflow.</p>
+                <button @click="openFile()" class="bg-slate-900 text-white text-sm font-bold px-8 py-3 rounded-lg hover:bg-slate-800 transition w-full">Select Local File</button>
+            </div>
+        </div>
+
+        <div x-show="fileHandle" x-transition class="h-full flex flex-col gap-6">
+            
+            <div x-show="view === 'planner'" class="h-full flex gap-6 animate-fade-in">
+                <div class="w-1/3 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-700 uppercase text-xs tracking-wider">Action Hopper</h3>
+                        <button @click="addTaskModal=true" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">+ Add</button>
+                    </div>
+                    <div class="p-2 border-b border-slate-100">
+                        <input x-model="taskSearch" placeholder="Filter tasks..." class="w-full text-xs border p-2 rounded bg-slate-50 outline-none">
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-2 space-y-2">
+                        <template x-for="task in getSortedTasks()" :key="task.id">
+                            <div class="bg-white p-3 rounded border border-slate-200 shadow-sm hover:border-blue-400 group relative">
+                                <div class="flex items-start gap-3">
+                                    <input type="checkbox" x-model="task.completed" @change="completeTask(task)" class="mt-1 cursor-pointer text-blue-600">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-slate-800" :class="{'line-through text-slate-400': task.completed}" x-text="task.title"></div>
+                                        <div class="flex gap-2 mt-1">
+                                            <span x-show="task.context" class="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 uppercase font-bold" x-text="task.context"></span>
+                                            <span x-show="task.dueDate" class="text-[9px] px-1.5 py-0.5 rounded" :class="getDueClass(task.dueDate)" x-text="formatDateShort(task.dueDate)"></span>
+                                        </div>
+                                    </div>
+                                    <button @click="openScheduleModal(task)" class="text-slate-300 hover:text-purple-600" title="Add to Calendar"><i class="far fa-calendar-plus"></i></button>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="getSortedTasks().length === 0" class="text-center py-10 text-slate-400 text-sm">Hopper empty. Nice work!</div>
+                    </div>
+                </div>
+
+                <div class="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-700 uppercase text-xs tracking-wider">Weekly Workflow</h3>
+                        <div class="flex gap-2">
+                            <button @click="calendarView='week'" class="text-xs font-bold px-3 py-1 rounded" :class="calendarView==='week'?'bg-white shadow text-blue-600':'text-slate-500'">Week</button>
+                            <button @click="addCalendarEvent()" class="text-xs bg-slate-800 text-white px-3 py-1 rounded font-bold hover:bg-slate-700">+ Meeting / Block</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4">
+                        <div class="grid grid-cols-5 gap-4 h-full min-h-[500px]">
+                            <template x-for="day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']" :key="day">
+                                <div class="flex flex-col bg-slate-50 rounded border border-slate-200">
+                                    <div class="p-2 text-center text-xs font-bold text-slate-500 border-b border-slate-200 uppercase" x-text="day"></div>
+                                    <div class="flex-1 p-2 space-y-2">
+                                        <template x-for="evt in getEventsForDay(day)" :key="evt.id">
+                                            <div class="p-2 rounded text-xs border shadow-sm cursor-pointer hover:opacity-90 relative group" 
+                                                 :class="evt.type === 'meeting' ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-blue-50 border-blue-200 text-blue-900'"
+                                                 @click="editEvent(evt)">
+                                                <div class="font-bold truncate" x-text="evt.title"></div>
+                                                <div class="text-[10px] opacity-75" x-text="evt.time || 'All Day'"></div>
+                                                <button @click.stop="deleteEvent(evt.id)" class="absolute top-1 right-1 text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600"><i class="fas fa-times"></i></button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="view === 'meetings'" class="h-full flex bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
+                <div class="w-64 bg-slate-50 border-r border-slate-200 flex flex-col">
+                    <div class="p-4 border-b border-slate-200"><h3 class="font-bold text-slate-700 uppercase text-xs tracking-wider">Notebooks</h3></div>
+                    <div class="flex-1 overflow-y-auto p-2 space-y-1">
+                        <template x-for="cat in settings.meetingCategories" :key="cat">
+                            <button @click="activeMeetingCategory = cat; currentMeeting = null" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium transition flex justify-between items-center group" :class="activeMeetingCategory === cat ? 'bg-white shadow-sm text-blue-700' : 'text-slate-600 hover:bg-slate-100'">
+                                <span class="truncate" x-text="cat"></span>
+                                <span class="text-[10px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full" x-text="meetingNotes.filter(n => n.category === cat).length"></span>
+                            </button>
+                        </template>
+                    </div>
+                    <button @click="addNewMeetingCategory()" class="m-2 p-2 text-xs text-blue-600 font-bold border border-dashed border-blue-200 rounded hover:bg-blue-50">+ Add Notebook</button>
+                </div>
+                <div class="w-80 border-r border-slate-200 flex flex-col bg-white">
+                    <div class="p-3 border-b flex justify-between items-center bg-slate-50/50 h-14">
+                        <span class="font-bold text-sm text-slate-700 truncate w-32" x-text="activeMeetingCategory"></span>
+                        <button @click="createNewMeeting()" class="bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-slate-700"><i class="fas fa-plus mr-1"></i> New</button>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-2 space-y-2 bg-slate-50/30">
+                        <template x-for="note in filteredMeetings" :key="note.id">
+                            <div @click="currentMeeting = note" class="p-3 rounded-lg border cursor-pointer transition hover:shadow-md bg-white" :class="currentMeeting && currentMeeting.id === note.id ? 'border-blue-500 ring-1 ring-blue-500' : 'border-slate-200 hover:border-blue-300'">
+                                <div class="font-bold text-sm text-slate-800 truncate" x-text="note.title || 'Untitled Note'"></div>
+                                <div class="text-[10px] text-slate-400 mt-1" x-text="formatDate(note.date)"></div>
+                                <div class="text-xs text-slate-500 mt-2 line-clamp-2" x-text="note.content || 'No content...'"></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col bg-white relative">
+                    <template x-if="!currentMeeting"><div class="flex items-center justify-center h-full text-slate-300 flex-col"><i class="far fa-file-alt text-5xl mb-4 text-slate-200"></i><p>Select a note to view or edit</p></div></template>
+                    <template x-if="currentMeeting">
+                        <div class="flex flex-col h-full">
+                            <div class="p-6 border-b border-slate-100">
+                                <input x-model="currentMeeting.title" class="text-2xl font-bold text-slate-800 w-full outline-none placeholder-slate-300" placeholder="Meeting Subject">
+                                <div class="flex gap-6 mt-4 text-sm text-slate-500">
+                                    <div class="flex items-center gap-2"><i class="far fa-calendar"></i><input type="date" x-model="currentMeeting.date" class="outline-none bg-transparent"></div>
+                                    <div class="flex items-center gap-2 flex-1"><i class="far fa-user"></i><input x-model="currentMeeting.attendees" class="w-full outline-none bg-transparent" placeholder="Attendees..."></div>
+                                </div>
+                                <div class="mt-4 flex gap-2 items-center">
+                                    <select x-model="currentMeeting.linkedProjectId" class="text-xs border border-slate-200 rounded p-1.5 bg-slate-50 text-slate-600 outline-none">
+                                        <option value="">- No Link -</option>
+                                        <optgroup label="Priorities (Strategy)">
+                                            <template x-for="p in settings.priorities" :key="p.id"><option :value="'prio:'+p.id" x-text="'STRAT: ' + p.title"></option></template>
+                                        </optgroup>
+                                        <optgroup label="Projects">
+                                            <template x-for="p in projects" :key="p.id"><option :value="'proj:'+p.id" x-text="p.title"></option></template>
+                                        </optgroup>
+                                    </select>
+                                    <button @click="saveToFile(); showToast('Note Saved')" class="ml-auto text-xs bg-emerald-600 text-white px-3 py-1.5 rounded hover:bg-emerald-700 font-bold shadow-sm">Save</button>
+                                </div>
+                            </div>
+                            <div class="px-6 pt-4 pb-2 bg-slate-50/50">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Attachments / Links</div>
+                                <div class="flex flex-wrap gap-2 mb-2">
+                                    <template x-for="(link, lIdx) in currentMeeting.links" :key="lIdx">
+                                        <div class="text-xs bg-white border px-2 py-1 rounded flex items-center gap-2">
+                                            <a :href="link.url" target="_blank" class="text-blue-600 hover:underline" x-text="link.name"></a>
+                                            <button @click="currentMeeting.links.splice(lIdx, 1)" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    </template>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input x-model="newLinkName" placeholder="Link Name" class="text-xs border rounded p-1 w-32">
+                                    <input x-model="newLinkUrl" placeholder="URL..." class="text-xs border rounded p-1 flex-1">
+                                    <button @click="addLinkToMeeting()" class="text-xs bg-slate-200 px-2 rounded hover:bg-slate-300">Add</button>
+                                </div>
+                            </div>
+                            <textarea x-model="currentMeeting.content" class="flex-1 w-full p-8 outline-none resize-none text-slate-700 leading-relaxed text-sm" placeholder="Start typing notes..."></textarea>
+                            <div class="p-3 bg-slate-50 border-t border-slate-200 flex gap-2 items-center">
+                                <span class="text-xs font-bold text-slate-400 uppercase">Action Item:</span>
+                                <input x-model="quickActionText" class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" placeholder="Task description...">
+                                <input type="date" x-model="quickActionDate" class="border border-slate-300 rounded px-2 py-1 text-xs outline-none">
+                                <button @click="pushActionToDashboard()" class="bg-blue-600 text-white px-4 py-1 rounded text-xs font-bold hover:bg-blue-700">Add</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div x-show="view === 'projects'" class="h-full flex flex-col animate-fade-in">
+                <div class="flex flex-col md:flex-row justify-between mb-6 gap-4 bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                    <div class="flex gap-2 items-center flex-wrap flex-1">
+                        <div class="relative"><i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i><input x-model="searchQuery" placeholder="Search projects..." class="pl-8 border border-slate-300 p-2 rounded text-sm w-48 focus:border-blue-500 outline-none"></div>
+                        <select x-model="filterPriority" class="border border-slate-300 p-2 rounded text-sm bg-white outline-none"><option value="">All Priorities</option><template x-for="p in settings.priorities" :key="p.id"><option :value="p.id" x-text="p.title"></option></template><option value="standalone">Stand-alone</option></select>
+                        <select x-model="filterKpi" class="border border-slate-300 p-2 rounded text-sm bg-white outline-none text-purple-700 font-medium"><option value="">All KPIs</option><template x-for="k in settings.kpis"><option :value="k" x-text="k"></option></template></select>
+                        <button x-show="searchQuery||filterPriority||filterKpi" @click="resetFilters()" class="text-xs text-red-500 hover:underline ml-2">Clear</button>
+                    </div>
+                    <button @click="startNewProject()" class="bg-blue-600 text-white px-5 py-2 rounded text-sm font-bold hover:bg-blue-700 shadow-sm transition"><i class="fas fa-plus mr-2"></i> New Project</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
+                    <template x-for="project in filteredProjects" :key="project.id">
+                        <div class="bg-white rounded-lg shadow-sm border border-slate-200 transition hover:shadow-md flex flex-col h-full cursor-pointer group relative overflow-hidden" @click="editProject(project)">
+                            <div class="absolute left-0 top-0 bottom-0 w-1" :class="getRagColor(project.endDate)"></div>
+                            <div class="p-5 pl-6 flex-1 flex flex-col">
+                                <div class="flex justify-between items-start mb-2"><span class="text-[10px] font-bold uppercase tracking-wider text-slate-400" x-text="project.type"></span><span x-show="project.kpi" class="text-[9px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded border border-purple-100 font-bold truncate max-w-[100px]" x-text="project.kpi"></span></div>
+                                <h3 class="font-bold text-slate-800 text-lg leading-tight mb-2 group-hover:text-blue-600 transition" x-text="project.title"></h3>
+                                <p class="text-xs text-slate-500 line-clamp-2 mb-4" x-text="project.objective || 'No objective set.'"></p>
+                                <div class="mt-auto"><div class="flex gap-2 mb-3"><span x-show="project.deptCode" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded font-medium" x-text="project.deptCode"></span><span x-show="project.staff" class="text-[10px] bg-yellow-50 text-yellow-700 px-2 py-1 rounded font-medium border border-yellow-100" x-text="project.staff"></span></div><div class="flex items-center gap-2 text-xs font-bold text-slate-600"><div class="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden"><div class="h-full bg-blue-500 rounded-full" :style="`width: ${calculateProgress(project)}%`"></div></div><span x-text="calculateProgress(project) + '%'"></span></div></div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div x-show="view === 'gantt'" class="h-full flex flex-col animate-fade-in">
+               <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 mb-4 flex justify-between items-center">
+                    <div class="flex items-center gap-4"><h2 class="font-bold text-slate-700">Timeline</h2><div class="flex bg-slate-100 rounded p-1"><button @click="timelineMode = 'year'" :class="timelineMode==='year' ? 'bg-white shadow text-blue-600' : 'text-slate-500'" class="px-3 py-1 rounded text-xs font-bold transition">Year</button><button @click="timelineMode = '3m'" :class="timelineMode==='3m' ? 'bg-white shadow text-blue-600' : 'text-slate-500'" class="px-3 py-1 rounded text-xs font-bold transition">Quarter</button></div></div>
+               </div>
+               <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden flex-1">
+                    <div class="gantt-container h-full">
+                        <div class="gantt-grid text-xs" :style="getTimelineGridStyle()">
+                            <div class="gantt-row font-bold text-slate-700 bg-slate-50 border-b border-slate-300 sticky top-0 z-20"><div class="gantt-sticky-col px-4 border-b border-slate-300 bg-slate-50">Project</div><template x-for="(col, idx) in timelineColumns" :key="idx"><div class="gantt-header"><div x-text="col.label"></div><div x-show="col.sub" class="text-[9px] text-slate-400 font-normal" x-text="col.sub"></div></div></template></div>
+                            <template x-for="(p, idx) in timelineProjects" :key="p.id"><div class="gantt-row hover:bg-slate-50 transition group border-b border-slate-100"><div class="gantt-sticky-col px-4 text-xs font-bold truncate pr-4 cursor-pointer hover:text-blue-600 group-hover:bg-slate-50 text-slate-700" :style="`grid-row: ${idx + 2}; grid-column: 1`" @click="editProject(p)"><span x-text="p.title"></span></div><template x-for="c in timelineColumns"><div class="gantt-cell group-hover:bg-slate-50" :style="`grid-row: ${idx + 2}`"></div></template><div x-show="hasDates(p) && isProjectVisibleInTimeline(p)" class="rounded-full text-[9px] text-white flex items-center px-3 shadow-sm cursor-pointer hover:opacity-90 overflow-hidden z-10 h-6" :class="getPriorityColor(p.priorityId)" :style="getDynamicGanttBarStyle(p, idx)" @click="editProject(p)"><span class="truncate font-medium" x-text="formatDateShort(p.startDate) + ' - ' + formatDateShort(p.endDate)"></span></div></div></template>
+                        </div>
+                    </div>
+               </div>
+            </div>
+
+        </div> 
+    </main>
+
+    <div x-show="showModal" class="fixed inset-0 z-50 overflow-hidden" x-cloak>
+        <div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm transition-opacity" @click="showModal = false"></div>
+        <div class="absolute inset-y-0 right-0 max-w-2xl w-full flex">
+            <div class="h-full w-full bg-white shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col" x-transition:enter="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="translate-x-0" x-transition:leave-end="translate-x-full">
+                <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10"><h2 class="text-lg font-bold text-slate-800">Project Details</h2><div class="flex gap-2"><button @click="showModal = false" class="text-slate-400 hover:text-slate-600 px-3 py-1">Cancel</button><button @click="saveProject(); showToast('Project Saved')" class="bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-bold shadow hover:bg-blue-700">Save Changes</button></div></div>
+                <div class="flex-1 overflow-y-auto p-8 bg-slate-50">
+                    <input x-model="currentProject.title" class="w-full text-2xl font-bold bg-transparent border-none outline-none placeholder-slate-400 mb-6 text-slate-800" placeholder="Project Title">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 mb-6 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wide border-b pb-2">Core Metadata</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-[10px] text-slate-500 font-bold uppercase">Priority</label><select x-model="currentProject.priorityId" class="w-full mt-1 border rounded p-2 text-sm bg-slate-50"><option value="">Stand-alone</option><template x-for="p in settings.priorities" :key="p.id"><option :value="p.id" x-text="p.title"></option></template></select></div>
+                            <div><label class="text-[10px] text-slate-500 font-bold uppercase">Type</label><select x-model="currentProject.type" class="w-full mt-1 border rounded p-2 text-sm bg-slate-50"><option value="coaching">Coaching</option><option value="project">Project</option><option value="strategy">Strategy</option></select></div>
+                            <div><label class="text-[10px] text-slate-500 font-bold uppercase">Department</label><input x-model="currentProject.deptCode" list="deptCodes" class="w-full mt-1 border rounded p-2 text-sm bg-slate-50"><datalist id="deptCodes"><option value="AGF"><option value="HAC"><option value="MAT"><option value="ENG"></datalist></div>
+                            <div><label class="text-[10px] text-slate-500 font-bold uppercase">Lead Staff</label><input x-model="currentProject.staff" class="w-full mt-1 border rounded p-2 text-sm bg-slate-50"></div>
+                        </div>
+                        <div><label class="text-[10px] text-slate-500 font-bold uppercase">Date Range</label><div class="flex gap-2 mt-1"><input type="date" x-model="currentProject.startDate" class="border rounded p-2 text-sm w-1/2 bg-slate-50"><input type="date" x-model="currentProject.endDate" class="border rounded p-2 text-sm w-1/2 bg-slate-50"></div></div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="flex border-b border-slate-100"><button @click="modalTab='tasks'" :class="modalTab==='tasks'?'bg-slate-50 text-blue-600 font-bold border-b-2 border-blue-600':'text-slate-500'" class="flex-1 py-3 text-sm transition">Micro-Tasks</button><button @click="modalTab='updates'" :class="modalTab==='updates'?'bg-slate-50 text-blue-600 font-bold border-b-2 border-blue-600':'text-slate-500'" class="flex-1 py-3 text-sm transition">Evidence Locker</button></div>
+                        <div class="p-6 min-h-[300px]">
+                            <div x-show="modalTab==='tasks'">
+                                <div class="space-y-2 mb-4"><template x-for="(m, idx) in currentProject.milestones" :key="idx"><div class="flex items-center gap-2 p-2 rounded border border-slate-100 hover:bg-slate-50"><input type="checkbox" x-model="m.completed" class="w-4 h-4 text-green-500 rounded"><input x-model="m.title" class="flex-1 bg-transparent border-none outline-none text-sm text-slate-700"><button @click="currentProject.milestones.splice(idx, 1)" class="text-slate-300 hover:text-red-500"><i class="fas fa-times"></i></button></div></template></div>
+                                <button @click="addMilestone()" class="w-full py-2 border border-dashed border-slate-300 rounded text-slate-500 text-sm hover:bg-slate-50">+ Add Task</button>
+                            </div>
+                            <div x-show="modalTab==='updates'">
+                                <div class="mb-4"><textarea x-model="newUpdateText" class="w-full border border-slate-200 rounded p-2 text-sm mb-2 h-20" placeholder="Description..."></textarea><div class="flex gap-2"><select x-model="newUpdateSource" class="border border-slate-200 rounded p-2 text-xs w-1/3"><option value="">- Source -</option><template x-for="s in settings.qaSources"><option :value="s" x-text="s"></option></template></select><input x-model="newUpdateLink" class="flex-1 border border-slate-200 rounded p-2 text-xs" placeholder="URL Evidence..."></div><button @click="addUpdate()" class="bg-slate-800 text-white px-4 py-2 rounded text-sm font-bold w-full mt-2">Log Evidence</button></div>
+                                <div class="space-y-3"><template x-for="(u, idx) in currentProject.updates" :key="idx"><div class="bg-slate-50 p-3 rounded border border-slate-100 text-sm"><div class="flex justify-between text-slate-400 text-[10px] mb-1"><span x-text="formatDate(u.date)"></span><span x-text="u.source"></span></div><div class="font-medium text-slate-800" x-text="u.text"></div><a x-show="u.link" :href="u.link" target="_blank" class="text-blue-600 text-xs mt-1 block">View Link</a></div></template></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="showCalendarModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-sm" x-cloak>
+        <div class="bg-white rounded-lg shadow-xl w-96 p-6">
+            <h3 class="font-bold text-lg mb-4 text-slate-800">Schedule Event</h3>
+            <input x-model="newEvent.title" class="w-full border p-2 rounded mb-2 text-sm" placeholder="Title (e.g. Meeting with Neil)">
+            <div class="flex gap-2 mb-2">
+                <select x-model="newEvent.day" class="border p-2 rounded text-sm flex-1"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option></select>
+                <input x-model="newEvent.time" placeholder="10:00 AM" class="border p-2 rounded text-sm flex-1">
+            </div>
+            <select x-model="newEvent.type" class="w-full border p-2 rounded mb-4 text-sm"><option value="work">Work Block</option><option value="meeting">Meeting</option></select>
+            <div class="flex justify-end gap-2">
+                <button @click="showCalendarModal=false" class="text-slate-500 text-sm px-3">Cancel</button>
+                <button @click="saveCalendarEvent()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container"><template x-for="toast in toasts" :key="toast.id"><div class="toast show"><i class="fas fa-check-circle text-blue-600 text-xl"></i><div class="flex-1"><div class="font-bold text-sm text-slate-800">Success</div><div class="text-xs text-slate-500" x-text="toast.message"></div></div></div></template></div>
+
+    <script>
+        function appData() {
+            return {
+                view: 'planner', dashboardMode: 'strategy', fileHandle: null, showModal: false, showCalendarModal: false, modalTab: 'tasks', activeStrategyTab: 0, timelineTab: 'all',
+                searchQuery: '', filterRag: '', filterPriority: '', filterKpi: '',
+                newTodo: '', taskSearch: '', calendarView: 'week', newEvent: {}, 
+                newUpdateText: '', newUpdateLink: '', newUpdateSource: '', newMeetingTitle: '', newMeetingNotes: '', activeMeetingCategory: '', currentMeeting: null, quickActionText: '', quickActionDate: '', newLinkName: '', newLinkUrl: '',
+                timelineMode: 'year', projects: [], todos: [], meetingNotes: [], calendarEvents: [], toasts: [],
+                settings: { priorities: [], kpis: [], qaSources: [], meetingCategories: [] }, currentProject: {}, charts: {}, 
+                
+                navItems: [ { id: 'planner', label: 'Planner', icon: 'fas fa-calendar-check' }, { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' }, { id: 'strategy', label: 'Strategy', icon: 'fas fa-chess' }, { id: 'projects', label: 'Projects', icon: 'fas fa-folder-open' }, { id: 'meetings', label: 'Meetings', icon: 'fas fa-users' }, { id: 'gantt', label: 'Timeline', icon: 'fas fa-stream' }, { id: 'reports', label: 'Reports', icon: 'fas fa-file-alt' } ],
+
+                async init() {
+                    this.settings.kpis = ['Teaching Quality Indicators', 'QIP Traction', 'Staff Capability', 'Staff Confidence', 'Student Experience', 'Retention Proxy', 'Value for Money', 'Digital Champions'];
+                    this.settings.qaSources = ['Learning Walk Data', 'TLA Profile', 'QIP Review', 'Coaching Record', 'Staff Survey', 'Learner Voice', 'Exit Interview', 'Teams Analytics', 'Other'];
+                    this.settings.meetingCategories = ['1:1 Line Manager', 'Wider Leadership', 'HoAs', 'Digital Leads', 'Champions', 'TLAMs', 'Quality Team', 'External', 'Other'];
+                    this.activeMeetingCategory = this.settings.meetingCategories[0];
+                },
+                
+                showToast(msg) { const id = Date.now(); this.toasts.push({ id, message: msg }); setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 3000); },
+
+                async openFile() {
+                    try {
+                        const [handle] = await window.showOpenFilePicker({ types: [{ description: 'JSON Data', accept: { 'application/json': ['.json'] } }], multiple: false });
+                        this.fileHandle = handle; const file = await handle.getFile(); const text = await file.text();
+                        if (text.trim()) {
+                            const data = JSON.parse(text);
+                            this.projects = (data.projects || []).map(p => ({ ...p, milestones: (p.milestones || []).map(m => ({...m, uuid: m.uuid || Date.now() + Math.random()})), updates: p.updates || [], meetings: p.meetings || [], deptCode: p.deptCode||'', tlam: p.tlam||'', staff: p.staff||'', kpi: p.kpi||'', qaLink: p.qaLink||'', isQip: p.isQip||false }));
+                            this.todos = (data.todos || []).map(t => ({...t, id: t.id || Date.now() + Math.random(), completed: t.completed || false })); 
+                            this.meetingNotes = (data.meetingNotes || []).map(n => ({...n, id: n.id || Date.now() + Math.random(), links: n.links || [] }));
+                            this.calendarEvents = data.calendarEvents || [];
+                            this.settings.priorities = (data.settings?.priorities || []).map((p,i) => ({ ...p, id: p.id||(i+1), strategicMilestones: p.strategicMilestones||[], tasks: p.tasks||[] }));
+                            // Restore settings if saved, else defaults
+                            if(data.settings?.meetingCategories) this.settings.meetingCategories = data.settings.meetingCategories;
+                            this.$nextTick(() => { if(this.view==='dashboard') this.initCharts(); });
+                            this.showToast('OS Loaded');
+                        }
+                    } catch (err) { console.error(err); alert("Error connecting."); }
+                },
+                async saveToFile() {
+                    if (!this.fileHandle) return;
+                    try {
+                        const writable = await this.fileHandle.createWritable();
+                        await writable.write(JSON.stringify({ projects: this.projects, settings: this.settings, todos: this.todos, meetingNotes: this.meetingNotes, calendarEvents: this.calendarEvents }, null, 2));
+                        await writable.close();
+                        if(this.view === 'dashboard') this.updateCharts();
+                    } catch (err) { console.error('Save failed', err); }
+                },
+
+                // --- PLANNER ENGINE ---
+                getSortedTasks() {
+                    // Aggregate all open tasks from Projects + Ad-hoc Todos
+                    let allTasks = [...this.todos.filter(t => !t.completed)];
+                    // Ideally we could pull project tasks here too, but for simplicity v30 keeps them separate lists, 
+                    // focusing the Hopper on "Today's Focus" items.
+                    if(this.taskSearch) return allTasks.filter(t => t.text.toLowerCase().includes(this.taskSearch.toLowerCase()));
+                    return allTasks.sort((a,b) => (a.dueDate > b.dueDate ? 1 : -1));
+                },
+                getEventsForDay(day) { return this.calendarEvents.filter(e => e.day === day).sort((a,b) => a.time.localeCompare(b.time)); },
+                addCalendarEvent() { this.newEvent = { id: Date.now(), title: '', day: 'Mon', time: '', type: 'work' }; this.showCalendarModal = true; },
+                saveCalendarEvent() { 
+                    this.calendarEvents.push(this.newEvent); 
+                    // Auto-create meeting note if type is meeting
+                    if(this.newEvent.type === 'meeting') {
+                        this.meetingNotes.unshift({ 
+                            id: Date.now(), title: this.newEvent.title, date: new Date().toISOString().split('T')[0], 
+                            category: 'Other', content: 'Generated from Calendar', attendees: '', linkedProjectId: '', links: [] 
+                        });
+                        this.showToast('Meeting Note Created');
+                    }
+                    this.showCalendarModal = false; this.saveToFile(); 
+                },
+                deleteEvent(id) { if(confirm('Remove event?')) { this.calendarEvents = this.calendarEvents.filter(e => e.id !== id); this.saveToFile(); } },
+                openScheduleModal(task) { this.newEvent = { id: Date.now(), title: task.text, day: 'Mon', time: '', type: 'work' }; this.showCalendarModal = true; },
+
+                // --- MEETING HUB ---
+                get filteredMeetings() { if(!this.activeMeetingCategory) return []; return this.meetingNotes.filter(n => n.category === this.activeMeetingCategory).sort((a,b) => new Date(b.date) - new Date(a.date)); },
+                createNewMeeting() { const newNote = { id: Date.now(), title: '', date: new Date().toISOString().split('T')[0], category: this.activeMeetingCategory, content: '', attendees: '', linkedProjectId: '', links: [] }; this.meetingNotes.unshift(newNote); this.currentMeeting = newNote; this.saveToFile(); },
+                addLinkToMeeting() { if(this.newLinkName && this.newLinkUrl) { if(!this.currentMeeting.links) this.currentMeeting.links=[]; this.currentMeeting.links.push({name: this.newLinkName, url: this.newLinkUrl}); this.newLinkName=''; this.newLinkUrl=''; } },
+                pushActionToDashboard() { if(!this.quickActionText) return; this.todos.push({ id: Date.now(), text: this.quickActionText, completed: false, projectTitle: 'From Meeting', dueDate: this.quickActionDate }); this.quickActionText = ''; this.saveToFile(); this.showToast('Action added to Hopper'); },
+                deleteMeeting() { if(this.currentMeeting && confirm('Delete note?')) { this.meetingNotes = this.meetingNotes.filter(n => n.id !== this.currentMeeting.id); this.currentMeeting = null; this.saveToFile(); } },
+                addNewMeetingCategory() { const name = prompt("New Category Name:"); if(name && !this.settings.meetingCategories.includes(name)) { this.settings.meetingCategories.push(name); this.activeMeetingCategory = name; this.saveToFile(); } },
+
+                // --- STANDARD LOGIC ---
+                get timelineColumns() { const today = new Date(); const cols = []; if (this.timelineMode === 'year') { const currentYear = today.getFullYear(); for(let i=0; i<12; i++) { const d = new Date(currentYear, i, 1); cols.push({ label: d.toLocaleString('default', {month:'short'}), sub: d.getFullYear(), start: d, end: new Date(currentYear, i+1, 0) }); } } else if (this.timelineMode === '3m') { const start = new Date(today); start.setDate(today.getDate() - today.getDay() + 1); for(let i=0; i<12; i++) { const wStart = new Date(start); wStart.setDate(start.getDate() + (i*7)); const wEnd = new Date(wStart); wEnd.setDate(wStart.getDate() + 6); cols.push({ label: 'W' + (i+1), sub: wStart.getDate() + '/' + (wStart.getMonth()+1), start: wStart, end: wEnd }); } } else if (this.timelineMode === '1m') { for(let i=0; i<30; i++) { const d = new Date(today); d.setDate(today.getDate() + i); cols.push({ label: d.getDate(), sub: d.toLocaleString('default',{weekday:'short'}), start: new Date(d.setHours(0,0,0,0)), end: new Date(d.setHours(23,59,59,999)) }); } } return cols; },
+                getTimelineGridStyle() { return `grid-template-columns: 200px repeat(${this.timelineColumns.length}, minmax(${this.timelineMode === '1m' ? '30px' : '50px'}, 1fr));`; },
+                getDynamicGanttBarStyle(p, idx) { const pStart = new Date(p.startDate); const pEnd = new Date(p.endDate); const cols = this.timelineColumns; if (!this.hasDates(p)) return 'display:none'; let startIndex = -1; let endIndex = -1; for(let i=0; i<cols.length; i++) { if (pStart <= cols[i].end && startIndex === -1) startIndex = i; if (pEnd >= cols[i].start) endIndex = i; } if (endIndex < 0 || startIndex === -1 || pEnd < cols[0].start || pStart > cols[cols.length-1].end) return 'display:none'; const gridStart = Math.max(0, startIndex) + 2; const span = (Math.min(cols.length - 1, endIndex) - Math.max(0, startIndex)) + 1; return `grid-column: ${gridStart} / span ${span}; grid-row: ${idx + 2}; align-self: center;`; },
+                isProjectVisibleInTimeline(p) { return !this.getDynamicGanttBarStyle(p, 0).includes('display:none'); },
+                copyToToday(task, proj) { if (!task.uuid) task.uuid = Date.now() + Math.random().toString(16).slice(2); if(this.todos.find(t => t.originalId === task.uuid)) return this.showToast("Already in Today's list"); this.todos.push({ text: task.title, completed: task.completed, projectTitle: proj.title, originalId: task.uuid, projectId: proj.id }); this.saveToFile(); this.showToast("Added to Dashboard"); },
+                syncFromDashboard(todo) { const proj = this.projects.find(p => p.id === todo.projectId); if(proj) { const task = proj.milestones.find(m => m.uuid === todo.originalId); if(task) { task.completed = todo.completed; if(task.completed) { task.completedDate = new Date().toISOString(); confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } }); } else { task.completedDate = null; } } } this.saveToFile(); },
+                syncFromProject(task, proj) { if(!task.uuid) task.uuid = Date.now() + Math.random().toString(16).slice(2); if(task.completed) { task.completedDate = new Date().toISOString(); confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } }); } else { task.completedDate = null; } const todo = this.todos.find(t => t.originalId === task.uuid); if(todo) todo.completed = task.completed; this.saveToFile(); },
+                deleteTodo(idx) { this.todos.splice(idx, 1); this.saveToFile(); },
+                addPriority() { this.settings.priorities.push({ id: Date.now(), title: 'New Priority', details: '', strategicMilestones: [], tasks: [] }); this.activeStrategyTab = this.settings.priorities.length - 1; },
+                createProjectFromAction(priority, milestone) { const name = prompt("Enter Name:", milestone.title); if(!name) return; const newProj = { id: Date.now(), title: name, priorityId: priority.id, milestoneLink: milestone.title, type: 'Strategy', status: 'Active', startDate: new Date().toISOString().split('T')[0], endDate: milestone.targetDate || '', milestones: [], updates: [], meetings: [], deptCode: '', tlam: '', kpi: '', qaLink: '', isQip: false, staff: '' }; this.projects.push(newProj); this.saveToFile(); this.showToast(`Project created`); },
+                resetFilters() { this.searchQuery=''; this.filterRag=''; this.filterType=''; this.filterPriority=''; this.filterKpi=''; },
+                addTodo() { if(this.newTodo) { this.todos.push({ id: Date.now(), text: this.newTodo, completed: false, projectTitle: 'Manual' }); this.newTodo = ''; this.saveToFile(); }},
+                addUpdate() { if(this.newUpdateText) { this.currentProject.updates.push({ date: new Date().toISOString(), text: this.newUpdateText, link: this.newUpdateLink, source: this.newUpdateSource }); this.newUpdateText = ''; this.newUpdateLink = ''; this.newUpdateSource = ''; this.saveToFile(); this.showToast('Evidence Added'); }},
+                getMonthName(m) { const d = new Date(); d.setMonth(m-1); return d.toLocaleString('default', { month: 'short' }); },
+                hasDates(p) { return p.startDate && p.endDate; },
+                getPriorityColor(pId) { if(!pId) return 'bg-slate-500'; const idx = this.settings.priorities.findIndex(p => p.id == pId); return ['bg-blue-600', 'bg-amber-500', 'bg-emerald-600', 'bg-purple-600', 'bg-pink-600'][idx % 5]; },
+                addStratMilestone(p) { if(!p.strategicMilestones) p.strategicMilestones = []; p.strategicMilestones.push({ title: 'New Phase', targetDate: '', status: 'Planned' }); },
+                addStrategyTask(p) { if(!p.tasks) p.tasks=[]; p.tasks.push({name:'New Task', completed:false}); },
+                getMilestonesForPriority(pId) { const p = this.settings.priorities.find(x => x.id == pId); return p ? p.strategicMilestones : []; },
+                getProjectsForMilestone(pId, mTitle) { return this.projects.filter(p => p.priorityId == pId && p.milestoneLink == mTitle); },
+                getProjectStrategyName(p) { if (!p.priorityId) return null; const prio = this.settings.priorities.find(x => x.id == p.priorityId); if (!prio) return null; return p.milestoneLink ? p.milestoneLink : prio.title; },
+                getAllDueTasks() { let all = []; this.projects.forEach(p => (p.milestones||[]).forEach(m => { if (!m.completed && m.dueDate) all.push({id:Math.random(), projectId:p.id, projectName:p.title, title:m.title, dueDate:m.dueDate, context:'Task', isStrategy: false}); })); return all.sort((a,b)=>a.dueDate.localeCompare(b.dueDate)).slice(0, 30); },
+                formatDate(d) { return d ? new Date(d).toLocaleDateString('en-GB') : ''; },
+                formatDateShort(d) { return d ? new Date(d).toLocaleDateString('en-GB', {day:'2-digit', month:'2-digit'}) : ''; },
+                getProjectHeaderColor(pId) { if(!pId) return 'bg-slate-500'; const idx = this.settings.priorities.findIndex(p => p.id == pId); return ['bg-blue-600', 'bg-amber-500', 'bg-emerald-600', 'bg-purple-600', 'bg-pink-600'][idx % 5]; },
+                getRagBorder(dateStr) { if (!dateStr) return 'border-slate-200'; const today = new Date(); today.setHours(0,0,0,0); const due = new Date(dateStr); const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24)); if (diffDays < 0) return 'border-red-600 border-l-4'; if (diffDays <= 7) return 'border-red-500 border-l-4'; if (diffDays <= 14) return 'border-orange-400 border-l-4'; return 'border-green-500 border-l-4'; },
+                getRagColor(dateStr) { if (!dateStr) return 'bg-slate-200'; const today = new Date(); today.setHours(0,0,0,0); const due = new Date(dateStr); const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24)); if (diffDays < 0) return 'bg-red-600'; if (diffDays <= 7) return 'bg-red-500'; if (diffDays <= 14) return 'bg-orange-400'; return 'bg-green-500'; },
+                getDueClass(d) { if(!d) return ''; const diff = Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24)); if(diff < 0) return 'bg-red-100 text-red-600'; if(diff < 3) return 'bg-amber-100 text-amber-600'; return 'bg-green-100 text-green-600'; },
+                switchView(v) { this.view = v; if(v==='dashboard') setTimeout(()=>this.updateCharts(),100); },
+                startNewProject() { this.currentProject = { id: Date.now() + Math.random(), title: '', priorityId: '', milestoneLink: '', type: 'coaching', milestones: [], updates: [], status: 'Active', deptCode: '', tlam: '', startDate: '', endDate: '', staff: '', meetings: [] }; this.showModal = true; this.modalTab = 'tasks'; },
+                editProject(p) { this.currentProject = p; this.showModal = true; this.modalTab = 'tasks'; }, 
+                saveProject() { const idx = this.projects.findIndex(x => x.id === this.currentProject.id); if(idx === -1) { this.projects = [...this.projects, this.currentProject]; } else { const newProjs = [...this.projects]; newProjs[idx] = this.currentProject; this.projects = newProjs; } this.saveToFile(); this.showModal = false; },
+                addMilestone() { if(!this.currentProject.milestones) this.currentProject.milestones=[]; this.currentProject.milestones.push({title:'New Task', completed:false, completedDate: null, uuid: Date.now() + Math.random().toString(16).slice(2)}); },
+                get filteredProjects() { return this.projects.filter(p => { const matchesSearch = p.title.toLowerCase().includes(this.searchQuery.toLowerCase()); if(this.filterRag) { const border = this.getRagBorder(p.endDate); if(!border.includes(this.filterRag)) return false; } if(this.filterType && p.type && p.type.toLowerCase() !== this.filterType.toLowerCase()) return false; if(this.filterPriority) { if(this.filterPriority === 'standalone') { if(p.priorityId) return false; } else if(p.priorityId != this.filterPriority) return false; } if(this.filterKpi && p.kpi !== this.filterKpi) return false; return matchesSearch; }); },
+                get timelineProjects() { const all = this.filteredProjects; if (this.timelineTab === 'all') return all; if (this.timelineTab === 'standalone') return all.filter(p => !p.priorityId); return all.filter(p => p.priorityId === this.timelineTab); },
+                calculateProgress(p) { return !p.milestones?.length ? 0 : Math.round((p.milestones.filter(m=>m.completed).length / p.milestones.length)*100); },
+                
+                initCharts() {
+                    const pCtx = document.getElementById('priorityChart')?.getContext('2d');
+                    const pipeCtx = document.getElementById('pipelineChart')?.getContext('2d');
+                    if(this.charts.priority) this.charts.priority.destroy();
+                    if(this.charts.pipeline) this.charts.pipeline.destroy();
+                    const isGov = this.dashboardMode === 'governance';
+                    const pData = isGov ? { labels: this.settings.kpis.map(k => k.substring(0, 15)+'...'), datasets: [{ data: this.settings.kpis.map(k => this.projects.filter(p => p.kpi == k).length), backgroundColor: ['#9333ea', '#c084fc', '#a855f7', '#7e22ce', '#6b21a8', '#581c87', '#3b0764', '#d8b4fe'], borderWidth: 0 }] } : { labels: this.settings.priorities.map(p => (p.title || 'Untitled').substring(0, 15)+'...'), datasets: [{ data: this.settings.priorities.map(p => this.projects.filter(proj => proj.priorityId == p.id).length), backgroundColor: ['#2563eb', '#f59e0b', '#059669', '#7c3aed', '#db2777'], borderWidth: 0 }] };
+                    if(pCtx) this.charts.priority = new Chart(pCtx, { type: 'doughnut', data: pData, options: { responsive: true, maintainAspectRatio: false, onClick: (e, el) => { if(el.length > 0) this.switchView('projects'); } } });
+                    if(pipeCtx) this.charts.pipeline = new Chart(pipeCtx, { type: 'bar', data: { labels: ['Active Cases', 'Completed Cases'], datasets: [{ label: 'Projects', data: [this.projects.filter(p => p.status !== 'Completed').length, this.projects.filter(p => p.status === 'Completed').length], backgroundColor: ['#3b82f6', '#10b981'] }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, onClick: (e, el) => { if(el.length > 0) this.switchView('projects'); } } });
+                },
+                updateCharts() { this.initCharts(); }
+            }
+        }
+    </script>
+</body>
+</html>

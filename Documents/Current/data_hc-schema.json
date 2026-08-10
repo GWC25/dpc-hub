@@ -1,0 +1,323 @@
+{
+  "version": "1.0",
+  "note": "Health Check indicator-level success criteria. 5 dimensions × 5 indicators × 5 levels. Level 1 = Urgent, Level 5 = Confident. Unobservable indicators on a given visit should be left unscored — dimension average only counts rated indicators.",
+  "scale": {
+    "1": { "label": "Urgent",     "color": "#dc2626" },
+    "2": { "label": "Challenged", "color": "#ea580c" },
+    "3": { "label": "Developing", "color": "#ca8a04" },
+    "4": { "label": "On Track",   "color": "#16a34a" },
+    "5": { "label": "Confident",  "color": "#0284c7" }
+  },
+  "dimensions": {
+    "accessibilityByDesign": {
+      "label": "Accessibility by Design",
+      "icon": "◬",
+      "observability": "Mostly observable via resources shared in Teams, on screen, or in lesson materials.",
+      "indicators": [
+        {
+          "label": "Uses Accessibility Checker",
+          "observability": "Observable — check if files in Teams have been run through Checker (green tick in Word/PowerPoint). Ask to demonstrate.",
+          "levels": {
+            "1": "No awareness of the Accessibility Checker. Has never used it. Resources shared without any checking.",
+            "2": "Aware the tool exists but has never used it or used it only once. No habit formed.",
+            "3": "Uses the Accessibility Checker occasionally but not as a routine before sharing. Some resources pass; others don't.",
+            "4": "Runs Accessibility Checker before sharing most resources. Minor gaps remain (e.g. older files not updated).",
+            "5": "Accessibility Checker is automatic — every resource checked before sharing. Issues fixed before distribution. Could demonstrate to a peer."
+          }
+        },
+        {
+          "label": "Alt text on images",
+          "observability": "Observable — inspect images in shared PowerPoints or Word docs. Right-click → Edit Alt Text.",
+          "levels": {
+            "1": "No alt text on any images. No awareness that alt text is needed or why.",
+            "2": "Knows alt text exists but rarely applies it. Most images have no description.",
+            "3": "Adds alt text to some images — typically those just created, not retrospectively. Quality varies.",
+            "4": "Alt text present on most images. Some older resources not updated. Descriptions are functional if basic.",
+            "5": "All images have meaningful, descriptive alt text. Marks decorative images as decorative. Can explain why to learners."
+          }
+        },
+        {
+          "label": "Colour contrast checked",
+          "observability": "Observable — inspect slide decks and documents. Look for light-on-light or dark-on-dark combinations.",
+          "levels": {
+            "1": "No awareness of colour contrast as an accessibility issue. Uses colours chosen purely for aesthetics.",
+            "2": "Aware contrast matters but applies no systematic check. May use problematic combinations unknowingly.",
+            "3": "Takes some care with colour choices but doesn't verify against WCAG 2.2 AA standards. Some slides/docs still fail.",
+            "4": "Consciously checks that text is readable against backgrounds. Uses high-contrast defaults in most materials.",
+            "5": "All materials meet WCAG 2.2 AA contrast (4.5:1 for normal text). Uses contrast-checking tools. Never relies on colour alone to convey meaning."
+          }
+        },
+        {
+          "label": "Captions/transcripts on video",
+          "observability": "Observable — play any video shared in Teams or embedded in resources. Check captions are enabled/provided.",
+          "levels": {
+            "1": "Videos shared with no captions or transcripts. No awareness this is required.",
+            "2": "Aware captions should exist but relies on auto-captions only, without reviewing accuracy.",
+            "3": "Enables auto-captions on videos. Does not create or edit transcripts. Some videos still shared without.",
+            "4": "Auto-captions enabled consistently. Reviews them for accuracy on key videos. Transcripts provided for important content.",
+            "5": "All video content captioned. Captions reviewed and corrected where needed. Transcripts provided. Learners explicitly told how to use them."
+          }
+        },
+        {
+          "label": "Accessible assignment briefs",
+          "observability": "Observable — inspect assignment briefs in Teams Assignments or shared folders. Check headings, font, structure.",
+          "levels": {
+            "1": "Briefs shared as images, scanned PDFs, or dense unformatted text. No headings, no structure. Inaccessible by design.",
+            "2": "Briefs are typed but formatting is ad-hoc. No consistent heading structure. Font choice or size may cause issues.",
+            "3": "Some formatting applied (bold headings, readable font) but not systematic. Not checked with Accessibility Checker.",
+            "4": "Briefs use clear headings, readable font (12pt+), good spacing. Passes Accessibility Checker. Minor improvements possible.",
+            "5": "Briefs are fully accessible: proper heading hierarchy, readable font and size, sufficient spacing, passes checker, available in alternative formats on request."
+          }
+        }
+      ]
+    },
+    "promotingAccessiblePractice": {
+      "label": "Promoting Accessible Practice",
+      "icon": "◎",
+      "observability": "Mostly observable during lesson delivery or from learner testimony. Some aspects require direct observation.",
+      "indicators": [
+        {
+          "label": "Proactively offers Immersive Reader",
+          "observability": "Observable — watch whether teacher mentions Immersive Reader during lesson or in Teams resources. Can also ask learners.",
+          "levels": {
+            "1": "Has never mentioned Immersive Reader to learners. Unaware it exists or how to activate it.",
+            "2": "Aware of Immersive Reader but has not demonstrated it to learners. May mention it if directly asked.",
+            "3": "Has shown Immersive Reader to learners at least once but does not offer it routinely. Relies on learners to self-identify need.",
+            "4": "Mentions Immersive Reader regularly. Demonstrates it at start of term. Most learners know it exists.",
+            "5": "Proactively offers Immersive Reader to all learners as a standard tool. Demonstrates it in every new topic or resource. Learners use it independently."
+          }
+        },
+        {
+          "label": "Mentions AT tools in lessons",
+          "observability": "Observable — watch for verbal or visual references to Read&Write, Live Captions, Dictate, Focus Mode during lesson.",
+          "levels": {
+            "1": "No mention of any AT tools in lesson. Assistive technology is invisible in teaching practice.",
+            "2": "AT tools mentioned only when a specific learner flags a need. No proactive normalisation.",
+            "3": "Mentions one or two AT tools occasionally. Not embedded into lesson structure or delivery.",
+            "4": "Refers to AT tools (Immersive Reader, Live Captions, Read&Write) in most lessons. Knows the key tools available.",
+            "5": "AT tools woven into every lesson naturally. Mentions Read&Write, Dictate, Live Captions, Focus Mode as standard options. Learners reminded regularly."
+          }
+        },
+        {
+          "label": "Accessibility offered universally — not SEND-only",
+          "observability": "Observable — does the teacher offer tools to all learners or only direct SEND learners to them? Ask learners.",
+          "levels": {
+            "1": "Accessibility tools only discussed with learners who have a formal SEND diagnosis. Other learners never offered them.",
+            "2": "Mainly directed at SEND learners. Occasionally mentions to others but not as a universal offer.",
+            "3": "Becoming more universal but still defaults to SEND-focused framing (e.g. 'if you have dyslexia...').",
+            "4": "Frames accessibility tools as useful for everyone. Offers them broadly. Occasional slip back to SEND-only language.",
+            "5": "Explicitly positions accessibility as universal ('these tools help everyone'). No SEND-only framing. Normalised for whole class."
+          }
+        },
+        {
+          "label": "Learners personalise their digital environment",
+          "observability": "Observable — can learners be seen adjusting display settings, using preferred tools, or navigating independently?",
+          "levels": {
+            "1": "Learners have no awareness that their digital environment can be personalised. No personalisation visible.",
+            "2": "Some learners may have set preferences but this has not been taught or encouraged by the teacher.",
+            "3": "Teacher has mentioned personalisation options once or twice. A few learners use them but most don't know how.",
+            "4": "Most learners aware of basic personalisation (e.g. dark mode, text size, Immersive Reader settings). Some use them.",
+            "5": "Learners confidently personalise their environment. Teacher has taught them how. Diverse personalisation visible across the class."
+          }
+        },
+        {
+          "label": "AT embedded into routine delivery",
+          "observability": "Observable — is AT referenced in lesson plans, slide decks, assignment briefs, Teams resources, or verbal delivery?",
+          "levels": {
+            "1": "AT is entirely absent from lesson design and delivery. Not referenced anywhere.",
+            "2": "AT appears occasionally but only as a reactive response to a learner difficulty, not planned.",
+            "3": "AT is planned for some lessons but not consistently. Referenced in some resources but not built into delivery.",
+            "4": "AT is part of most lesson plans. Teacher consistently references it. Embedded in Teams resources and delivery.",
+            "5": "AT is fully embedded: referenced in lesson plans, Teams channels, assignment briefs, and verbal delivery. Learners expect it as standard."
+          }
+        }
+      ]
+    },
+    "inclusiveKnowledgeAndPractice": {
+      "label": "Inclusive Knowledge & Practice",
+      "icon": "◈",
+      "observability": "Mix of observable (lesson design, resource variety) and inference from conversation and learner outcomes.",
+      "indicators": [
+        {
+          "label": "Aware of SEND needs and adjusts digitally",
+          "observability": "Partially observable — look for differentiated digital resources, personalised Teams setups, or ask about specific adjustments made.",
+          "levels": {
+            "1": "No awareness of how SEND needs connect to digital practice. Adjustments not considered in resource design.",
+            "2": "Aware learners have needs but digital adjustments are not made. Refers learners to SEND team without digital follow-through.",
+            "3": "Makes some digital adjustments for known SEND learners (e.g. larger font, different colour background) but not systematically.",
+            "4": "Proactively considers SEND needs when designing digital resources. Most learners with identified needs have adjustments in place.",
+            "5": "Fully informed about cohort SEND needs. Digital adjustments made proactively for all. Reviews and updates as needs change. Works with SEND team."
+          }
+        },
+        {
+          "label": "Applies UDL — multiple means of engagement",
+          "observability": "Observable — look for variety in how content is presented (text, audio, video, visual) and how learners can respond.",
+          "levels": {
+            "1": "Single delivery format throughout. All learners receive the same resource in the same way. No variation.",
+            "2": "Occasionally provides a second format (e.g. a video alongside text) but not by design — ad hoc.",
+            "3": "Some UDL principles applied — at least two means of representation visible. Not yet consistent across lessons.",
+            "4": "Multiple means of representation used consistently. Learners offered some choice in how they engage with content.",
+            "5": "UDL embedded across all lessons. Multiple means of representation, expression, and engagement. Learner choice visible and genuinely offered."
+          }
+        },
+        {
+          "label": "Provides digital alternatives or choices",
+          "observability": "Observable — do learners have a genuine choice of how to submit or engage? Are alternatives offered in assignment briefs?",
+          "levels": {
+            "1": "One submission format, one way to engage. No alternatives offered digitally.",
+            "2": "Occasionally allows a different format if a learner requests it. Not built into the design.",
+            "3": "Some tasks offer a digital alternative (e.g. typed or spoken response). Not consistent across all tasks.",
+            "4": "Most tasks offer at least two ways to engage or submit. Alternatives are signposted clearly.",
+            "5": "Digital alternatives are designed in from the start. Learners routinely choose how to engage and submit. Choices are genuinely equivalent."
+          }
+        },
+        {
+          "label": "Resources designed for equitable access",
+          "observability": "Observable — inspect resources. Are font sizes readable, layouts clean, images explained, language plain and clear?",
+          "levels": {
+            "1": "Resources designed for a typical learner only. Dense text, small font, no visual support. Significant barriers for some.",
+            "2": "Some basic readability considered (font not tiny, headings present) but not systematically designed for access.",
+            "3": "Resources are broadly readable. Some accessibility features present. Not checked against any standard.",
+            "4": "Resources consistently readable: appropriate font, spacing, plain language, supported with visuals. Passes basic accessibility checks.",
+            "5": "Resources explicitly designed for equitable access. Tested against WCAG 2.2 AA. Plain language used. Visual hierarchy clear. Reviewed with learner feedback."
+          }
+        },
+        {
+          "label": "Learner voice used to adapt digital practice",
+          "observability": "Partially observable — ask if teacher seeks feedback on digital experience. Look for evidence of practice changing in response.",
+          "levels": {
+            "1": "No learner feedback sought on digital practice. No awareness that learners can inform this.",
+            "2": "Learner feedback collected generally but digital practice never specifically asked about or adapted.",
+            "3": "Has asked learners about digital tools or resources at least once. Some changes made informally.",
+            "4": "Regularly seeks feedback on digital experience. Some changes to practice evidenced as a result.",
+            "5": "Learner voice systematically informs digital practice. Feedback sought, recorded, and acted on. Learners see their input reflected in how teaching evolves."
+          }
+        }
+      ]
+    },
+    "filesAndFoldersPermissions": {
+      "label": "Files, Folders & Permissions",
+      "icon": "⊡",
+      "observability": "Directly observable — inspect Teams channels, SharePoint folders, and shared files. Can be done during or after lesson.",
+      "indicators": [
+        {
+          "label": "Consistent file naming conventions",
+          "observability": "Observable — look at files in Teams Assignments, shared folders, or OneDrive. Are names consistent and meaningful?",
+          "levels": {
+            "1": "Files named randomly (e.g. 'Document1', 'final FINAL v3', dates in inconsistent formats). No convention.",
+            "2": "Some descriptive naming but inconsistent. Mix of conventions or no convention at all. Hard to find files.",
+            "3": "Most files have descriptive names but convention is informal. No agreed standard. Occasional confusing names.",
+            "4": "Files consistently named with clear descriptors and dates or versions. Easy to navigate. Minor inconsistencies.",
+            "5": "Consistent naming convention applied to all files: descriptive, dated, versioned where needed. Could explain convention to a new colleague."
+          }
+        },
+        {
+          "label": "SharePoint permissions set appropriately",
+          "observability": "Observable — check sharing settings on key files/folders. Look for 'Anyone with the link' vs targeted sharing.",
+          "levels": {
+            "1": "Files shared with 'Anyone with the link' including sensitive or confidential content. No awareness of risk.",
+            "2": "Uses broad sharing links without considering appropriateness. Not aware of the difference between sharing options.",
+            "3": "Beginning to use more targeted sharing but inconsistent. Some files still over-shared. Not always sure how to check.",
+            "4": "Most files shared appropriately (organisation members, specific people). Occasional over-sharing. Knows how to check and adjust.",
+            "5": "SharePoint permissions reviewed and set correctly on all shared content. Sensitive files restricted. Could teach others to do the same."
+          }
+        },
+        {
+          "label": "Folders structured and clearly labelled",
+          "observability": "Observable — ask to see Teams channels or SharePoint folders. Look at hierarchy, naming, and findability.",
+          "levels": {
+            "1": "No folder structure. Files dumped in one location. Impossible to navigate without knowing exactly what you're looking for.",
+            "2": "Some folders exist but named vaguely or inconsistently. Structure not logical. Learners struggle to find resources.",
+            "3": "Basic folder structure in place. Main resources findable. Subfolders inconsistent or missing. Needs tidying.",
+            "4": "Clear folder structure: module/topic/week organised logically. Labels descriptive. Learners can navigate independently.",
+            "5": "Well-structured folder hierarchy that mirrors the curriculum. Named consistently. Reviewed regularly. Learners and colleagues can find anything quickly."
+          }
+        },
+        {
+          "label": "GDPR-compliant sharing",
+          "observability": "Partially observable — look for personal data (learner names, grades, health info) in shared or open files.",
+          "levels": {
+            "1": "Personal learner data (names, grades, health/SEND info) shared in open files or links. Significant GDPR risk.",
+            "2": "Some awareness of GDPR but personal data occasionally included in shared resources without appropriate controls.",
+            "3": "Generally avoids putting personal data in shared resources but not always consistent. Unsure about edge cases.",
+            "4": "Personal data handled appropriately. Not included in open-access resources. Shares only aggregated or anonymised data.",
+            "5": "Fully GDPR-compliant digital practice. Personal data kept in secure, access-controlled locations only. Could advise colleagues on what is and isn't acceptable."
+          }
+        },
+        {
+          "label": "Version control — no 'final_v3' files",
+          "observability": "Observable — check file names in Teams and shared folders for evidence of version sprawl.",
+          "levels": {
+            "1": "Multiple versions of the same file with confusing names (final, final2, USE THIS ONE). No clear current version.",
+            "2": "Some version confusion present but not severe. Occasionally can't tell which version is current.",
+            "3": "Mostly maintains one working version but occasionally saves duplicates. No formal version control.",
+            "4": "Consistent use of versioning in file names (e.g. v1, v2) or relies on OneDrive version history. Current version clear.",
+            "5": "Uses OneDrive/SharePoint version history or clear naming conventions. No redundant files. Archives old versions in a separate folder. Could teach this to others."
+          }
+        }
+      ]
+    },
+    "effectiveCommunication": {
+      "label": "Effective Digital Communication",
+      "icon": "◷",
+      "observability": "Observable — review Teams channels, posts, announcements, and assignment feedback visible during visit.",
+      "indicators": [
+        {
+          "label": "Teams channel/class space is organised",
+          "observability": "Observable — open Teams and view the class space. Look at channel structure, pinned resources, and General channel posts.",
+          "levels": {
+            "1": "Teams space either doesn't exist, is entirely empty, or is so cluttered it's unusable. Learners have no functional digital class space.",
+            "2": "Teams space exists but minimal setup. Resources missing, channels not organised, learners unlikely to use it.",
+            "3": "Teams space is functional. Basic resources present but not curated. Some clutter. Navigation possible but effortful.",
+            "4": "Well-organised Teams space. Relevant resources pinned or in Files. Posts are purposeful. Learners directed there regularly.",
+            "5": "Teams space is a curated digital environment. Clear channels, pinned resources up to date, organised Files tab, consistent communication. Learners use it as their primary learning hub."
+          }
+        },
+        {
+          "label": "Posts and messages are clear and professional",
+          "observability": "Observable — read recent posts in Teams General channel and any announcements. Check tone, clarity, and professionalism.",
+          "levels": {
+            "1": "No posts or messages. Or posts are unclear, informal to the point of confusion, or contain errors that undermine confidence.",
+            "2": "Posts exist but are irregular and sometimes unclear. Tone may be too informal or messages lack key information.",
+            "3": "Posts are generally professional and clear. Occasional inconsistency in tone or detail. Learners mostly understand what is expected.",
+            "4": "Posts and messages consistently professional, clear, and timely. Learners know what they need to do. Rare confusion.",
+            "5": "Exemplary digital communication. Clear, professional, warm tone. Posts anticipate learner questions. Messages include everything learners need. Could be used as a model."
+          }
+        },
+        {
+          "label": "Appropriate Teams features used",
+          "observability": "Observable — look for use of Assignments (not just General posts), announcements, tags, tabs, and relevant channels.",
+          "levels": {
+            "1": "Only uses General channel. No Assignments, no tabs, no structured features. Teams used like a basic messaging app.",
+            "2": "Uses Assignments occasionally but not consistently. Other features (tabs, announcements, channels) largely unused.",
+            "3": "Uses Assignments regularly. Some additional features used (e.g. a Resources tab). Not yet using the full potential.",
+            "4": "Uses Assignments, appropriate channels, and tabs effectively. Announcements used for key information. Good feature awareness.",
+            "5": "Full and purposeful use of Teams features: Assignments with rubrics, relevant channels, tabs, tags, announcements. Each feature used for a clear pedagogical reason."
+          }
+        },
+        {
+          "label": "Resources proactively shared",
+          "observability": "Observable — check Teams Files tab and recent posts. Are resources uploaded before or alongside lessons, not after?",
+          "levels": {
+            "1": "Resources not shared digitally. Learners have no way to access materials outside the lesson.",
+            "2": "Resources occasionally uploaded to Teams but inconsistently and often after the lesson.",
+            "3": "Most lesson resources shared on Teams. Some gaps. Learners mostly know where to find them.",
+            "4": "Resources shared in advance of or alongside lessons consistently. Learners can prepare and revisit independently.",
+            "5": "Resources proactively shared with clear organisation and signposting. Learners directed to specific materials. Includes supplementary resources for further learning."
+          }
+        },
+        {
+          "label": "Communication is accessible and inclusive",
+          "observability": "Observable — check if posts use plain language, include alt text on images, and are formatted for readability.",
+          "levels": {
+            "1": "Communication assumes all learners can read and engage with standard text without support. No accessibility consideration.",
+            "2": "Accessible communication considered occasionally but not consistently. Most posts are plain text with no formatting support.",
+            "3": "Some accessible formatting used in posts (bold key info, short paragraphs). Not systematic. No alt text on images in posts.",
+            "4": "Posts formatted for readability. Plain language used. Key information highlighted. Some consideration for learners with English as additional language.",
+            "5": "All communication is accessible: plain language, clear formatting, alt text on images in posts, inclusive of ESOL and SEND learners. Tone is warm and welcoming for all."
+          }
+        }
+      ]
+    }
+  }
+}

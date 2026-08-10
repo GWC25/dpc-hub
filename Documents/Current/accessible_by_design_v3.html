@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digitally Accessible by Design — Weston College Staff Resource</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --navy:#0f2645;--blue:#1a5fa8;--blue-mid:#2e7fcf;--blue-light:#deeaf8;--blue-xlight:#f0f6fd;
+    --green:#1a6b3c;--green-light:#e4f4ec;--green-mid:#2d9157;
+    --purple:#4a2d7a;--purple-light:#f0ebfa;--purple-mid:#6b45a8;
+    --teal:#0f6e56;--teal-light:#e1f5ee;--teal-mid:#1d9e75;
+    --amber:#854f0b;--amber-light:#faeeda;--amber-mid:#ba7517;
+    --text:#0f2645;--muted:#5a6b7c;--border:rgba(15,38,69,0.11);--surface:#f7fafd;--white:#fff;
+    --wrap:clamp(1.25rem,4vw,3rem);
+  }
+  html,body{height:100%}
+  body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+  /* HERO */
+  .hero{background:var(--navy);position:relative;overflow:hidden}
+  .hero::after{content:'';position:absolute;top:-60px;right:-60px;width:280px;height:280px;border-radius:50%;background:rgba(46,127,207,0.12);pointer-events:none}
+  .hero-inner{max-width:1200px;margin:0 auto;padding:2.75rem var(--wrap) 2.25rem;position:relative;z-index:1}
+  .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(46,127,207,0.22);color:#9fc8f0;font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:1rem}
+  .hero-dot{width:6px;height:6px;border-radius:50%;background:#2e7fcf}
+  .hero h1{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,4.5vw,2.8rem);color:#fff;line-height:1.1;margin-bottom:.6rem}
+  .hero h1 em{font-style:italic;color:#7db8f0}
+  .hero-sub{color:#8aadcc;font-size:13.5px;font-weight:300;line-height:1.6;max-width:540px}
+  .hero-meta{display:flex;gap:1.5rem;margin-top:1.5rem;flex-wrap:wrap}
+  .hero-stat{display:flex;flex-direction:column;gap:2px}
+  .hs-num{font-family:'DM Serif Display',serif;font-size:1.5rem;color:#fff}
+  .hs-label{font-size:11px;color:#6a90ad;font-weight:400;letter-spacing:.02em}
+
+  /* TABS */
+  .tab-bar{background:var(--white);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:thin;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--border)}
+  .tab-bar::-webkit-scrollbar{height:3px}
+  .tab-bar::-webkit-scrollbar-thumb{background:var(--border)}
+  .tab-bar-inner{max-width:1200px;margin:0 auto;display:flex}
+  .tab-btn{background:none;border:none;border-bottom:2.5px solid transparent;padding:.9rem 1.5rem .8rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:8px;transition:color .2s,border-color .2s;min-height:48px}
+  .tab-btn svg{width:15px;height:15px;flex-shrink:0;opacity:.5;transition:opacity .2s}
+  .tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .tab-btn.active svg{opacity:1}
+  .tab-btn:hover:not(.active){color:var(--text)}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+  .tab-panel-inner{max-width:1200px;margin:0 auto;padding:2rem var(--wrap) 3.5rem}
+
+  /* TYPOGRAPHY */
+  .sec-label{font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--blue);margin-bottom:.4rem}
+  .sec-title{font-family:'DM Serif Display',serif;font-size:clamp(1.3rem,3vw,1.75rem);color:var(--navy);line-height:1.2;margin-bottom:.875rem}
+  .sec-lead{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:2rem;max-width:600px}
+  .subsec{margin-bottom:2.25rem}
+  .subsec-title{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+
+  /* CALLOUT */
+  .callout{border-left:3px solid var(--blue-mid);background:var(--blue-xlight);padding:1rem 1.25rem;border-radius:0 10px 10px 0;margin:1.5rem 0;font-size:13.5px;line-height:1.65;color:var(--navy);font-style:italic}
+  .callout.green{border-color:var(--green-mid);background:var(--green-light);color:var(--green)}
+  .callout.amber{border-color:var(--amber-mid);background:var(--amber-light);color:var(--amber)}
+  .callout.purple{border-color:var(--purple-mid);background:var(--purple-light);color:var(--purple)}
+
+  /* STAT STRIP */
+  .stat-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:2rem}
+  .stat-cell{background:var(--white);padding:1rem 1.125rem}
+  .stat-num{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--navy);margin-bottom:3px}
+  .stat-desc{font-size:12px;color:var(--muted);line-height:1.4}
+
+  /* REASON CARDS */
+  .reason-grid{display:grid;gap:.875rem;margin-bottom:2rem}
+  .reason-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.125rem 1.25rem;display:flex;gap:1rem;align-items:flex-start}
+  .rc-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+  .rc-title{font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:4px}
+  .rc-body{font-size:13px;color:var(--muted);line-height:1.55}
+
+  /* TOOL CARDS */
+  .tool-grid{display:grid;gap:1.125rem;margin-bottom:2rem}
+  .tool-card{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  .tool-header{padding:1rem 1.25rem .875rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--border)}
+  .tool-header-left{display:flex;align-items:center;gap:.875rem}
+  .tool-badge{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .tool-name{font-size:14px;font-weight:600;color:var(--navy)}
+  .tool-who{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .free-pill{background:var(--green-light);color:var(--green);font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.04em;white-space:nowrap}
+  .tool-body{padding:1rem 1.25rem}
+  .tool-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:.875rem}
+  .tool-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.875rem}
+  .action-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;border:1px solid var(--border);color:var(--muted);background:var(--surface)}
+  .action-chip svg{width:11px;height:11px}
+  .yt-links{display:flex;flex-direction:column;gap:.4rem}
+  .yt-link{display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;background:#fff8f0;border:1px solid #f5d8b0;border-radius:8px;text-decoration:none;transition:background .2s}
+  .yt-link:hover{background:#ffecd6}
+  .yt-icon{width:22px;height:22px;background:#FF0000;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .yt-icon svg{width:10px;height:10px;fill:white}
+  .yt-text{font-size:12px;color:#7a4010;font-weight:500;line-height:1.3}
+  .yt-sub{font-size:11px;color:#a06030;font-weight:400}
+
+  /* PRINCIPLES */
+  .principle-list{display:grid;gap:.75rem;margin-bottom:2rem}
+  .pl-item{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1rem 1.125rem;display:flex;gap:.875rem;align-items:flex-start}
+  .pl-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+  .pl-title{font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:3px}
+  .pl-body{font-size:13px;color:var(--muted);line-height:1.55}
+
+  /* CHECKLIST */
+  .checklist{display:grid;gap:.5rem;margin-bottom:2rem}
+  .cl-item{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:.75rem 1rem;display:flex;align-items:flex-start;gap:.75rem}
+  .cl-box{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  .cl-box.checked{background:var(--green-mid);border-color:var(--green-mid)}
+  .cl-box.checked::after{content:'';display:block;width:10px;height:7px;border-left:2px solid white;border-bottom:2px solid white;transform:rotate(-45deg) translateY(-1px)}
+  .cl-text{font-size:13px;color:var(--text);line-height:1.5}
+  .cl-tag{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
+
+  /* DIVIDER */
+  .divider{height:1px;background:var(--border);margin:2rem 0}
+
+  /* FOOTER */
+  .footer-strip{background:var(--navy);margin-top:auto}
+  .footer-strip-inner{max-width:1200px;margin:0 auto;padding:1.25rem var(--wrap);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+  .fs-text{font-size:12px;color:#6a90ad}
+  .fs-text strong{color:#9fc8f0}
+
+  /* RESPONSIVE */
+  @media(max-width:600px){
+    .tab-btn{padding:.875rem .875rem .75rem;font-size:12px}
+    .hero-meta{gap:1rem}
+  }
+  @media(min-width:860px){
+    .tool-grid{grid-template-columns:1fr 1fr}
+    .reason-grid{grid-template-columns:1fr 1fr}
+    .principle-list{grid-template-columns:1fr 1fr}
+    .yt-links{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+    .stat-strip{grid-template-columns:repeat(4,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow"><div class="hero-dot"></div>Weston College · Staff Resource · March 2026</div>
+    <h1>Digitally Accessible<br><em>by Design</em></h1>
+    <p class="hero-sub">A practical guide to the free Microsoft tools that make digital learning work for every learner — and the philosophy that makes it sustainable.</p>
+    <div class="hero-meta">
+      <div class="hero-stat"><span class="hs-num">6</span><span class="hs-label">free tools in M365 right now</span></div>
+      <div class="hero-stat"><span class="hs-num">£0</span><span class="hs-label">additional cost</span></div>
+      <div class="hero-stat"><span class="hs-num">30 min</span><span class="hs-label">to start making a difference</span></div>
+    </div>
+  </div>
+</div>
+
+<nav class="tab-bar">
+  <div class="tab-bar-inner">
+    <button class="tab-btn active" data-tab="rationale">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 5v4M8 11v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Why it matters
+    </button>
+    <button class="tab-btn" data-tab="quickwins">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8.5l3.5 3.5L13 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Quick wins
+    </button>
+    <button class="tab-btn" data-tab="philosophy">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 8h5M5.5 5.5h5M5.5 10.5h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Accessible by design
+    </button>
+  </div>
+</nav>
+
+<!-- TAB 1: RATIONALE -->
+<div class="tab-panel active" id="tab-rationale">
+  <div class="tab-panel-inner">
+  <p class="sec-label">The case for change</p>
+  <h2 class="sec-title">Why digital accessibility matters — right now</h2>
+  <p class="sec-lead">Digital exclusion isn't a niche concern. It affects some of our most vulnerable learners every single day — and the tools to address it are already on your laptop.</p>
+
+  <div class="stat-strip">
+    <div class="stat-cell"><div class="stat-num">1 in 5</div><div class="stat-desc">people in the UK have a disability that affects how they use technology</div></div>
+    <div class="stat-cell"><div class="stat-num">66%</div><div class="stat-desc">of FE learners say digital learning materials are consistently accessible (Jisc DEI)</div></div>
+    <div class="stat-cell"><div class="stat-num">19%</div><div class="stat-desc">of young people see genuine opportunities to shape digital change (DigiFest '26)</div></div>
+    <div class="stat-cell"><div class="stat-num">#1</div><div class="stat-desc">barrier to digital inclusion across FE is staff capability — not budget or tools</div></div>
+  </div>
+
+  <div class="subsec">
+    <div class="subsec-title">Who is affected in our classrooms?</div>
+    <div class="reason-grid">
+      <div class="reason-card">
+        <div class="rc-icon" style="background:#e4f4ec">🌍</div>
+        <div>
+          <div class="rc-title">ESOL learners</div>
+          <div class="rc-body">Students learning in a language that isn't their first face double the cognitive load in every session. Inaccessible materials — dense PDFs, no captions, no translation support — make an already challenging situation exhausting and demoralising.</div>
+        </div>
+      </div>
+      <div class="reason-card">
+        <div class="rc-icon" style="background:#deeaf8">🧠</div>
+        <div>
+          <div class="rc-title">SEND learners</div>
+          <div class="rc-body">Learners with dyslexia, visual impairments, processing differences, limited mobility, or mental health conditions encounter barriers that accessible design removes entirely. A resource that works for them works better for everyone.</div>
+        </div>
+      </div>
+      <div class="reason-card">
+        <div class="rc-icon" style="background:#f0ebfa">👂</div>
+        <div>
+          <div class="rc-title">d/Deaf and hard of hearing learners</div>
+          <div class="rc-body">A recorded lecture without captions is inaccessible. A Teams meeting without live captions excludes. These aren't edge cases — and the fix takes seconds to enable.</div>
+        </div>
+      </div>
+      <div class="reason-card">
+        <div class="rc-icon" style="background:#faeeda">📱</div>
+        <div>
+          <div class="rc-title">Learners experiencing device or connectivity poverty</div>
+          <div class="rc-body">Coastal and rural Weston-super-Mare has real connectivity gaps. Learners accessing materials on low-spec devices or patchy broadband need resources that are lightweight, structured, and simple to navigate.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    The FE White Paper assumes all learners have devices, connectivity, and digital confidence. Our context tells a different story. <strong>Accessibility isn't an add-on. It's the precondition for learning.</strong>
+  </div>
+
+  <div class="subsec">
+    <div class="subsec-title">What the research tells us</div>
+    <div class="reason-grid">
+      <div class="reason-card">
+        <div class="rc-icon" style="background:#e4f4ec">📈</div>
+        <div>
+          <div class="rc-title">Accessible design improves outcomes for all learners</div>
+          <div class="rc-body">Universal Design for Learning (UDL) research consistently shows that designing for those with the greatest access needs raises the floor for the entire cohort. Captions help ESOL learners, SEND learners — and any learner in a noisy environment, revising at home, or processing complex content.</div>
+        </div>
+      </div>
+      <div class="reason-card">
+        <div class="rc-icon" style="background:#deeaf8">⚡</div>
+        <div>
+          <div class="rc-title">The tools already exist — and they're free</div>
+          <div class="rc-body">Every tool in this resource comes with your existing Microsoft 365 Education licence. There is no procurement process, no budget request, no waiting list. The only barrier is awareness — and you're removing it right now by reading this.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout amber">
+    <strong>Key message from Jisc DigiFest '26:</strong> Digital inclusion is now social inclusion. It is infrastructure, not a nice-to-have. Staff capability is the number one lever — which means every teacher who learns these tools is part of the solution.
+  </div>
+
+  <div class="subsec">
+    <div class="subsec-title">Learn more: the rationale</div>
+    <div class="yt-links">
+      <a class="yt-link" href="https://www.youtube.com/results?search_query=why+digital+accessibility+matters+education+FE+college" target="_blank" rel="noopener">
+        <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div><div class="yt-text">Why digital accessibility matters in FE education</div><div class="yt-sub">Search: "why digital accessibility matters education FE college"</div></div>
+      </a>
+      <a class="yt-link" href="https://www.youtube.com/results?search_query=Universal+Design+for+Learning+UDL+explained+teachers" target="_blank" rel="noopener">
+        <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div><div class="yt-text">Universal Design for Learning (UDL) explained for teachers</div><div class="yt-sub">Search: "Universal Design for Learning UDL explained teachers"</div></div>
+      </a>
+      <a class="yt-link" href="https://www.youtube.com/results?search_query=digital+inclusion+poverty+further+education+UK" target="_blank" rel="noopener">
+        <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div><div class="yt-text">Digital inclusion and poverty in UK further education</div><div class="yt-sub">Search: "digital inclusion poverty further education UK"</div></div>
+      </a>
+      <a class="yt-link" href="https://www.youtube.com/results?search_query=ESOL+digital+learning+barriers+support+classroom" target="_blank" rel="noopener">
+        <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div><div class="yt-text">Supporting ESOL learners with digital tools in the classroom</div><div class="yt-sub">Search: "ESOL digital learning barriers support classroom"</div></div>
+      </a>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /tab-panel-inner -->
+</div>
+
+<!-- TAB 2: QUICK WINS -->
+<div class="tab-panel" id="tab-quickwins">
+  <div class="tab-panel-inner">
+  <p class="sec-label">Free tools · Maximum impact</p>
+  <h2 class="sec-title">Your Microsoft quick win arsenal</h2>
+  <p class="sec-lead">Six tools. All free. All already in your Microsoft 365 licence. Each one removes a real barrier for a real learner in your classroom — starting today.</p>
+
+  <div class="tool-grid">
+
+    <!-- IMMERSIVE READER -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-header-left">
+          <div class="tool-badge" style="background:#e4f4ec">📖</div>
+          <div>
+            <div class="tool-name">Immersive Reader</div>
+            <div class="tool-who">Best for: ESOL learners · Dyslexia · Visual processing difficulties · All learners</div>
+          </div>
+        </div>
+        <span class="free-pill">FREE · Built in</span>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Transforms any text in Word, Teams, OneNote, Forms, and PowerPoint. Reads aloud, translates into 100+ languages, adjusts spacing, font, and background colour. One click — huge difference. This is the single most powerful accessibility tool most staff have never opened.</div>
+        <div class="tool-actions">
+          <span class="action-chip"><svg viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Where to find it</span>
+          <span class="action-chip" style="background:var(--blue-xlight);color:var(--blue);border-color:var(--blue-light)">View menu in Word, Teams, OneNote · Press Alt+Shift+R</span>
+        </div>
+        <div class="yt-links">
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Microsoft+Immersive+Reader+tutorial+teachers+classroom" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Immersive Reader tutorial for teachers</div><div class="yt-sub">Search: "Microsoft Immersive Reader tutorial teachers classroom"</div></div>
+          </a>
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Immersive+Reader+Microsoft+Teams+OneNote+how+to+use" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Using Immersive Reader in Teams and OneNote</div><div class="yt-sub">Search: "Immersive Reader Microsoft Teams OneNote how to use"</div></div>
+          </a>
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Immersive+Reader+ESOL+English+language+learners+Microsoft" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Immersive Reader for ESOL and English language learners</div><div class="yt-sub">Search: "Immersive Reader ESOL English language learners Microsoft"</div></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE CAPTIONS & TRANSLATOR -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-header-left">
+          <div class="tool-badge" style="background:#deeaf8">💬</div>
+          <div>
+            <div class="tool-name">Live Captions & Translator (Teams)</div>
+            <div class="tool-who">Best for: d/Deaf & hard of hearing · ESOL learners · All recorded sessions</div>
+          </div>
+        </div>
+        <span class="free-pill">FREE · Built in</span>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Real-time captions in 60+ languages during live Teams calls and meetings. Learners can also translate captions into their preferred language. Takes 10 seconds to enable — and transforms access for a significant proportion of your learners. Should be on by default in every session.</div>
+        <div class="tool-actions">
+          <span class="action-chip" style="background:var(--blue-xlight);color:var(--blue);border-color:var(--blue-light)">Teams meeting → More options (•••) → Turn on live captions</span>
+        </div>
+        <div class="yt-links">
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Microsoft+Teams+live+captions+how+to+enable+2024" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">How to enable live captions in Microsoft Teams</div><div class="yt-sub">Search: "Microsoft Teams live captions how to enable 2024"</div></div>
+          </a>
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Teams+live+captions+translation+accessibility+education" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Teams captions and translation for accessibility in education</div><div class="yt-sub">Search: "Teams live captions translation accessibility education"</div></div>
+          </a>
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Microsoft+Translator+live+conversation+classroom+multilingual" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Microsoft Translator for multilingual classrooms</div><div class="yt-sub">Search: "Microsoft Translator live conversation classroom multilingual"</div></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCESSIBILITY CHECKER -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-header-left">
+          <div class="tool-badge" style="background:#f0ebfa">✅</div>
+          <div>
+            <div class="tool-name">Accessibility Checker</div>
+            <div class="tool-who">Best for: All learners · Staff creating any digital resource</div>
+          </div>
+        </div>
+        <span class="free-pill">FREE · Built in</span>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Built into Word, PowerPoint, Excel, and Outlook. Checks your document for colour contrast issues, missing alt text on images, poor reading order, and more. Run it before uploading anything to Teams or Moodle. Think of it as a spell-check for accessibility.</div>
+        <div class="tool-actions">
+          <span class="action-chip" style="background:var(--purple-light);color:var(--purple);border-color:#d8cef5">Review tab → Check Accessibility · Or: File → Info → Check for Issues</span>
+        </div>
+        <div class="yt-links">
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Microsoft+Office+Accessibility+Checker+how+to+use+Word+PowerPoint" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Using the Accessibility Checker in Word and PowerPoint</div><div class="yt-sub">Search: "Microsoft Office Accessibility Checker how to use Word PowerPoint"</div></div>
+          </a>
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=alt+text+images+Word+PowerPoint+accessibility+tutorial" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Adding alt text to images in Word and PowerPoint</div><div class="yt-sub">Search: "alt text images Word PowerPoint accessibility tutorial"</div></div>
+          </a>
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=accessible+PowerPoint+slides+design+tips+teachers" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Designing accessible PowerPoint slides for the classroom</div><div class="yt-sub">Search: "accessible PowerPoint slides design tips teachers"</div></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- DICTATION / SPEECH TO TEXT -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-header-left">
+          <div class="tool-badge" style="background:#faeeda">🎙️</div>
+          <div>
+            <div class="tool-name">Dictation & Speech-to-Text</div>
+            <div class="tool-who">Best for: Dyslexia · Limited mobility · Low written English · Motor difficulties</div>
+          </div>
+        </div>
+        <span class="free-pill">FREE · Built in</span>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Learners speak — Word or OneNote writes. Removes the barrier between what a learner knows and what they can demonstrate in writing. Transformative for learners with dyslexia, limited mobility, or low written English. Promote this as a standard learning adjustment, not a special arrangement.</div>
+        <div class="tool-actions">
+          <span class="action-chip" style="background:var(--amber-light);color:var(--amber);border-color:#f5d8b0">Home tab → Dictate (microphone icon) · Or: Windows key + H</span>
+        </div>
+        <div class="yt-links">
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Microsoft+Word+dictation+speech+to+text+tutorial+2024" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Microsoft Word dictation and speech-to-text tutorial</div><div class="yt-sub">Search: "Microsoft Word dictation speech to text tutorial 2024"</div></div>
+          </a>
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=speech+to+text+dyslexia+support+students+Microsoft" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Speech to text as a support tool for students with dyslexia</div><div class="yt-sub">Search: "speech to text dyslexia support students Microsoft"</div></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- READING COACH -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-header-left">
+          <div class="tool-badge" style="background:#e4f4ec">📚</div>
+          <div>
+            <div class="tool-name">Reading Coach</div>
+            <div class="tool-who">Best for: ESOL learners · Reading difficulties · All learners building fluency</div>
+          </div>
+        </div>
+        <span class="free-pill">FREE · Built in</span>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">AI-powered reading fluency tool built into Microsoft Teams for Education. Learners read aloud — Reading Coach tracks fluency, pronunciation, and accuracy, and gives targeted practice on the words they find hardest. Used by 500,000+ learners in 190+ countries. Evidence shows 1–2 reading level gains in 6–8 weeks. Pilot it with one ESOL group this term and measure before and after.</div>
+        <div class="tool-actions">
+          <span class="action-chip" style="background:var(--green-light);color:var(--green);border-color:#b8dfc7">Teams for Education → Assignments → Add Reading Coach to an assignment</span>
+        </div>
+        <div class="yt-links">
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Microsoft+Reading+Coach+Teams+Education+tutorial+teachers" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Microsoft Reading Coach tutorial for teachers</div><div class="yt-sub">Search: "Microsoft Reading Coach Teams Education tutorial teachers"</div></div>
+          </a>
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Reading+Coach+Microsoft+ESOL+reading+fluency+improvement" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Reading Coach for ESOL learners and reading fluency</div><div class="yt-sub">Search: "Reading Coach Microsoft ESOL reading fluency improvement"</div></div>
+          </a>
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Microsoft+Reading+Progress+Coach+set+up+assignment" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Setting up Reading Progress and Coach in Teams</div><div class="yt-sub">Search: "Microsoft Reading Progress Coach set up assignment"</div></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- MICROSOFT TRANSLATOR -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-header-left">
+          <div class="tool-badge" style="background:#deeaf8">🌐</div>
+          <div>
+            <div class="tool-name">Microsoft Translator App</div>
+            <div class="tool-who">Best for: ESOL learners · Parent evenings · Enrolment conversations · Multi-language groups</div>
+          </div>
+        </div>
+        <span class="free-pill">FREE · Download app</span>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Real-time conversation translation across multiple devices simultaneously. One person starts a conversation on their phone — others join on their own devices and see the conversation in their language, live. No shared language required. Deploy immediately for ESOL parent evenings, enrolment interviews, and initial assessment conversations.</div>
+        <div class="tool-actions">
+          <span class="action-chip" style="background:var(--blue-xlight);color:var(--blue);border-color:var(--blue-light)">Download: Microsoft Translator app (iOS / Android / Web) — translator.microsoft.com</span>
+        </div>
+        <div class="yt-links">
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Microsoft+Translator+app+conversation+live+multilingual+classroom" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Microsoft Translator live conversation in the classroom</div><div class="yt-sub">Search: "Microsoft Translator app conversation live multilingual classroom"</div></div>
+          </a>
+          <a class="yt-link" href="https://www.youtube.com/results?search_query=Microsoft+Translator+parent+meeting+multilingual+school" target="_blank" rel="noopener">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div><div class="yt-text">Using Microsoft Translator for parent meetings and consultations</div><div class="yt-sub">Search: "Microsoft Translator parent meeting multilingual school"</div></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout green">
+    <strong>All six tools are already in your Microsoft 365 Education licence.</strong> No procurement. No budget request. No IT ticket. The only thing standing between your learners and these tools is the next 30 minutes.
+  </div>
+</div>
+
+  </div><!-- /tab-panel-inner -->
+</div>
+
+<!-- TAB 3: ACCESSIBLE BY DESIGN -->
+<div class="tab-panel" id="tab-philosophy">
+  <div class="tab-panel-inner">
+  <p class="sec-label">The philosophy</p>
+  <h2 class="sec-title">Accessible by design — not by afterthought</h2>
+  <p class="sec-lead">Accessibility is not a feature you add at the end. It is a mindset you bring to the beginning. Here is what that means in practice — and how to make it second nature.</p>
+
+  <div class="callout purple">
+    <strong>The design principle in one sentence:</strong> If you design for the edges — for those with the greatest access needs — you strengthen the experience for everyone in the middle.
+  </div>
+
+  <div class="subsec">
+    <div class="subsec-title">The five principles of Accessible by Design</div>
+    <div class="principle-list">
+      <div class="pl-item">
+        <div class="pl-num" style="background:var(--blue-light);color:var(--blue)">1</div>
+        <div>
+          <div class="pl-title">Start with access, not content</div>
+          <div class="pl-body">Before you create any resource, ask: who will use this, and what barriers might they face? A student with dyslexia, a learner with no laptop at home, a new arrival whose English is at A2. Design for them first — and everyone benefits.</div>
+        </div>
+      </div>
+      <div class="pl-item">
+        <div class="pl-num" style="background:var(--green-light);color:var(--green)">2</div>
+        <div>
+          <div class="pl-title">Structure is accessibility</div>
+          <div class="pl-body">Using Heading styles in Word, logical slide order in PowerPoint, and consistent folder structures in Teams isn't just tidy — it's what makes documents navigable by screen readers, and cognitively accessible for learners with processing differences. Structure is not bureaucracy. It's care.</div>
+        </div>
+      </div>
+      <div class="pl-item">
+        <div class="pl-num" style="background:var(--purple-light);color:var(--purple)">3</div>
+        <div>
+          <div class="pl-title">Never rely on colour alone</div>
+          <div class="pl-body">Approximately 8% of men have some form of colour blindness. If your resource uses red for "wrong" and green for "right," it is inaccessible. Always use colour plus shape, label, or pattern. Run the Accessibility Checker — it flags contrast issues automatically.</div>
+        </div>
+      </div>
+      <div class="pl-item">
+        <div class="pl-num" style="background:var(--teal-light);color:var(--teal)">4</div>
+        <div>
+          <div class="pl-title">Every image needs a text alternative</div>
+          <div class="pl-body">Alt text — a short description of what an image shows — is what a screen reader reads aloud when a learner with a visual impairment encounters an image. Right-click any image → Edit alt text. Two sentences. Thirty seconds. Transforms access for that learner entirely.</div>
+        </div>
+      </div>
+      <div class="pl-item">
+        <div class="pl-num" style="background:var(--amber-light);color:var(--amber)">5</div>
+        <div>
+          <div class="pl-title">Build it in — don't bolt it on</div>
+          <div class="pl-body">The goal is for accessibility to become as automatic as saving your file. Not a checklist you remember at the end — a habit embedded in how you create. Word over PDF where possible. Heading styles, always. Accessibility Checker before upload, always. Captions on by default. Always.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="subsec">
+    <div class="subsec-title">Your pre-upload accessibility checklist</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6">Use this every time you upload a resource to Teams or Moodle. Tick each item as you go.</p>
+    <div class="checklist" id="checklist">
+      <div class="cl-item"><div class="cl-box" onclick="toggleCheck(this)"></div><div class="cl-text">Document uses <strong>Heading styles</strong> (Heading 1, 2, 3) — not just bold or large text <span class="cl-tag" style="background:var(--blue-light);color:var(--blue)">Structure</span></div></div>
+      <div class="cl-item"><div class="cl-box" onclick="toggleCheck(this)"></div><div class="cl-text">All images have <strong>alt text</strong> — right-click image → Edit alt text <span class="cl-tag" style="background:var(--purple-light);color:var(--purple)">Images</span></div></div>
+      <div class="cl-item"><div class="cl-box" onclick="toggleCheck(this)"></div><div class="cl-text"><strong>Accessibility Checker</strong> has been run and issues resolved — Review tab → Check Accessibility <span class="cl-tag" style="background:var(--green-light);color:var(--green)">Check</span></div></div>
+      <div class="cl-item"><div class="cl-box" onclick="toggleCheck(this)"></div><div class="cl-text">Colour contrast is sufficient — body text is not light grey on white; key information is not conveyed by colour alone <span class="cl-tag" style="background:var(--amber-light);color:var(--amber)">Colour</span></div></div>
+      <div class="cl-item"><div class="cl-box" onclick="toggleCheck(this)"></div><div class="cl-text">File saved as <strong>Word (.docx)</strong> where possible — not a scanned PDF <span class="cl-tag" style="background:var(--blue-light);color:var(--blue)">Format</span></div></div>
+      <div class="cl-item"><div class="cl-box" onclick="toggleCheck(this)"></div><div class="cl-text">If PDF is unavoidable, it has been <strong>exported from Word</strong> (not scanned) so text is selectable <span class="cl-tag" style="background:var(--blue-light);color:var(--blue)">Format</span></div></div>
+      <div class="cl-item"><div class="cl-box" onclick="toggleCheck(this)"></div><div class="cl-text">Font is at least <strong>12pt</strong>, a readable typeface (e.g. Calibri, Arial, Verdana), and not fully justified <span class="cl-tag" style="background:var(--purple-light);color:var(--purple)">Typography</span></div></div>
+      <div class="cl-item"><div class="cl-box" onclick="toggleCheck(this)"></div><div class="cl-text">Links use <strong>descriptive text</strong> — "Download the assignment brief" not "click here" <span class="cl-tag" style="background:var(--teal-light);color:var(--teal)">Links</span></div></div>
+      <div class="cl-item"><div class="cl-box" onclick="toggleCheck(this)"></div><div class="cl-text">If the resource includes video, it has <strong>captions</strong> or a text transcript <span class="cl-tag" style="background:var(--green-light);color:var(--green)">Media</span></div></div>
+      <div class="cl-item"><div class="cl-box" onclick="toggleCheck(this)"></div><div class="cl-text">File is saved in the <strong>correct Teams folder</strong> with a clear, descriptive filename <span class="cl-tag" style="background:var(--amber-light);color:var(--amber)">Organisation</span></div></div>
+    </div>
+    <div id="progress-text" style="font-size:13px;color:var(--muted);margin-top:.75rem"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="subsec">
+    <div class="subsec-title">Watch and learn: Accessible by Design</div>
+    <div class="yt-links">
+      <a class="yt-link" href="https://www.youtube.com/results?search_query=accessible+document+design+Microsoft+Word+tutorial+teachers" target="_blank" rel="noopener">
+        <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div><div class="yt-text">Creating accessible documents in Microsoft Word</div><div class="yt-sub">Search: "accessible document design Microsoft Word tutorial teachers"</div></div>
+      </a>
+      <a class="yt-link" href="https://www.youtube.com/results?search_query=accessible+PowerPoint+presentation+design+step+by+step" target="_blank" rel="noopener">
+        <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div><div class="yt-text">Designing accessible PowerPoint presentations step by step</div><div class="yt-sub">Search: "accessible PowerPoint presentation design step by step"</div></div>
+      </a>
+      <a class="yt-link" href="https://www.youtube.com/results?search_query=colour+contrast+accessibility+education+resources+design" target="_blank" rel="noopener">
+        <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div><div class="yt-text">Colour contrast and accessibility in educational resource design</div><div class="yt-sub">Search: "colour contrast accessibility education resources design"</div></div>
+      </a>
+      <a class="yt-link" href="https://www.youtube.com/results?search_query=alt+text+best+practice+accessibility+screen+reader+education" target="_blank" rel="noopener">
+        <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div><div class="yt-text">Writing good alt text for accessibility — best practice guide</div><div class="yt-sub">Search: "alt text best practice accessibility screen reader education"</div></div>
+      </a>
+      <a class="yt-link" href="https://www.youtube.com/results?search_query=Microsoft+Teams+accessible+channel+structure+education+organisation" target="_blank" rel="noopener">
+        <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div><div class="yt-text">Organising Microsoft Teams channels accessibly for learners</div><div class="yt-sub">Search: "Microsoft Teams accessible channel structure education organisation"</div></div>
+      </a>
+      <a class="yt-link" href="https://www.youtube.com/results?search_query=Universal+Design+for+Learning+UDL+practical+classroom+examples" target="_blank" rel="noopener">
+        <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div><div class="yt-text">UDL in practice — classroom examples and how to apply it</div><div class="yt-sub">Search: "Universal Design for Learning UDL practical classroom examples"</div></div>
+      </a>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Remember:</strong> You don't need to do everything at once. Pick one tool from the Quick Wins tab. Use it in one lesson this week. Then run the Accessibility Checker on one document before you next upload it. Small habits, compounded across every member of staff, transform what learners experience every day.
+  </div>
+</div>
+
+  </div><!-- /tab-panel-inner -->
+</div>
+
+<footer class="footer-strip">
+  <div class="footer-strip-inner">
+    <span class="fs-text"><strong>Weston College</strong> · Learning Without Barriers · Digital Inclusion Strategy · March 2026</span>
+    <span class="fs-text">Part of the <strong>Digitally Accessible by Design</strong> staff CPD programme</span>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const t=btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-'+t).classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
+
+  function toggleCheck(el){
+    el.classList.toggle('checked');
+    updateProgress();
+  }
+
+  function updateProgress(){
+    const boxes=document.querySelectorAll('.cl-box');
+    const checked=document.querySelectorAll('.cl-box.checked').length;
+    const total=boxes.length;
+    const el=document.getElementById('progress-text');
+    if(checked===0){el.textContent='';return;}
+    if(checked===total){
+      el.textContent='All '+total+' items complete — this resource is ready to upload.';
+      el.style.color='var(--green)';
+      el.style.fontWeight='500';
+    } else {
+      el.textContent=checked+' of '+total+' items complete.';
+      el.style.color='var(--muted)';
+      el.style.fontWeight='400';
+    }
+  }
+</script>
+</body>
+</html>

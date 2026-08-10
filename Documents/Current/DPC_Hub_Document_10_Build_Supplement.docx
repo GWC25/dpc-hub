@@ -1,0 +1,678 @@
+**DPC Hub**
+
+Document 10 — Complete Build Supplement for Gemini
+
+Graeme Wright  ·  Digital Pedagogy Coach  ·  Quality & Innovation  ·  Weston College Group
+
+Version: 1.0  ·  July 2026  ·  Read alongside: DPC Hub Master Blueprint v1.0
+
+*EXECUTOR INSTRUCTION: This document supplements the Master Blueprint. Read both documents in full before writing any code. This document does not repeat schema definitions — those are in Blueprint Document 3. This document does not repeat file layouts — those are in Blueprint Document 4. Where this document and the Blueprint conflict, the Blueprint wins. If anything is still unclear after reading both, stop and flag it. Do not improvise.*
+
+This document contains: CSS design tokens (10.1), UI layout specifications for every view (10.2), manifest loading sequence (10.3), complete heuristic rule table (10.4), when-in-doubt decision table (10.5), Gemini session protocol (10.6), and DPC testing instructions (10.7).
+
+**10.1  CSS Design Token System**
+
+*These tokens are defined ONCE in css/design.css as CSS custom properties. Every JS and HTML file references these tokens. No hardcoded colour values, spacing values, or font sizes anywhere in the codebase except this file. If a value needs changing, it changes here and nowhere else.*
+
+**Colour tokens**
+
+| **Token name** | **Hex value** | **Usage** |
+| --- | --- | --- |
+| --color-navy | #1D3557 | Primary headings, nav background, table headers |
+| --color-teal | #0F766E | Primary action colour, links, h3 headings, accents |
+| --color-teal-lt | #E8F4F1 | Teal-tinted backgrounds, digital opportunity highlights |
+| --color-blue | #1D4ED8 | Information state, upcoming status, links on light bg |
+| --color-blue-lt | #EFF6FF | Information background tint |
+| --color-green | #15803D | Success, closed loop, confirmed, complete status |
+| --color-green-lt | #F0FDF4 | Success background tint |
+| --color-amber | #B45309 | Warning, in-progress, areas-to-strengthen AFI severity |
+| --color-amber-lt | #FFFBEB | Warning background tint |
+| --color-rose | #BE185D | Referral, high priority, immediate AFI severity |
+| --color-rose-lt | #FDF2F8 | High priority background tint |
+| --color-purple | #6D28D9 | Intervention, template, CPD actions |
+| --color-purple-lt | #F5F3FF | Intervention background tint |
+| --color-red | #DC2626 | Error, overdue, immediate improvement |
+| --color-red-lt | #FEF2F2 | Error background tint |
+| --color-slate | #334155 | Body text primary |
+| --color-muted | #64748B | Secondary text, metadata, captions |
+| --color-border | #CBD5E1 | All borders, dividers, table lines |
+| --color-light | #F8FAFC | Alternate row backgrounds, subtle fills |
+| --color-white | #FFFFFF | Card backgrounds, modal backgrounds |
+| --color-code-bg | #F1F5F9 | Monospace / code backgrounds |
+| --color-overlay | rgba(0,0,0,0.5) | Modal overlay. Pixel-sample to verify AA contrast on content behind. |
+
+**RAG status colours — MUST have text label alongside, never colour alone**
+
+| **RAG level** | **Score** | **Background token** | **Text token** | **Label (always shown)** |
+| --- | --- | --- | --- | --- |
+| Red | 1 | --color-red-lt | --color-red | Immediate priority |
+| Amber-Red | 2 | --color-amber-lt | --color-amber | Significant development needed |
+| Amber | 3 | --color-amber-lt | --color-amber | Developing |
+| Amber-Green | 4 | --color-green-lt | --color-green | Establishing |
+| Green | 5 | --color-green-lt | --color-green | Embedded |
+
+**Spacing tokens**
+
+| **Token** | **Value** | **Usage** |
+| --- | --- | --- |
+| --space-xs | 4px | Icon padding, tight gaps |
+| --space-sm | 8px | Internal card padding small |
+| --space-md | 16px | Standard internal padding, gap between elements |
+| --space-lg | 24px | Section padding, card padding |
+| --space-xl | 32px | Major section gaps |
+| --space-2xl | 48px | Page section separators |
+
+**Typography tokens**
+
+| **Token** | **Value** | **Usage** |
+| --- | --- | --- |
+| --font-family | Arial, sans-serif | All text. No web fonts — college network may block external font requests. |
+| --text-xs | 12px | Metadata, timestamps, captions |
+| --text-sm | 14px | Secondary labels, table cells, form hints |
+| --text-base | 16px | Body text, form inputs, list items |
+| --text-md | 18px | Slightly emphasised body, card titles |
+| --text-lg | 20px | Section subheadings, prominent labels |
+| --text-xl | 24px | Module headings, tab labels |
+| --text-2xl | 28px | Page headings (h2 equivalent) |
+| --text-3xl | 34px | Major section headings (h1 equivalent) |
+| --font-normal | 400 | Body weight |
+| --font-bold | 700 | Headings, labels, emphasis |
+| --line-height | 1.5 | All body text |
+
+**Other tokens**
+
+| **Token** | **Value** | **Usage** |
+| --- | --- | --- |
+| --radius-sm | 4px | Input borders, small badges |
+| --radius-md | 8px | Cards, modals, dropdowns |
+| --radius-lg | 12px | Post-it cards, large panels |
+| --shadow-sm | 0 1px 3px rgba(0,0,0,0.08) | Subtle card lift |
+| --shadow-md | 0 4px 12px rgba(0,0,0,0.10) | Modal shadow, active card |
+| --shadow-lg | 0 8px 24px rgba(0,0,0,0.12) | Overlays, floating elements |
+| --transition | 150ms ease | All hover/focus transitions |
+| --z-modal | 100 | Modal overlay z-index |
+| --z-nav | 50 | Navigation z-index |
+| --z-toast | 200 | Toast notification z-index |
+| --touch-target | 44px | Minimum tap target (Hub Lite mobile). WCAG 2.2 requirement. |
+
+*ACCESSIBILITY GATE: Before Phase 1 is marked done, use WebAIM Contrast Checker to pixel-sample every colour combination. Do not rely on calculated values from CSS tokens alone — rendered backgrounds may differ. Minimum ratio: 4.5:1 normal text, 3:1 large text (18px bold or 24px normal). The --color-overlay token must be checked against the lightest content that can appear behind it.*
+
+**10.2  UI Layout Specifications — Every View**
+
+*These are layout specifications, not visual designs. They define column structure, element placement, scroll behaviour, and interaction patterns. Gemini must implement these exactly. Where a specification says **"**card**"**, use the card style defined in 10.1 (--radius-lg, --shadow-sm, white background). Where it says **"**modal**"**, the modal traps focus, ESC closes it, and focus returns to the trigger element on close.*
+
+**VIEW 1 — Password Entry (index.html)**
+
+Full-page centred layout. White card (400px wide, --radius-lg, --shadow-md) on a navy background. Inside the card: DPC Hub logo text (--text-2xl, --color-navy, bold), subtitle "Weston College Group" (--text-sm, --color-muted), password input (full width, --text-base, --radius-sm border), "Enter Hub" button (full width, teal background, white text, --radius-sm). No other elements. On incorrect password: red border on input, small error message below input ("Incorrect password — try again"). On correct: fade out and redirect to hub.html. WCAG: input has visible label (may be visually hidden but present for screen readers), focus ring visible.
+
+**VIEW 2 — Hub Shell (hub.html — persistent across all modules)**
+
+Fixed top navigation bar (full width, --color-navy background, 56px height). Left side of nav: "DPC Hub" text (--color-white, --text-md, bold). Right side: auto-save indicator ("Saved ✓" in --color-teal-lt when saved, "Saving..." in amber when saving), notification dot badge (amber, shows count of unorganised notes and pending Supabase captures), user initial circle. Below nav: left sidebar (220px fixed width, --color-light background, full viewport height minus nav). Sidebar contains vertical list of module links: Home, Calendar, Areas, Tasks, Meetings, Notes, Staff, AFIs, Templates, Health Checks, Dashboards, Digital Leads, Current Focus, CPD, Reports, AI Support. Active module link has teal left border (4px) and teal text. Main content area: fills remaining width, scrollable, --space-xl padding. No horizontal scroll on any view.
+
+**VIEW 3 — Homepage**
+
+Three-region layout within the main content area. TOP STRIP (full width, 80px height): two metric panels side by side. Left panel: "Open AFI Loops" count (large number, --color-amber). Right panel: "Closed this month" count (large number, --color-green). MAIN AREA below the strip: two columns. LEFT COLUMN (62% width): "Jobs Board" heading, then a masonry-style grid of post-it cards (see POST-IT CARD spec below). Below the grid: "+ Add task" button (teal, --radius-sm). RIGHT COLUMN (38% width, --space-lg left padding): two stacked panels. TOP PANEL: "Next 14 days — Deadlines" — list of deadline items (title, due date, coloured dot by status: green=fine, amber=soon, red=overdue). BOTTOM PANEL: "This week — Meetings" — list of upcoming meetings (day, time, person, type). Both panels scroll independently if content overflows.
+
+**POST-IT CARD spec**
+
+White card, --radius-lg, --shadow-sm, --space-lg padding. Min height 120px. Top-left: status dot (12px circle, colour by status: blue=upcoming, amber=in-progress, red=overdue, green=complete). Top-right: due date (--text-xs, --color-muted). Card title (--text-md, bold, --color-navy, max 2 lines then ellipsis). Below title: area or person tag if linked (--text-xs, teal background pill). Bottom-right: linked project name if any (--text-xs, --color-muted). Click anywhere on card opens task detail modal. Cards sorted by due date ascending. No colour-only status communication — status dot always has aria-label.
+
+**VIEW 4 — Calendar (three sub-views: Week / Month / Year)**
+
+Full-width main content. Top bar: three toggle buttons (Week / Month / Year — only one active at a time, active has teal background). Navigation arrows (< >) to move forward/backward. "Today" button to jump to current period. "+ Add entry" button (teal, top right). WEEK VIEW: 7-column grid (Mon–Sun headers). Each day column shows stacked event chips (title, time, colour by type: meeting=blue, task=amber, deadline=red, work-block=teal). Chips are clickable. Days with no entries show empty column. MONTH VIEW: 7-column, 5-row grid. Each cell shows day number and up to 3 event chips. "+ N more" link if overflow. YEAR VIEW: 12 month thumbnails in 4x3 grid. Each month shows a heat-map of activity density (darker = more entries). Click a month to jump to month view. All views: click an entry chip opens the entry detail modal. Entry detail modal: see VIEW 5.
+
+**VIEW 5 — Calendar Entry Detail (modal)**
+
+Modal (600px wide, --radius-lg, --shadow-lg). Header: entry type badge (colour by type), title (--text-xl, bold). Close button (X, top right, focus-trapped). Fields: date/time (editable inline), person(s) (text input with autocomplete from staff profiles), area code (dropdown), location (text), project reference (text). If entry type = meeting: "Open in Meetings tab" button (teal) — this is the primary action. Below: notes field (textarea). Action buttons: Save, Delete. On "Open in Meetings tab": modal closes, Meetings module opens with this entry pre-loaded as the active meeting.
+
+**VIEW 6 — Meetings module**
+
+Two-panel layout. LEFT PANEL (280px fixed): meeting list, grouped by meeting type (Neil 1:1, Digital Lead, Quality Team, etc.). Each item shows: person name, date, brief status indicator (green dot = notes complete, amber dot = notes pending). Search bar at top. "+ New meeting" button at bottom. RIGHT PANEL (fills remaining width): active meeting detail. If no meeting selected: placeholder "Select a meeting or create a new one." MEETING DETAIL LAYOUT (top to bottom):
+
+- Meeting header — type badge, person name(s), date, time, location (all editable inline)
+
+- Linked document — one URL field with label ("Neil's standing agenda doc" etc). External link opens in new tab.
+
+- Preparation notes — textarea, --color-amber-lt background tint to distinguish from post-meeting notes. Label: "Before the meeting".
+
+- Links section — repeating rows of (label, URL). "+ Add link" button below.
+
+- My notes — textarea, white background. Label: "During / after the meeting".
+
+- AFI / Area context — collapsed toggle button ("▶ Show AFI and area context"). When expanded: area code selector (dropdown), current RAG summary (read-only, pulled from area data), list of open AFIs for that area (read-only links). Stays collapsed in PDF/print output unless expanded before export.
+
+- Actions section — list of action items. Each action: title (text input), description (textarea, collapsible), deadline (date picker), links to project/area/person (optional text fields). Two checkboxes per action: "Add to Tasks/Jobs board" and "Add to Post-It board". Checking either creates the entry immediately in the relevant module. "+ Add action" button below list.
+
+Save button (sticky at bottom of right panel). All fields auto-save every 60 seconds regardless.
+
+**VIEW 7 — Tasks / Jobs module**
+
+Full-width. Top bar: filter pills (All / Upcoming / In Progress / Overdue / Complete), search input, "+ New task" button. MAIN AREA: two-column layout. LEFT (65%): task list. Each task row: status dot, title, due date, area/person tag if linked, project tag if linked. Click opens task detail panel on the right. RIGHT (35%): task detail panel (slides in). Task detail contains: title (editable), description (textarea), status selector (upcoming/in-progress/complete/overdue), deadline (date picker), links to area/project/person, micro-tasks list (each with title, checkbox, optional due date), "Add to Post-It board" button. Micro-tasks can be added with "+ Add step" button. Completed tasks fade to 40% opacity but remain visible. Overdue tasks show red date text.
+
+**VIEW 8 — Areas overview**
+
+Full-width grid. Top bar: filter by campus (dropdown), filter by pyramid level (All/Foundations/Inclusion/Innovation), search by area name. GRID: 35 area cards in a responsive 4-column grid (3 on narrower screens). Each area card (--radius-md, --shadow-sm, white): area code badge (top-left, --color-navy, --text-xs), area name (--text-md, bold), HoA name (--text-sm, --color-muted), pyramid level badge (colour-coded), 8 small RAG dimension dots (1 per dimension, colour by score, each with aria-label of dimension name and score), open AFI count (bottom-right, amber if >0). Click area card opens area detail view.
+
+**VIEW 9 — Area detail view**
+
+Full-width. Back button ("← Areas"). Area name as page heading. Four tabbed sub-sections within the area: Overview, RAG Matrix, Activity Log, Staff. OVERVIEW TAB: two columns. Left: area metadata (HoA, DL, campus, pyramid level, last updated). Right: open AFI summary (count by severity, list of titles). ACTIVITY LOG TAB: chronological list of all activities, filterable by type. Each row: date, type badge, summary, linked AFIs. Click row opens activity detail modal. STAFF TAB: list of staff profiles linked to this area (name, role, ETF stage, open AFI count). Click opens staff profile. RAG MATRIX TAB: see VIEW 10.
+
+**VIEW 10 — RAG Matrix (within area detail)**
+
+Eight dimension rows. Each row: dimension name (--text-base, bold), current score (large coloured number 1–5 with label), rationale text (--text-sm, editable inline on click), last updated date (--text-xs, --color-muted), history button ("View history" opens snapshot modal). At bottom: "+ Update RAG scores" button opens a modal with all 8 dimensions editable simultaneously, rationale field per dimension, "Save snapshot" button. Snapshot modal also shows previous snapshot for comparison. Score history modal: timeline of all past scores for that dimension, shown as a simple list (date, score, rationale).
+
+**VIEW 11 — DevObs modal**
+
+Full-screen modal (max 800px wide, --radius-lg, scrollable). HEADER: "Development Observation" title, area selector (dropdown), staff member name (text with autocomplete), date/time. HYPER FOCUS BANNER: prominent teal banner at top of observation section: "College priority areas (Hyper): Accessible by Design · Digital Learning Environment · Assistive Technology" — these three are pre-selected toggle chips, de-selectable. OBSERVATION ROWS SECTION: expandable/collapsible by LRA category. Each category shows as a section header (--color-navy, collapsible with ▶/▼). Themes within each category shown as selectable chips. When a theme chip is selected: a follow-up question panel slides open below the chip showing 2–4 heuristic questions (see 10.4). DPC types or selects answers. SEVERITY SELECTOR: per theme selected — three radio options: Strength / Areas to Strengthen / Areas for Immediate Improvement. NOTES FIELD: free text for overall observation notes. "COPY FOR HYPER" BUTTON: generates plain text of the three Hyper-tagged items only, formatted for pasting into Hyper. SAVE BUTTON: triggers AFI auto-draft review panel (see VIEW 12) before saving.
+
+**VIEW 12 — AFI Auto-draft Review panel (post-DevObs save)**
+
+Slides in from right (400px wide panel, does not close the DevObs modal). Heading: "Drafted AFIs — please review before saving." Each drafted AFI shown as a card: LRA theme label, severity badge, description (editable text), digital opportunity field (pre-populated if theme maps to ARD/LED/AT, otherwise empty and optional), digital applicable toggle (yes/no/not relevant). Three buttons per card: Confirm, Edit (makes all fields editable inline), Discard. At bottom: "Save confirmed AFIs" button. Only confirmed AFIs are written to data-afi.json. Discarded AFIs are gone. After saving: panel closes, DevObs modal closes, activity is written to area log.
+
+**VIEW 13 — Learning Walk (quick capture modal)**
+
+Lightweight modal (500px wide). Area selector (dropdown). Date/time (defaults to now). LRA themes: three Hyper focus areas shown as large prominent toggle buttons at top (Accessible by Design, Digital Learning Environment, Assistive Technology). Below: "More themes ▶" expandable section showing all 30 themes by category. Each selected theme shows a single heuristic prompt question inline. Strength/Develop/Immediate radio per theme. Notes field (2-line textarea). Two buttons: "Save as Learning Walk" and "Escalate to DevObs" (saves current data and opens DevObs modal pre-populated with this data).
+
+**VIEW 14 — AFI list and lifecycle**
+
+Full-width. Top bar: filter by status (All/Open/Actioned/Impact-checked/Closed/Re-opened), filter by LRA category, filter by area, filter by severity, search. MAIN LIST: each AFI shown as a row card. Left: severity badge (colour by severity), LRA theme label, area code. Centre: description (first 100 chars). Right: status badge, close window indicator, evidence count. Click row opens AFI detail panel (slides in from right, 480px). AFI DETAIL PANEL: full description, digital opportunity (if applicable), status selector (changes status with confirmation prompt), close window, evidence chain (list of evidence entries with type badge, date, summary, loop movement indicator), action selection (five buttons: Book Coaching, Plan Teach Meet, Assign LinkedIn Pathway, Share Resource, Refer to Training), linked actions list (each with status and target date). "+ Add evidence" button at bottom of evidence chain.
+
+**VIEW 15 — Staff Profile**
+
+Full-width. Back button if accessed from area. HEADER SECTION: name (--text-2xl), area badge, role, ETF stage selector (1–5, editable), entry pathway tag, date first encountered. THREE DEVELOPMENT PRIORITIES: three editable text fields, each labelled "Priority 1/2/3". Confidence rating (1–5 star selector). TABS: Touch History / Reflections / Open AFIs / Notes. TOUCH HISTORY TAB: chronological list of every touch — type badge, date, summary, linked AFI if any. Click opens relevant record. REFLECTIONS TAB: list of reflections (immediate and follow-up), date, stage badge, confidence rating, practice change indicator (green tick or amber dash). OPEN AFIs TAB: list of this person's open AFIs with status and severity. NOTES TAB: free text notes field for DPC use (not shared, not in reports without explicit export).
+
+**VIEW 16 — Template Library and Teach Meet Builder**
+
+Two-panel layout. LEFT PANEL (300px): template list, grouped by type (Teach Meet Plans / Coaching Questions / Meeting Agendas / Observation Frameworks). Filter by LRA theme, pyramid level, tag. "+ New template" button at bottom. RIGHT PANEL: template detail / builder. TEACH MEET BUILDER (when type = teach-meet): form organised by Six Stages. Each stage is a labelled section (Learning Intentions, Building Blocks, Starting Points, Activities, Assessment, Lasting Learning). Activities section has repeating blocks: duration (number in minutes), description (textarea), resource links (repeating label+URL rows, "+ Add resource" button). All other stages: single textarea. Bottom sections: Facilitator Notes (textarea), Reflection Prompt (textarea). Resource links section (separate from activities): "+ Add resource link" for session-level resources. Version badge top-right (v1, v2 etc). "Save template" button. "Create instance" button: opens a modal asking for date, area, attendees (multi-select from staff), context notes, linked AFIs. Saves instance; generates reflection form link and QR code.
+
+**VIEW 16b — Coaching Question Set editor**
+
+Within Template Library, when type = coaching-questions. Form: LRA theme selector (dropdown, required). ETF stage selector (optional — if blank, questions apply to all stages). Context selector (digital-present-superficial / digital-absent / digital-strong / non-digital / any). Four sections: Opening Questions, Exploring Questions, Challenging Questions, Closing Questions. Each section: list of question items (text input), re-orderable by drag handle, deletable (X button), "+ Add question" button. If set was AI-drafted: amber banner at top: "AI-drafted — pending your review. Approve each question before this set is used in coaching." Each question has an "Approved" toggle (grey=pending, green=approved). Set cannot be used by heuristic engine until all questions are approved. Edit history shown at bottom (collapsed by default).
+
+**VIEW 17 — Reflection Form (reflection-form.html — standalone)**
+
+Single-page, no Hub navigation. WCAG 2.2 AA throughout. Clean white page. Top: "Weston College — DPC Reflection" heading. Context summary (pulled from query params): "Following your [event type] on [date]" — no personally identifying information shown. Two stages shown sequentially. STAGE 1 (immediate — shown straight away): "What did you take away from today's session? (1–3 sentences)", "What is one thing you plan to try?" (textarea), Confidence rating (1–5 labelled radio: 1=Not yet confident, 5=Very confident). Submit button. STAGE 2 (follow-up — shown only if query param stage=followup): "What has changed in your practice since [date]?" (textarea), "Have you tried something new as a result?" (yes/no radio — if yes, textarea appears: "What did you try and what happened?"), Confidence rating (same scale). Submit button. On submit: "Thank you — your reflection has been recorded anonymously." No other confirmation. No names collected. No Hub branding that could identify individuals.
+
+**VIEW 18 — Notes module**
+
+Full-width. Top bar: search input, filter by tag/area/person, "Organise" button (opens organise panel for untagged notes). NOTIFICATION: if unorganised notes exist, amber banner at top: "You have [N] notes to organise — tap here to sort them." NOTE LIST: most recent first. Each note: first 80 characters of text, date/time, tag pills (area, person, project if linked), status indicator (grey dot = unorganised, green dot = organised). Click note opens note detail modal. NOTE DETAIL MODAL: full text (editable textarea), date/time (auto-set, editable), link to area (dropdown), link to person (text autocomplete), link to project (text), convert actions: "Make this a task" button (pre-populates task with note text), "Add to Post-It board" button, "Attach to meeting" button (dropdown of recent meetings). Save and Delete buttons. "+ New note" button: opens a minimal input — just a textarea and Save. Nothing else. One tap, start writing.
+
+**VIEW 19 — Health Check upload and review**
+
+Full-width, area-specific (accessed from area detail). TOP: area name, last Health Check date if exists. UPLOAD SECTION: drag-and-drop file zone (accepts .xlsx, .csv). Below: "Upload and extract" button. PROCESSING STATE: progress indicator, "Reading file and mapping to framework..." message. REVIEW SECTION (appears after processing): table of all 5 dimensions, each with: dimension name, AI-extracted score (1–5), AI rationale (editable text), DPC override score selector (1–5 dropdown, blank = accept AI score), DPC override rationale (textarea, appears if override selected). IMPORTANT NOTE field: free text for any context the DPC wants to add to the record. "Confirm all scores" button at bottom: writes confirmed scores to area Health Check record. Individual "Confirm" buttons per dimension for partial confirmation. Unconfirmed dimensions shown in amber until confirmed.
+
+**VIEW 20 — Hub Lite (hub-lite.html — mobile only)**
+
+Mobile-first. Single-column. Fixed top bar: "Hub Lite" text, notification dot (unsynced captures). THREE SECTIONS stacked vertically: JOBS BOARD (title only): scrollable horizontal row of post-it cards showing title, due date, status dot only. No click-through. CALENDAR SURFACE: list of events for today and next 7 days. Each item: day+date header (e.g. "Tuesday 1 July"), then event rows — time range, meeting type, person name, location. No click-through to detail. QUICK CAPTURE: large "+ Note" button and "+ Meeting" button. Note capture: opens a full-screen textarea, type note, tap Save. Meeting shell capture: form with person name, area, meeting type, date/time, brief note. Both submit to Supabase immediately. "Saved" confirmation shown for 2 seconds. Touch targets minimum 44px. No Hub navigation, no drill-down, no sensitive data.
+
+**10.3  Manifest Loading Sequence — Complete Specification**
+
+*This sequence is implemented entirely in js/data.js. No other file handles File System Access API logic. The sequence must execute in the order specified below. Do not parallelise steps that are listed sequentially.*
+
+**Step 1 — Check File System Access API support**
+
+On hub.html load, before any other action: check if window.showOpenFilePicker exists. If not: show a full-page message — "DPC Hub requires Microsoft Edge or Google Chrome on a desktop device. Please open this page in Edge." Do not proceed. If yes: continue to Step 2.
+
+**Step 2 — Check stored folder handle**
+
+Check localStorage for key "dpc_folder_handle_stored" (boolean). If false or absent: go to Step 3a (first-time setup). If true: check localStorage for "dpc_permission_date" (ISO date string). If permission date is more than 7 days ago: go to Step 3b (weekly reconnect). If within 7 days: go to Step 4 (load manifest).
+
+**Step 3a — First-time folder selection**
+
+Show a modal (cannot be dismissed): "Welcome to DPC Hub. Please select your OneDrive data folder to begin. This is a one-time setup — you'll reconnect once a week." One button: "Select folder". On click: call window.showDirectoryPicker(). User navigates to OneDrive/DPC Hub/Data folder and confirms. On success: store folder handle in localStorage as "dpc_folder_handle". Store current date as "dpc_permission_date". Store "dpc_folder_handle_stored" = true. Proceed to Step 4. On cancel or error: show message "Folder selection required to use DPC Hub. Please try again." Re-show the modal.
+
+**Step 3b — Weekly reconnect**
+
+Show a modal (cannot be dismissed, but is friendly in tone): heading "Good morning — weekly reconnect needed." Body: "To keep your data secure, please reconnect to your OneDrive folder. This takes one click." Below the reconnect button: a summary panel showing last week's activity (pulled from localStorage snapshot): "Last week: [N] activities logged, [N] AFIs updated, [N] reflections received." Button: "Reconnect to OneDrive folder". On click: call window.showDirectoryPicker() with the stored path as a hint if supported. On success: update "dpc_permission_date" to today. Proceed to Step 4. On cancel: allow the user to proceed in "offline mode" — Hub loads from localStorage snapshot only. Show persistent amber banner: "Offline mode — changes will not be saved to OneDrive until you reconnect." On error: same as cancel.
+
+**Step 4 — Load manifest file**
+
+Using stored folder handle, read file "dpc-manifest.json". If file not found: show modal — "dpc-manifest.json not found in the selected folder. Please ensure you have selected the correct OneDrive/DPC Hub/Data folder." Two buttons: "Select folder again" (go to Step 3a) and "Create new Hub" (writes a blank manifest and proceeds — first-time user path). If file found and readable: parse JSON. Validate that manifest contains required fields: version, files (object with keys for all data files), lastSync (ISO timestamp). If validation fails: show modal with specific error and "Select folder again" option. If valid: store manifest in memory as window.DPC_MANIFEST. Proceed to Step 5.
+
+**Step 5 — Load required data files (parallel)**
+
+Load these files simultaneously using Promise.all(). These are REQUIRED — if either fails, Hub cannot proceed: data-areas.json, data-calendar.json. For each file: read from folder using handle from Step 3. Parse JSON. Validate against schema (check required top-level keys exist). Store in memory as window.DPC_DATA.areas and window.DPC_DATA.calendar. If either file is missing: show modal — "[filename] not found. Hub cannot start without this file." "Select folder again" option. If either file fails JSON parse: show modal — "[filename] is corrupted. Please restore from backup." Do not proceed.
+
+**Step 6 — Load optional data files (parallel)**
+
+Load these files simultaneously. These are OPTIONAL — if missing, Hub proceeds with empty defaults and shows a non-blocking amber banner per missing file: data-staff.json (default: empty array), data-afi.json (default: empty array), data-reflections.json (default: empty array), data-templates.json (default: empty array), data-cpd.json (default: empty object), data-digital-leads.json (default: empty array), data-current-focus.json (default: empty array). For each file found: parse and validate. Store in window.DPC_DATA under the appropriate key. For each file missing: log a console warning. Show amber banner: "[filename] not found — this module will start empty." Banner is dismissible.
+
+**Step 7 — Fetch public resource data**
+
+Non-blocking. Fire and forget — do not await before showing Hub. Fetch from GitHub Pages: https://gwc25.github.io/dpc-cpd-library/data/resources.json and https://gwc25.github.io/dpc-cpd-library/data/walkthru-cards.json. On success: store in window.DPC_RESOURCES. Update localStorage cache with fetched data and timestamp "dpc_resources_cached_at". On failure (network unavailable): use cached version from localStorage if available. If no cache: log warning. CPD Library features will show "Resource library unavailable — check network connection." Non-blocking — rest of Hub functions normally.
+
+**Step 8 — Check for pending Supabase captures**
+
+Non-blocking. Query Supabase hub_lite_captures table for rows where synced_to_hub = false. Supabase credentials read from window.DPC_CONFIG (loaded from js/config.js). If pending captures exist: update the notification dot badge count. Do not show a modal — user will see the badge and can choose when to review. If Supabase query fails: log warning. Do not show error to user — Hub Lite sync is a convenience, not a critical path.
+
+**Step 9 — Initialise auto-save scheduler**
+
+Start setInterval running every 60,000ms (60 seconds). Each tick: compare current window.DPC_DATA against last saved snapshot (stored in memory). If any differences: write changed files only to the OneDrive folder. Update "dpc_last_saved" in localStorage to current timestamp. Update auto-save indicator in nav bar to "Saved ✓" for 3 seconds, then fade. If write fails: show persistent amber toast — "Auto-save failed — check OneDrive connection." Do not interrupt the user's work.
+
+**Step 10 — Hub is ready**
+
+Hide loading spinner. Show the Homepage (default view). If this is a Monday (check day of week): show the week summary in the Step 3b style even if permission is still valid — a gentle "here's what's coming this week" orientation. Log to console: "DPC Hub loaded — [timestamp] — [N] areas, [N] staff, [N] open AFIs."
+
+**localStorage snapshot (session protection)**
+
+On every meaningful user action (save, update, create, delete): write a compact snapshot of window.DPC_DATA to localStorage under key "dpc_session_snapshot" with timestamp "dpc_snapshot_at". On Hub load (Step 4): check if "dpc_snapshot_at" exists and is less than 24 hours old. If so: offer one-click restore — non-blocking amber banner: "Unsaved session from [time] detected — restore?" Dismiss or restore. Do not auto-restore without user confirmation.
+
+**10.4  Complete Heuristic Rule Table**
+
+*This table is implemented in js/heuristic.js as a rules array. Each rule has: lraThemeId, etfStage (number 1-5 or null for all stages), context, condition, questionSet (array of question strings), afiDraft (severity and description template), resourceTags (array of strings used to match resources.json). Gemini builds heuristic.js by iterating this table — no rules are invented. If a rule is ambiguous, flag it.*
+
+**Heuristic rule format**
+
+{
+
+  id: "R001",
+
+  lraThemeId: "EQ",          // from LRA_TAXONOMY in schema.js
+
+  etfStage: null,             // null = applies to all stages
+
+  context: "digital-absent",  // or: digital-present-superficial | digital-strong | non-digital | any
+
+  condition: "Questioning observed but learners not required to think deeply",
+
+  followUpQuestions: [
+
+    "At what point in this session were learners required to explain their thinking?",
+
+    "How did you know if a learner's answer was surface-level or genuinely understood?",
+
+    "What happened when a learner gave an incorrect answer?"
+
+  ],
+
+  afiDraftSeverity: "Areas to Strengthen",
+
+  afiDraftDescription: "Effective Questioning — questions are posed but do not require deep thinking or reasoning. Learners can respond without demonstrating understanding.",
+
+  digitalOpportunity: "A poll or Mentimeter used as a cold-call equivalent could surface all learners' initial thinking simultaneously before discussion.",
+
+  digitalApplicable: true,
+
+  resourceTags: ["questioning", "cold-call", "hinge-questions", "CAT6"]
+
+}
+
+**Priority 1 — Effective Questioning (EQ)**
+
+| **Rule ID** | **ETF Stage** | **Context** | **Condition → Follow-up questions (abbreviated)** | **AFI Severity** | **Digital applicable** |
+| --- | --- | --- | --- | --- | --- |
+| R-EQ-001 | All | any | Questions posed but no thinking time given → "How long after asking did you wait before taking an answer? What did you notice?" | Areas to Strengthen | No |
+| R-EQ-002 | All | any | Only hands-up volunteering answers → "How many learners engaged with that question? How do you know what the others were thinking?" | Areas to Strengthen | Yes — poll or Mentimeter as cold-call equivalent |
+| R-EQ-003 | All | digital-present-superficial | Poll used but results not discussed → "The poll gave you numbers — what did you do differently because of what you saw?" | Areas to Strengthen | Yes — use poll results as teaching data |
+| R-EQ-004 | All | any | Questions only recall-level — no why/how → "What would a learner need to understand, not just remember, to answer well here?" | Areas for Immediate Improvement | No |
+| R-EQ-005 | Stage 1-2 | digital-absent | No check on understanding mid-session → "At what point could you see what every learner was thinking? What would you do differently if you could?" | Areas to Strengthen | Yes — hinge question via Forms or poll |
+| R-EQ-006 | Stage 3-5 | any | Strength — questions probe reasoning and build on responses → "What technique are you using here? Could this be shared with colleagues?" | Strength | No |
+
+**Priority 1 — Checks for Understanding (CU)**
+
+| **Rule ID** | **ETF Stage** | **Context** | **Condition → Follow-up questions (abbreviated)** | **AFI Severity** | **Digital applicable** |
+| --- | --- | --- | --- | --- | --- |
+| R-CU-001 | All | any | No hinge point before moving on → "How did you know learners were ready to move on? What would you have done if they weren't?" | Areas for Immediate Improvement | Yes — Forms quiz or poll as hinge point |
+| R-CU-002 | All | digital-present-superficial | Exit ticket used but not acted on → "What did the exit ticket tell you? Did that change what you planned to do next time?" | Areas to Strengthen | Yes — use data to adapt next session |
+| R-CU-003 | Stage 1-2 | any | Teacher asks "does everyone understand?" and accepts nods → "What does a nod tell you about understanding? What alternative could you use?" | Areas to Strengthen | Yes — anonymous digital check removes social pressure |
+| R-CU-004 | All | any | Strength — checks used and teaching adapted in real time → "What did you notice and what did you change because of it?" | Strength | No |
+| R-CU-005 | All | digital-absent | Large group with no mechanism to check all learners → "With [N] learners, how do you know where each individual is? Is there a tool that could help?" | Areas to Strengthen | Yes — Century diagnostic or Forms quiz |
+
+**Priority 1 — Effective Feedback (EF)**
+
+| **Rule ID** | **ETF Stage** | **Context** | **Condition → Follow-up questions (abbreviated)** | **AFI Severity** | **Digital applicable** |
+| --- | --- | --- | --- | --- | --- |
+| R-EF-001 | All | any | Feedback given verbally with no record → "If a learner wanted to act on your feedback tonight, could they? What would they refer to?" | Areas to Strengthen | Yes — audio comment in Grades tab or typed annotation |
+| R-EF-002 | All | any | Written feedback given but learners don't act on it → "What happens after you return marked work? Do learners respond to the feedback?" | Areas for Immediate Improvement | Yes — assignment resubmission workflow in Teams |
+| R-EF-003 | All | digital-present-superficial | Grades tab used for marks only, no comments → "What does this mark tell a learner about how to improve? What would a comment add?" | Areas to Strengthen | Yes — Grades tab comments and audio feedback |
+| R-EF-004 | All | any | Feedback delayed more than 2 weeks → "When learners receive this feedback, will they remember the work? What is the impact of the delay?" | Areas for Immediate Improvement | No — timing is a practice issue not a digital one |
+| R-EF-005 | Stage 3-5 | any | Strength — feedback timely, specific, acted upon → "How do you know learners have used this feedback? What evidence do you have?" | Strength | No |
+
+**Priority 1 — Live Modelling and Guided Practice (LM)**
+
+| **Rule ID** | **ETF Stage** | **Context** | **Condition → Follow-up questions (abbreviated)** | **AFI Severity** | **Digital applicable** |
+| --- | --- | --- | --- | --- | --- |
+| R-LM-001 | All | any | Teacher tells learners what to do but does not show → "Could a learner who was absent today follow your explanation alone? What would they be missing?" | Areas to Strengthen | Yes — screen recording of live modelling embedded in Teams resource |
+| R-LM-002 | All | digital-absent | Modelling done on physical board/paper only → "Is this session recordable? Could learners replay your thinking tonight?" | Areas to Strengthen | Yes — digital pen on whiteboard or document, screen record |
+| R-LM-003 | All | digital-present-superficial | Screen shared but not annotated or narrated → "Learners can see your screen — can they hear your thinking? Are you narrating your decisions?" | Areas to Strengthen | Yes — talk-aloud while annotating |
+| R-LM-004 | All | any | Worked example shown but learner practice not scaffolded → "After you modelled, what was the first thing learners tried independently? How supported were they?" | Areas to Strengthen | No — scaffolding is a practice issue |
+| R-LM-005 | Stage 3-5 | digital-strong | Strength — screen recording of modelling embedded in Teams, narrated, replayable → "Have learners told you they've used the recording? When and how?" | Strength | No |
+
+**Priority 1 — Lasting Learning (LL)**
+
+| **Rule ID** | **ETF Stage** | **Context** | **Condition → Follow-up questions (abbreviated)** | **AFI Severity** | **Digital applicable** |
+| --- | --- | --- | --- | --- | --- |
+| R-LL-001 | All | any | No retrieval practice observed — session is input only → "How do learners encounter content they have already seen? What happens when it turns out they haven't retained it?" | Areas for Immediate Improvement | Yes — low-stakes Forms quiz at session start |
+| R-LL-002 | All | digital-absent | Resources not accessible after session → "If a learner missed this session, what would they find when they opened Teams tonight?" | Areas to Strengthen | Yes — resources posted to organised Teams channel before session |
+| R-LL-003 | All | digital-present-superficial | Resources posted but channel disorganised → "Could a learner find last week's resource in under 30 seconds without asking you? Walk me through what they would see." | Areas to Strengthen | Yes — channel structure mirrors curriculum sequence |
+| R-LL-004 | All | any | Modelling is live but not recorded → "After you leave the room, can learners replay your thinking? What could you do to make that possible?" | Areas to Strengthen | Yes — screen recording embedded in session resource |
+| R-LL-005 | Stage 3-5 | digital-strong | Strength — retrieval built in, resources organised, recordings available → "How do you know learners are accessing and using these resources independently?" | Strength | No |
+
+**Hyper focus area — Accessible by Design (ARD)**
+
+| **Rule ID** | **ETF Stage** | **Context** | **Condition → Follow-up questions (abbreviated)** | **AFI Severity** | **Digital applicable** |
+| --- | --- | --- | --- | --- | --- |
+| R-ARD-001 | All | any | Resources shared but accessibility not checked → "If a learner with dyslexia opened this resource, what would they find? Have you checked the contrast and font?" | Areas for Immediate Improvement | Yes — Accessible by Design resource; WCAG checklist |
+| R-ARD-002 | All | any | Images in resources have no alt text → "A learner using a screen reader opened your PowerPoint — what did they hear when they reached that image?" | Areas for Immediate Improvement | Yes — alt text guidance in Accessible by Design resource |
+| R-ARD-003 | All | any | Colour contrast below WCAG AA → "Can learners with colour vision differences read this text? Have you tested the contrast ratio?" | Areas for Immediate Improvement | Yes — WebAIM contrast checker link in resource library |
+| R-ARD-004 | All | digital-strong | Strength — all resources meet WCAG AA, heading structure used, alt text present → "Could you share your process with a colleague? This could be a Teach Meet topic." | Strength | No |
+
+**Hyper focus area — Digital Learning Environment (LED)**
+
+| **Rule ID** | **ETF Stage** | **Context** | **Condition → Follow-up questions (abbreviated)** | **AFI Severity** | **Digital applicable** |
+| --- | --- | --- | --- | --- | --- |
+| R-LED-001 | All | any | All files in General channel, not organised → "Could a learner find last week's session resource in under 30 seconds? What would they see when they open Teams?" | Areas for Immediate Improvement | Yes — channel structure mirrors curriculum sequence |
+| R-LED-002 | All | any | Files named PowerPoint(1), PowerPoint(2) → "If a learner searched for 'week 3' in Teams, would they find it? What naming convention helps learners navigate?" | Areas to Strengthen | Yes — consistent file naming guidance in resource library |
+| R-LED-003 | All | any | Resources posted during or after session, not before → "When learners arrived today, were the resources already there? How does this affect those who prepare in advance?" | Areas to Strengthen | Yes — pre-session resource posting routine |
+| R-LED-004 | Stage 3-5 | digital-strong | Strength — channel organised, files named clearly, resources pre-posted → "How do learners tell you the environment is working for them? What feedback have you had?" | Strength | No |
+
+**Hyper focus area — Assistive Technology (AT)**
+
+| **Rule ID** | **ETF Stage** | **Context** | **Condition → Follow-up questions (abbreviated)** | **AFI Severity** | **Digital applicable** |
+| --- | --- | --- | --- | --- | --- |
+| R-AT-001 | All | any | AT available on request only, not proactively offered → "How do learners know these tools are available? How might a learner who doesn't know they need them find out?" | Areas for Immediate Improvement | Yes — Learning Without Barriers guide; proactive AT introduction in induction |
+| R-AT-002 | All | any | AT tools present but learners not using them → "Do learners know how to use these tools? Have they been shown, or is the expectation they will work it out?" | Areas to Strengthen | Yes — coached AT use, not assumed |
+| R-AT-003 | All | any | Immersive Reader available but not opened during session → "Is Immersive Reader part of your standard setup? When did you last show learners how to use it?" | Areas to Strengthen | Yes — Immersive Reader embedded in session routine |
+| R-AT-004 | Stage 3-5 | digital-strong | Strength — AT embedded, learners use independently → "Can you describe what independent AT use looks like in your sessions? Could you demonstrate this for colleagues?" | Strength | No |
+
+**Remaining LRA themes — starter rules**
+
+Each remaining theme has at least two starter rules. Gemini builds heuristic.js with these. DPC adds further rules via a future admin interface.
+
+| **Rule ID** | **Theme** | **Condition (brief)** | **Severity** | **Digital** |
+| --- | --- | --- | --- | --- |
+| R-LI-001 | Learning Intentions (LI) | No learning intention shared at session start | Areas to Strengthen | Yes — intention visible in Teams before session |
+| R-LI-002 | Learning Intentions (LI) | Strength — intention revisited mid-session and connected to assessment | Strength | No |
+| R-BB-001 | Building Blocks (BB) | Session does not build on prior learning — isolated task | Areas for Immediate Improvement | No |
+| R-BB-002 | Building Blocks (BB) | Strength — session sequence clearly builds knowledge step by step | Strength | No |
+| R-SP-001 | Starting Points (SP) | No evidence that starting points inform delivery | Areas to Strengthen | Yes — Century diagnostic or Forms baseline |
+| R-SP-002 | Starting Points (SP) | Strength — diagnostic data visible in session design | Strength | No |
+| R-PL-001 | Personalised Learning (PL) | EHCP/SEND information not evident in planning | Areas for Immediate Improvement | No |
+| R-AR-001 | Accessible Resources (AR) | Resources not inclusive in layout or language | Areas to Strengthen | No |
+| R-LE-001 | Learning Environment (LE) | Learning space is not structured or settled — learners unfocused | Areas for Immediate Improvement | No |
+| R-RL-001 | Readiness to Learn (RL) | No established routine — session start unfocused | Areas to Strengthen | No |
+| R-PR-001 | Positive Relationships (PR) | Strength — strong rapport, learners feel valued and motivated | Strength | No |
+| R-PC-001 | Professional Communication (PC) | Explanations unclear or repeated without rephrasing | Areas to Strengthen | No |
+| R-SSL-001 | Subject Specific Language (SSL) | Technical vocabulary not taught or reinforced | Areas to Strengthen | No |
+| R-AL-001 | Ambitious Learning (AL) | Tasks do not stretch or challenge — low ceiling | Areas to Strengthen | No |
+| R-AE-001 | Active Engagement (AE) | Learners passive for extended periods — teacher-led throughout | Areas for Immediate Improvement | No |
+| R-SS-001 | Scaffolding & Support (SS) | Over-helping — learners not developing independence | Areas to Strengthen | No |
+| R-CL-001 | Collaborative Learning (CL) | Strength — structured peer learning evident, learners learning from each other | Strength | Yes — collaborative doc or whiteboard |
+| R-LI2-001 | Learner Independence (LI2) | Learners reliant on teacher for all decisions and next steps | Areas for Immediate Improvement | No |
+| R-EA-001 | Effective Assessment (EA) | Single assessment method used — no variety | Areas to Strengthen | Yes — multiple digital response formats |
+| R-AP-001 | Adaptive Practice (AP) | Misconceptions identified but not addressed in session | Areas for Immediate Improvement | No |
+| R-RTL-001 | Ready to Learn (RTL) | Learners not punctual or not engaged from session start | Areas to Strengthen | No |
+| R-BR-001 | Behaviour Regulation (BR) | Emotional or behavioural disruption not effectively managed | Areas for Immediate Improvement | No |
+| R-EAS-001 | Effective Use of Additional Staff (EAS) | Support staff present but not effectively deployed | Areas to Strengthen | No |
+
+**10.5  When In Doubt — Decision Table**
+
+*Gemini: if you encounter a situation not covered by the Blueprint or Document 10, check this table first. If your situation is not here either, stop and flag it. Do not improvise.*
+
+| **Situation** | **Decision** |
+| --- | --- |
+| A theme maps to more than one LRA category. | Tag all relevant categories. Do not choose one. The schema supports arrays. |
+| A rule condition in 10.4 matches more than one rule. | Apply all matching rules. Surface all follow-up questions, deduplicated. All AFI drafts generated. |
+| A field in the schema is marked "or null" — should it default to null or empty string? | Always default to null for optional fields. Empty string only for fields where the user has explicitly entered nothing (e.g. a cleared text input). |
+| Two data files have conflicting information for the same area. | data-areas.json is the master for area data. Other files reference it, not override it. Flag the conflict in a console warning. |
+| A staff member appears in multiple areas. | The staff profile has one primary areaCode and an additionalAreas array. Create one profile, reference it from all relevant areas. |
+| A coaching question set is AI-drafted but DPC has approved some questions and not others. | The set cannot be used by the heuristic engine until ALL questions are approved. Show a count: "3 of 7 questions approved — set not yet active." |
+| The DevObs modal has a theme selected but the DPC saves without answering follow-up questions. | Allow save. Log that follow-up questions were not answered. AFI auto-draft still fires based on the severity selector alone. Do not block saving. |
+| A template instance is created but the linked AFI is later deleted. | The instance retains its linkedAFIIds array but the reference becomes a dead link. Show a warning indicator on the instance: "Linked AFI no longer exists." |
+| The user tries to add the same staff member to an area twice. | Check staffRefs array in area record before adding. If staffId already present, do not duplicate. Show a brief message: "Already linked to this area." |
+| A reflection is submitted via the standalone form but the eventId in the query params does not match any known activity. | Save the reflection to data-reflections.json with eventId as provided and a flag: orphaned: true. Surface in Hub as "Unlinked reflection — please assign to an event." |
+| A file write to OneDrive fails during auto-save. | Retry once after 5 seconds. If retry fails: show persistent amber toast "Auto-save failed". Write to localStorage snapshot as fallback. Do not discard user's work. |
+| A colour combination is required that is not in the token list. | Do not invent a new colour. Use the closest token from the list. Flag the gap in a comment in the CSS file: /* TODO: verify this combination with DPC */ |
+| A module needs data that is in a different module's JS file. | All data operations go through data.js. Module JS files do not import from each other. If a module needs data from another area, add a function to data.js that retrieves it. |
+| A phase specifies files to touch and the executor realises a missing file is needed. | Stop. Flag the missing file. Do not create it outside the specified scope. The architect will add it to the plan. |
+| The AFI auto-draft produces a description that seems wrong given the observation. | The auto-draft is always a suggestion. The DPC reviews and edits before confirming. The executor does not filter or second-guess the draft — it generates it and the DPC decides. |
+
+**10.6  Gemini Session Protocol**
+
+*Read this at the start of every build session. Assume no memory of prior sessions.*
+
+**At the start of every session**
+
+- Read: DPC Hub Master Blueprint v1.0 (Documents 1–9)
+
+- Read: DPC Hub Document 10 (this document)
+
+- State which phase you are building and confirm its precondition is met
+
+- State exactly which files you will touch in this session (from Document 6)
+
+- State exactly which files you will NOT touch
+
+- If any file you need does not exist yet: stop and flag it before writing any code
+
+**During the session**
+
+- Reference the schema (Blueprint Document 3) for every field name, type, and relationship. Do not invent fields.
+
+- Reference the file layout (Blueprint Document 4) for every import path and file reference.
+
+- Apply the one-way import rule (Blueprint Document 5) — modules only import from data.js, schema.js, heuristic.js.
+
+- Add the version header comment to every file you create or modify: // DPC Hub · [filename] · v1.0 · July 2026
+
+- Apply WCAG 2.2 AA to every UI element. If you are uncertain about a contrast ratio, note it explicitly for DPC to pixel-sample.
+
+- If you encounter something underspecified: write a comment in the code // ARCHITECT QUERY: [description of ambiguity] and flag it in your response. Do not improvise.
+
+**At the end of every session**
+
+- List every file created or modified
+
+- List every done-criterion from Document 6 and whether it passes
+
+- List any ARCHITECT QUERY comments you added
+
+- List anything you were unable to complete and why
+
+- Do not mark a phase as done until all done-criteria pass
+
+**What Gemini must never do**
+
+- Invent a schema field not in Blueprint Document 3
+
+- Create a file not in Blueprint Document 4 without flagging it
+
+- Import one module JS file from another
+
+- Write a hardcoded colour value anywhere except css/design.css
+
+- Use an inline style attribute in any HTML file
+
+- Generate governance review dates, milestone dates, or review windows of any kind
+
+- Reference other projects or codebases
+
+- Proceed to the next phase before the current phase's done-criteria are confirmed
+
+**10.7  DPC Testing Instructions — Baby Steps**
+
+*These instructions are for Graeme Wright to test each phase after Gemini has built it. No explanations. Just: do this, then this, then this, expect this. If you see something different from **"**expect this**"**, take a screenshot and share it with Gemini exactly as described.*
+
+**PHASE 1 — Test procedure**
+
+1. Open Edge browser. Go to your GitHub Pages URL for dpc-hub.
+
+2. Expect: white card in centre of navy page, password input, "Enter Hub" button.
+
+3. Type an incorrect password. Click Enter Hub. Expect: red border on input, error message below.
+
+4. Type the correct password. Click Enter Hub. Expect: page transitions to hub.html.
+
+5. Expect: dark navy top bar with "DPC Hub" text. Left sidebar with module list. Main content area (may be empty).
+
+6. Click every sidebar link. Expect: no JavaScript errors in console (press F12 to open, click Console tab). Errors in red are problems. Yellow warnings are fine.
+
+7. Wait 70 seconds without doing anything. Expect: "Saved ✓" appears briefly in the top bar.
+
+8. A dialog should have appeared asking you to select a folder. Navigate to your OneDrive/DPC Hub/Data folder. Click Select. Expect: dialog closes, Hub continues loading.
+
+9. Close the browser tab. Reopen hub.html. Expect: password entry again. Enter password. Expect: a banner offering to restore your previous session.
+
+PASS: all 9 steps behave as described. FAIL: screenshot any step that does not match and share with Gemini.
+
+**PHASE 2 — Test procedure**
+
+1. Open hub.html, enter password, reconnect folder if prompted.
+
+2. Click Home in the sidebar. Expect: Jobs Board area (may be empty), two right-side panels (Deadlines, Meetings).
+
+3. Click "+ Add task". Expect: a form or modal opens with fields for title, due date, area, status.
+
+4. Fill in: Title = "Test task", due date = tomorrow, status = Upcoming. Save.
+
+5. Expect: a post-it card appears in the Jobs Board with the title and tomorrow's date. Blue dot (upcoming status).
+
+6. Click the post-it card. Expect: detail view opens with all fields editable.
+
+7. Change status to In Progress. Save. Expect: dot changes to amber.
+
+8. Click Calendar in the sidebar. Expect: Week view with 7 columns.
+
+9. Click "+ Add entry". Fill in a meeting for tomorrow at 2pm with person = "Neil Davies". Save.
+
+10. Expect: event chip appears on tomorrow's column in the week view.
+
+11. Click the Month button. Expect: month grid view with your meeting chip visible on the correct date.
+
+12. Go back to Home. Expect: Neil Davies meeting appears in the "This week — Meetings" panel.
+
+PASS: all 12 steps as described. FAIL: screenshot and share.
+
+**PHASE 3 — Test procedure**
+
+1. Click Areas in the sidebar. Expect: grid of 35 area cards.
+
+2. Find BUI (Business & Industry). Click it. Expect: area detail view with tabs: Overview, RAG Matrix, Activity Log, Staff.
+
+3. Click RAG Matrix tab. Expect: 8 rows, one per dimension, each showing "No score yet".
+
+4. Click "+ Update RAG scores". Expect: modal with 8 dimension fields.
+
+5. Set Staff Capability to 3. Add rationale: "Good foundation, developing digitally." Click Save snapshot.
+
+6. Expect: modal closes. Staff Capability row shows score 3, "Developing" label, your rationale.
+
+7. Click the floating Quick Capture button (should be visible on every page as a + button). Expect: Quick Capture modal.
+
+8. Select area = BUI, activity type = Learning Walk, add a note. Save.
+
+9. Go to BUI area detail, Activity Log tab. Expect: your Learning Walk appears.
+
+PASS: all 9 steps as described. FAIL: screenshot and share.
+
+**PHASE 4 — Test procedure**
+
+1. Open Quick Capture. Select "Development Observation". Expect: full DevObs modal.
+
+2. Expect: teal banner at top showing three Hyper focus areas as pre-selected chips.
+
+3. Click the "Accessible by Design" chip to see its follow-up questions. Expect: 2-4 questions appear below the chip.
+
+4. Select severity "Areas for Immediate Improvement" for that theme.
+
+5. Click Save. Expect: AFI draft review panel slides in from right.
+
+6. Expect: one AFI draft card with the theme label, severity badge, and a pre-filled description.
+
+7. Click Confirm on the draft. Click "Save confirmed AFIs".
+
+8. Click AFIs in the sidebar. Expect: your new AFI appears with status "Open" and severity badge.
+
+9. Click the AFI. Expect: detail panel opens with evidence chain (empty), action selection buttons, status selector.
+
+10. Click "Book Coaching" action. Expect: something happens (modal, form, or coaching question set — depends on Phase 5 being built; in Phase 4 this may just log the action type).
+
+11. Click Learning Walk in sidebar or Quick Capture. Complete a quick LW for BUI, tag Assistive Technology.
+
+12. Expect: LW logged in BUI activity log. "Escalate to DevObs" button visible.
+
+PASS: all 12 steps as described. FAIL: screenshot and share.
+
+**PHASE 5 — Test procedure**
+
+1. Click Staff in sidebar. Expect: list of staff profiles (may be empty if none created yet).
+
+2. Open DevObs modal. Enter staff name "Test Staff Member" (new name). Save with any observation.
+
+3. Click Staff. Expect: "Test Staff Member" profile now exists.
+
+4. Click the profile. Expect: name, area, ETF stage (editable), 3 development priority fields, Touch History tab with the DevObs entry.
+
+5. Click Templates in sidebar. Expect: template list (empty) and "+ New template" button.
+
+6. Click "+ New template". Select type "Teach Meet Plan". Expect: form with 6 sections (Learning Intentions, Building Blocks, Starting Points, Activities, Assessment, Lasting Learning).
+
+7. Fill in all sections briefly. Add one resource link. Save.
+
+8. Expect: template appears in list. Version badge shows "v1".
+
+9. Click "Create instance". Add date, area = BUI, attendee = Test Staff Member. Save.
+
+10. Expect: instance created. A reflection link is generated (URL shown). Copy the URL.
+
+11. Open the reflection URL in a new tab (without logging in). Expect: reflection form loads. No Hub navigation visible. No names shown.
+
+12. Complete the reflection form. Submit. Expect: "Thank you" message.
+
+13. Return to Hub. Go to Staff > Test Staff Member > Reflections tab. Expect: reflection appears.
+
+PASS: all 13 steps as described. FAIL: screenshot and share.
+
+**PHASE 6 — Test procedure**
+
+1. Go to any area. Click Health Checks tab. Expect: upload zone for Excel/CSV file.
+
+2. Upload a test Health Check file (a simple Excel with 5 rows, one per dimension, with scores 1-5). Expect: processing message, then a review table.
+
+3. Expect: 5 dimension rows each with an AI-extracted score and rationale.
+
+4. Override one score. Add a note. Click "Confirm all scores". Expect: scores written to area record.
+
+5. Click Dashboards. Expect: two dashboard options (Area RAG, Health Check).
+
+6. Click Area RAG dashboard. Expect: 35 areas visible, filterable by dimension score.
+
+7. Apply a filter (e.g. show only areas with Staff Capability score below 3). Expect: list narrows.
+
+8. Click Reports. Select "Neil Davies — weekly". Expect: report preview renders.
+
+9. Click "Download Word document". Expect: .docx file downloads.
+
+10. Open the .docx in Word. Expect: formatted report, no placeholder text visible.
+
+PASS: all 10 steps as described. FAIL: screenshot and share.
+
+**PHASE 7 — Test procedure**
+
+1. Open the CPD Library URL (gwc25.github.io/dpc-cpd-library) in a new tab. Expect: public page loads, no login required.
+
+2. Expect: searchable card library, filter options visible.
+
+3. Type "questioning" in the search box. Expect: cards related to questioning appear.
+
+4. Type "not sticking" in the search box. Expect: cards related to retrieval practice appear.
+
+5. Click a card. Expect: card expands or modal opens with full description, steps, coaching question, source reference.
+
+6. Open Hub Lite URL on your phone (or phone simulation in Edge DevTools — press F12, click the phone icon).
+
+7. Expect: simple mobile page, Jobs Board row, upcoming calendar list, two capture buttons.
+
+8. Tap "+ Note". Type a note. Tap Save. Expect: "Saved" confirmation.
+
+9. Return to Hub desktop. Expect: notification dot shows pending capture.
+
+10. Click notification dot or Supabase sync area. Expect: pending note listed for review.
+
+11. Click "Commit to Hub". Expect: note appears in Notes module, tagged as needing organisation.
+
+12. Go to Notes module. Expect: amber banner "You have 1 note to organise."
+
+PASS: all 12 steps as described. FAIL: screenshot and share.
+
+DPC Hub  ·  Document 10 — Build Supplement  ·  v1.0  ·  July 2026  ·  Read alongside Master Blueprint v1.0

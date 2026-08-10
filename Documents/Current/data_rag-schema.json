@@ -1,0 +1,496 @@
+{
+  "version": "2.1",
+  "scale": {
+    "1": { "label": "Urgent",     "color": "#dc2626" },
+    "2": { "label": "Challenged", "color": "#ea580c" },
+    "3": { "label": "Developing", "color": "#ca8a04" },
+    "4": { "label": "On Track",   "color": "#16a34a" },
+    "5": { "label": "Confident",  "color": "#0284c7" }
+  },
+  "weights": {
+    "staffCapability":        1.5,
+    "hoaLeadership":          1.5,
+    "infrastructureDevices":  1.0,
+    "digitalSkillsAssessment":1.0,
+    "curriculumIntegration":  1.0,
+    "learnerReadiness":       1.0,
+    "accessibilityHealth":    1.5,
+    "digitalLeadEngagement":  1.0
+  },
+  "dimensionOrder": [
+    "staffCapability",
+    "hoaLeadership",
+    "infrastructureDevices",
+    "digitalSkillsAssessment",
+    "curriculumIntegration",
+    "learnerReadiness",
+    "accessibilityHealth",
+    "digitalLeadEngagement"
+  ],
+  "dimensions": {
+    "staffCapability": {
+      "label": "Staff Digital Capability & Confidence",
+      "shortLabel": "Staff Capability",
+      "icon": "◎",
+      "subCriteriaLabels": ["General Digital Skills", "Teaching Digital Skills", "Confidence & Agency", "Examples in Practice", "DL Action"],
+      "levels": {
+        "1": {
+          "summary": "Urgent — Very limited M365 use. Teaching entirely paper-based. No CPD. Structural barriers present.",
+          "subCriteria": [
+            "Very limited M365 access or use. Significant barriers (confidence, time, access, language). May not own a device.",
+            "Digital not integrated into teaching at all. Teaching approach unchanged by technology.",
+            "Very low confidence. No CPD engagement. Significant emotional barrier or structural constraint.",
+            "Teaching entirely on paper. Learners do not access Teams. No accountability for digital access.",
+            "HoA leadership involved. Device/access audit. Identify structural barriers requiring senior intervention."
+          ]
+        },
+        "2": {
+          "summary": "Challenged — Struggles with M365 basics. Minimal digital in teaching. Low confidence, avoids CPD.",
+          "subCriteria": [
+            "Struggles with M365 basics. File management chaotic. Password/security gaps. IT support frequently needed.",
+            "Uses digital tools minimally. Accessibility not considered. May avoid digital teaching due to confidence.",
+            "Low confidence. Avoids CPD. May be resistant to change. Needs significant scaffolding.",
+            "Resources primarily paper-based or unshared. No Teams presence. Learners unclear how to access materials.",
+            "Intensive 1:1 foundation support (Accessibility Checker, Immersive Reader demo). Monthly DL check-in."
+          ]
+        },
+        "3": {
+          "summary": "Developing — Uses core tools but avoids new ones. Digital not always purposeful. CPD variable.",
+          "subCriteria": [
+            "Uses core tools (Teams, email, basic file management). Avoids trying new tools. Cloud storage gaps.",
+            "Digital tools used but not always purposefully. Accessibility awareness low. Limited AT knowledge.",
+            "Hesitant about new tools. CPD engagement variable. May feel overwhelmed by pace of change.",
+            "Teams exists but underutilised. Resources shared ad-hoc. No evidence of AT promotion.",
+            "Weekly Foundations training (Jisc Discovery Tool results used). Agree one accessible practice this week."
+          ]
+        },
+        "4": {
+          "summary": "On Track — Confident core M365. Integrates digital purposefully. Engages with CPD. Some gaps remain.",
+          "subCriteria": [
+            "Confident with core M365. File management and cloud storage routine. Occasional gaps with new tools.",
+            "Integrates digital tools purposefully. Aware of accessibility but inconsistent application.",
+            "Engages with CPD. Responsive to feedback. Some specific tool gaps or classroom confidence issues.",
+            "Teams used well. Most documents accessible. Some learners still accessing resources via email.",
+            "Fortnightly check-in. Agree one tool to master next. Buddy with Level 5 peer."
+          ]
+        },
+        "5": {
+          "summary": "Confident — Self-directed. WCAG 2.2 AA automatic. Seeks CPD. Mentors peers.",
+          "subCriteria": [
+            "Reliable M365 use (Teams, OneDrive, email, accessibility tools). Cloud storage native.",
+            "Accessibility by design in all resources. WCAG 2.2 AA automatic. Immersive Reader & Live Captions in use.",
+            "Staff self-directed. Seeks out CPD. Comfortable adapting practice based on feedback.",
+            "Teams Assignments with rubrics. Accessible documents pre-shared. AT offered proactively.",
+            "Observe & celebrate. Ask DL to mentor peers. Document as case study for college."
+          ]
+        }
+      }
+    },
+    "hoaLeadership": {
+      "label": "HoA Leadership, Planning & Strategy",
+      "shortLabel": "HoA Leadership",
+      "icon": "◈",
+      "subCriteriaLabels": ["Gap Understanding", "Strategy & Ownership", "QIP/CPD Alignment", "Progress Tracking", "DL Action"],
+      "levels": {
+        "1": {
+          "summary": "Urgent — Digital seen as others' problem. No strategy, no DL, digital absent from QIP.",
+          "subCriteria": [
+            "Digital seen as a learner/staff problem, not an area leadership responsibility. Lack of ownership.",
+            "No digital strategy. DL not identified or actively resistant. Digital seen as IT responsibility.",
+            "Digital absent from QIP. No planned CPD. No digital initiatives underway.",
+            "No monitoring. No evidence. Uncertain impact of any interventions.",
+            "VP Quality or Ben Manning to meet HoA. Strategic partnership agreement needed. DPC to facilitate monthly check-ins."
+          ]
+        },
+        "2": {
+          "summary": "Challenged — Needs acknowledged but not understood. No strategy, DL not identified or reluctant.",
+          "subCriteria": [
+            "Digital needs acknowledged but not understood. Multiple competing priorities obscure digital focus.",
+            "No clear digital strategy. DL either not identified or reluctant. Budget not allocated.",
+            "Digital not in QIP. CPD links unclear. No specific digital events planned.",
+            "No systematic monitoring. Data not collected. Difficult to know if interventions working.",
+            "DPC leads gap analysis conversation. HoA & DPC jointly write one-page digital plan for next 3 months."
+          ]
+        },
+        "3": {
+          "summary": "Developing — Aware of digital gaps but not clearly articulated. DL identified, role unclear.",
+          "subCriteria": [
+            "Aware of digital as an issue but gaps not clearly articulated. Relies on DPC to identify.",
+            "Wants digital improvement but plan not yet written. DL identified but role unclear.",
+            "Digital mentioned but not a priority target. CPD activities not yet matched to Pyramid.",
+            "Ad-hoc conversations. No systematic data collection. Unsure how to measure progress.",
+            "DPC supports HoA to write gap analysis. DL trained on Health Check framework. Weekly DPC check-in."
+          ]
+        },
+        "4": {
+          "summary": "On Track — Identifies key gaps. Committed. Some planning. DL identified. Digital in QIP.",
+          "subCriteria": [
+            "Can identify key gaps (e.g., staff access to software, learner baseline skills). Partially data-informed.",
+            "Committed to digital improvement. Some planning in place. DL identified but role not fully resourced.",
+            "Digital priority named in QIP. Some CPD activities linked. Teach Meets planned.",
+            "Fortnightly check-ins with DPC. Some data monitoring. Intention to link to learner outcomes.",
+            "DL supported with Health Check framework. HoA reviews fortnightly. Progress fed back to DPC."
+          ]
+        },
+        "5": {
+          "summary": "Confident — Clearly articulates gaps. Owns strategy. DL role clear and resourced. Monthly reviews.",
+          "subCriteria": [
+            "Clearly articulates digital gaps in area (staff, learners, infrastructure). Evidence-based from Jisc/Century data.",
+            "Owns digital strategy. Plans documented in QIP. Budget allocated. DL role clear and resourced.",
+            "Digital target in QIP. CPD activities linked to Pyramid level. Teach Meets scheduled.",
+            "Monthly progress review with DPC. Data dashboard used (Jisc/Century). Learner outcomes linked to digital skills.",
+            "DL leads Health Checks independently. HoA reviews data monthly. Reports progress to Quality cycle."
+          ]
+        }
+      }
+    },
+    "infrastructureDevices": {
+      "label": "Infrastructure & Devices",
+      "shortLabel": "Infrastructure",
+      "icon": "⊡",
+      "subCriteriaLabels": ["Device Availability", "Network & Connectivity", "Software Licensing", "AT & Specialist Tools", "IT Support"],
+      "levels": {
+        "1": {
+          "summary": "Urgent — Critical device and connectivity failures. Teaching severely constrained.",
+          "subCriteria": [
+            "Significant device shortages. Learners and staff regularly unable to access digital tools.",
+            "Unreliable or absent WiFi in teaching spaces. Connectivity disrupts lessons routinely.",
+            "Critical software absent or unlicensed. Key curriculum tools inaccessible.",
+            "AT tools absent. No Read&Write, Immersive Reader, or accessible software available.",
+            "IT support unavailable or extremely slow. Issues unresolved for weeks. No escalation pathway."
+          ]
+        },
+        "2": {
+          "summary": "Challenged — Significant gaps in devices or connectivity. Key software missing.",
+          "subCriteria": [
+            "Device availability inconsistent. Shared devices cause delays and access inequity.",
+            "WiFi issues in some teaching spaces. Occasional lesson disruption due to connectivity.",
+            "Some specialist or curriculum software unlicensed. Workarounds required.",
+            "Some AT tools available but not consistently deployed or known.",
+            "IT support slow. Issues may take a week or more to resolve. Workarounds required."
+          ]
+        },
+        "3": {
+          "summary": "Developing — Adequate baseline but gaps exist. WiFi inconsistent in some areas.",
+          "subCriteria": [
+            "Adequate devices for most activities but specific gaps exist (e.g., no laptops in workshop).",
+            "WiFi generally functional but issues in specific rooms or corridors.",
+            "Core software available. Some specialist tools missing or on older versions.",
+            "AT tools available but staff awareness of what's available is low.",
+            "IT support available. Response times variable. Some recurring issues unresolved."
+          ]
+        },
+        "4": {
+          "summary": "On Track — Good provision. Reliable access. Most software available. Minor gaps being addressed.",
+          "subCriteria": [
+            "Good device provision for staff and learners. Rare access issues.",
+            "Reliable WiFi in most teaching spaces. Rare connectivity disruption.",
+            "Most required software licensed and up to date. Minor gaps identified.",
+            "AT tools available and staff know how to access them. Some proactive use.",
+            "IT support responsive. Most issues resolved within 48 hours. Good working relationship."
+          ]
+        },
+        "5": {
+          "summary": "Confident — Excellent provision. Reliable everywhere. All software available. Proactive IT partnership.",
+          "subCriteria": [
+            "Full device provision. Staff and all learners have reliable access at all times.",
+            "Fast, reliable WiFi across all teaching spaces. Rarely an issue.",
+            "All required software licensed. Specialist and industry-standard tools accessible.",
+            "AT fully integrated. Read&Write, Immersive Reader, Live Captions all routinely available.",
+            "IT support proactive. Relationship with IT team is collaborative. Issues anticipated and resolved quickly."
+          ]
+        }
+      }
+    },
+    "digitalSkillsAssessment": {
+      "label": "Digital Skills Assessment & Tracking",
+      "shortLabel": "Skills Assessment",
+      "icon": "◉",
+      "subCriteriaLabels": ["General Skills (Century)", "Specialist Skills Mapping", "Progress Monitoring", "Learner Visibility", "DL Action"],
+      "levels": {
+        "1": {
+          "summary": "Urgent — Century not set up. No baseline data. Digital skills development invisible.",
+          "subCriteria": [
+            "Century not set up for area. No baseline digital skills data collected.",
+            "No awareness of specialist digital skills needed. No tracking system in place.",
+            "No progress monitoring of learner digital skills whatsoever.",
+            "Digital skills development completely invisible in learner tracking.",
+            "VP Quality conversation needed. Set up Century immediately. HoA & DPC co-create specialist skills plan."
+          ]
+        },
+        "2": {
+          "summary": "Challenged — Under 50% Century IA. No specialist skills mapped. No progress monitoring.",
+          "subCriteria": [
+            "Less than 50% learners completed Century IA. Dashboard not accessed. Limited understanding of data.",
+            "Specialist skills not formally mapped. No assessment criteria or tracking system.",
+            "No systematic progress monitoring of learner digital skills.",
+            "Learners unaware of their digital skills level.",
+            "HoA priority: Century completion plan (what is blocking?). Map top 3 skills. DPC training."
+          ]
+        },
+        "3": {
+          "summary": "Developing — 50–70% Century IA. Specialist skills informal. Limited monitoring.",
+          "subCriteria": [
+            "50–70% learners completed Century IA. Limited dashboard access or understanding.",
+            "Specialist skills identified informally. No formal assessment criteria. Tracking ad-hoc.",
+            "Limited progress monitoring. Unsure how to measure specialist skills progression.",
+            "Learners may not know their starting point. Progress not transparent.",
+            "Drive Century completion to 80%+ this week. Draft one specialist skills rubric. Set up Markbook tracking."
+          ]
+        },
+        "4": {
+          "summary": "On Track — 80%+ Century IA. Key specialist skills identified. Quarterly review.",
+          "subCriteria": [
+            "80%+ learners completed Century IA. Dashboard accessed quarterly. Some follow-up diagnostics run.",
+            "Key specialist skills identified. Some assessment criteria drafted. Tracking method agreed.",
+            "Quarterly Century review. Some specialist skills progress tracked informally. Plan to formalise.",
+            "Learners know their starting point. Progress monitoring beginning. Some AT identified at baseline.",
+            "Ensure remaining learners complete Century by Week 2. Embed rubric in Markbook. Monthly check-ins."
+          ]
+        },
+        "5": {
+          "summary": "Confident — 100% Century IA. All specialist skills mapped. Monthly reviews. Learner progress transparent.",
+          "subCriteria": [
+            "100% learners completed Century IA. Dashboard monitored termly. Gaps identified; interventions in place.",
+            "All specialist skills formally mapped per qualification. Clear rubrics tracked in Markbook.",
+            "Monthly progress review from Century. Specialist skills progression evidenced (portfolios, assessments).",
+            "Learners can see starting point & current level. Progress transparent. AT needs identified early.",
+            "Share dashboard data with peers. Co-design assessment rubrics. Lead specialist skills mapping training."
+          ]
+        }
+      }
+    },
+    "curriculumIntegration": {
+      "label": "Digital Curriculum Integration",
+      "shortLabel": "Curriculum Integration",
+      "icon": "◫",
+      "subCriteriaLabels": ["Assignment Design", "Tool Purpose & Rationale", "Inclusive Access (UDL)", "AT Integration", "DL Action"],
+      "levels": {
+        "1": {
+          "summary": "Urgent — Digital not integrated. Paper-based only or digital just for submission.",
+          "subCriteria": [
+            "Digital not integrated into curriculum planning. Assignments paper-based or digital only for submission.",
+            "Digital use minimal. Technology not connected to learning design.",
+            "Accessibility not considered. Barriers for SEND/dyslexia/language learners not addressed.",
+            "AT not offered or discussed. No mention in assignment briefs.",
+            "Strategic review needed. Why is digital not part of curriculum design? Unit redesign workshop required."
+          ]
+        },
+        "2": {
+          "summary": "Challenged — Digital used as add-on. Sporadic or compliance-driven. No accessibility thought.",
+          "subCriteria": [
+            "Digital skills not explicitly part of assignment design. Used as add-on to paper tasks.",
+            "Digital tools used sporadically or as compliance ('post to Teams because we're digital').",
+            "Limited thought given to accessibility. One submission format. Barriers not identified.",
+            "AT not part of assignment planning. No mention in briefs.",
+            "HoA & DPC co-lead unit redesign. Make one assignment fully digital-first with accessible design."
+          ]
+        },
+        "3": {
+          "summary": "Developing — Some digital; purpose unclear. Single format. AT rarely mentioned.",
+          "subCriteria": [
+            "Some assignments are digital; others paper-based with no clear rationale for the choice.",
+            "Digital tools used but purpose sometimes unclear. 'Tech as engagement' rather than essential.",
+            "Limited consideration of multiple means of engagement. Submission often one format only.",
+            "AT rarely mentioned in assignments. Not offered proactively.",
+            "Co-design one unit. Make digital essential to one assignment. Add accessible submission options. Weekly DPC."
+          ]
+        },
+        "4": {
+          "summary": "On Track — Most assignments digital with emerging outcomes. Generally accessible. AT known.",
+          "subCriteria": [
+            "Most assignments include digital skills. Learning outcomes emerging; not yet explicit in all.",
+            "Digital is mostly purposeful but some 'nice-to-have' tools used without clear rationale.",
+            "Assignment designs generally accessible but not systematically checked for UDL.",
+            "AT mentioned in some assignments. Immersive Reader known; not always offered proactively.",
+            "Review one unit. Identify 2–3 assignments to redesign for explicit digital skills + UDL. Monthly coaching."
+          ]
+        },
+        "5": {
+          "summary": "Confident — All assignments have clear digital outcomes. UDL applied. AT embedded in instructions.",
+          "subCriteria": [
+            "All assignments have clear digital learning outcomes explicitly mapped to assessment criteria.",
+            "Tool choice is purposeful. Could not deliver same learning without digital. No 'tech for tech's sake'.",
+            "Multiple means of representation, action, engagement (UDL). Submission formats flexible.",
+            "AT embedded in assignment instructions. Students offered choice of tools. Captioning provided.",
+            "Mentor peer teachers on UDL assignment design. Lead Teach Meet on accessible assignments."
+          ]
+        }
+      }
+    },
+    "learnerReadiness": {
+      "label": "Learner Readiness & Digital Confidence",
+      "shortLabel": "Learner Readiness",
+      "icon": "◷",
+      "subCriteriaLabels": ["Device Access (Home)", "Digital Confidence", "Digital Poverty Mitigation", "Learner Independence", "DL Action"],
+      "levels": {
+        "1": {
+          "summary": "Urgent — Significant digital poverty. Learners struggling with basic digital literacy.",
+          "subCriteria": [
+            "Many learners lack home devices. Cannot access digital resources outside college.",
+            "Learners struggling with basic digital literacy. Very low confidence with required tools.",
+            "No digital poverty mitigation in place. Barriers unacknowledged.",
+            "High teacher mediation required. Learners cannot independently navigate digital learning.",
+            "Device loan scheme or bursary referral urgent. Baseline assessment of access needed immediately."
+          ]
+        },
+        "2": {
+          "summary": "Challenged — Digital poverty affects a minority. Low confidence across cohort. Little mitigation.",
+          "subCriteria": [
+            "A minority of learners lack home device access. Affects equity of learning outside college.",
+            "Learner confidence low across significant part of cohort. Specific tool barriers evident.",
+            "Some awareness of digital poverty but no formal mitigation or referral pathway.",
+            "Learners need frequent support to use required digital tools independently.",
+            "Identify learners with access issues. Begin device loan or bursary process. Weekly check-in."
+          ]
+        },
+        "3": {
+          "summary": "Developing — Some access/confidence barriers. Area aware. Mitigation partial.",
+          "subCriteria": [
+            "Some learners face access barriers at home. Issue acknowledged but not systematically addressed.",
+            "Learner confidence variable across cohort. Some manage independently; others need significant support.",
+            "Partial mitigation in place (e.g., college devices available at set times). Not systematic.",
+            "Most learners can navigate required tools with occasional teacher support.",
+            "Map access issues. Review bursary uptake. Scaffold digital tasks more explicitly this term."
+          ]
+        },
+        "4": {
+          "summary": "On Track — Most learners have access and basic confidence. Digital poverty being addressed.",
+          "subCriteria": [
+            "Most learners have reliable home device access. Rare access issues identified and addressed.",
+            "Learner confidence generally good. Most manage required tools independently.",
+            "Device loan or bursary process in place for learners with access issues.",
+            "Learners generally independent with required digital tools. Minimal teacher mediation.",
+            "Monitor remaining access issues. Embed digital skills scaffolding in lessons for confidence building."
+          ]
+        },
+        "5": {
+          "summary": "Confident — Learners digitally independent. Access issues minimal and mitigated. Strong engagement.",
+          "subCriteria": [
+            "All or almost all learners have reliable home device access. Digital poverty actively mitigated.",
+            "High learner confidence with required digital tools. Self-directed digital learners evident.",
+            "Robust device loan/bursary pathway. No learner left without access due to poverty.",
+            "Learners fully independent with digital learning. Choose and adapt tools for their own needs.",
+            "Learners can articulate their digital skills journey. Peer support visible. Celebrate and share."
+          ]
+        }
+      }
+    },
+    "accessibilityHealth": {
+      "label": "Digital Health (Accessibility & Inclusion)",
+      "shortLabel": "Digital Health",
+      "icon": "◬",
+      "subCriteriaLabels": ["WCAG 2.2 AA Practice", "AT Awareness & Offer", "UDL in Action", "Learner Confidence with AT", "DL Action"],
+      "levels": {
+        "1": {
+          "summary": "Urgent — No accessibility awareness. AT completely absent. Learners with needs unsupported.",
+          "subCriteria": [
+            "No awareness of accessibility standards. Resources shared without any consideration.",
+            "AT completely absent from practice. Learners with access needs unsupported.",
+            "No variation in delivery. Rigid format. Barriers for ESOL, SEND, dyslexia not addressed.",
+            "Learners with access needs are struggling or disengaging.",
+            "VP Quality escalation. SEND/AT specialist audit. Emergency Teach Meet needed. This is urgent for learner outcomes."
+          ]
+        },
+        "2": {
+          "summary": "Challenged — Checker rarely used. No captions. AT rarely mentioned or offered.",
+          "subCriteria": [
+            "Accessibility Checker rarely used. Resources shared without checking. No captions on videos.",
+            "AT rarely mentioned. Not offered proactively. Learners unaware it exists.",
+            "Single format delivery. Limited choice or flexibility for learners.",
+            "Learners struggle to access digital resources. High reliance on teacher mediation.",
+            "Intensive support. HoA involvement. Liz Burkley/Lois Knight to co-facilitate accessibility training."
+          ]
+        },
+        "3": {
+          "summary": "Developing — Awareness exists but not systematic. AT offered to SEND only. Single delivery format.",
+          "subCriteria": [
+            "Accessibility awareness exists but not yet systematic. Some resources pass checker; others don't.",
+            "AT offered to learners with formal SEND provision only. Not proactively offered to all.",
+            "Limited variation in representation or action. Most lessons follow single delivery format.",
+            "Some learners struggle to access resources independently. Reliance on teacher support.",
+            "Run Accessibility Checker demo + practice (30 mins). Fix one resource type this week. Weekly DPC."
+          ]
+        },
+        "4": {
+          "summary": "On Track — Most resources accessible. AT offered to some. Some UDL variation. Becoming proactive.",
+          "subCriteria": [
+            "Most resources accessible. Accessibility Checker known but not yet automatic. Some lack alt text/captions.",
+            "AT offered to some learners; becoming more proactive but not yet universal offer.",
+            "Some variation in how content is presented. Learners have some choices but not consistent.",
+            "Most learners can access resources. Some still struggle with independence or resource discovery.",
+            "Agree on accessibility standard this week. Run one team training on Checker. Monthly DPC check-in."
+          ]
+        },
+        "5": {
+          "summary": "Confident — All resources accessible. AT proactively offered to all. UDL routine. Learners independent.",
+          "subCriteria": [
+            "All shared resources pass Office Accessibility Checker. Alt text on images. Contrast checked. Captions standard.",
+            "AT proactively offered to all learners (not just SEND). Immersive Reader, Live Captions, Checker mentioned routinely.",
+            "Clear multiple means of representation, action, and engagement (UDL). Options visible in every lesson.",
+            "Learners confidently navigate accessible resources. Independence visible. AT use is normalised.",
+            "Model accessibility practice for other areas. Document process. Lead accessibility Teach Meet."
+          ]
+        }
+      }
+    },
+    "digitalLeadEngagement": {
+      "label": "Digital Lead Engagement & Health Checks",
+      "shortLabel": "Digital Lead",
+      "icon": "◇",
+      "subCriteriaLabels": ["DL Identification & Clarity", "Health Check Activity", "Peer Coaching & Influence", "Evidence & Reporting", "DL Action"],
+      "levels": {
+        "1": {
+          "summary": "Urgent — No DL identified. No Health Checks. No evidence. No peer support.",
+          "subCriteria": [
+            "No DL identified. Area leadership unclear on who should play this role.",
+            "No Health Checks. No observation framework. No eyes-on-ground evidence.",
+            "No peer support. DL role not understood by anyone in the area.",
+            "No evidence collected. Nothing logged.",
+            "Immediate escalation to HoA + VP Quality. Jointly identify DL THIS WEEK. Emergency DL induction."
+          ]
+        },
+        "2": {
+          "summary": "Challenged — DL identified but reluctant/overwhelmed. No Health Checks. No evidence.",
+          "subCriteria": [
+            "DL identified but reluctant or overwhelmed. Role unclear; support lacking.",
+            "No Health Checks happening. Observation framework not understood.",
+            "Not engaging in peer support. May be withdrawn from the role.",
+            "No systematic evidence collection. Nothing documented.",
+            "DPC intensive 1:1 support. Simplify DL role (start with one observation per month). Pair with confident DL mentor."
+          ]
+        },
+        "3": {
+          "summary": "Developing — DL identified but role unclear/unresourced. Health Checks not started or sporadic.",
+          "subCriteria": [
+            "DL identified but role unclear or not yet resourced. May feel uncertain about expectations.",
+            "Health Checks not yet started or sporadic. Observation framework not yet clear.",
+            "Not yet coaching peers. May be focused on own learning.",
+            "Inconsistent reporting. Evidence not yet collected systematically.",
+            "Weekly DPC meeting to clarify DL role. Co-design first Health Check. Training on framework. Start weekly reports."
+          ]
+        },
+        "4": {
+          "summary": "On Track — DL identified and understood. Health Checks beginning. Supporting 1–2 peers.",
+          "subCriteria": [
+            "DL identified and generally understood. Role beginning to be resourced.",
+            "Health Checks beginning; fortnightly+ schedule. Observations structured. Proformas completed.",
+            "Supporting 1–2 peer staff. Visible in area. Some peer-led activity.",
+            "Fortnightly reports to DPC. Most Health Checks documented. Evidence filing consistent.",
+            "Monthly DPC check-in. Agree on Health Check schedule. Mentor one peer DL. Sustain momentum."
+          ]
+        },
+        "5": {
+          "summary": "Confident — DL role protected and valued. Monthly+ Health Checks. Mentoring peers. Weekly reports.",
+          "subCriteria": [
+            "DL clearly identified, understood, and valued by area. Role is protected time and resourced.",
+            "Health Checks running independently. Monthly+ schedule. Observations systematic & evidence-based.",
+            "Mentoring 2+ peer DLs or newer staff. Visible as leader in area. Peer-led training happening.",
+            "Weekly reports to DPC. Health Check proformas completed. Evidence logged in DPC Impact Hub.",
+            "Lead Health Check training for other areas. Help DPC design framework. Document role for case study."
+          ]
+        }
+      }
+    }
+  }
+}

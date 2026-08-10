@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Skills Leadership Toolkit 2026–27 | Weston College</title>
+<style>
+:root{--navy:#0D2240;--navy-mid:#1A3A5C;--teal:#0A7EA4;--tl:#E8F4F9;--amber:#B45309;--al:#FEF3C7;--green:#065F46;--gl:#D1FAE5;--red:#991B1B;--rl:#FEE2E2;--purple:#5B21B6;--pl:#EDE9FE;--slate:#F1F5F9;--rule:#CBD5E1;--text:#1E293B;--mid:#334155;--lite:#64748B;--white:#FFFFFF;--f:'Segoe UI',Arial,sans-serif;--mono:'Courier New',monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--f);font-size:16px;line-height:1.7;color:var(--text);background:#dde3ec}
+.skip{position:absolute;top:-40px;left:0;background:var(--navy);color:#fff;padding:8px 16px;text-decoration:none;font-weight:600;z-index:1000}.skip:focus{top:0}
+.pw{max-width:1180px;margin:0 auto;height:4px;background:var(--rule)}.pf{height:100%;background:linear-gradient(90deg,#4FC3F7,#0A7EA4);transition:width .3s}
+nav{background:var(--navy-mid);border-bottom:2px solid var(--teal);max-width:1180px;margin:0 auto;position:sticky;top:0;z-index:100}
+.nr{display:flex;align-items:center;padding:0 16px;overflow-x:auto}
+.nb{background:none;border:none;padding:13px 13px;font-size:11.5px;font-weight:600;color:rgba(255,255,255,.6);cursor:pointer;white-space:nowrap;font-family:var(--f);border-bottom:3px solid transparent;flex-shrink:0;transition:color .15s}
+.nb:hover,.nb:focus{color:#fff;outline:none}.nb.on{color:#fff;border-bottom-color:#4FC3F7}
+.na{display:flex;gap:4px;margin-left:auto;flex-shrink:0;padding:6px 0}
+.arr{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;width:30px;height:30px;border-radius:5px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;font-family:var(--f);transition:background .15s}
+.arr:hover{background:rgba(255,255,255,.22)}.arr:focus{outline:2px solid #4FC3F7}
+.page{display:none;background:var(--white);max-width:1180px;margin:0 auto 32px;box-shadow:0 4px 32px rgba(0,0,0,.12)}.page.on{display:block}
+.cover{background:var(--navy);min-height:100vh;padding:72px 72px 60px;color:#fff;position:relative;overflow:hidden}
+.cover::before{content:'';position:absolute;top:0;right:0;width:520px;height:100%;background:linear-gradient(135deg,transparent 30%,rgba(10,126,164,.14) 100%);pointer-events:none}
+.cover::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,#4FC3F7,#0A7EA4,#065F46)}
+.ck{font-size:10px;font-weight:800;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.42);margin-bottom:28px}
+.ct{font-size:clamp(38px,5.5vw,66px);font-weight:800;line-height:1.05;letter-spacing:-.03em;margin-bottom:16px}
+.ct em{color:#4FC3F7;font-style:normal;display:block}
+.cd{font-size:17px;color:rgba(255,255,255,.72);line-height:1.7;margin-bottom:14px;max-width:700px}
+.cs{display:inline-block;background:rgba(79,195,247,.18);border:1px solid rgba(79,195,247,.38);color:#4FC3F7;font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;padding:6px 14px;border-radius:4px;margin-bottom:40px}
+.cm{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding-top:32px;border-top:1px solid rgba(255,255,255,.14);margin-bottom:44px}
+.cm .lb{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px}
+.cm .vl{font-size:13px;color:rgba(255,255,255,.88);font-weight:600;line-height:1.5}
+.tl{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:14px}
+.tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:8px}
+.tb{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:10px 14px;cursor:pointer;text-align:left;font-family:var(--f);transition:background .15s,border-color .15s}
+.tb:hover,.tb:focus{background:rgba(255,255,255,.14);border-color:#4FC3F7;outline:none}
+.tn{font-size:10px;font-weight:800;letter-spacing:.12em;color:#4FC3F7;text-transform:uppercase;display:block;margin-bottom:3px}
+.tla{font-size:12px;font-weight:600;color:rgba(255,255,255,.83);line-height:1.35}
+.ph{padding:40px 64px 36px}
+.ph.nv{background:var(--navy)}.ph.tl2{background:var(--teal)}.ph.gr{background:var(--green)}.ph.pu{background:var(--purple)}.ph.am{background:var(--amber)}
+.ph.nv,.ph.tl2,.ph.gr,.ph.pu,.ph.am{color:#fff}
+.pe{font-size:10px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:10px}
+.pt{font-size:clamp(22px,3.2vw,36px);font-weight:800;line-height:1.15;letter-spacing:-.02em;margin-bottom:12px}
+.pt em{color:#4FC3F7;font-style:normal}.pi{font-size:15.5px;color:rgba(255,255,255,.78);line-height:1.7}
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin-left:8px;vertical-align:middle}
+.pill-c{background:var(--al);color:var(--amber)}
+.pb{padding:52px 64px 60px}
+h2{font-size:clamp(18px,2.2vw,23px);font-weight:800;color:var(--navy);margin:40px 0 12px;line-height:1.2;letter-spacing:-.02em}
+h2:first-child{margin-top:0}
+h3{font-size:17px;font-weight:700;color:var(--navy);margin:28px 0 10px}
+h4{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--mid);margin:22px 0 8px}
+p{color:var(--mid);margin-bottom:16px}p:last-child{margin-bottom:0}
+.lead{font-size:16.5px;color:var(--mid);line-height:1.75;margin-bottom:28px}
+a{color:var(--teal)}a:focus{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px}
+.co{border-left:5px solid var(--teal);background:var(--tl);padding:20px 24px;border-radius:0 8px 8px 0;margin:24px 0}
+.co.a{border-left-color:var(--amber);background:var(--al)}.co.g{border-left-color:var(--green);background:var(--gl)}
+.co.p{border-left-color:var(--purple);background:var(--pl)}.co.r{border-left-color:var(--red);background:var(--rl)}
+.co-t{font-weight:800;font-size:13.5px;color:var(--navy);margin-bottom:8px}.co p{font-size:14px;margin:0;color:var(--text)}
+.tw{overflow-x:auto;margin:20px 0;border-radius:8px;border:1px solid var(--rule)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+thead{background:var(--navy);color:#fff}
+thead th{padding:13px 14px;text-align:left;font-weight:700;font-size:12.5px;letter-spacing:.03em}
+tbody tr:nth-child(even){background:var(--slate)}tbody tr:hover{background:var(--tl)}
+tbody td{padding:12px 14px;vertical-align:top;border-bottom:1px solid var(--rule);line-height:1.55}
+.tc{font-family:var(--mono);font-weight:700;color:var(--navy);font-size:12px}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.t-it{background:#E0E7FF;color:#3730A3}.t-ds{background:var(--gl);color:var(--green)}
+.t-r{background:var(--rl);color:var(--red)}.t-a{background:var(--al);color:var(--amber)}
+.t-g{background:var(--gl);color:var(--green)}.t-b{background:#DBEAFE;color:#1D4ED8}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:20px 0}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin:20px 0}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:0}
+.tab{background:var(--slate);border:1px solid var(--rule);border-bottom:none;border-radius:6px 6px 0 0;padding:9px 14px;font-size:12.5px;font-weight:600;color:var(--mid);cursor:pointer;font-family:var(--f);transition:background .15s}
+.tab.on{background:var(--navy);color:#fff}.tab:hover:not(.on){background:var(--tl)}
+.tp{display:none;border:1px solid var(--rule);border-radius:0 8px 8px 8px;padding:30px;background:var(--white)}.tp.on{display:block}
+.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(265px,1fr));gap:20px;margin:24px 0}
+.pc{border-radius:10px;padding:24px;border:1px solid var(--rule);position:relative}
+.pc::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;border-radius:10px 10px 0 0}
+.pc.p1::before{background:var(--red)}.pc.p2::before{background:var(--amber)}.pc.p3::before{background:var(--teal)}.pc.p4::before{background:var(--green)}
+.pn{font-size:10px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;margin-bottom:4px}
+.pc.p1 .pn{color:var(--red)}.pc.p2 .pn{color:var(--amber)}.pc.p3 .pn{color:var(--teal)}.pc.p4 .pn{color:var(--green)}
+.ptt{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:3px}
+.pp{font-size:12px;color:var(--lite);margin-bottom:14px;font-weight:600}
+.pc ul{list-style:none;padding:0;margin:0}
+.pc li{font-size:13px;color:var(--mid);padding:6px 0 6px 20px;position:relative;border-bottom:1px solid var(--rule);line-height:1.5}
+.pc li:last-child{border-bottom:none;padding-bottom:0}.pc li::before{content:'›';position:absolute;left:0;color:var(--teal);font-weight:700;font-size:14px;top:5px}
+.sl{margin:20px 0}
+.si{display:flex;gap:16px;padding:14px 16px;border:1px solid var(--rule);border-top:none;background:var(--white);align-items:flex-start}
+.si:first-child{border-top:1px solid var(--rule);border-radius:8px 8px 0 0}.si:last-child{border-radius:0 0 8px 8px}
+.si:hover{background:var(--tl)}.sn{background:var(--navy);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:1px}
+.st{font-size:14px;color:var(--mid);line-height:1.6}
+.cg{margin-bottom:28px}.cgt{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#fff;padding:10px 16px;background:var(--navy);border-radius:6px 6px 0 0}
+.ci{display:flex;align-items:flex-start;gap:14px;padding:15px 16px;border:1px solid var(--rule);border-top:none;background:var(--white)}
+.ci:last-child{border-radius:0 0 6px 6px}.ci:hover{background:var(--tl)}
+.cb{width:20px;height:20px;border:2px solid var(--rule);border-radius:4px;flex-shrink:0;margin-top:2px;cursor:pointer;appearance:none;-webkit-appearance:none;background:var(--white);position:relative;transition:background .15s,border-color .15s}
+.cb:checked{background:var(--green);border-color:var(--green)}.cb:checked::after{content:'✓';position:absolute;top:-1px;left:2px;color:#fff;font-size:14px;font-weight:700}
+.cb:focus{outline:3px solid var(--teal);outline-offset:2px}.cl{flex:1}
+.cl strong{display:block;font-size:14px;color:var(--navy);margin-bottom:4px}
+.cl span{font-size:13px;color:var(--lite);line-height:1.55}
+.cpri{flex-shrink:0;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:4px;align-self:flex-start;margin-top:2px}
+.cr{background:var(--rl);color:var(--red)}.ca{background:var(--al);color:var(--amber)}
+.og{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:24px 0}
+.oc{border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.oh{padding:11px 14px;font-size:13px;font-weight:700;color:#fff}
+.oh.c1{background:#1D4ED8}.oh.c2{background:var(--green)}.oh.c3{background:var(--amber)}.oh.c4{background:var(--purple)}.oh.c5{background:#0E7490}.oh.c6{background:var(--navy-mid)}
+.ob{padding:13px 14px;font-size:13px;color:var(--mid);line-height:1.6}
+.oe{font-size:12px;background:var(--tl);color:var(--navy);padding:8px 12px;border-top:1px solid var(--rule);font-weight:600;line-height:1.5}
+.gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin:24px 0}
+.gi{background:var(--slate);border-radius:8px;padding:16px 18px;border-left:4px solid var(--teal)}
+.gt{font-weight:800;font-size:14px;color:var(--navy);margin-bottom:2px}
+.ga{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:7px;display:block}
+.gd{font-size:13px;color:var(--mid);line-height:1.6;margin:0}
+.src{background:var(--slate);border-radius:8px;padding:26px 28px;margin-top:32px}
+.src ol{padding-left:20px}.src li{font-size:13px;color:var(--mid);margin-bottom:8px;line-height:1.6}
+.src a{color:var(--teal);text-decoration:underline}
+.pfoot{background:var(--navy);color:rgba(255,255,255,.5);padding:22px 64px;font-size:11.5px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.pfoot strong{color:rgba(255,255,255,.85)}
+@media(max-width:768px){.cover{padding:36px 24px}.cm{grid-template-columns:1fr 1fr}.ph{padding:28px 24px 24px}.pb{padding:32px 24px 40px}.pfoot{padding:18px 24px}.two,.three{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<a href="#main" class="skip">Skip to main content</a>
+<div class="pw" role="progressbar" aria-label="Document progress" aria-valuenow="1" aria-valuemin="1" aria-valuemax="6"><div class="pf" id="pfill" style="width:16.7%"></div></div>
+<nav aria-label="Document sections">
+<div class="nr">
+<button class="nb on" onclick="go(0)">Cover</button>
+<button class="nb" onclick="go(1)">1 — Proposals</button>
+<button class="nb" onclick="go(2)">2 — Digital Skills Framework</button>
+<button class="nb" onclick="go(3)">3 — Learning Without Barriers</button>
+<button class="nb" onclick="go(4)">4 — Coaching Plan</button>
+<button class="nb" onclick="go(5)">5 — Supporting Arguments</button>
+<div class="na"><button class="arr" onclick="prev()" aria-label="Previous">&#8592;</button><button class="arr" onclick="next()" aria-label="Next">&#8594;</button></div>
+</div>
+</nav>
+<main id="main">
+<!-- COVER -->
+<div class="page on" id="p0"><div class="cover">
+<p class="ck">Weston College · Digital Pedagogy · Quality</p>
+<h1 class="ct">Digital Skills<br><em>Leadership</em><br>Toolkit 2026–27</h1>
+<p class="cd">This document brings together my thinking on how we can embed digital skills development meaningfully and consistently across the college. It sets out a proposed framework, a coaching approach, and an inclusive teaching strategy. I am sharing it as a starting point for conversation.</p>
+<span class="cs">Consultation — For Discussion</span>
+<div class="cm">
+<div><div class="lb">Author</div><div class="vl">Graeme Wright<br>Digital Pedagogy Coach</div></div>
+<div><div class="lb">Date</div><div class="vl">March 2026</div></div>
+<div><div class="lb">Status</div><div class="vl">Consultation document<br>For discussion</div></div>
+<div><div class="lb">Accessibility</div><div class="vl">WCAG 2.2 AA<br>Compliant</div></div>
+</div>
+<p class="tl">What is in here</p>
+<div class="tg">
+<button class="tb" onclick="go(1)"><span class="tn">Section 1</span><span class="tla">What I am proposing and why</span></button>
+<button class="tb" onclick="go(2)"><span class="tn">Section 2</span><span class="tla">The Digital Skills Framework in full</span></button>
+<button class="tb" onclick="go(3)"><span class="tn">Section 3</span><span class="tla">Learning Without Barriers</span></button>
+<button class="tb" onclick="go(4)"><span class="tn">Section 4</span><span class="tla">The coaching plan and success indicators</span></button>
+<button class="tb" onclick="go(5)"><span class="tn">Section 5</span><span class="tla">Supporting arguments, evidence and reference</span></button>
+</div>
+</div></div>
+<!-- PAGE 1: PROPOSALS -->
+<div class="page" id="p1">
+<div class="ph nv"><p class="pe">Section 1 · What I Am Proposing</p><h1 class="pt">Two proposals. <em>One direction.</em></h1><p class="pi">Both of these are consultation documents. I am not presenting them as finished thinking. I am presenting them as a starting point for a conversation I want to have about how we approach digital skills development and digital inclusion across the college.</p></div>
+<div class="pb">
+<p class="lead">The work I have done in the quality team over the past two months has made one thing very clear to me. Digital skills development is already happening across the college in most areas. The problem is that it is not consistently named, not consistently evidenced, and not consistently connected to the frameworks that inspectors, funders, and employers are looking for. These two proposals are my attempt to address that in a structured and sustainable way.</p>
+<h2>Proposal One — The Digital Skills Framework <span class="pill pill-c">Consultation</span></h2>
+<p>The Digital Skills Framework is a reference document I have developed to create a shared language for digital skills conversations across all 30 curriculum areas. It maps each area to the DfE Essential Digital Skills categories and to the industry-specific tools that employers in those sectors actually use. It is not a policy document. It is a coaching tool — designed to be opened in every Head of Area conversation as a starting point rather than a conclusion.</p>
+<p>What I have found so far is that most areas are doing more digital than they realise. The challenge is that it is not being framed as digital skills development, so it does not get evidenced as such. The framework gives us a shared vocabulary for surfacing what is already there and connecting it to something inspectors, employers, and Skills England will recognise.</p>
+<div class="two">
+<div class="co"><p class="co-t">What the DSF proposes to do</p><p>Create a consistent reference point for coaching conversations with Heads of Area. Give TLAMs and the quality team a shared language for planning digital hours in Business Plans. Connect what learners are already doing in vocational practice to the EDS categories that the renewed Ofsted EIF and Skills England 2026 mandate are looking for.</p></div>
+<div class="co g"><p class="co-t">What the DSF does not do</p><p>It does not mandate tools or delivery approaches. It does not assume that any digital skills development is already happening in any particular area. It is a conversation starter. The quality of the mapping will be improved by the HoA conversations that follow, and it will need updating as that work progresses.</p></div>
+</div>
+<h3>The DSF at a glance — eight sections</h3>
+<div class="tw"><table>
+<thead><tr><th>Section</th><th>What it covers</th><th>Primary audience</th></tr></thead>
+<tbody>
+<tr><td><strong>1. Top 10 Skills</strong></td><td>The universal digital baseline every learner needs for employment and life in 2026, drawn from DfE EDS, FutureDotNow AI-updated EDS (Oct 2025), and WEF Future of Jobs 2025</td><td>All staff, SLT, HoAs</td></tr>
+<tr><td><strong>2. General Digital Skills</strong></td><td>Digital skills for learning, for work, and for societal inclusion — the five EDS categories applied across three real-world contexts</td><td>TLAMs, HoAs, coaches</td></tr>
+<tr><td><strong>3. All 30 Areas</strong></td><td>Full curriculum mapping — every area code, core digital skills, subject-specific tools, and FE/HE context. Proposed mapping, to be refined through HoA conversations.</td><td>TLAMs, HoAs, coaches</td></tr>
+<tr><td><strong>4. Industry Tools</strong></td><td>Sector-specific digital tools that employers expect but general qualifications do not cover — for auditing gaps with HoAs</td><td>HoAs, industry links</td></tr>
+<tr><td><strong>5. Framing</strong></td><td>Four approaches for reframing digital skills as vocational practice rather than IT lessons — the language that makes this land with staff and learners</td><td>All teaching staff, HoAs</td></tr>
+<tr><td><strong>6. SEND and Inclusion</strong></td><td>Assistive technology, UDL principles, WCAG 2.2 AA guidance, and specific provision notes for FIP, ESOL, SpLD, and the SEND Centre of Excellence context</td><td>All staff, SEND leads</td></tr>
+<tr><td><strong>7. Progression Ladders</strong></td><td>Foundation to Highly Advanced — DigComp 3.0 (Nov 2025) applied across two ladders: general digital skills and IT skills for FE and HE contexts</td><td>TLAMs, coaches, learners</td></tr>
+<tr><td><strong>8. Teacher Digital Skills</strong></td><td>TLA-focused progression from Exploring to Leading — ETF Digital Teaching Professional Framework mapped to DigCompEdu levels A1 through C2</td><td>All teaching staff, TLAMs</td></tr>
+</tbody>
+</table></div>
+<h2>Proposal Two — Learning Without Barriers <span class="pill pill-c">Consultation</span></h2>
+<p>Learning Without Barriers is my proposal for how we approach digital inclusion across the college. It is built on three things I feel strongly about: Universal Design for Learning, Quality First Teaching, and the principle that accessible and inclusive digital practice is not something we add for certain learners — it is something we build in from the start for everyone.</p>
+<p>If we design our digital learning environments so that they work for our most excluded learners — ESOL learners, SEND learners, learners without reliable devices or connectivity — they will work better for all learners. WCAG 2.2 AA accessibility, consistent Teams environments, and staff who understand the assistive technology available to them are not specialist provision. They are the foundation of good teaching in a digital age.</p>
+<div class="co p"><p class="co-t">The alignment I am trying to make</p><p>Quality First Teaching tells us that every learner should access learning through high-quality, inclusive, differentiated teaching without needing separate intervention. UDL gives us the research framework for how to design that. A digital-first approach to teaching, learning and assessment is the practical environment where both can be realised. If our Teams environments are well structured, our resources are accessible by design, and our staff are confident with the tools available to them, we create the conditions where QFT and UDL principles are met as a matter of course rather than as an afterthought.</p></div>
+<h3>How these two proposals connect</h3>
+<p>The DSF tells us what digital skills we should be developing and where. Learning Without Barriers tells us how we create the conditions for every learner to access that development equitably. They are two sides of the same question: are we developing digital skills, and can every learner participate fully in that development? The coaching plan that follows is how we make progress on both.</p>
+<div class="co a"><p class="co-t">The external case for both</p><p>Skills England 2026 positions digital literacy alongside English and Maths as a national priority. The renewed Ofsted EIF from November 2025 grades Inclusion as a standalone area for the first time. The WEF Future of Jobs Report 2025 identifies AI literacy, Big Data, and Digital skills as the three fastest-growing global competencies for 2025 to 2030. The West of England LSIP names Aerospace, Advanced Engineering, and Health and Social Care as founding priority sectors — all with entry-level digital fluency requirements. The case is made externally. What we need is an internal structure that rises to meet it.</p></div>
+</div>
+<div class="pfoot"><span><strong>Weston College · Digital Skills Leadership Toolkit 2026–27</strong> · Graeme Wright, Digital Pedagogy Coach · Quality · Consultation Document</span><span>Section 1 of 5</span></div>
+</div>
+<!-- PAGE 2: DSF -->
+<div class="page" id="p2">
+<div class="ph tl2"><p class="pe">Section 2 · The Digital Skills Framework</p><h1 class="pt">The DSF — <em>eight sections, one shared language</em></h1><p class="pi">The Digital Skills Framework is the reference document I bring to every Head of Area meeting. Each tab below is a section of the full framework. The curriculum area mapping in Tab 3 is proposed — it will be refined through HoA conversations over the coming months.</p></div>
+<div class="pb">
+<div class="co"><p class="co-t">How I use this in practice</p><p>Before every HoA meeting I open Tab 3 and find their area. I use what is there as a conversation opener rather than an audit. The question I am asking is: does any of this already happen in your area? If so, where, and is it being named and evidenced as digital skills development? If not, is it something that should be, and what would it take? The answers to those questions are what improve the framework over time.</p></div>
+<div class="tabs" role="tablist" aria-label="Digital Skills Framework sections">
+<button class="tab on" role="tab" aria-selected="true" onclick="dst(1,this)">1. Top 10 Skills</button>
+<button class="tab" role="tab" aria-selected="false" onclick="dst(2,this)">2. General Digital Skills</button>
+<button class="tab" role="tab" aria-selected="false" onclick="dst(3,this)">3. All 30 Areas</button>
+<button class="tab" role="tab" aria-selected="false" onclick="dst(4,this)">4. Industry Tools</button>
+<button class="tab" role="tab" aria-selected="false" onclick="dst(5,this)">5. Framing</button>
+<button class="tab" role="tab" aria-selected="false" onclick="dst(6,this)">6. SEND and Inclusion</button>
+<button class="tab" role="tab" aria-selected="false" onclick="dst(7,this)">7. Progression Ladders</button>
+<button class="tab" role="tab" aria-selected="false" onclick="dst(8,this)">8. Teacher Digital Skills</button>
+</div>
+<div class="tp on" id="dt1">
+<h3>Top 10 Digital Skills for Employment and Life — 2026 Universal Baseline</h3>
+<p>These ten skills are the universal baseline every learner, employee, and citizen needs in 2026. Drawn from the DfE Essential Digital Skills Framework, FutureDotNow AI-updated EDS (October 2025), and WEF Future of Jobs Report 2025. I use this list with Heads of Area to establish a shared starting point before moving into area-specific mapping.</p>
+<div class="tw"><table><thead><tr><th>Rank</th><th>Skill</th><th>What it means in practice</th><th>Category</th></tr></thead><tbody>
+<tr><td>01</td><td><strong>AI Literacy and Prompt Skills</strong></td><td>Understanding what AI tools are, how to use them safely and ethically, how to write effective prompts, and how to critically evaluate AI-generated outputs rather than accept them</td><td><span class="tag t-r">Emerging Priority</span></td></tr>
+<tr><td>02</td><td><strong>Digital Communication and Collaboration</strong></td><td>Effective and professional use of email, messaging, video calls, and shared document platforms in learning and workplace contexts — not just recreational use</td><td><span class="tag t-b">Universal</span></td></tr>
+<tr><td>03</td><td><strong>Information and Data Handling</strong></td><td>Finding reliable information, evaluating sources critically, organising data, and using it to make decisions or produce evidence-based work</td><td><span class="tag t-b">Core EDS</span></td></tr>
+<tr><td>04</td><td><strong>Online Safety and Cybersecurity</strong></td><td>Strong passwords, recognising phishing, enabling two-factor authentication, understanding privacy settings, protecting personal and organisational data</td><td><span class="tag t-r">Safety</span></td></tr>
+<tr><td>05</td><td><strong>Digital Productivity Tools</strong></td><td>Confident use of word processing, spreadsheets, presentations, calendars, and cloud storage for work and study — often a much bigger assumption of competency than it should be</td><td><span class="tag t-b">Core EDS</span></td></tr>
+<tr><td>06</td><td><strong>Problem-Solving with Technology</strong></td><td>Using digital tools to find solutions, troubleshoot issues, and adapt to new software without needing step-by-step guidance every time</td><td><span class="tag t-g">Applied</span></td></tr>
+<tr><td>07</td><td><strong>Digital Transactions and Services</strong></td><td>Online payments, digital forms, tax returns, booking appointments, and using government and financial services independently</td><td><span class="tag t-g">Life and Work</span></td></tr>
+<tr><td>08</td><td><strong>Creating and Sharing Digital Content</strong></td><td>Producing presentations, documents, short videos, infographics, and professional social media posts for defined purposes and real audiences</td><td><span class="tag t-a">Creative</span></td></tr>
+<tr><td>09</td><td><strong>Virtual Collaboration and Remote Working</strong></td><td>Working effectively in digitally mediated environments — Teams, Zoom, shared cloud documents, digital project management, and professional digital etiquette</td><td><span class="tag t-b">Work</span></td></tr>
+<tr><td>10</td><td><strong>Digital Wellbeing and Inclusion</strong></td><td>Maintaining healthy screen habits, understanding technology's impact on wellbeing, and designing or using accessible digital content that works for everyone</td><td><span class="tag t-g">Inclusion</span></td></tr>
+</tbody></table></div>
+<p style="font-size:13px;color:var(--lite);margin-top:16px">Sources: <a href="https://www.gov.uk/government/publications/essential-digital-skills-framework" target="_blank" rel="noopener">DfE EDS Framework</a> · <a href="https://futuredotnow.uk/embedding-ai-into-theessential-digital-skills-framework/" target="_blank" rel="noopener">FutureDotNow AI-Updated EDS (Oct 2025)</a> · <a href="https://www.weforum.org/publications/the-future-of-jobs-report-2025/" target="_blank" rel="noopener">WEF Future of Jobs 2025</a></p>
+</div>
+<div class="tp" id="dt2">
+<h3>General Digital Skills — For Learning, For Work, For Society</h3>
+<p>The five EDS categories applied across three contexts. I use this section when a Head of Area says their area does not do much digital — it helps show that digital skills for learning and life are already embedded in most provision, even when they are not named as such.</p>
+<h4>For Learning</h4>
+<div class="tw"><table><thead><tr><th>Skill</th><th>What it looks like</th><th>EDS Category</th></tr></thead><tbody>
+<tr><td><strong>Navigating digital platforms</strong></td><td>Using VLEs, Microsoft Teams, SharePoint, and college portals to access timetables, resources, and learning materials independently — not just when prompted</td><td>Problem Solving</td></tr>
+<tr><td><strong>Research and information literacy</strong></td><td>Searching effectively using specific terms and multiple sources. Evaluating source credibility, publication dates, and author authority. Identifying AI-generated misinformation — a much bigger challenge than it was two years ago</td><td>Handling Information</td></tr>
+<tr><td><strong>Digital note-taking and organisation</strong></td><td>Using OneNote, Google Docs, or equivalent for organised, retrievable notes. Creating folder structures and naming conventions. Managing version history</td><td>Handling Information</td></tr>
+<tr><td><strong>Collaborative digital working</strong></td><td>Co-editing shared documents in real time, contributing to group Teams channels, completing peer review tasks digitally, and managing asynchronous collaboration</td><td>Communicating</td></tr>
+<tr><td><strong>AI-assisted learning</strong></td><td>Using AI tools to support research, drafting, and self-quizzing with full understanding of academic integrity and institutional AI policies. Not passive reliance. Active, critical use.</td><td>Handling Information</td></tr>
+</tbody></table></div>
+<h4>For the World of Work</h4>
+<div class="tw"><table><thead><tr><th>Skill</th><th>What it looks like</th><th>EDS Category</th></tr></thead><tbody>
+<tr><td><strong>Professional communication</strong></td><td>Email and Teams etiquette, video call protocol, appropriate tone for digital workplace communication. Knowing when to use email versus a message versus a call — a genuine skill gap in most cohorts</td><td>Communicating</td></tr>
+<tr><td><strong>Productivity and office applications</strong></td><td>Confident use of Word, Excel with formulae, PowerPoint, cloud storage, and Outlook calendar. Understanding how applications can be combined to improve efficiency</td><td>Problem Solving</td></tr>
+<tr><td><strong>Digital transactions and invoicing</strong></td><td>Online payments, basic invoicing via Xero or Sage, submitting VAT returns digitally, managing work-related financial records. HMRC Making Tax Digital awareness is now essential for any learner going into self-employment</td><td>Transacting</td></tr>
+<tr><td><strong>Data handling and record-keeping</strong></td><td>Accurate digital data entry, understanding GDPR obligations, maintaining compliant records, and interpreting basic workplace data</td><td>Handling Information; Being Safe and Legal</td></tr>
+<tr><td><strong>AI literacy for the workplace</strong></td><td>Using AI assistants to draft, summarise, and research. Evaluating outputs critically. Understanding ethical use, prompt engineering basics, and the limitations of AI tools</td><td>Handling Information</td></tr>
+</tbody></table></div>
+<h4>For Societal Inclusion</h4>
+<div class="tw"><table><thead><tr><th>Skill</th><th>What it looks like</th><th>EDS Category</th></tr></thead><tbody>
+<tr><td><strong>Accessing public and government services</strong></td><td>Gov.UK digital services, Universal Credit portal, NHS App, local council online forms, HMRC self-assessment. These are not optional skills — they are infrastructure for independent living</td><td>Transacting</td></tr>
+<tr><td><strong>Online safety and privacy</strong></td><td>Password managers, two-factor authentication, recognising phishing and social engineering, GDPR basics, reviewing social media privacy settings actively</td><td>Being Safe and Legal</td></tr>
+<tr><td><strong>Digital financial inclusion</strong></td><td>Online banking, comparing providers digitally, avoiding scams, understanding digital payment systems</td><td>Transacting</td></tr>
+<tr><td><strong>Critical engagement with media</strong></td><td>Identifying misinformation, understanding algorithmic bias and filter bubbles, responsible social media use, understanding sponsored versus editorial content</td><td>Handling Information</td></tr>
+<tr><td><strong>Digital wellbeing and accessibility</strong></td><td>Screen time management, understanding technology's impact on mental health, using and creating accessible digital content to WCAG 2.2 standards, assistive technology awareness</td><td>Being Safe and Legal</td></tr>
+</tbody></table></div>
+</div>
+<div class="tp" id="dt3">
+<h3>All 30 Curriculum Areas — Digital Skills Mapping</h3>
+<p>This is the section I navigate to first in every HoA meeting. The mapping is proposed — it reflects what the EDS Framework, industry standards, and sector intelligence suggest should be the digital skills territory for each area. HoA conversations will confirm, challenge, and add to what is here.</p>
+<div class="co a"><p class="co-t">A note on how to read this</p><p>The core digital skills column shows what every learner in that area should be developing as a minimum. The subject digital tools column shows the industry-specific tools that employers in that sector expect. Use the cluster tabs below to navigate by faculty area. This mapping is a starting point — not a finished picture.</p></div>
+<div class="tabs" role="tablist" aria-label="Curriculum area clusters" style="margin-top:20px">
+<button class="tab on" role="tab" aria-selected="true" onclick="cat(1,this)">Arts and Creative</button>
+<button class="tab" role="tab" aria-selected="false" onclick="cat(2,this)">Construction and Engineering</button>
+<button class="tab" role="tab" aria-selected="false" onclick="cat(3,this)">Business and Digital</button>
+<button class="tab" role="tab" aria-selected="false" onclick="cat(4,this)">Health, Care and Education</button>
+<button class="tab" role="tab" aria-selected="false" onclick="cat(5,this)">English, Maths and ESOL</button>
+<button class="tab" role="tab" aria-selected="false" onclick="cat(6,this)">HBH, ANM and Sport</button>
+<button class="tab" role="tab" aria-selected="false" onclick="cat(7,this)">Public Services and Community</button>
+<button class="tab" role="tab" aria-selected="false" onclick="cat(8,this)">Sixth Form and Access HE</button>
+<button class="tab" role="tab" aria-selected="false" onclick="cat(9,this)">FIP and SEND</button>
+</div>
+<div class="tp on" id="ca1" style="border-radius:0 8px 8px 8px"><div class="tw"><table><thead><tr><th>Code</th><th>Area</th><th>Core Digital Skills</th><th>Subject Digital Tools</th><th>Context</th></tr></thead><tbody>
+<tr><td class="tc">AGF</td><td><strong>Arts, Graphics and Fashion</strong></td><td>Digital research; content creation; portfolio development; professional social media presence</td><td>Adobe CC (Photoshop, Illustrator, InDesign); Canva Pro; CLO 3D; Adobe Firefly; Behance</td><td>L1–L3 FE; HND/BA at UCW. Adobe CC proficiency is the industry baseline — not optional.</td></tr>
+<tr><td class="tc">GMA</td><td><strong>Games, Media and Animation</strong></td><td>Complex software navigation; digital project management; version control (Git); client brief interpretation</td><td>Unity / Unreal Engine; Autodesk Maya / Blender; Adobe Premiere / After Effects; Toon Boom; Git</td><td>L2–L3 FE; HND/BA Game Design. UK games industry employs approximately 50,000 people.</td></tr>
+<tr><td class="tc">PAP</td><td><strong>Performance and Production</strong></td><td>Digital research; professional social media; online booking platforms; video self-review and self-tape production</td><td>GarageBand / Logic / Ableton; QLab (show control); Spotlight / Mandy (casting platforms); digital sound desks</td><td>L2–L3 FE; BA Performing Arts at UCW. Digital self-tape skills are now a baseline employability requirement.</td></tr>
+</tbody></table></div></div>
+<div class="tp" id="ca2" style="border-radius:0 8px 8px 8px"><div class="tw"><table><thead><tr><th>Code</th><th>Area</th><th>Core Digital Skills</th><th>Subject Digital Tools</th><th>Context</th></tr></thead><tbody>
+<tr><td class="tc">BUI</td><td><strong>Building Services</strong></td><td>Data handling; digital invoicing; QR code clock-in; professional communication</td><td>AutoCAD / Revit (BIM); Fieldwire / Procore; digital laser levels; Sage / Xero</td><td>L1–L3 FE; T Level Construction. BIM Level 2 is a UK government procurement requirement.</td></tr>
+<tr><td class="tc">CON</td><td><strong>Construction Trades</strong></td><td>Digital record-keeping; digital clock-in; ordering via digital portals; health and safety apps</td><td>QR site sign-in (Site App Pro, Fieldwire); digital measuring devices; trade supplier portals</td><td>L1–L2 FE trades. CSCS card holders use digital clock-in and delivery notes as standard.</td></tr>
+<tr><td class="tc">EFE</td><td><strong>Engineering WBL</strong></td><td>Technical documentation; ERP/MRP data entry; professional email and digital reporting</td><td>CAD/CAM (SolidWorks, Fusion 360); ERP systems (SAP, Oracle); IoT sensor monitoring</td><td>Apprenticeship-based. All EPA standards require digital evidence. Smart Assessor is the primary tracking tool.</td></tr>
+<tr><td class="tc">EHE</td><td><strong>Engineering Higher Education</strong></td><td>Complex data analysis; technical report writing; simulation software</td><td>ANSYS / MATLAB; AutoCAD / Revit advanced; Python / MATLAB scripting; digital twin technologies</td><td>HNC/HND/BEng at UCW / Bath Spa / UWE. GKN Aerospace and Rolls-Royce partnerships shape employer expectations directly.</td></tr>
+<tr><td class="tc">EMV</td><td><strong>Engineering and Motor Vehicle</strong></td><td>Technical documentation; diagnostic data interpretation; parts ordering portals</td><td>OBD II digital diagnostics; VW / Bosch / ALLDATA software; TecDoc / Haynes Pro; EV battery management; ADAS calibration</td><td>L1–L3 FE; IMI apprenticeships. The EV transition makes battery management and ADAS digital skills critical for every technician now.</td></tr>
+<tr><td class="tc">ENG</td><td><strong>Engineering (General)</strong></td><td>CAD and technical drawing; data analysis; technical documentation; manufacturing simulation</td><td>AutoCAD / Fusion 360; CNC programming interfaces; Excel for engineering; PCB design; 3D printing workflow</td><td>L2–L3 T Level Engineering. SWSC Future Technology Centre context.</td></tr>
+</tbody></table></div></div>
+<div class="tp" id="ca3" style="border-radius:0 8px 8px 8px"><div class="tw"><table><thead><tr><th>Code</th><th>Area</th><th>Core Digital Skills</th><th>Subject Digital Tools</th><th>Context</th></tr></thead><tbody>
+<tr><td class="tc">BUS</td><td><strong>Business and Tourism</strong></td><td>Spreadsheets and data analysis; professional email; digital marketing; research and report writing</td><td>Xero / QuickBooks; CRM (Salesforce / HubSpot); Power BI / Excel advanced; Google Analytics / SEO</td><td>L2–L3 / A Level / T Level Business. WEF 2025: data analysis and AI literacy are the fastest-growing business skills globally.</td></tr>
+<tr><td class="tc">DCI</td><td><strong>Digital Computing and IT</strong></td><td>All EDS skills; programming fundamentals; networks; cybersecurity basics</td><td>Python / JavaScript / SQL; Azure / AWS; cybersecurity tools (Wireshark, Kali); GitHub; Figma</td><td>L2–L3 FE; A Level Computer Science; HND/BSc Computing. A natural home for the Digital Champions programme.</td></tr>
+<tr><td class="tc">PRA</td><td><strong>Professional Apprenticeships</strong></td><td>All five EDS work categories; sector-specific software; ePortfolio and EPA evidence</td><td>Smart Assessor; eILP tools; sector-specific platforms; digital CPD logs</td><td>L2–L5 apprenticeships. All EPA standards require digital evidence.</td></tr>
+<tr><td class="tc">PRS</td><td><strong>Professional Studies</strong></td><td>Academic digital research; referencing tools; report writing; presentation</td><td>Microsoft Office / Google Workspace advanced; Zotero / Mendeley; SPSS / Excel; AI summarisation tools</td><td>HE / Access to HE / Professional qualifications. Digital research confidence is a documented gap for adult returners in this area.</td></tr>
+</tbody></table></div></div>
+<div class="tp" id="ca4" style="border-radius:0 8px 8px 8px"><div class="tw"><table><thead><tr><th>Code</th><th>Area</th><th>Core Digital Skills</th><th>Subject Digital Tools</th><th>Context</th></tr></thead><tbody>
+<tr><td class="tc">EEY</td><td><strong>Education and Early Years</strong></td><td>Digital child observation recording; professional communication; GDPR in early years settings</td><td>Tapestry / Evidence Me; EYFS digital tracking; Scratch / coding toys; Seesaw / Class Dojo</td><td>L2–L3 / T Level Education and Early Years (reformed August 2025). Settings increasingly require digital observation software literacy from day one.</td></tr>
+<tr><td class="tc">HAC</td><td><strong>Health (inc. T Level Health and Science)</strong></td><td>Digital record-keeping; patient data handling; GDPR and Caldicott principles; telehealth</td><td>SystmOne / EMIS; NHS Digital portals; e-Prescribing and MAR chart software; telehealth platforms</td><td>L2–L3 / T Level Health and Science; FdSc/BSc at UCW. NHS Digital strategy mandates electronic record-keeping across all settings.</td></tr>
+<tr><td class="tc">FEH</td><td><strong>FIP Supported Employment Excellence</strong></td><td>Basic device navigation; email for job applications; online job search; Universal Credit portal</td><td>Indeed / Reed; Gov.UK digital services; digital CV tools; accessible technology for employment</td><td>Supported employment pathway. Digital skills are a primary employment barrier for this cohort. Hybrid readiness for medical absences is an urgent need.</td></tr>
+</tbody></table></div></div>
+<div class="tp" id="ca5" style="border-radius:0 8px 8px 8px"><div class="tw"><table><thead><tr><th>Code</th><th>Area</th><th>Core Digital Skills</th><th>Subject Digital Tools</th><th>Context</th></tr></thead><tbody>
+<tr><td class="tc">EGL</td><td><strong>English</strong></td><td>Word processing; digital research and referencing; accessibility tools; professional writing</td><td>Microsoft Word / Google Docs; Grammarly; Immersive Reader; Canva / Padlet</td><td>GCSE / Functional Skills L1–L2 / A Level. Immersive Reader should be demonstrated to every English learner at induction as a matter of course.</td></tr>
+<tr><td class="tc">ESO</td><td><strong>ESOL</strong></td><td>Device setup and basic navigation; translation apps; accessing public services online</td><td>Google Translate / DeepL; Microsoft Translator; NHS App / Gov.UK navigation; online banking apps</td><td>Entry Level to L2. 118,220 learners nationally (DfE 2025). ESOL learners face a compound barrier: language exclusion and digital exclusion at the same time. Both need addressing together.</td></tr>
+<tr><td class="tc">MAT</td><td><strong>Maths</strong></td><td>Spreadsheet calculations; digital graphing tools; online quizzes and self-assessment</td><td>Desmos (used in live GCSE exams); GeoGebra; Excel / Google Sheets; OneNote digital inking; Khan Academy</td><td>GCSE / Functional Skills L1–L2. Desmos is used in live GCSE examinations, which makes digital proficiency with it directly assessable.</td></tr>
+</tbody></table></div></div>
+<div class="tp" id="ca6" style="border-radius:0 8px 8px 8px"><div class="tw"><table><thead><tr><th>Code</th><th>Area</th><th>Core Digital Skills</th><th>Subject Digital Tools</th><th>Context</th></tr></thead><tbody>
+<tr><td class="tc">HBH</td><td><strong>Hair, Beauty and Hospitality</strong></td><td>Social media for business; digital booking systems; card payments; inventory management; self-employment finance</td><td>Fresha / Treatwell / Vagaro; EPOS / POS (Square); Instagram / TikTok; OpenTable; Natasha's Law software; HMRC Making Tax Digital</td><td>L1–L3 FE; Apprenticeships. HMRC Making Tax Digital means digital VAT submission is mandatory for self-employed practitioners from 2026.</td></tr>
+<tr><td class="tc">ANM</td><td><strong>Animal Management</strong></td><td>Digital record-keeping; data entry; scientific research online; professional communication</td><td>RoboVet / VetSoft; iNaturalist; environmental data monitoring; microchip scanning; wildlife GPS software</td><td>L1–L3 FE; FdSc Animal Management at UCW. Digital record-keeping in veterinary settings is a legal requirement.</td></tr>
+<tr><td class="tc">SPO</td><td><strong>Sport</strong></td><td>Data handling; digital communications; social media for coaching; performance analysis</td><td>Wearable tech (Garmin, Polar, Catapult); video analysis (Hudl, Dartfish); Trainerize; sports booking systems</td><td>L2–L3 FE; FdSc/BSc Sport at UCW. Evidencing digital hours from wearables and video analysis needs to be confirmed through HoA conversation.</td></tr>
+</tbody></table></div></div>
+<div class="tp" id="ca7" style="border-radius:0 8px 8px 8px"><div class="tw"><table><thead><tr><th>Code</th><th>Area</th><th>Core Digital Skills</th><th>Subject Digital Tools</th><th>Context</th></tr></thead><tbody>
+<tr><td class="tc">PSF</td><td><strong>Public Services (Protective Services)</strong></td><td>Research and information gathering; digital report writing; data handling; cybersecurity awareness</td><td>Niche RMS (police records); body-worn camera data management; GIS digital mapping; OSINT awareness</td><td>L2–L3 FE; Access to HE Protective Services. Police, fire, and armed forces require digital literacy at entry level as a baseline.</td></tr>
+<tr><td class="tc">CED</td><td><strong>Community Education</strong></td><td>Accessing public and government services online; digital financial inclusion; basic device literacy; email</td><td>Gov.UK digital services; NHS App; Universal Credit portal; online banking; Learn My Way</td><td>Adult community provision. Essential digital skills participation grew 9.7% year-on-year (DfE 2025).</td></tr>
+<tr><td class="tc">PRE</td><td><strong>Employment Services (Pre-Employment)</strong></td><td>Digital CV creation; online job search; email for job applications; video interview preparation</td><td>Indeed / LinkedIn / Reed; DWP digital tools; Canva CV builder; Zoom / Teams video interview practice</td><td>Pre-employment provision. Ipsos/Lloyds EDS 2024: 75% of job-seekers attempt to upskill digitally when they identify a gap.</td></tr>
+<tr><td class="tc">SKB</td><td><strong>Skills Bootcamps</strong></td><td>Sector-specific digital skills; digital portfolio; professional online presence; AI tool awareness</td><td>Sector-dependent — typically data, digital marketing, or sector-specific tools; LinkedIn; Credly digital badges</td><td>Adult Skills Fund-funded intensive provision. AI literacy is now a frequent bootcamp focus across the sector.</td></tr>
+</tbody></table></div></div>
+<div class="tp" id="ca8" style="border-radius:0 8px 8px 8px"><div class="tw"><table><thead><tr><th>Code</th><th>Area</th><th>Core Digital Skills</th><th>Subject Digital Tools</th><th>Context</th></tr></thead><tbody>
+<tr><td class="tc">SMS</td><td><strong>Sixth Form (A Level)</strong></td><td>Academic digital research; reference management; data analysis for subjects; AI-assisted study with academic integrity</td><td>JSTOR / Google Scholar / EBSCO; Desmos / GeoGebra; UCAS digital application platform; Seneca; Quizlet</td><td>A Levels at Loxton Campus, including AS Level reintroduction from September 2025. UCAS digital application is mandatory for all progression.</td></tr>
+<tr><td class="tc">AHE</td><td><strong>Access to Higher Education</strong></td><td>Academic writing; digital research skills; presentation tools; AI tools with academic integrity awareness</td><td>UCAS / university application portals; Turnitin; Zotero referencing; Microsoft Teams; EBSCO / ProQuest</td><td>Access to HE Diploma. UCW programmes validated by Bath Spa and UWE. Adult returners often have significant digital confidence gaps that need addressing early.</td></tr>
+</tbody></table></div></div>
+<div class="tp" id="ca9" style="border-radius:0 8px 8px 8px">
+<div class="co r"><p class="co-t">Technology is not a learning tool in FIP — it is often the means by which learning is possible at all</p><p>For FIP areas, staff training on assistive technology is not optional CPD. It is a professional standard for everyone working with these cohorts. Proloquo2Go, Tobii eye-gaze, Clicker and Widgit, Read&amp;Write — staff need to know what is available and how to use it. This is a direct obligation under our SEND Centre of Excellence heritage and a clear expectation within the renewed Ofsted Inclusion grade.</p></div>
+<div class="tw"><table><thead><tr><th>Code</th><th>Area</th><th>Core Digital Skills</th><th>Subject Digital Tools</th><th>Context</th></tr></thead><tbody>
+<tr><td class="tc">FAU</td><td><strong>FIP Autism</strong></td><td>Predictable structured digital environments; digital routines; AAC communication tools</td><td>Proloquo2Go / Grid 3 (AAC); Choiceworks (visual schedules); sensory-appropriate digital environments</td><td>AAC technologies are central to Autism provision. Consistent Teams layout and clear file naming conventions reduce anxiety significantly. Sudden platform changes without notice must be avoided.</td></tr>
+<tr><td class="tc">FCO</td><td><strong>FIP Complex Needs</strong></td><td>Switch-access technology; eye-gaze communication systems; accessible digital devices</td><td>Tobii eye-gaze; switch-access devices; Clicker / Widgit Online; sensory apps and interactive digital surfaces</td><td>Technology enables communication and participation that would otherwise be impossible for these learners. Device and software reliability is critical, not peripheral. Staff training is mandatory.</td></tr>
+<tr><td class="tc">FPL</td><td><strong>FIP Pre-Vocational</strong></td><td>Basic device operation; simple task management apps; online communication basics</td><td>Read&amp;Write (text-to-speech and dictation); Immersive Reader; Clicker 8; Taskmaster / visual timetable apps</td><td>Pre-vocational and pathway provision. Digital daily living tools — travel apps, banking apps, NHS App — support the transition to employment and independent living that this area is designed to enable.</td></tr>
+</tbody></table></div></div>
+</div>
+<div class="tp" id="dt4">
+<h3>Industry-Specific Digital Tools — What General Qualifications Do Not Cover</h3>
+<p>This section is for use when auditing specific gaps with Heads of Area. The question I ask is: which of these tools do your learners currently use, and which do your placement employers expect them to know?</p>
+<div class="tw"><table><thead><tr><th>Sector</th><th>Key Industry Digital Tools</th><th>Why this matters</th></tr></thead><tbody>
+<tr><td><strong>Construction and Built Environment</strong></td><td>Revit and AutoCAD (BIM Level 2); Fieldwire and Procore (site management); Site App Pro (QR clock-in); laser levels; BREEAM sustainability tools</td><td>BIM Level 2 is a legal requirement for all UK government-funded construction projects. Digital clock-in is standard on every major contract site.</td></tr>
+<tr><td><strong>Health, Care and Early Years</strong></td><td>SystmOne and EMIS; Liquid Logic; telehealth platforms; Tapestry and Evidence Me (EEY); e-Prescribing; digital MAR charts</td><td>NHS Digital strategy mandates electronic records across all settings. Caldicott data protection is a legal requirement from day one of employment in care.</td></tr>
+<tr><td><strong>Engineering and Motor Vehicle</strong></td><td>OBD II diagnostic software; Bosch and ALLDATA; EV battery management systems; ADAS calibration tools; SolidWorks and Fusion 360; SAP and Oracle ERP</td><td>The EV transition means battery management and ADAS calibration are now critical digital skills for all modern vehicle technicians — not specialist knowledge.</td></tr>
+<tr><td><strong>Hair, Beauty and Hospitality</strong></td><td>Fresha, Treatwell, Vagaro; OpenTable and ResDiary; EPOS and Square; Natasha's Law allergen software; HMRC Making Tax Digital</td><td>HMRC Making Tax Digital makes digital VAT submission mandatory for self-employed practitioners from 2026. This is a compliance requirement, not optional awareness.</td></tr>
+<tr><td><strong>Creative Arts, Games and Media</strong></td><td>Adobe Creative Suite; Unity and Unreal Engine; Git version control; AI creative tools (Adobe Firefly, Midjourney) with IP literacy</td><td>Adobe CC proficiency is the industry baseline in creative employment. Not having it is not an option for learners going into these industries.</td></tr>
+<tr><td><strong>Business and IT</strong></td><td>Xero, QuickBooks, Sage; Salesforce and HubSpot; Power BI; Python, SQL, JavaScript; Azure, AWS, GitHub; Wireshark and Kali Linux (DCI)</td><td>WEF Future of Jobs 2025 identifies data analysis and AI literacy as the fastest-growing business skills globally for the period 2025 to 2030.</td></tr>
+<tr><td><strong>Public Services</strong></td><td>Niche RMS (police records management); Airwave and digital radio systems; body-worn camera evidence management; GIS mapping tools; OSINT tools</td><td>Police, fire, and armed forces require digital literacy at entry level. These are baseline employability requirements for this sector, not advanced skills.</td></tr>
+<tr><td><strong>Sport and Active Living</strong></td><td>Hudl and Dartfish (video analysis); Catapult and Garmin (wearable GPS data); Trainerize and PT Distinction (coaching platforms)</td><td>Hudl is used by most professional clubs for performance analysis. Wearable tech data interpretation is now expected at graduate entry level in sport science and coaching roles.</td></tr>
+</tbody></table></div>
+</div>
+<div class="tp" id="dt5">
+<h3>Framing Digital Skills for Vocational and Industry Contexts</h3>
+<p>How digital skills are framed makes an enormous difference to whether staff and learners engage with them. What I have found is that the most effective framing always connects the digital skill directly to an industry outcome the learner already cares about. The technology becomes invisible — it is just how you do the job.</p>
+<div class="co p"><p class="co-t">The principle I keep coming back to</p><p>Never teach the technology. Teach the task that technology enables. A construction learner does not need to learn about QR codes. They need to clock in on site, submit a digital site diary, and order materials from a supplier portal. The apps are how they do it. When you frame it that way — across every curriculum area — digital stops being a separate burden and becomes part of the fabric of vocational practice.</p></div>
+<div class="tw"><table><thead><tr><th>Framing Approach</th><th>What it sounds like</th><th>When to use it</th></tr></thead><tbody>
+<tr><td><strong>The Industry Standard Frame</strong></td><td>"Every major contractor uses digital clock-in. You won't get paid if you can't sign in on site digitally." Or: "EV diagnostics are entirely digital. You cannot fix a modern vehicle without a tablet." The technology is not the subject — the job requirement is.</td><td>When a Head of Area or learner says digital is not relevant to their area. Almost always the wrong conclusion. Use Tab 4 industry tools to make the case.</td></tr>
+<tr><td><strong>The Time-Saving Frame</strong></td><td>"Fresha sends appointment reminders automatically and takes deposits. You spend less time chasing no-shows and more time with clients." Or: "Electronic records mean you don't rewrite the same patient information by hand three times a shift." Digital as workload relief.</td><td>When staff are resistant to digital tools because they feel like extra work. Show them the time they get back.</td></tr>
+<tr><td><strong>The Earnings and Employability Frame</strong></td><td>"Xero certification adds an estimated three to five thousand pounds to your starting salary as a bookkeeper." Or: "Site managers who can use BIM earn significantly more than those who can't." Connect digital competence to tangible economic outcomes.</td><td>When learners or parents question why digital skills matter in a vocational programme. Labour market intelligence makes the case quickly.</td></tr>
+<tr><td><strong>The Authentic Context Frame</strong></td><td>"Measure this wall, log the data digitally, and email it to the project manager." The learner has practised data entry, file handling, and professional email in one real task. Or: "Book a GP appointment on the NHS App." A real digital service — not a classroom simulation.</td><td>This is the most effective framing. The digital skill becomes invisible — the learner is just doing the job. Use this wherever possible, especially for ESOL and community education learners where real-world application is the strongest motivator.</td></tr>
+</tbody></table></div>
+<div class="co g"><p class="co-t">The 21CLD connection</p><p>The 21st Century Learning Design framework describes knowledge building, real-world problem-solving, skilled communication, and self-regulation as the learning activities most likely to develop the skills learners need for work and life. All of these are most richly realised when digital tools are embedded in authentic vocational tasks rather than taught in isolation. The authentic context framing approach is where these principles are already alive in good vocational teaching — you do not need to name the framework to work within it.</p></div>
+</div>
+<div class="tp" id="dt6">
+<h3>SEND, Inclusion and Accessibility</h3>
+<p>This section underpins the Learning Without Barriers proposal. The principle here is one I feel strongly about: accessibility is not a bolt-on for certain learners. The best digital accessibility practice benefits everyone. Captions help in noisy environments. Clear navigation reduces anxiety. Accessible colour contrast helps in poor lighting. Design it in from the start and you serve every learner better.</p>
+<div class="co p"><p class="co-t">The WCAG 2.2 AA standard</p><p>WCAG 2.2 AA is the internationally recognised standard for accessible digital content and the legally required standard for UK public sector organisations. It should be the minimum standard for every digital resource created by any member of staff. The key requirements: minimum 4.5:1 colour contrast ratio for normal text, alternative text descriptions on all images, correct heading structure in all documents, captions on all video content, and keyboard navigability. The Microsoft Office Accessibility Checker checks most of these automatically — it is built into every Office application and takes seconds to run.</p></div>
+<div class="tw"><table><thead><tr><th>Learner Group</th><th>Key Considerations</th><th>Tools and Approaches</th></tr></thead><tbody>
+<tr><td><strong>FIP Autism (FAU)</strong></td><td>Many autistic learners have strong digital aptitude — recognise and build on this in ILPs. Predictable, consistent digital environments reduce anxiety significantly. Sudden platform changes without notice can be genuinely distressing.</td><td>Proloquo2Go and Grid 3 for AAC; Choiceworks for visual schedules; consistent Teams layout and file naming conventions; sensory settings adjusted as needed</td></tr>
+<tr><td><strong>FIP Complex Needs (FCO)</strong></td><td>For this cohort, technology is often the primary means of communication and participation. Device and software reliability is not a convenience issue — it is a safeguarding and access issue. Staff training is mandatory.</td><td>Tobii eye-gaze for learners without motor control; switch-access devices; Clicker and Widgit Online; interactive digital surfaces; all college devices must have this software available and functioning</td></tr>
+<tr><td><strong>FIP Pre-Vocational (FPL)</strong></td><td>Basic device operation as a foundation for transition to employment. Digital daily living tools support independence in ways that have direct quality-of-life implications.</td><td>Read&amp;Write for text-to-speech and dictation; Immersive Reader (free, built into Teams and Word, shown to every learner at induction); Clicker 8; visual timetable apps for routine and structure</td></tr>
+<tr><td><strong>ESOL Learners (ESO)</strong></td><td>Language exclusion and digital exclusion are compounding barriers that need to be addressed together, not in sequence. Microsoft Translator and Google Translate are scaffolding tools that bridge to independence — not dependency supports.</td><td>Microsoft Translator and Google Translate as standard scaffolding; Immersive Reader with translation enabled; real-world digital tasks (NHS App, DWP portal, online banking) as the most motivating and immediately useful learning contexts</td></tr>
+<tr><td><strong>Dyslexia and SpLD (All Areas)</strong></td><td>Read&amp;Write Gold, Immersive Reader, OneNote digital inking for spatial note-taking, and Dragon Dictate for extended writing tasks. These are productivity tools that happen to be especially effective for learners with literacy difficulties — available to everyone.</td><td>Read&amp;Write Gold; Immersive Reader (zero cost, high impact, built into all Office apps); OneNote digital inking; Dragon Dictate or Windows Speech Recognition; mention all of these at induction as available to everyone</td></tr>
+<tr><td><strong>Universal Design (All Areas)</strong></td><td>WCAG 2.2 AA compliance for all digital resources created by staff. Captions on all video. Alt-text on all images (two sentences maximum, descriptive). Accessible colour contrast. Accessibility Checker run before every resource is shared.</td><td><a href="https://www.w3.org/WAI/WCAG22/quickref/" target="_blank" rel="noopener">WCAG 2.2 Quick Reference</a> · <a href="https://support.microsoft.com/en-gb/office/improve-accessibility-with-the-accessibility-checker" target="_blank" rel="noopener">Microsoft Accessibility Checker</a></td></tr>
+</tbody></table></div>
+</div>
+<div class="tp" id="dt7">
+<h3>Digital Skills Progression — Foundation to Highly Advanced</h3>
+<p>Two parallel progression ladders based on DigComp 3.0 (European Commission, November 2025). I use these to position learners and staff on a shared scale for CPD planning, digital hours evidence, and self-assessment conversations.</p>
+<h4>Ladder 1 — General Digital Skills (Learner-Facing)</h4>
+<div class="tw"><table><thead><tr><th>Level</th><th>What it looks like</th><th>DigComp 3.0</th></tr></thead><tbody>
+<tr><td><strong>Foundation</strong></td><td>Can switch on a device, use a touchscreen, and open an app or browser with guidance. Recognises common icons. May not distinguish between search results and adverts.</td><td>A1 — Newcomer</td></tr>
+<tr><td><strong>Basic</strong></td><td>Can write, send, and reply to emails with attachments. Uses specific search terms. Can create a simple Word document, save and retrieve it. Can navigate Gov.UK and book a GP appointment independently.</td><td>A2 — Explorer</td></tr>
+<tr><td><strong>Intermediate</strong></td><td>Uses Word, Excel with formulae, and PowerPoint confidently. Joins and hosts video calls. Uses strong, unique passwords and two-factor authentication. Recognises misinformation. Can use AI assistants and knows to verify their outputs.</td><td>B1 — Integrator</td></tr>
+<tr><td><strong>Advanced</strong></td><td>Excel pivot tables, Power BI dashboards, digital project management. Uses AI tools strategically and evaluates outputs critically. Understands GDPR obligations. Can guide others in digital tools with pedagogical rationale.</td><td>B2 — Expert</td></tr>
+<tr><td><strong>Highly Advanced</strong></td><td>Shapes digital culture or strategy at organisational level. Builds automated workflows using Power Automate or Zapier. Identifies novel applications of AI. Advocates for ethical and inclusive digital practice across the institution.</td><td>C1/C2 — Leader / Pioneer</td></tr>
+</tbody></table></div>
+<h4>Ladder 2 — IT Skills for FE and HE (Academic and Professional Contexts)</h4>
+<div class="tw"><table><thead><tr><th>Level</th><th>What it looks like</th></tr></thead><tbody>
+<tr><td><strong>Foundation</strong></td><td>Can log into college email, Teams, and the VLE with prompting. Can access course materials. Can print from a college PC with guidance.</td></tr>
+<tr><td><strong>Basic</strong></td><td>Accesses assignment briefs, submissions, grades, and feedback via the VLE independently. Uses Microsoft 365 basics. Submits work via Turnitin or Teams Assignment. Joins class Teams channels and attends online sessions.</td></tr>
+<tr><td><strong>Intermediate</strong></td><td>Uses EBSCO or JSTOR with Boolean search. Creates accessible presentations with correct heading structure and alt-text. Uses Excel or SPSS for basic data analysis. Maintains an ePortfolio. Uses AI tools with full understanding of institutional AI policy.</td></tr>
+<tr><td><strong>Advanced</strong></td><td>Uses SPSS, R, or Python for statistical analysis. Produces multimedia academic content. Maintains an active professional LinkedIn profile and digital portfolio. Briefs others on data findings.</td></tr>
+<tr><td><strong>Highly Advanced</strong></td><td>Publishes research digitally via open access repositories. Creates OERs for others. Applies computational thinking or scripting to academic or professional problems. Advocates for responsible, inclusive digital practice and contributes to institutional AI and data policy.</td></tr>
+</tbody></table></div>
+<p style="font-size:13px;color:var(--lite);margin-top:16px">Source: <a href="https://joint-research-centre.ec.europa.eu/digcomp_en" target="_blank" rel="noopener">DigComp 3.0 — European Commission Joint Research Centre (November 2025)</a> · <a href="https://digitalcapability.jisc.ac.uk/" target="_blank" rel="noopener">Jisc Building Digital Capability Framework</a></p>
+</div>
+<div class="tp" id="dt8">
+<h3>Teacher Digital Skills — TLA-Focused Progression</h3>
+<p>A structured progression framework for FE and HE teaching staff, from first engaging with technology in the classroom through to leading digital innovation across the college. Built on the ETF Digital Teaching Professional Framework and DigCompEdu levels A1 to C2. I use this in TLAM conversations about CPD priorities and Digital Lead development.</p>
+<div class="tw"><table><thead><tr><th>Stage</th><th>ETF DTPF</th><th>What it looks like in practice</th><th>DigCompEdu</th></tr></thead><tbody>
+<tr><td><strong>Stage 1</strong></td><td>Exploring</td><td>Beginning to explore digital tools. Relies on guidance. Has attended an overview of key college digital tools but has not yet integrated them meaningfully into regular teaching. Aware of what is available — not yet acting on it.</td><td>A1 / A2 — Newcomer to Explorer</td></tr>
+<tr><td><strong>Stage 2A</strong></td><td>Adopting: Developing</td><td>Uses Teams for communication, basic assignments, and feedback. Aware of the college AI policy. Begins using AI to reduce own workload (quiz generation, lesson plan drafts). Uses formative digital assessment at least occasionally.</td><td>B1 — Integrator</td></tr>
+<tr><td><strong>Stage 2B</strong></td><td>Adopting: Embedding</td><td>Designs lesson sequences where digital tools purposefully change the learning experience — not just presenting content differently. Applies WCAG 2.2 AA accessibility principles to all digital resources as a professional habit. Uses AI tools critically and transparently. Can articulate which EDS categories their learners are developing and how.</td><td>B2 — Expert</td></tr>
+<tr><td><strong>Stage 3</strong></td><td>Leading</td><td>Coaches and mentors colleagues on digital pedagogy. Designs digital-first curriculum where the VLE is a live, learner-directed environment. Evaluates EdTech critically — considers pedagogical rationale, GDPR, accessibility compliance, and sustainability before adopting anything new. Leads the team's thinking on AI in teaching and assessment. Champions assistive technology for SEND learners and advocates for the resources that reduce digital exclusion.</td><td>C1 / C2 — Leader to Pioneer</td></tr>
+</tbody></table></div>
+<div class="co"><p class="co-t">The Digital Lead role sits at Stage 2B to 3</p><p>The Digital Lead in each curriculum area does not need to be at Stage 3 — but they need to be working comfortably at Stage 2B and moving towards 3. That means they can articulate the EDS mapping for their area, they know how to run the Teams Digital Health Check, and they are a credible peer resource for colleagues still at Stage 1 or 2A. The Jisc Building Digital Capability self-assessment is the most practical way to baseline where staff currently sit.</p></div>
+<p style="font-size:13px;color:var(--lite);margin-top:16px">Sources: <a href="https://set.et-foundation.co.uk/set-news/new-framework-launched-to-help-fe-and-training-staff-develop-their-practice-using-technology" target="_blank" rel="noopener">ETF Digital Teaching Professional Framework (DTPF)</a> · <a href="https://joint-research-centre.ec.europa.eu/digcompedu_en" target="_blank" rel="noopener">DigCompEdu — European Commission</a> · <a href="https://enhance.etfoundation.co.uk" target="_blank" rel="noopener">ETF Enhance CPD Platform (free for FE staff)</a></p>
+</div>
+</div>
+<div class="pfoot"><span><strong>Weston College · Digital Skills Leadership Toolkit 2026–27</strong> · Graeme Wright, Digital Pedagogy Coach · Quality · Consultation Document</span><span>Section 2 of 5</span></div>
+</div>
+<!-- PAGE 3: LEARNING WITHOUT BARRIERS -->
+<div class="page" id="p3">
+<div class="ph gr"><p class="pe">Section 3 · Learning Without Barriers</p><h1 class="pt">A digital inclusion proposal <em>built on solid foundations</em></h1><p class="pi">Learning Without Barriers is my proposal for how we approach digital inclusion across the college. It is built on three interconnected pillars and grounded in UDL principles, Quality First Teaching, and WCAG 2.2 AA accessibility standards. This is a consultation document — for discussion and challenge.</p></div>
+<div class="pb">
+<p class="lead">The Post-16 Education and Skills White Paper from November 2025 makes digital assumptions about learners, staff, and infrastructure that do not reflect the reality for a significant proportion of our cohort. Learners in coastal and rural areas around Weston-super-Mare face connectivity gaps. Many ESOL and SEND learners face device poverty. Staff confidence with digital tools varies considerably across the college. Learning Without Barriers is my response to that gap between assumption and reality.</p>
+<div class="co"><p class="co-t">The vision I am working towards</p><p>Every learner and member of staff at Weston College can access, engage with, and benefit from digital learning — regardless of their ability, language, background, connectivity, or prior experience. That is the standard I am proposing we set. It is ambitious. It is also achievable, because most of the tools we need to get there are already available to us.</p></div>
+<h2>The Five Strategic Principles</h2>
+<div class="tw"><table><thead><tr><th>Principle</th><th>What it means in practice</th></tr></thead><tbody>
+<tr><td><strong>1. Inclusion by design, not by reaction</strong></td><td>Digital inclusion must be built into every process, system, and resource from the start — not retrofitted after the fact. This applies to curriculum design, staff development, IT procurement, and learner communications. WCAG 2.2 AA is the floor, not the ceiling.</td></tr>
+<tr><td><strong>2. Start with our most excluded learners</strong></td><td>ESOL and SEND learners face the sharpest digital barriers. If we design our systems and resources to work for them, they will work better for everyone. These communities are the proof of concept and the quality standard.</td></tr>
+<tr><td><strong>3. Everyone is responsible</strong></td><td>Digital inclusion is not the responsibility of one team or one role. It is owned by the whole college — teaching staff, support teams, IT, student services, and leadership. The Learning Without Barriers proposal will not work if it lives only in the digital pedagogy team.</td></tr>
+<tr><td><strong>4. Quick wins build momentum</strong></td><td>Transformation takes time. The quickest and most impactful actions use free tools already available — primarily Microsoft 365 and Jisc resources. Immersive Reader, Live Captions, the Accessibility Checker, and Microsoft Translator cost nothing and are available right now.</td></tr>
+<tr><td><strong>5. Learner voice is non-negotiable</strong></td><td>Learners — particularly ESOL, SEND, and young people from disadvantaged backgrounds — must help shape this strategy as genuine co-designers, not as a consultation tick-box exercise. What they tell us about their experience of digital provision should change what we do.</td></tr>
+</tbody></table></div>
+<h2>The Three Pillars</h2>
+<div class="three">
+<div class="co"><p class="co-t">Pillar 1 — Foundations</p><p>Accessibility as standard practice across all digital resources. WCAG 2.2 AA compliance for all uploaded materials. Immersive Reader, Live Captions, and the Office Accessibility Checker embedded in everyday staff practice. A consistent Teams environment structure college-wide — naming conventions, channel structure, accessible file formats. The Jisc FE Accessibility Training Matrix as the backbone of staff development in this area.</p></div>
+<div class="co a"><p class="co-t">Pillar 2 — Systems and Culture</p><p>Consistent Teams environment standards across all curriculum areas. Separate CPD pathways for staff digital skills and learner digital skills — they are not the same need. Staff Foundation Awareness of AI (Jisc Module 1) before any AI tool is introduced into teaching. A Digital Resource Quality Standard — a simple checklist that every resource passes before it is uploaded. The Jisc Building Digital Capability tool as the staff baseline.</p></div>
+<div class="co g"><p class="co-t">Pillar 3 — Equity and Empowerment</p><p>Genuine learner voice in shaping digital provision. Partnership with Good Things Foundation for device and data support via the National Databank — free SIM cards and data for learners without connectivity. Weston College as a community digital inclusion asset, not just an internal provider. A Student Digital Inclusion Advisory Group that has real influence and a genuine feedback loop.</p></div>
+</div>
+<h2>Free Microsoft Tools — The Immediate Quick Wins</h2>
+<p>The Microsoft 365 suite already available to the college contains a powerful set of accessibility and inclusion tools that cost nothing additional and require no procurement decisions. These are the first things I want to move on.</p>
+<div class="tw"><table><thead><tr><th>Tool</th><th>Benefit for ESOL and SEND learners</th><th>Action needed</th></tr></thead><tbody>
+<tr><td><strong>Immersive Reader</strong></td><td>Text-to-speech, translation into 100+ languages, text spacing and font adjustments. Built into Teams, Word, OneNote, and Forms. Non-stigmatising because it is available to everyone.</td><td>Train all staff to demonstrate it at induction. Make it a standard part of every learner's first session.</td></tr>
+<tr><td><strong>Live Captions and Translator (Teams)</strong></td><td>Real-time captions in 60+ languages. Transforms access for d/Deaf, hard of hearing, and ESOL learners in all live and recorded sessions.</td><td>Enable as standard in all Teams meetings college-wide. Requires an IT configuration decision.</td></tr>
+<tr><td><strong>Accessibility Checker</strong></td><td>Checks all Office documents for colour contrast, alt-text, reading order, and heading structure. Helps all learners including those with visual impairments.</td><td>Build into staff CPD. Add to the QA resource checklist. Require for all uploaded teaching materials.</td></tr>
+<tr><td><strong>Dictation and Speech-to-Text</strong></td><td>Allows learners with limited mobility, dyslexia, or low written English to produce work via speech. Reduces assessment barriers significantly.</td><td>Promote as a standard learning adjustment. Share with SEND team. Create a learner-facing how-to card.</td></tr>
+<tr><td><strong>Microsoft Reading Coach</strong></td><td>Free AI-powered reading fluency tool. Strong evidence for reading level improvement — particularly useful for ESOL learners. Used by 500,000+ learners across 190 countries.</td><td>Pilot with ESOL groups this term. Measure reading levels before and after. Use as evidence for the strategy.</td></tr>
+<tr><td><strong>Microsoft Translator</strong></td><td>Real-time multi-device conversation translation. Bridges language barriers between learners, parents, and staff instantly in meetings and classrooms.</td><td>Deploy for ESOL parent evenings and initial enrolment conversations. Train student services and reception staff.</td></tr>
+</tbody></table></div>
+<div class="co a"><p class="co-t">The UDL alignment I am making</p><p>Universal Design for Learning asks us to provide multiple means of representation, multiple means of action and expression, and multiple means of engagement for all learners. Every tool in the table above addresses at least one of those three principles — and most address more than one. Immersive Reader provides multiple means of representation. Speech-to-text provides multiple means of expression. Real-world digital tasks provide multiple means of engagement. This is not a separate UDL programme. It is UDL already, if we choose to name it and build it in consistently.</p></div>
+<h2>The Connection to Quality First Teaching</h2>
+<p>QFT tells us that every learner should access learning through high-quality, inclusive, differentiated teaching without needing a separate intervention. The tools above are not interventions. They are the standard environment that makes QFT achievable in a digital-first teaching context. When a staff member runs the Accessibility Checker before uploading a resource, they are doing QFT. When they enable Live Captions as a default in every Teams session, they are doing QFT. When they show Immersive Reader to every learner at induction rather than only those with a recorded need, they are doing QFT. The Learning Without Barriers proposal is, at its heart, a practical QFT framework for the digital age.</p>
+</div>
+<div class="pfoot"><span><strong>Weston College · Digital Skills Leadership Toolkit 2026–27</strong> · Graeme Wright, Digital Pedagogy Coach · Quality · Consultation Document</span><span>Section 3 of 5</span></div>
+</div>
+
+<!-- PAGE 4: COACHING PLAN -->
+<div class="page" id="p4">
+<div class="ph pu"><p class="pe">Section 4 · The Coaching Plan</p><h1 class="pt">How I am working through this — <em>four phases</em></h1><p class="pi">The coaching strategy works across four phases, from first contact and Digital Inclusion groundwork through to sustained, showcaseable provision. Phase 1 is substantially complete. The remaining phases depend on the conversations this document starts.</p></div>
+<div class="pb">
+<p class="lead">My approach in every Head of Area meeting is the same. I open the Digital Skills Framework at their area. I ask them to walk me through a typical week and tell me where digital naturally comes up. Then I listen. What I have found so far is that the areas doing the most digital are often the ones that talk about it least — because they do not frame it as digital skills development. The coaching is about surfacing what is already there, connecting it to the evidence frameworks that matter, and building from there.</p>
+<div class="co g"><p class="co-t">Phase 1 — what I have already done</p><p>First contact has been made with all priority curriculum areas. A meeting on Digital Inclusion Practice has been held, covering the Learning Without Barriers approach, WCAG 2.2 AA standards, and the inclusive teaching principles that underpin both proposals. I have been exploring the Jisc Discovery Tool and Digital Experience Insights Survey, ready for rollout at the start of the next academic year. The groundwork is in place.</p></div>
+<div class="phases">
+<div class="pc p1">
+<p class="pn">Phase 1 — Completed this term</p><p class="ptt">Baseline and Outreach</p><p class="pp">Before Easter 2026</p>
+<ul>
+<li>First contact completed with all priority curriculum areas — baseline discovery conversations underway</li>
+<li>Employment Services and Community Education: Teams Foundations session in planning</li>
+<li>Digital Inclusion Practice meeting held — Learning Without Barriers presented as consultation, WCAG 2.2 AA established as the minimum standard</li>
+<li>Jisc Discovery Tool — deployment explored, ready for September 2026 rollout</li>
+<li>Jisc Digital Experience Insights Survey — institutional setup explored, ready for September 2026 launch</li>
+</ul>
+</div>
+<div class="pc p2">
+<p class="pn">Phase 2 — After Easter 2026</p><p class="ptt">High Need, Engaged Areas</p><p class="pp">April to June 2026</p>
+<ul>
+<li>Arts, Graphics and Fashion and Performance and Production: CPD planning, Teams environment review with Digital Lead, visual examples of good practice</li>
+<li>Health (inc. T Level): hands-on coaching preferred; Teams Assignments with rubrics; NHS-relevant digital tools embedded in practice</li>
+<li>Construction Trades and Building Services: distinguish digital access from digital skills development; co-design BIM and QR clock-in tasks</li>
+<li>FIP Supported Employment: hybrid readiness for medical absences; sensitive, learner-centred approach; light-touch evidence strategy</li>
+<li>Engineering and Motor Vehicle: formalise Forms and Copilot model; map EV and ADAS skills to DSF</li>
+<li>Jisc BDC staff self-assessment deployed in engaged areas</li>
+<li>Jisc FE Accessibility Training Matrix Phase 2 begun across staff roles</li>
+</ul>
+</div>
+<div class="pc p3">
+<p class="pn">Phase 3 — Summer Term 2026</p><p class="ptt">Develop and Formalise</p><p class="pp">June to July 2026</p>
+<ul>
+<li>All remaining curriculum areas: structured one-to-one meetings using coaching templates</li>
+<li>Every area to have a named Digital Lead who is not the Head of Area — role description shared, induction planned</li>
+<li>Jisc AI Literacy Module 1 (Foundation Awareness) completed by all teaching staff before any AI tool is adopted into teaching</li>
+<li>Digital Health Check process embedded in the QA cycle, reviewed each half-term by Digital Leads</li>
+<li>Teams environment consistent college-wide: naming conventions, channel structure, Assignments with rubrics, analytics enabled</li>
+</ul>
+</div>
+<div class="pc p4">
+<p class="pn">Phase 4 — September 2026 onwards</p><p class="ptt">Sustain and Showcase</p><p class="pp">Next academic year</p>
+<ul>
+<li>Digital Computing and IT learners active as Digital Champions, supporting at least two other curriculum areas</li>
+<li>Employment Services and Community Education operating as a college exemplar for inclusive digital provision</li>
+<li>Jisc Discovery Tool: all enrolled learners complete in Weeks 1 and 2, profiles reviewed at mid-year and end of year</li>
+<li>Jisc DEI Survey results shared with quality team and leadership — sector benchmark comparison in the picture</li>
+<li>Forms to Excel to Copilot pipeline model replicated in at least three other areas</li>
+</ul>
+</div>
+</div>
+<h2>What success looks like at the end of 2026–27</h2>
+<div class="sl">
+<div class="si"><div class="sn">1</div><div class="st">Every curriculum area has a named, trained Digital Lead who is not the Head of Area. Distributed, sustainable ownership — not everything depending on one coaching relationship.</div></div>
+<div class="si"><div class="sn">2</div><div class="st">Every class Team meets the Digital Health Check standard: welcoming, organised, accessible, with Assignments using rubrics and analytics enabled and reviewed each half-term.</div></div>
+<div class="si"><div class="sn">3</div><div class="st">Digital hours are evidenced and mapped to EDS categories in every area's Business Plan — tracked with the same seriousness as English and Maths progression.</div></div>
+<div class="si"><div class="sn">4</div><div class="st">All areas that had not yet engaged have had at least one structured coaching conversation and submitted a digital skills self-assessment.</div></div>
+<div class="si"><div class="sn">5</div><div class="st">Arts, Graphics and Fashion; Health; Construction and Building Services; and FIP Supported Employment have had structured CPD and can show measurable before-and-after improvement.</div></div>
+<div class="si"><div class="sn">6</div><div class="st">Employment Services and Community Education is operating as a college exemplar for inclusive digital provision — a living example of what QFT and UDL principles look like in a digitally excluded cohort.</div></div>
+<div class="si"><div class="sn">7</div><div class="st">Digital Computing and IT learners are active as Digital Champions supporting at least two other curriculum areas, with a named owner for the Champions KPI and structured, resourced peer support in place.</div></div>
+<div class="si"><div class="sn">8</div><div class="st">The Forms to Excel to Copilot pipeline from Engineering and Motor Vehicle is being used in at least three other areas as a college-wide model for formative assessment and learner gap tracking.</div></div>
+<div class="si"><div class="sn">9</div><div class="st">Infrastructure issues — KN Campus device access, HBH tablet provision, and Copilot licence status — have been formally escalated with evidence and either resolved or have a confirmed timeline for resolution.</div></div>
+<div class="si"><div class="sn">10</div><div class="st">Every Head of Area can answer the question: what digital skills have your learners developed this year, and how do you know? With specific, evidenced examples that map to the EDS Framework.</div></div>
+</div>
+</div>
+<div class="pfoot"><span><strong>Weston College · Digital Skills Leadership Toolkit 2026–27</strong> · Graeme Wright, Digital Pedagogy Coach · Quality · Consultation Document</span><span>Section 4 of 5</span></div>
+</div>
+
+<!-- PAGE 5: SUPPORTING ARGUMENTS -->
+<div class="page" id="p5">
+<div class="ph am"><p class="pe">Section 5 · Supporting Arguments</p><h1 class="pt">The evidence, the context, <em>and the reference layer</em></h1><p class="pi">This section holds the supporting material — the arguments that underpin the proposals, the external evidence, the practical checklist, and the glossary of terms. Use the tabs to navigate.</p></div>
+<div class="pb">
+<div class="tabs" role="tablist" aria-label="Supporting arguments sections">
+<button class="tab on" role="tab" aria-selected="true" onclick="sat(1,this)">IT vs Digital</button>
+<button class="tab" role="tab" aria-selected="false" onclick="sat(2,this)">The Digital Natives Myth</button>
+<button class="tab" role="tab" aria-selected="false" onclick="sat(3,this)">Inspection Evidence</button>
+<button class="tab" role="tab" aria-selected="false" onclick="sat(4,this)">LSIP Context</button>
+<button class="tab" role="tab" aria-selected="false" onclick="sat(5,this)">Checklist</button>
+<button class="tab" role="tab" aria-selected="false" onclick="sat(6,this)">Glossary and Sources</button>
+</div>
+
+<div class="tp on" id="sa1">
+<h3>IT Competence vs Digital Fluency — The Distinction That Matters Most in HoA Conversations</h3>
+<p>The most common starting point in coaching conversations is a Head of Area saying something like "we're not really digital" or "our learners already know how to use technology." Both statements usually reflect the same misunderstanding. Being able to log into Teams is not a digital skill. Being able to use Teams professionally, collaboratively, and accessibly — that is.</p>
+<div class="co p"><p class="co-t">The principle I return to every time</p><p>Never teach the technology. Teach the task that technology enables. A construction learner does not need to learn about QR codes. They need to clock in on site, submit a digital site diary, and order materials from a supplier portal. When it is framed that way, the digital skill is no longer a separate lesson. It is just part of doing the job.</p></div>
+<div class="tw"><table><thead><tr><th>Context</th><th><span class="tag t-it">IT Skill — The Plumbing</span></th><th><span class="tag t-ds">Digital Skill — The Fluency</span></th><th>EDS Category</th></tr></thead><tbody>
+<tr><td>All Areas</td><td>Logging into Teams and opening a document</td><td>Professional digital etiquette: knowing when to use Posts versus Email, appropriate tone, virtual meeting conduct</td><td>Communicating</td></tr>
+<tr><td>Construction (CON / BUI)</td><td>Taking a photo of completed work on a tablet</td><td>BIM digital drawing annotation; QR code clock-in on site; digital site diary submission; materials ordering via supplier portals</td><td>Problem Solving; Transacting</td></tr>
+<tr><td>Engineering and Motor Vehicle (EMV)</td><td>Searching online for a vehicle part name</td><td>OBD II diagnostic data interpretation; EV battery management; ADAS calibration digital workflow</td><td>Handling Information; Problem Solving</td></tr>
+<tr><td>Health (HAC)</td><td>Typing patient notes into a computer</td><td>SystmOne or EMIS electronic record navigation; Caldicott data protection in practice; telehealth protocols; MAR chart software</td><td>Being Safe and Legal; Handling Information</td></tr>
+<tr><td>Business and Tourism (BUS)</td><td>Creating a basic spreadsheet in Excel</td><td>Xero or QuickBooks bookkeeping; Power BI dashboard interpretation; CRM pipeline management; AI for data analysis and professional drafting</td><td>Handling Information; Transacting</td></tr>
+<tr><td>Academic (AHE / SMS)</td><td>Typing an essay in Word</td><td>AI literacy: verifying outputs, disclosing synthetic content, using Turnitin; Zotero reference management; academic database searching</td><td>Handling Information; Being Safe and Legal</td></tr>
+<tr><td>FIP (FAU / FCO / FPL)</td><td>Using a tablet to watch a learning video</td><td>AAC communication via Proloquo2Go or Grid 3; Tobii eye-gaze for participation; Immersive Reader for independent access to written materials</td><td>All EDS categories via adaptive technology</td></tr>
+<tr><td>Hair, Beauty and Hospitality (HBH)</td><td>Sending a client a WhatsApp message</td><td>Fresha or Treatwell professional booking management; EPOS end-of-day reconciliation; Instagram and TikTok as professional client acquisition; HMRC Making Tax Digital</td><td>Transacting; Communicating</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="tp" id="sa2">
+<h3>The Digital Natives Myth — Why We Cannot Assume Competency at Enrolment</h3>
+<p>The assumption that young people are digitally competent because they are digitally connected is one of the most consequential misconceptions in Further Education. What I have found in practice is that learners are often expert in recreational digital spaces and largely lost in professional ones. The gap is not always visible at enrolment — it tends to show up when they are asked to do something functional with technology for a vocational purpose.</p>
+<div class="co a"><p class="co-t">The mobile phone context</p><p>The <a href="https://www.gov.uk/government/publications/mobile-phones-in-schools" target="_blank" rel="noopener">DfE 2024 guidance</a> encouraging secondary schools to restrict mobile phones has had broadly positive wellbeing outcomes. But without planned replacement through structured desktop and laptop digital skills development, many learners arriving at Weston College in 2025–26 have spent their final school years in mobile-reduced environments — and without the professional digital tool competencies that employers expect from day one. That is a gap we need to plan for, not assume away.</p></div>
+<div class="tw"><table><thead><tr><th>The Assumption</th><th>The Reality</th><th>Evidence</th><th>What the DSF Proposes</th></tr></thead><tbody>
+<tr><td>"They grew up with technology — they're already digital"</td><td>Recreational tech fluency (TikTok, gaming, social media) does not transfer to professional or academic digital practice. Learners are Digital Tourists — expert visitors in recreational spaces, lost in professional ones.</td><td><a href="https://www.jisc.ac.uk/reports/digital-experience-insights-survey-2024-25" target="_blank" rel="noopener">Jisc DEI Survey 2024–25</a>; Jisc DigiFest 2026 keynote data</td><td>Jisc Discovery Tool learner baseline in Weeks 1–2, giving us actual evidence rather than assumption</td></tr>
+<tr><td>"They can use Teams — they'll be fine"</td><td>File management is a genuine crisis for mobile-first learners. Folder structures, naming conventions, cloud versus local storage, version control — skills assumed but almost never explicitly taught.</td><td><a href="https://www.ipsos.com/en-uk/essential-digital-skills-work-2024" target="_blank" rel="noopener">Ipsos / Lloyds EDS for Work 2024</a></td><td>DSF Section 2 treats Digital Productivity Tools as an explicit, taught skill — not a background assumption</td></tr>
+<tr><td>"Email is outdated — messaging is fine"</td><td>Learners lack digital code-switching — the ability to shift from informal messaging to professional email and workplace platform etiquette. A genuine employability gap.</td><td><a href="https://set.et-foundation.co.uk/set-news/new-framework-launched-to-help-fe-and-training-staff-develop-their-practice-using-technology" target="_blank" rel="noopener">ETF DTPF</a>; WEF Future of Jobs 2025</td><td>DSF Section 2 names Professional Communication as a skill to be developed, not assumed</td></tr>
+<tr><td>"They use AI constantly — it's under control"</td><td>Passive AI reliance is the real issue. Learners use AI as an answer engine rather than a thinking partner. AI hallucinations appear in submitted work without critical verification. A direct inspection risk under the renewed EIF.</td><td><a href="https://www.jisc.ac.uk/ai-in-tertiary-education" target="_blank" rel="noopener">Jisc AI in Tertiary Education 2025</a></td><td>DSF ranks AI Literacy as the top priority digital skill — not because AI is good, but because critical engagement with it is essential</td></tr>
+<tr><td>"SEND learners struggle because of their needs, not digital"</td><td>Without proactive accessibility design, digital tools add barriers on top of existing ones. The Post-16 White Paper's digital assumptions actively compound exclusion for SEND and ESOL learners not considered in those assumptions.</td><td>Learning Without Barriers proposal; <a href="https://accessibility.jiscinvolve.org" target="_blank" rel="noopener">Jisc FE Accessibility Training Matrix Phase 2</a></td><td>DSF Section 6 and the Learning Without Barriers proposal address this through WCAG 2.2 AA as a non-negotiable standard</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="tp" id="sa3">
+<h3>Inspection Evidence — Where We Are Strong and Where the Gaps Are</h3>
+<p>Rather than rehearse the EIF, I want to set out honestly where our position on digital skills development is strong and where it is not — because that honest picture is what makes the proposals in this document worth having the conversation about.</p>
+<div class="co r"><p class="co-t">The honest assessment</p><p>Our position on digital skills within the Report Card is uneven. In areas with engaged Heads of Area — Engineering and Motor Vehicle, Employment Services, Digital Computing and IT — there is genuine, evidenceable digital skills development happening. In areas that have not yet engaged with coaching conversations, there is very little that could currently be demonstrated to an inspector as systematic digital skills development. The coaching strategy exists to change that. But it needs institutional endorsement to do it at pace and at scale.</p></div>
+<div class="og">
+<div class="oc"><div class="oh c1">Curriculum and Teaching</div><div class="ob"><strong>What we have:</strong> The DSF maps all 30 areas to EDS categories — curriculum intent evidence for digital skills. The coaching strategy provides the implementation mechanism.<br><br><strong>The gap:</strong> Curriculum intent is only as strong as HoA engagement. Areas not yet in coaching conversations have no named digital hours in Business Plans.</div><div class="oe">DSF Tab 3 mapping is the evidence of planned curriculum intent</div></div>
+<div class="oc"><div class="oh c2">Inclusion — Standalone Grade</div><div class="ob"><strong>What we have:</strong> Learning Without Barriers proposal; strong assistive technology provision in FIP; our SEND Centre of Excellence heritage.<br><br><strong>The gap:</strong> Inconsistency across areas in resource accessibility. WCAG 2.2 AA is not yet a universal standard. ESOL digital access is not systematically addressed.</div><div class="oe">Learning Without Barriers three-pillar approach is the direct response to this gap</div></div>
+<div class="oc"><div class="oh c3">Achievement</div><div class="ob"><strong>What we have:</strong> Teams Assignments analytics available in areas using Assignments with rubrics. Forms quiz data exists where used for formative assessment.<br><br><strong>The gap:</strong> Digital skills progress is not tracked systematically. No consistent pre/post evidence mechanism exists yet.</div><div class="oe">Jisc Discovery Tool (September 2026 rollout) addresses this directly</div></div>
+<div class="oc"><div class="oh c4">Personal Development</div><div class="ob"><strong>What we have:</strong> Digital identity, online safety, AI literacy, and digital wellbeing are embedded in the DSF. Post-release digital employability skills addressed in Employment Services.<br><br><strong>The gap:</strong> Consistent evidencing across all areas — not just the engaged ones.</div><div class="oe">DSF Skill 10 framing connects directly to personal development evidence</div></div>
+<div class="oc"><div class="oh c5">Attendance and Behaviour</div><div class="ob"><strong>What we have:</strong> Teams hybrid capability exists. FIP Supported Employment has a genuine hybrid need for learners with medical absences — Teams-enabled access is a direct response.<br><br><strong>The gap:</strong> Hybrid readiness is inconsistent across areas. Not all staff have the Teams skills to deliver in a hybrid context confidently.</div><div class="oe">Teams Foundations CPD and Digital Lead training addresses this gap directly</div></div>
+<div class="oc"><div class="oh c6">Staff Wellbeing — New in 2025 EIF</div><div class="ob"><strong>What we have:</strong> AI productivity tools available (Copilot, pending licence clarity). Auto-marking through Forms reduces assessment admin. Teams Assignments analytics reduce manual tracking.<br><br><strong>The gap:</strong> Copilot licence status is unresolved. Staff cannot use AI tools confidently until institutional policy is confirmed and Jisc AI Literacy Module 1 is in place.</div><div class="oe">Copilot licence clarification is an urgent action — it blocks multiple other things</div></div>
+</div>
+</div>
+
+<div class="tp" id="sa4">
+<h3>West of England LSIP Context — Questions, Not Assumptions</h3>
+<p>The cards below represent what regional employers have told the <a href="https://www.businesswest.co.uk/grow/LSIP/lsip-west-england" target="_blank" rel="noopener">West of England and North Somerset LSIP</a> (led by Business West) they need from a future workforce in terms of digital skills. They are prompts for HoA conversations — not assertions about what we are currently delivering. Every statement here needs to be tested: is this digital skills territory covered in your learners' programmes? If so, where and how?</p>
+<div class="tw"><table><thead><tr><th>LSIP Priority Sector</th><th>What employers say they need (to be verified in HoA conversations)</th><th>Areas</th><th>Source</th></tr></thead><tbody>
+<tr><td><strong>Aerospace and Advanced Engineering</strong></td><td>CAD/CAM proficiency; IoT sensor data reading; ERP/MRP data entry; digital quality documentation. GKN, Rolls-Royce, Airbus, and BAE name digital fluency as an entry-level expectation. BIM Level 2 is a UK government procurement requirement.</td><td><span class="tc">EHE EFE ENG EMV BUI CON</span></td><td><a href="https://www.westofengland-ca.gov.uk/about-us/our-strategy/west-of-england-growth-plan/priority-growth-sectors/" target="_blank" rel="noopener">WECA Growth Sectors</a></td></tr>
+<tr><td><strong>Health and Social Care</strong></td><td>Electronic patient records (SystmOne, EMIS); e-prescribing; GDPR and Caldicott compliance; telehealth platforms. NHS Digital strategy mandates electronic record-keeping across all settings.</td><td><span class="tc">HAC EEY FEH ANM</span></td><td><a href="https://www.businesswest.co.uk/grow/LSIP/local-skills-improvement-plan-trailblazer" target="_blank" rel="noopener">LSIP Trailblazer Report</a></td></tr>
+<tr><td><strong>Digital and Technology</strong></td><td>AI orchestration; data dashboarding; cloud platforms (Azure, AWS); cybersecurity awareness; no-code automation tools. The Epic Campus development in North Somerset is projected to create 2,000+ technology jobs in the area.</td><td><span class="tc">DCI BUS SKB PRA SMS AHE</span></td><td><a href="https://www.westofengland-ca.gov.uk/about-us/our-strategy/west-of-england-growth-plan/priority-growth-sectors/" target="_blank" rel="noopener">WECA Priority Growth Sectors</a></td></tr>
+<tr><td><strong>Green Skills (cross-cutting)</strong></td><td>BREEAM digital sustainability tools; carbon calculation software; energy modelling; digital survey and drone measurement; EV battery management systems. North Somerset Economic Growth Plan names Green and Blue Economy as a priority sector.</td><td><span class="tc">BUI CON EMV EHE</span></td><td><a href="https://innorthsomerset.co.uk/wp-content/uploads/2025/10/North-Somerset-Economic-Growth-Plan-2025-2035.pdf" target="_blank" rel="noopener">North Somerset Growth Plan 2025–2035</a></td></tr>
+<tr><td><strong>Creative and Cultural Industries</strong></td><td>Adobe Creative Suite; Unity or Unreal Engine; Git version control; AI-assisted creative tools with intellectual property literacy. Creative Entrepreneurship Report 2025 identifies digital skills as the primary gap in the regional creative sector.</td><td><span class="tc">AGF GMA PAP</span></td><td><a href="https://www.businesswest.co.uk/grow/LSIP/lsip-west-england" target="_blank" rel="noopener">Business West LSIP</a></td></tr>
+<tr><td><strong>Foundational Economy and Inclusion</strong></td><td>The Foundational Economy represents 68% of the North Somerset workforce. ESOL and SEND learners face compounded digital exclusion. Post-16 digital inclusion is the precondition for equitable access to every other LSIP priority sector pipeline.</td><td><span class="tc">FIP ESO CED PRE SKB</span></td><td><a href="https://innorthsomerset.co.uk/wp-content/uploads/2025/10/North-Somerset-Economic-Growth-Plan-2025-2035.pdf" target="_blank" rel="noopener">North Somerset Growth Plan 2025–2035</a></td></tr>
+</tbody></table></div>
+</div>
+
+<div class="tp" id="sa5">
+<h3>Strategic Checklist 2026–27</h3>
+<p>For use in quality reviews and planning conversations. Items are interactive — tick them as they are achieved.</p>
+<div class="cg"><p class="cgt">Baseline and Evidence — Ready for September 2026</p>
+<div class="ci"><input type="checkbox" class="cb" id="c1"><div class="cl"><label for="c1"><strong>Jisc Discovery Tool deployed in Weeks 1–2 of September 2026 across all curriculum areas</strong></label><span>Every learner completes a personal digital profile. Free for Jisc subscribers. Approximately 20 minutes. Provides the only systematic pre/post evidence for digital skills progression currently available to us.</span></div><span class="cpri cr">Priority 1</span></div>
+<div class="ci"><input type="checkbox" class="cb" id="c2"><div class="cl"><label for="c2"><strong>Jisc DEI Survey launched September 2026 — results shared with quality team at end of autumn term</strong></label><span>Sector-benchmarked learner and staff digital experience data. Identifies gaps in device access and connectivity that we currently do not have visibility of.</span></div><span class="cpri cr">Priority 1</span></div>
+<div class="ci"><input type="checkbox" class="cb" id="c3"><div class="cl"><label for="c3"><strong>Digital hours evidenced and mapped to EDS categories in every area's Business Plan</strong></label><span>Tracked alongside English and Maths progression. Teams Assignments analytics as the primary evidence source. DSF Tab 3 mapping provides the shared language for all 30 areas.</span></div><span class="cpri cr">Priority 1</span></div>
+</div>
+<div class="cg"><p class="cgt">Digital Leads — Named, Trained, Active</p>
+<div class="ci"><input type="checkbox" class="cb" id="c4"><div class="cl"><label for="c4"><strong>Every curriculum area has a named, trained Digital Lead who is not the Head of Area</strong></label><span>Distributed, sustainable ownership. Digital Lead role description agreed. Teams Digital Health Check process trained. Without this, everything depends on one coaching relationship and does not survive staff changes.</span></div><span class="cpri cr">Priority 1</span></div>
+<div class="ci"><input type="checkbox" class="cb" id="c5"><div class="cl"><label for="c5"><strong>Digital Champions programme has a named owner and an assigned KPI</strong></label><span>Currently unassigned. Without a strategic home and named ownership, the programme cannot scale safely or sustainably.</span></div><span class="cpri cr">Priority 1</span></div>
+</div>
+<div class="cg"><p class="cgt">Inclusion and Accessibility — Non-Negotiable</p>
+<div class="ci"><input type="checkbox" class="cb" id="c6"><div class="cl"><label for="c6"><strong>Immersive Reader demonstrated to every learner as a standard induction step in every curriculum area</strong></label><span>Free, built into Teams, Word, and OneNote. Text-to-speech, translation into 100+ languages, text spacing. Benefits all learners — not only those with identified learning needs. Zero cost, immediate impact.</span></div><span class="cpri cr">Priority 1</span></div>
+<div class="ci"><input type="checkbox" class="cb" id="c7"><div class="cl"><label for="c7"><strong>All digital resources pass the WCAG 2.2 AA Accessibility Checker before they are uploaded or shared</strong></label><span>Alt-text on all images, minimum 4.5:1 colour contrast for normal text, correct heading structure, captions on all video. Built into the QA resource checklist. The Accessibility Checker is free and built into all Office applications.</span></div><span class="cpri cr">Priority 1</span></div>
+<div class="ci"><input type="checkbox" class="cb" id="c8"><div class="cl"><label for="c8"><strong>Assistive technology staff training embedded as whole-curriculum professional development, not optional CPD</strong></label><span>Proloquo2Go, Tobii eye-gaze, Clicker and Widgit, Read&amp;Write. A professional standard for all staff working with any FIP cohort. Directly relevant to the standalone Ofsted Inclusion grade.</span></div><span class="cpri cr">Priority 1</span></div>
+<div class="ci"><input type="checkbox" class="cb" id="c9"><div class="cl"><label for="c9"><strong>Weston College registered with Good Things Foundation National Digital Inclusion Network</strong></label><span>Free. Unlocks the National Databank (free SIM cards and data for learners without connectivity), Learn My Way for ESOL learners, and Digital Champion training resources.</span></div><span class="cpri ca">Priority 2</span></div>
+</div>
+<div class="cg"><p class="cgt">AI Literacy — Foundation Before Tools</p>
+<div class="ci"><input type="checkbox" class="cb" id="c10"><div class="cl"><label for="c10"><strong>Copilot licence status confirmed with IT and communicated clearly to all Heads of Area</strong></label><span>The Copilot Shield data deletion policy needs clarification. Heads of Area cannot safely advise learners on AI tool use until this is resolved. This is an urgent governance action.</span></div><span class="cpri cr">Priority 1</span></div>
+<div class="ci"><input type="checkbox" class="cb" id="c11"><div class="cl"><label for="c11"><strong>Jisc AI Literacy Module 1 completed by all teaching staff before AI tools are adopted into teaching</strong></label><span>AI literacy starts before the tool, not alongside it. Free via Jisc institutional access. This is the prerequisite for confident, ethical AI use in any teaching context.</span></div><span class="cpri ca">Priority 2</span></div>
+</div>
+<div class="cg"><p class="cgt">Infrastructure — Actions for Leadership</p>
+<div class="ci"><input type="checkbox" class="cb" id="c12"><div class="cl"><label for="c12"><strong>KN Campus digital access issues formally escalated with evidence</strong></label><span>Unreliable laptops and limited computer room availability affecting Sixth Form and Hair, Beauty and Hospitality at Knightstone Campus. An infrastructure barrier and a potential Ofsted Inclusion risk.</span></div><span class="cpri cr">Priority 1</span></div>
+<div class="ci"><input type="checkbox" class="cb" id="c13"><div class="cl"><label for="c13"><strong>Software licence directory produced for the Faculty of Inclusive Practice</strong></label><span>FIP staff do not have a clear picture of what software licences are available to them. Specialist assistive technology tools may be available but unused. This needs to be produced and shared urgently.</span></div><span class="cpri ca">Priority 2</span></div>
+</div>
+</div>
+
+<div class="tp" id="sa6">
+<h3>Glossary — Key Terms and Acronyms</h3>
+<p>Every acronym and technical term used in this document, explained in plain English.</p>
+<div class="gg">
+<div class="gi"><p class="gt">AAC</p><abbr class="ga">Augmentative and Alternative Communication</abbr><p class="gd">Technology supporting learners who cannot rely on spoken language. Examples: Proloquo2Go, Grid 3, Tobii eye-gaze systems. Central to FIP Autism and Complex Needs provision.</p></div>
+<div class="gi"><p class="gt">ADAS</p><abbr class="ga">Advanced Driver Assistance Systems</abbr><p class="gd">Electronic safety systems fitted to modern vehicles (lane-keeping, emergency braking, parking sensors). Require specialist digital calibration after any vehicle repair. Now a mandatory EMV competency.</p></div>
+<div class="gi"><p class="gt">AI</p><abbr class="ga">Artificial Intelligence</abbr><p class="gd">Computer systems performing tasks that typically require human intelligence. AI Literacy means knowing how to use these tools critically and ethically — not just that they exist.</p></div>
+<div class="gi"><p class="gt">ASF</p><abbr class="ga">Adult Skills Fund</abbr><p class="gd">The primary DfE funding stream for adult skills provision, replacing the Adult Education Budget from August 2024. Skills Bootcamps are ASF-funded. Being devolved to Mayoral Combined Authorities from 2025.</p></div>
+<div class="gi"><p class="gt">BDC</p><abbr class="ga">Building Digital Capability (Jisc)</abbr><p class="gd">Jisc framework and self-assessment tool for measuring digital capabilities in learners and staff. The Discovery Tool is the learner-facing component. Free for Jisc subscribers. <a href="https://digitalcapability.jisc.ac.uk/" target="_blank" rel="noopener">digitalcapability.jisc.ac.uk</a></p></div>
+<div class="gi"><p class="gt">BIM</p><abbr class="ga">Building Information Modelling</abbr><p class="gd">Digital process for creating and managing construction project information. BIM Level 2 is a legal requirement for all UK government-funded construction projects. Software: Autodesk Revit, AutoCAD.</p></div>
+<div class="gi"><p class="gt">CPD</p><abbr class="ga">Continuing Professional Development</abbr><p class="gd">Structured activities maintaining and advancing professional knowledge and skills. In this document, refers specifically to staff digital skills development: Jisc AI Literacy modules, ETF Enhance pathways, and Microsoft Learn for Educators courses.</p></div>
+<div class="gi"><p class="gt">DEI Survey</p><abbr class="ga">Digital Experience Insights Survey (Jisc)</abbr><p class="gd">Sector-benchmarked survey of learner and staff digital experience. Free for Jisc subscribers. Evidence for Ofsted Inclusion and Achievement grades. <a href="https://www.jisc.ac.uk/digital-experience-insights" target="_blank" rel="noopener">jisc.ac.uk/digital-experience-insights</a></p></div>
+<div class="gi"><p class="gt">DigComp 3.0</p><abbr class="ga">European Digital Competence Framework</abbr><p class="gd">European Commission framework for digital competence, updated November 2025. Five levels from Foundation to Highly Advanced. Used in DSF Tab 7. <a href="https://joint-research-centre.ec.europa.eu/digcomp_en" target="_blank" rel="noopener">EC DigComp</a></p></div>
+<div class="gi"><p class="gt">DSF</p><abbr class="ga">Digital Skills Framework</abbr><p class="gd">The Weston College Digital Skills Framework — produced by the Digital Pedagogy Coach as a consultation document. Maps all 30 curriculum areas to EDS categories and industry-specific tools. A coaching tool, not a policy document.</p></div>
+<div class="gi"><p class="gt">DTPF</p><abbr class="ga">Digital Teaching Professional Framework (ETF)</abbr><p class="gd">Education and Training Foundation framework for teacher digital competence in FE. Four stages: Exploring, Adopting (Developing), Adopting (Embedding), Leading. <a href="https://enhance.etfoundation.co.uk" target="_blank" rel="noopener">ETF Enhance Platform</a></p></div>
+<div class="gi"><p class="gt">EDS</p><abbr class="ga">Essential Digital Skills Framework (DfE)</abbr><p class="gd">DfE framework defining minimum digital skills for employment and life. Five categories: Communicating; Handling Information; Transacting; Problem Solving; Being Safe and Legal Online. <a href="https://www.gov.uk/government/publications/essential-digital-skills-framework" target="_blank" rel="noopener">gov.uk EDS</a></p></div>
+<div class="gi"><p class="gt">EIF</p><abbr class="ga">Education Inspection Framework (Ofsted)</abbr><p class="gd">Ofsted's inspection framework, renewed November 2025. Replaced single-word judgements with a five-point Report Card across six evaluation areas. Safeguarding judged separately as Met or Not Met. <a href="https://www.gov.uk/government/publications/education-inspection-framework" target="_blank" rel="noopener">GOV.UK EIF</a></p></div>
+<div class="gi"><p class="gt">EPA</p><abbr class="ga">End Point Assessment</abbr><p class="gd">The final assessment of an apprenticeship standard, conducted by an independent assessor. All EPA standards require digital evidence — ePortfolios, digital CPD logs, and Smart Assessor records are the primary mechanisms.</p></div>
+<div class="gi"><p class="gt">ESOL</p><abbr class="ga">English for Speakers of Other Languages</abbr><p class="gd">English language learning for adults whose first language is not English. ESOL learners face compound barriers: language and digital exclusion simultaneously. 118,220 learners nationally (DfE 2025).</p></div>
+<div class="gi"><p class="gt">EV</p><abbr class="ga">Electric Vehicle</abbr><p class="gd">A vehicle powered entirely or partly by an electric motor. EV diagnostics are entirely digital — battery management and ADAS calibration require new digital competencies that are now non-negotiable for all modern vehicle technicians.</p></div>
+<div class="gi"><p class="gt">GDPR</p><abbr class="ga">General Data Protection Regulation</abbr><p class="gd">UK and EU legal framework governing collection, storage, and use of personal data. All staff and learners handling personal data must understand their GDPR obligations.</p></div>
+<div class="gi"><p class="gt">HoA</p><abbr class="ga">Head of Area</abbr><p class="gd">The curriculum leader responsible for a specific subject area at Weston College. The primary audience for digital pedagogy coaching conversations and the gateway to embedded digital skills development for learners in their area.</p></div>
+<div class="gi"><p class="gt">LSIP</p><abbr class="ga">Local Skills Improvement Plan</abbr><p class="gd">DfE-funded, employer-led research identifying local skills gaps and post-16 training priorities. The West of England and North Somerset LSIP is led by Business West. <a href="https://www.businesswest.co.uk/grow/LSIP/lsip-west-england" target="_blank" rel="noopener">businesswest.co.uk LSIP</a></p></div>
+<div class="gi"><p class="gt">MTD</p><abbr class="ga">Making Tax Digital (HMRC)</abbr><p class="gd">HMRC programme requiring digital VAT submission and tax record-keeping. Mandatory for all self-employed practitioners from 2026. A direct employability digital skill for HBH learners who will trade as self-employed practitioners.</p></div>
+<div class="gi"><p class="gt">OBD II</p><abbr class="ga">On-Board Diagnostics Version 2</abbr><p class="gd">Standardised digital diagnostic port fitted to all vehicles from 1996. OBD II scanners read fault codes, live data, and sensor outputs. Modern vehicles cannot be diagnosed without one — a non-negotiable digital skill for all EMV learners.</p></div>
+<div class="gi"><p class="gt">QFT</p><abbr class="ga">Quality First Teaching</abbr><p class="gd">A whole-class teaching approach ensuring all learners access high-quality, inclusive, differentiated teaching without requiring separate intervention. The Learning Without Barriers proposal aligns digital practice to QFT principles throughout.</p></div>
+<div class="gi"><p class="gt">SEND</p><abbr class="ga">Special Educational Needs and Disabilities</abbr><p class="gd">Learners who have additional learning, physical, sensory, or social and emotional needs. Weston is a former SEND Centre of Excellence. Digital inclusion for SEND learners is a direct obligation under the renewed Ofsted Inclusion grade.</p></div>
+<div class="gi"><p class="gt">SLT</p><abbr class="ga">Senior Leadership Team</abbr><p class="gd">The college's senior management team responsible for strategic direction, resource allocation, and quality oversight.</p></div>
+<div class="gi"><p class="gt">TLAM</p><abbr class="ga">Teaching, Learning and Assessment Manager</abbr><p class="gd">The role responsible for quality of teaching, learning, and assessment within a faculty or group of curriculum areas. Key partner in embedding digital skills development into area quality cycles.</p></div>
+<div class="gi"><p class="gt">UDL</p><abbr class="ga">Universal Design for Learning</abbr><p class="gd">A research-backed framework for designing learning that works for all learners from the outset. Three principles: multiple means of representation, action and expression, and engagement. <a href="https://udlguidelines.cast.org" target="_blank" rel="noopener">udlguidelines.cast.org</a></p></div>
+<div class="gi"><p class="gt">WCAG 2.2 AA</p><abbr class="ga">Web Content Accessibility Guidelines</abbr><p class="gd">International standard for accessible digital content. Level AA is legally required for UK public sector organisations. Key requirements: 4.5:1 colour contrast, alt-text on images, correct heading structure, captions on video. <a href="https://www.w3.org/WAI/WCAG22/quickref/" target="_blank" rel="noopener">WCAG 2.2 Quick Reference</a></p></div>
+<div class="gi"><p class="gt">WEF</p><abbr class="ga">World Economic Forum</abbr><p class="gd">International organisation publishing the biennial Future of Jobs Report. The 2025 edition identifies AI Orchestration, Big Data, and Digital Literacy as the top three fastest-growing skills globally for 2025–2030. <a href="https://www.weforum.org/publications/the-future-of-jobs-report-2025/" target="_blank" rel="noopener">WEF Future of Jobs 2025</a></p></div>
+<div class="gi"><p class="gt">21CLD</p><abbr class="ga">21st Century Learning Design</abbr><p class="gd">A research framework identifying learning activities most likely to develop the skills learners need for work and life: knowledge building, real-world problem-solving, skilled communication, collaboration, use of ICT for learning, and self-regulation.</p></div>
+</div>
+<div class="src">
+<h4>Verified External Sources — All links checked March 2026</h4>
+<h4 style="margin-top:16px">National Policy</h4>
+<ol>
+<li><a href="https://www.gov.uk/government/publications/skills-england-priorities-for-2025-to-2026" target="_blank" rel="noopener">Skills England Priorities 2025–2026 — GOV.UK</a></li>
+<li><a href="https://www.gov.uk/government/publications/education-inspection-framework/education-inspection-framework-for-use-from-november-2025" target="_blank" rel="noopener">Ofsted Renewed Education Inspection Framework (November 2025) — GOV.UK</a></li>
+<li><a href="https://www.gov.uk/government/publications/further-education-and-skills-inspection-handbook" target="_blank" rel="noopener">Further Education and Skills Inspection Handbook — GOV.UK</a></li>
+<li><a href="https://www.gov.uk/government/publications/essential-digital-skills-framework" target="_blank" rel="noopener">DfE Essential Digital Skills Framework — GOV.UK</a></li>
+<li><a href="https://www.gov.uk/government/publications/post-16-education-and-skills-white-paper" target="_blank" rel="noopener">Post-16 Education and Skills White Paper (November 2025) — GOV.UK</a></li>
+<li><a href="https://www.gov.uk/government/publications/mobile-phones-in-schools" target="_blank" rel="noopener">DfE Mobile Phones in Schools Guidance (2024) — GOV.UK</a></li>
+<li><a href="https://explore-education-statistics.service.gov.uk/find-statistics/further-education-and-skills/2024-25" target="_blank" rel="noopener">DfE Further Education and Skills Statistics 2024–25</a></li>
+</ol>
+<h4 style="margin-top:16px">Research and Frameworks</h4>
+<ol start="8">
+<li><a href="https://www.weforum.org/publications/the-future-of-jobs-report-2025/" target="_blank" rel="noopener">WEF Future of Jobs Report 2025</a></li>
+<li><a href="https://futuredotnow.uk/embedding-ai-into-theessential-digital-skills-framework/" target="_blank" rel="noopener">FutureDotNow AI-Updated EDS Framework (October 2025)</a></li>
+<li><a href="https://joint-research-centre.ec.europa.eu/digcomp_en" target="_blank" rel="noopener">DigComp 3.0 — European Commission Joint Research Centre (November 2025)</a></li>
+<li><a href="https://digitalcapability.jisc.ac.uk/" target="_blank" rel="noopener">Jisc Building Digital Capability — Discovery Tool</a></li>
+<li><a href="https://www.jisc.ac.uk/digital-experience-insights" target="_blank" rel="noopener">Jisc Digital Experience Insights Survey</a></li>
+<li><a href="https://www.jisc.ac.uk/ai-in-tertiary-education" target="_blank" rel="noopener">Jisc AI in Tertiary Education 2025 — AI Literacy Modules 1–3</a></li>
+<li><a href="https://accessibility.jiscinvolve.org" target="_blank" rel="noopener">Jisc FE Accessibility Training Matrix Phase 2</a></li>
+<li><a href="https://www.ipsos.com/en-uk/essential-digital-skills-work-2024" target="_blank" rel="noopener">Ipsos / Lloyds Bank Essential Digital Skills for Work 2024</a></li>
+<li><a href="https://set.et-foundation.co.uk/set-news/new-framework-launched-to-help-fe-and-training-staff-develop-their-practice-using-technology" target="_blank" rel="noopener">ETF Digital Teaching Professional Framework (DTPF)</a></li>
+<li><a href="https://joint-research-centre.ec.europa.eu/digcompedu_en" target="_blank" rel="noopener">DigCompEdu — European Framework for Educator Digital Competence</a></li>
+<li><a href="https://enhance.etfoundation.co.uk" target="_blank" rel="noopener">ETF Enhance Digital Teaching CPD Platform (free for FE staff)</a></li>
+<li><a href="https://udlguidelines.cast.org" target="_blank" rel="noopener">UDL Guidelines — CAST</a></li>
+<li><a href="https://www.w3.org/WAI/WCAG22/quickref/" target="_blank" rel="noopener">WCAG 2.2 Quick Reference — W3C</a></li>
+</ol>
+<h4 style="margin-top:16px">Regional and Local</h4>
+<ol start="21">
+<li><a href="https://www.businesswest.co.uk/grow/LSIP/lsip-west-england" target="_blank" rel="noopener">West of England and North Somerset LSIP — Business West</a></li>
+<li><a href="https://www.businesswest.co.uk/grow/LSIP/local-skills-improvement-plan-trailblazer" target="_blank" rel="noopener">West of England Plus LSIP Trailblazer Report — Business West</a></li>
+<li><a href="https://www.westofengland-ca.gov.uk/about-us/our-strategy/west-of-england-growth-plan/priority-growth-sectors/" target="_blank" rel="noopener">West of England Priority Growth Sectors — WECA</a></li>
+<li><a href="https://innorthsomerset.co.uk/wp-content/uploads/2025/10/North-Somerset-Economic-Growth-Plan-2025-2035.pdf" target="_blank" rel="noopener">North Somerset Economic Growth Plan 2025–2035</a></li>
+</ol>
+<h4 style="margin-top:16px">Free Tools Referenced</h4>
+<ol start="25">
+<li><a href="https://idea.org.uk" target="_blank" rel="noopener">iDEA Award — Digital badges: Citizen, Worker, Maker</a></li>
+<li><a href="https://education.microsoft.com" target="_blank" rel="noopener">Microsoft Learn for Educators — Free staff CPD</a></li>
+<li><a href="https://learndigital.withgoogle.com/digitalgarage" target="_blank" rel="noopener">Google Digital Garage — Free digital skills courses</a></li>
+<li><a href="https://www.goodthingsfoundation.org" target="_blank" rel="noopener">Good Things Foundation — Digital Inclusion Network, Learn My Way, National Databank</a></li>
+</ol>
+</div>
+</div>
+
+</div>
+<div class="pfoot"><span><strong>Weston College · Digital Skills Leadership Toolkit 2026–27</strong> · Graeme Wright, Digital Pedagogy Coach · Quality · Consultation Document</span><span>Section 5 of 5 · WCAG 2.2 AA</span></div>
+</div>
+</main>
+<script>
+let cur=0;const total=6;
+function go(n){document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('on',i===n));document.querySelectorAll('.nb').forEach((b,i)=>{b.classList.toggle('on',i===n);b.setAttribute('aria-current',i===n?'page':'false')});cur=n;document.getElementById('pfill').style.width=((n+1)/total*100).toFixed(1)+'%';document.querySelector('.pw').setAttribute('aria-valuenow',n+1);window.scrollTo({top:0,behavior:'smooth'})}
+function next(){if(cur<total-1)go(cur+1)}function prev(){if(cur>0)go(cur-1)}
+function dst(n,btn){document.querySelectorAll('#p2 > .pb > .tabs ~ .tp').forEach((p,i)=>p.classList.toggle('on',i===n-1));document.querySelectorAll('#p2 > .pb > .tabs .tab').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-selected','false')});btn.classList.add('on');btn.setAttribute('aria-selected','true')}
+function cat(n,btn){['ca1','ca2','ca3','ca4','ca5','ca6','ca7','ca8','ca9'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',i===n-1)});btn.parentElement.querySelectorAll('.tab').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-selected','false')});btn.classList.add('on');btn.setAttribute('aria-selected','true')}
+function sat(n,btn){document.querySelectorAll('#p5 > .pb > .tabs ~ .tp').forEach((p,i)=>p.classList.toggle('on',i===n-1));document.querySelectorAll('#p5 > .pb > .tabs .tab').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-selected','false')});btn.classList.add('on');btn.setAttribute('aria-selected','true')}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')next();if(e.key==='ArrowLeft'||e.key==='ArrowUp')prev()});
+</script>
+</body>
+</html>

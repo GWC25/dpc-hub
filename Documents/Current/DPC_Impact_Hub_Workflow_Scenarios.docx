@@ -1,0 +1,120 @@
+**DPC Impact Hub**
+
+How the system works — three workflow scenarios
+
+Graeme Wright  ·  Digital Pedagogy Coach  ·  Quality & Innovation  ·  Weston College Group  ·  June 2026
+
+*This document maps three core workflows through the DPC Impact Hub, showing how observation, assessment, and professional conversations connect to structured interventions, staff reflections, and demonstrable impact. Each flow produces a complete evidence chain — from first trigger to measurable outcome — feeding into audience-specific reports for Neil, Digital Leads, APs, and Ben Manning.*
+
+**Scenario 1   Learning Walk → Dev Obs → AFI → Intervention → Impact**
+
+The most common coaching cycle. Starts with an informal observation, develops into a structured developmental conversation, identifies a TLA gap, selects a matched response, and closes with evidence that something changed.
+
+| 🚶 **Learning Walk** Quick capture Six Stage tag | **→** | 🔍 **Dev Obs** Timestamped rows Hyper themes | **→** | ⚑ **AFI Identified** Stage + description Digital opportunity? | **→** | 🎯 **Intervention** Teach Meet / Coaching Resource / LinkedIn | **→** | ✓ **Impact Check** Reflection Follow-up LW/DevObs |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **↓** |
+| **AFI Closed  ·  or  ·  Re-opened with new action** *Evidence chain: LW → DevObs → AFI → Intervention → Reflection(s) → Follow-up observation → Outcome* |
+
+*Flow 1 — from first observation to closed AFI. Every step is linked. The evidence chain is the report.*
+
+**How it works in practice**
+
+- Learning Walk logged in Quick Capture — area, Six Stage tag, brief note. Takes 2 minutes.
+
+- Dev Obs initiated (same day or scheduled). Observation rows tagged to Six Stages. Hyper themes selected. Typed or dictated.
+
+- On saving Dev Obs: AFI panel appears. DPC names the gap — TLA stage first, then asks: could digital support this? Records the opportunity or notes it is not applicable.
+
+- Intervention selected from four options: Teach Meet (selects or creates a plan from the Template Library), Coaching session (coaching question set surfaced, matched to Six Stage and development level), LinkedIn Learning pathway (tagged to focus), Resource (from Resource Library, tagged to AFI).
+
+- Action record created — parentAFI reference, KPI tag, target review date. AFI moves to: actioned.
+
+- Reflection link or QR generated from the event record. Staff submit immediate reflection (what will you try?) and, 2–4 weeks later, follow-up reflection (what has changed?). Both linked to AFI.
+
+- Follow-up LW or Dev Obs conducted. Observation linked back to original AFI thread. If practice has changed and is embedded: AFI closed. If change is partial or not sustained: AFI re-opened with new action.
+
+- Neil's report: 1 AFI closed in BUI — Learning Walk → Dev Obs → Teach Meet → reflection × 2 → follow-up LW. Ben's report: AFI closure rate across college with evidence type breakdown.
+
+**Scenario 2   Referral → Coaching → AFI → Intervention → Impact**
+
+Triggered by a TLAM, HoA, or self-referral. The DPC's role here is both TLA coach and digital coach — the digital lens is applied deliberately but not forced. The referral may or may not result in a digital intervention.
+
+| 📩 **Referral Received** TLAM / HoA Staff profile created | **→** | 💬 **Initial Coaching** Explore TLA gap Digital lens applied | **→** | ⚑ **AFI Named** TLA root stage Digital: yes / no / possible | **→** | 🎯 **Intervention** Matched to AFI stage Coaching Qs surfaced | **→** | ✓ **Impact Check** Reflection Data / observation |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **↓** |
+| **Referral closed  ·  TLAM / HoA updated  ·  Staff profile retains full history** *Digital framed as one possible response — not a requirement. Rationale and impact both recorded.* |
+
+*Flow 2 — referral-initiated coaching cycle. Digital is offered as one possible response, not a default. The rationale for or against is always recorded.*
+
+**How it works in practice**
+
+- Referral received (email, Teams message, verbal in a meeting). DPC opens Hub → New Referral: requesting colleague, staff member, area, presenting concern. A stub staff profile is created in that area automatically.
+
+- Initial coaching session — conversational, exploratory. DPC uses the presenting concern as a starting point but does not assume it is the whole picture. Session logged against staff profile. Coaching notes recorded (not shared with TLAM unless agreed).
+
+- AFI named after the coaching conversation — rooted in a Six Stage. Then the digital question: is digital relevant here? Three possible outcomes: (1) Digital is clearly the right response — gap is in a digital practice. (2) Digital could complement a non-digital response — offered alongside. (3) Digital is not relevant here — non-digital coaching pathway followed. All three are valid and recorded.
+
+- If digital is relevant: intervention selected from Template Library / Resource Library / LinkedIn pathways — matched to AFI stage and staff development level. Coaching question set surfaced dynamically based on Six Stage, dimension score, and context (resistant / curious / leading).
+
+- If digital is not relevant: coaching continues on TLA practice. DPC records this explicitly — "AFI addressed through non-digital coaching." This is important evidence that the role is TLA first, digital second.
+
+- Impact checked through: staff reflection (linked to staff profile, anonymous at area level), follow-up coaching session, or — if digital intervention was used — a follow-up Dev Obs or Health Check score.
+
+- Referral record updated: TLAM or HoA receives a brief update (what was done, what the agreed goal is, whether it is resolved). Staff profile retains the full history. AFI closed or re-opened.
+
+**Scenario 3   Digital Health Check → Area Development → Reporting**
+
+Area-level intelligence, not individual. The Health Check gives a dimensional picture of where an area is across accessibility, inclusive practice, digital learning environment, staff capability, and learner digital skills. That picture drives targeted area development rather than individual coaching.
+
+| 📋 **Health Check** DL / HoA completes Moodle / Forms export | **→** | ⬆ **Upload ****&**** Extract** AI maps to framework DPC reviews & confirms | **→** | 🟡 **RAG Updated** Per dimension Rationale stored | **→** | ⚑ **AFI Surfaced** Low-scoring dimensions Digital opportunity named | **→** | 🎯 **Intervention** Resource / Teach Meet Coaching / LinkedIn |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **↓** |
+| **Follow-up Health Check  ·  Score movement recorded  ·  AFI closed or re-opened** *Area Overview: dimension scores + trajectory + interventions delivered + impact evidence  ·  feeds Neil, DL, AP and Ben reports* |
+
+*Flow 3 — from Health Check ingestion to area development story. Multiple microscopes, one coherent picture. All dimensions feed the reporting layer.*
+
+**How it works in practice**
+
+- Digital Lead, HoA or TLAM completes the Digital Health Check — 25 questions across 5 dimensions — via Moodle or Microsoft Forms. Download the response export (Excel or Moodle format).
+
+- Upload into Hub against the area's Health Check tab. AI reads the upload and maps each response to the framework dimension and indicator, generating provisional RAG scores with brief rationale. DPC reviews each score — confirms or overwrites. Professional judgement is always the final word. Rationale stored alongside confirmed score.
+
+- RAG matrix for the area updates. If this is a repeat check, trajectory is shown — score movement since last check. If it is the first, a baseline is established.
+
+- System cross-references low-scoring dimensions against open AFIs. If a dimension scores Amber or Red with no current intervention: system flags "No active intervention for [dimension] — consider initiating." DPC decides whether to act.
+
+- AFI created for flagged dimensions — named at area level (not individual staff). Intervention selected: resource shared with the team, area Teach Meet planned, DL CPD pathway suggested, or coaching offered to HoA.
+
+- Teach Meet or area session held. Reflection QR displayed at end — all attendees submit anonymously. Aggregate themes and confidence data attach to the event record and the AFI.
+
+- Follow-up Health Check scheduled (4–8 weeks, depending on the dimension and intervention type). Ingested using the same process. Score movement recorded. If score improves and AFI is addressed: closed. If not: re-opened with revised approach.
+
+- Area Overview in the Hub now shows: five dimension scores, trajectory arrows, active AFIs per dimension, interventions delivered, reflections received, and AFI status. This is the area under multiple microscopes simultaneously — accessibility, inclusion, digital environment, capability, learner skills.
+
+- Reporting: Neil sees area RAG movers. Digital Lead sees their own dimensional picture. AP sees area development trajectory with evidence. Ben sees cross-college Health Check completion rates, dimension-level RAG distribution, and which dimensions are most commonly flagged.
+
+**How all three flows feed reporting**
+
+One data store. All three flows write to the same area records and staff profiles. The Report Builder pulls from these to produce audience-specific outputs — no re-entry, no duplication.
+
+| **Audience** | **Frequency** | **Format** | **What they see from these flows** |
+| --- | --- | --- | --- |
+| Neil Davies | Weekly / fortnightly | Word doc | Activity count, open AFIs, interventions delivered this cycle, RAG movers, impact checks completed. |
+| Digital Lead | Per area, as needed | Word doc | Own area RAG scores, Health Check dimension detail, current open AFIs, CPD suggestions matched to gaps. |
+| AP / HoA | Per area, as needed | Word doc | RAG trajectory narrative, staff development table, interventions delivered, suggested observation focus. |
+| Ben Manning | Monthly | Word doc (not link) | Cross-college RAG distribution, movers, interventions summary, impact narrative, QIP evidence. |
+| Performance review | Pilot milestones | Word doc + AI narrative | Full AFI closure rates, intervention types, impact evidence chain, staff reflection data, pyramid activity. |
+
+**What makes the reporting meaningful**
+
+- Current systems show what happened. This system shows what changed as a result — because every AFI has a lifecycle and every intervention has linked impact evidence.
+
+- The AFI closure rate is the headline metric — not activity count. Closing loops, not opening more.
+
+- Staff reflections give voice data that no observation alone can provide. Anonymous at area level; named in individual profiles. Both matter.
+
+- The digital question is always asked — and always answered. "Digital used and rationale recorded" or "Digital not applicable — non-digital coaching pathway followed." Both are valid evidence of the DPC role.
+
+- Area codes are the join key across all three flows. Standardising them is the single most important data integrity action in the whole system.
+
+DPC Impact Hub  ·  Three Workflow Scenarios  ·  Graeme Wright  ·  Weston College Group  ·  June 2026

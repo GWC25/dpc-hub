@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Leads & Staff Training Plan 2025–27 · Weston College</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & TOKENS ─────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:    #0f2d4a;
+  --blue:    #1d4e89;
+  --mid:     #2e75b6;
+  --sky:     #deeaf1;
+  --bg:      #f5f4f0;
+  --surface: #ffffff;
+  --border:  #e0ddd5;
+  --text:    #1a1916;
+  --muted:   #6b6860;
+  --orange:  #c2410c;
+  --teal:    #0f766e;
+  --amber:   #b45309;
+
+  --r1:#15803d; --r1l:#dcfce7; --r1b:#86efac;
+  --r2:#2563eb; --r2l:#dbeafe; --r2b:#93c5fd;
+  --r3:#b45309; --r3l:#fef3c7; --r3b:#fcd34d;
+  --r4:#ea580c; --r4l:#ffedd5; --r4b:#fdba74;
+  --r5:#dc2626; --r5l:#fee2e2; --r5b:#fca5a5;
+  --rn:#6b7280; --rnl:#f3f4f6; --rnb:#d1d5db;
+
+  --nav-w:260px;
+  --font-display:'Fraunces',Georgia,serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --radius:8px;
+  --radius-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,.10);
+}
+html{font-size:15px;scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+
+/* ── SIDEBAR ────────────────────────────────────────────────────── */
+.sidebar{
+  width:var(--nav-w);flex-shrink:0;
+  background:var(--navy);
+  color:#fff;
+  height:100vh;position:sticky;top:0;overflow-y:auto;
+  display:flex;flex-direction:column;
+  z-index:100;
+}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}
+
+.sidebar-header{padding:1.5rem 1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo{font-size:.65rem;font-family:var(--font-mono);letter-spacing:.1em;text-transform:uppercase;opacity:.6;margin-bottom:.4rem}
+.sidebar-title{font-family:var(--font-display);font-size:1.05rem;font-weight:600;line-height:1.3;color:#fff}
+.sidebar-sub{font-size:.7rem;opacity:.55;margin-top:.35rem;font-family:var(--font-mono)}
+
+.nav-section{padding:.75rem 0}
+.nav-section-label{font-size:.6rem;font-family:var(--font-mono);letter-spacing:.1em;text-transform:uppercase;opacity:.45;padding:.25rem 1.25rem .5rem}
+.nav-link{
+  display:flex;align-items:flex-start;gap:.6rem;
+  padding:.45rem 1.25rem;
+  font-size:.78rem;color:rgba(255,255,255,.75);
+  text-decoration:none;line-height:1.35;
+  transition:background .12s,color .12s;
+  border-left:2px solid transparent;
+}
+.nav-link:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-link.active{background:rgba(255,255,255,.1);color:#fff;border-left-color:var(--mid)}
+.nav-num{font-family:var(--font-mono);font-size:.65rem;opacity:.5;flex-shrink:0;margin-top:.1rem;min-width:14px}
+.nav-sub-link{padding:.35rem 1.25rem .35rem 2.65rem;font-size:.72rem;color:rgba(255,255,255,.55)}
+.nav-sub-link:hover{color:rgba(255,255,255,.85)}
+
+.sidebar-footer{margin-top:auto;padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,.1);font-size:.65rem;opacity:.4;font-family:var(--font-mono);line-height:1.5}
+
+/* ── MAIN CONTENT ───────────────────────────────────────────────── */
+.main{flex:1;min-width:0;overflow-x:hidden}
+
+/* ── TOP BAR ────────────────────────────────────────────────────── */
+.topbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:.65rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.topbar-crumb{font-size:.72rem;color:var(--muted);font-family:var(--font-mono)}
+.topbar-badge{font-size:.65rem;font-family:var(--font-mono);background:var(--sky);color:var(--blue);padding:3px 10px;border-radius:99px;border:1px solid var(--mid)}
+
+/* ── CONTENT AREA ───────────────────────────────────────────────── */
+.content{padding:2.5rem 2.5rem 5rem;max-width:860px}
+
+/* ── SECTION HEADER ─────────────────────────────────────────────── */
+.section-hero{margin-bottom:2rem}
+.section-number{font-family:var(--font-mono);font-size:.7rem;color:var(--mid);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.4rem}
+.section-title{font-family:var(--font-display);font-size:2rem;font-weight:600;line-height:1.15;color:var(--navy);margin-bottom:.6rem}
+.section-lead{font-size:1rem;color:var(--muted);line-height:1.65;max-width:680px}
+
+/* ── CALLOUT BOXES ──────────────────────────────────────────────── */
+.callout{border-radius:var(--radius-lg);padding:1.1rem 1.25rem;margin:1.25rem 0;border-left:4px solid}
+.callout-blue{background:var(--sky);border-color:var(--blue)}
+.callout-green{background:#e2efda;border-color:#375623}
+.callout-amber{background:#fef3c7;border-color:var(--amber)}
+.callout-title{font-size:.72rem;font-family:var(--font-mono);font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.4rem}
+.callout-blue .callout-title{color:var(--blue)}
+.callout-green .callout-title{color:#375623}
+.callout-amber .callout-title{color:var(--amber)}
+.callout p,.callout li{font-size:.85rem;line-height:1.6;color:var(--text)}
+.callout a{color:var(--blue);text-decoration:underline}
+
+/* ── PRINCIPLE CARDS ─────────────────────────────────────────────── */
+.principles-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:1.25rem 0}
+@media(max-width:620px){.principles-grid{grid-template-columns:1fr}}
+.principle-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:1rem 1.1rem;
+  border-top:3px solid var(--mid);
+  transition:box-shadow .15s;
+}
+.principle-card:hover{box-shadow:var(--shadow-md)}
+.principle-card h4{font-size:.82rem;font-weight:600;color:var(--navy);margin-bottom:.35rem}
+.principle-card p{font-size:.78rem;color:var(--muted);line-height:1.55}
+
+/* ── RAG BADGE ───────────────────────────────────────────────────── */
+.rag{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-family:var(--font-mono);font-weight:500;padding:2px 9px;border-radius:99px;white-space:nowrap;border:1px solid}
+.rag-1{background:var(--r1l);color:var(--r1);border-color:var(--r1b)}
+.rag-2{background:var(--r2l);color:var(--r2);border-color:var(--r2b)}
+.rag-3{background:var(--r3l);color:var(--r3);border-color:var(--r3b)}
+.rag-4{background:var(--r4l);color:var(--r4);border-color:var(--r4b)}
+.rag-5{background:var(--r5l);color:var(--r5);border-color:var(--r5b)}
+.rag-n{background:var(--rnl);color:var(--rn);border-color:var(--rnb)}
+
+/* ── LEADS GRID ──────────────────────────────────────────────────── */
+.leads-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem;margin:1rem 0}
+.lead-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:.8rem 1rem;
+  border-left:3px solid;
+  transition:transform .12s,box-shadow .12s;
+}
+.lead-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.lead-card.r1{border-left-color:var(--r1)}
+.lead-card.r2{border-left-color:var(--r2)}
+.lead-card.r3{border-left-color:var(--r3)}
+.lead-card.r4{border-left-color:var(--r4)}
+.lead-card.r5{border-left-color:var(--r5)}
+.lead-code{font-family:var(--font-mono);font-size:.68rem;font-weight:500;color:var(--mid);margin-bottom:.2rem}
+.lead-area{font-size:.82rem;font-weight:600;color:var(--navy);margin-bottom:.25rem;line-height:1.3}
+.lead-name{font-size:.75rem;color:var(--muted);margin-bottom:.4rem}
+
+/* ── NO-LEAD TABLE ───────────────────────────────────────────────── */
+.table-wrap{overflow-x:auto;margin:1rem 0;border-radius:var(--radius-lg);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.78rem}
+thead th{background:var(--navy);color:#fff;padding:.6rem .75rem;text-align:left;font-size:.68rem;font-family:var(--font-mono);font-weight:500;letter-spacing:.04em;white-space:nowrap}
+thead th:first-child{border-radius:var(--radius-lg) 0 0 0}
+thead th:last-child{border-radius:0 var(--radius-lg) 0 0}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:nth-child(even){background:#fafaf8}
+tbody tr:hover{background:var(--sky)}
+td{padding:.55rem .75rem;line-height:1.4;vertical-align:middle}
+td:first-child{font-family:var(--font-mono);font-size:.7rem;font-weight:500;color:var(--mid)}
+
+/* ── PHASE ACCORDION ─────────────────────────────────────────────── */
+.phase{margin:1rem 0;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.phase-hdr{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.9rem 1.1rem;cursor:pointer;
+  background:var(--surface);user-select:none;
+  transition:background .12s;
+}
+.phase-hdr:hover{background:#f8f7f3}
+.phase-num{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:1rem;font-weight:600;color:#fff;
+  flex-shrink:0;
+}
+.ph1 .phase-num{background:#0f766e}
+.ph2 .phase-num{background:var(--blue)}
+.ph3 .phase-num{background:var(--orange)}
+.phase-meta{flex:1}
+.phase-label{font-size:.65rem;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.15rem}
+.ph1 .phase-label{color:#0f766e}
+.ph2 .phase-label{color:var(--blue)}
+.ph3 .phase-label{color:var(--orange)}
+.phase-title{font-size:.9rem;font-weight:600;color:var(--navy)}
+.phase-period{font-size:.72rem;color:var(--muted);font-family:var(--font-mono)}
+.phase-arrow{font-size:.8rem;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.phase.open .phase-arrow{transform:rotate(180deg)}
+.phase-body{display:none;border-top:1px solid var(--border)}
+.phase.open .phase-body{display:block}
+.phase-row{display:grid;grid-template-columns:130px 1fr 1fr 1fr;gap:0;border-bottom:1px solid var(--border)}
+.phase-row:last-child{border-bottom:none}
+.phase-row:nth-child(even){background:#fafaf8}
+.phase-cell{padding:.65rem .75rem;font-size:.77rem;line-height:1.45;vertical-align:top}
+.phase-cell:first-child{font-family:var(--font-mono);font-size:.68rem;color:var(--mid);font-weight:500;border-right:1px solid var(--border)}
+.phase-head{display:grid;grid-template-columns:130px 1fr 1fr 1fr;background:rgba(0,0,0,.04);border-bottom:1px solid var(--border)}
+.phase-head span{padding:.45rem .75rem;font-size:.65rem;font-family:var(--font-mono);font-weight:500;letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+
+/* ── Q-SET TABLE ─────────────────────────────────────────────────── */
+.qset-row{display:grid;grid-template-columns:150px 160px 1fr 1fr;gap:0;border-bottom:1px solid var(--border)}
+.qset-row:last-child{border-bottom:none}
+.qset-row:nth-child(even){background:#fafaf8}
+.qset-cell{padding:.65rem .75rem;font-size:.77rem;line-height:1.45}
+.qset-cell:first-child{font-family:var(--font-mono);font-size:.68rem;color:var(--mid);font-weight:500;border-right:1px solid var(--border)}
+.qset-cell:nth-child(2){font-weight:500;border-right:1px solid var(--border)}
+.qset-head{display:grid;grid-template-columns:150px 160px 1fr 1fr;background:rgba(0,0,0,.04);border-bottom:1px solid var(--border)}
+.qset-head span{padding:.45rem .75rem;font-size:.65rem;font-family:var(--font-mono);font-weight:500;letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+
+/* ── PATHWAY TABLE ───────────────────────────────────────────────── */
+.pway-row{display:grid;grid-template-columns:120px 140px 1fr 80px 1fr;gap:0;border-bottom:1px solid var(--border)}
+.pway-row:last-child{border-bottom:none}
+.pway-row:nth-child(odd){background:#fafaf8}
+.pway-cell{padding:.6rem .7rem;font-size:.75rem;line-height:1.4;border-right:1px solid var(--border)}
+.pway-cell:last-child{border-right:none}
+.pway-cell:first-child{font-weight:600;color:var(--navy);font-size:.72rem}
+.pway-cell:nth-child(2){font-family:var(--font-mono);font-size:.68rem;color:var(--mid)}
+.pway-cell:nth-child(4){font-family:var(--font-mono);font-size:.66rem;color:var(--muted);text-align:center}
+.pway-head{display:grid;grid-template-columns:120px 140px 1fr 80px 1fr;background:rgba(0,0,0,.04);border-bottom:1px solid var(--border)}
+.pway-head span{padding:.45rem .7rem;font-size:.63rem;font-family:var(--font-mono);font-weight:500;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;border-right:1px solid var(--border)}
+.pway-head span:last-child{border-right:none}
+
+/* ── INTEGRATION CARDS ───────────────────────────────────────────── */
+.integration-grid{display:grid;gap:.75rem;margin:1rem 0}
+.int-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);overflow:hidden;
+  transition:box-shadow .15s;
+}
+.int-card:hover{box-shadow:var(--shadow-md)}
+.int-hdr{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.75rem 1rem;cursor:pointer;
+  background:var(--surface);
+}
+.int-icon{
+  width:36px;height:36px;border-radius:var(--radius);
+  background:var(--sky);display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;flex-shrink:0;
+}
+.int-titles{flex:1}
+.int-name{font-size:.88rem;font-weight:600;color:var(--navy)}
+.int-freq{font-size:.68rem;font-family:var(--font-mono);color:var(--mid);margin-top:.1rem}
+.int-arrow{font-size:.75rem;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.int-card.open .int-arrow{transform:rotate(180deg)}
+.int-body{display:none;border-top:1px solid var(--border);padding:.85rem 1rem}
+.int-card.open .int-body{display:block}
+.int-cols{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:560px){.int-cols{grid-template-columns:1fr}}
+.int-col-label{font-size:.63rem;font-family:var(--font-mono);font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem}
+.int-col-label.blue{color:var(--blue)}
+.int-col-label.teal{color:var(--teal)}
+.int-col p{font-size:.78rem;line-height:1.55;color:var(--muted)}
+
+/* ── TIMELINE ────────────────────────────────────────────────────── */
+.timeline{position:relative;margin:1.25rem 0}
+.timeline::before{content:'';position:absolute;left:18px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-item{display:flex;gap:1rem;margin-bottom:1.25rem;position:relative}
+.tl-dot{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  background:var(--navy);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.6rem;font-family:var(--font-mono);font-weight:500;
+  text-align:center;line-height:1.2;z-index:1;
+  border:2px solid var(--bg);
+}
+.tl-content{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.9rem 1.1rem;margin-top:.35rem}
+.tl-period{font-size:.68rem;font-family:var(--font-mono);color:var(--mid);font-weight:500;margin-bottom:.35rem}
+.tl-actions{list-style:none;padding:0;margin-bottom:.5rem}
+.tl-actions li{font-size:.78rem;color:var(--text);padding:.2rem 0 .2rem .9rem;position:relative;line-height:1.45}
+.tl-actions li::before{content:'→';position:absolute;left:0;color:var(--mid);font-size:.68rem;top:.25rem}
+.tl-milestone{font-size:.72rem;font-family:var(--font-mono);color:var(--teal);padding:.35rem .65rem;background:#e6f9f4;border-radius:99px;display:inline-block;margin-top:.25rem}
+
+/* ── OFSTED TABLE ────────────────────────────────────────────────── */
+.ofsted-row{display:grid;grid-template-columns:200px 1fr;gap:0;border-bottom:1px solid var(--border)}
+.ofsted-row:last-child{border-bottom:none}
+.ofsted-row:nth-child(even){background:#fafaf8}
+.ofsted-cell{padding:.75rem .85rem;font-size:.78rem;line-height:1.5}
+.ofsted-cell:first-child{font-weight:600;color:var(--navy);border-right:1px solid var(--border);font-size:.75rem}
+
+/* ── CENTURY FLOW ────────────────────────────────────────────────── */
+.century-steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.65rem;margin:1rem 0}
+.c-step{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.85rem;border-top:3px solid var(--mid)}
+.c-step-title{font-size:.78rem;font-weight:600;color:var(--navy);margin-bottom:.35rem}
+.c-step-body{font-size:.74rem;color:var(--muted);line-height:1.5}
+
+/* ── KPI PILLS ───────────────────────────────────────────────────── */
+.kpi-grid{display:flex;flex-wrap:wrap;gap:.4rem;margin:.75rem 0}
+.kpi{font-size:.68rem;font-family:var(--font-mono);padding:3px 10px;border-radius:99px;background:var(--sky);color:var(--blue);border:1px solid var(--mid)}
+
+/* ── MECHANISM CARDS ─────────────────────────────────────────────── */
+.mech-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem;margin:1rem 0}
+@media(max-width:620px){.mech-grid{grid-template-columns:1fr}}
+.mech-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.9rem}
+.mech-card h4{font-size:.8rem;font-weight:600;color:var(--navy);margin-bottom:.4rem}
+.mech-card p{font-size:.74rem;color:var(--muted);line-height:1.5;margin-bottom:.4rem}
+.mech-evidence{font-size:.69rem;font-family:var(--font-mono);color:var(--teal);padding:.3rem .55rem;background:#e6f9f4;border-radius:var(--radius);display:block;line-height:1.4}
+
+/* ── SECTION SEPARATOR ───────────────────────────────────────────── */
+.section-sep{border:none;border-top:1px solid var(--border);margin:2rem 0}
+
+/* ── GENERAL TYPOGRAPHY ──────────────────────────────────────────── */
+h2{font-family:var(--font-display);font-size:1.3rem;color:var(--navy);margin:1.75rem 0 .6rem;font-weight:600}
+h3{font-size:.95rem;font-weight:600;color:var(--navy);margin:1.25rem 0 .5rem}
+p{font-size:.85rem;line-height:1.65;color:var(--muted);margin-bottom:.65rem}
+p strong{color:var(--text)}
+ul{padding-left:1.1rem;margin:.4rem 0 .75rem}
+ul li{font-size:.82rem;line-height:1.6;color:var(--muted);margin-bottom:.2rem}
+ul li strong{color:var(--text)}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── ACTIVE SECTION HIGHLIGHT ────────────────────────────────────── */
+section{scroll-margin-top:60px}
+
+/* ── SKIP LINK ───────────────────────────────────────────────────── */
+.skip-link{position:absolute;left:-9999px;top:auto;overflow:hidden}
+.skip-link:focus{position:fixed;top:0;left:0;z-index:9999;background:var(--navy);color:#fff;padding:.5rem 1rem;font-size:.85rem}
+
+/* ── MOBILE ──────────────────────────────────────────────────────── */
+@media(max-width:768px){
+  body{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap}
+  .sidebar-header{flex:0 0 100%;border-bottom:none;padding:1rem 1rem .5rem}
+  .nav-section{display:flex;flex-wrap:wrap;gap:.2rem;padding:.5rem .75rem}
+  .nav-section-label{display:none}
+  .nav-link{border-left:none;border-bottom:2px solid transparent;padding:.3rem .6rem;font-size:.72rem;border-radius:99px}
+  .nav-link.active{border-bottom-color:var(--mid);background:rgba(255,255,255,.12)}
+  .nav-sub-link{display:none}
+  .sidebar-footer{display:none}
+  .content{padding:1.5rem 1rem 3rem}
+  .section-title{font-size:1.5rem}
+  .phase-row,.qset-row,.pway-row,.ofsted-row{grid-template-columns:1fr;border-bottom:1px solid var(--border)}
+  .phase-head,.qset-head,.pway-head{display:none}
+  .int-cols{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────── -->
+<nav class="sidebar" aria-label="Section navigation">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">Weston College Group</div>
+    <div class="sidebar-title">Digital Leads & Staff Training Plan</div>
+    <div class="sidebar-sub">2025–27 · DPC · Quality &amp; Innovation</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Contents</div>
+    <a href="#s1" class="nav-link active"><span class="nav-num">1</span>Purpose &amp; Scope</a>
+    <a href="#s2" class="nav-link"><span class="nav-num">2</span>Design Principles</a>
+    <a href="#s3" class="nav-link"><span class="nav-num">3</span>Digital Leads Programme</a>
+    <a href="#s3-1" class="nav-sub-link">3.1 What is a Digital Lead?</a>
+    <a href="#s3-3" class="nav-sub-link">3.3 Named Leads &amp; Areas</a>
+    <a href="#s3-4" class="nav-sub-link">3.4 CPD Pathway</a>
+    <a href="#s4" class="nav-link"><span class="nav-num">4</span>All-Staff Development</a>
+    <a href="#s4-2a" class="nav-sub-link">4.2a Discovery Tool Sets</a>
+    <a href="#s4-3" class="nav-sub-link">4.3 Development Pathways</a>
+    <a href="#s5" class="nav-link"><span class="nav-num">5</span>Learner Digital Skills</a>
+    <a href="#s6" class="nav-link"><span class="nav-num">6</span>Implementation Timeline</a>
+    <a href="#s7" class="nav-link"><span class="nav-num">7</span>Governance &amp; Evidence</a>
+    <a href="#s8" class="nav-link"><span class="nav-num">8</span>Quality Cycle Integration</a>
+    <a href="#s8-2" class="nav-sub-link">8.2 Ofsted EIF Lens</a>
+  </div>
+
+  <div class="sidebar-footer">
+    Graeme Wright · Digital Pedagogy Coach<br>
+    Prepared April 2026 · Review July 2026
+  </div>
+</nav>
+
+<!-- ── MAIN ──────────────────────────────────────────────────────── -->
+<div class="main" id="main-content">
+  <div class="topbar" role="banner">
+    <span class="topbar-crumb">Digital Leads &amp; Staff Training Plan 2025–27</span>
+    <span class="topbar-badge">April 2026 · Review: July 2026</span>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ SECTION 1 ══════════════════════════════════════════════ -->
+    <section id="s1" aria-labelledby="s1-title">
+      <div class="section-hero">
+        <div class="section-number">Section 1</div>
+        <h1 id="s1-title" class="section-title">Purpose &amp; Scope</h1>
+        <p class="section-lead">How Weston College will build and sustain staff digital capability across all curriculum areas — two interconnected tracks, one coherent programme.</p>
+      </div>
+
+      <p>This plan operates across two interconnected tracks:</p>
+      <div class="principles-grid">
+        <div class="principle-card" style="border-top-color:var(--navy)">
+          <h4>Track 1 · Digital Leads</h4>
+          <p>Named staff (one per curriculum area) who act as the embedded digital development contact for their team, run Teams Health Checks, and support peer upskilling. <strong>This is the primary focus of the plan.</strong></p>
+        </div>
+        <div class="principle-card" style="border-top-color:var(--mid)">
+          <h4>Track 2 · All Teaching &amp; Support Staff</h4>
+          <p>A broader expectation of digital skills progression, tracked via the Jisc Discovery Tool for baseline and Microsoft Learn, LinkedIn Learning, or Jisc pathways for development.</p>
+        </div>
+      </div>
+
+      <div class="callout callout-blue">
+        <div class="callout-title">Learner digital skills — separate framework</div>
+        <p>Learner digital skills are addressed in <a href="#s5">Section 5</a>, using Century as the primary tracking platform for General Digital Skills, alongside area-specific Specialist Digital Skills mapping agreed with each HoA.</p>
+      </div>
+    </section>
+
+    <hr class="section-sep">
+
+    <!-- ══ SECTION 2 ══════════════════════════════════════════════ -->
+    <section id="s2" aria-labelledby="s2-title">
+      <div class="section-hero">
+        <div class="section-number">Section 2</div>
+        <h1 id="s2-title" class="section-title">Design Principles</h1>
+        <p class="section-lead">Seven principles that shape every decision in this programme — from platform choice to accountability model.</p>
+      </div>
+
+      <div class="principles-grid">
+        <div class="principle-card">
+          <h4>Low burden</h4>
+          <p>All CPD resources are free-to-access and self-paced. Core platforms: Microsoft Learn, Jisc BDC (institutional subscription), LinkedIn Learning (via Microsoft 365). No additional cost to the college.</p>
+        </div>
+        <div class="principle-card">
+          <h4>Evidence-based</h4>
+          <p>Every pathway produces a verifiable output — a completion certificate, module badge, or line-manager-signed log entry. Teach Meet engagement and 1:1 coaching sessions count as evidence.</p>
+        </div>
+        <div class="principle-card">
+          <h4>Rooted in practice</h4>
+          <p>Development is tied directly to what Digital Leads need to do in their area. The 1:1 coaching model (DPC → Digital Lead → team) and Teach Meet network ensure CPD translates into changed practice.</p>
+        </div>
+        <div class="principle-card">
+          <h4>Accountable through line management</h4>
+          <p>Digital Leads report progress to their HoA. Individual Jisc results are private — progress is reported in aggregate and through line manager sign-off at review points.</p>
+        </div>
+        <div class="principle-card">
+          <h4>Progressive</h4>
+          <p>Pathways align to the Digital Learning Pyramid (Foundations → Inclusion → Innovation). Discovery Tool question sets are sequenced across the year for multiple comparable data points.</p>
+        </div>
+        <div class="principle-card">
+          <h4>Equity-aware</h4>
+          <p>Access must not depend on premium personal accounts. All platforms have free or institution-licensed tiers. LinkedIn Learning is accessed via the Microsoft 365 integration.</p>
+        </div>
+        <div class="principle-card" style="grid-column:1/-1">
+          <h4>Institutionally grounded</h4>
+          <p>Weston College has a <a href="https://digitalcapability.jisc.ac.uk/case-studies/weston-college/" target="_blank">published Jisc case study (March 2021)</a> documenting the college's earlier Discovery Tool implementation with staff and learners. This programme builds directly on that foundation — it is a continuation and scaling of that work, not a new initiative.</p>
+        </div>
+      </div>
+
+      <div class="callout callout-green">
+        <div class="callout-title">For senior leaders — Jisc Digital Elevation Tool</div>
+        <p>Separate from this plan, Jisc offers a <a href="https://www.jisc.ac.uk/digital-elevation-tool" target="_blank">Digital Elevation Tool</a> for senior strategic FE leaders — a self-assessment against five themes (learner experience, curriculum development, staff experience, leadership/culture/governance, underpinning technologies) mapped against a pre-foundation → elevate model. <strong>Recommended action for Neil Davies / Ben Manning:</strong> complete this as a strategic planning input for 2026/27.</p>
+      </div>
+    </section>
+
+    <hr class="section-sep">
+
+    <!-- ══ SECTION 3 ══════════════════════════════════════════════ -->
+    <section id="s3" aria-labelledby="s3-title">
+      <div class="section-hero">
+        <div class="section-number">Section 3</div>
+        <h1 id="s3-title" class="section-title">Digital Leads Programme</h1>
+        <p class="section-lead">The core of the programme — 14 named Leads in post, 20 areas still to identify, and a three-phase CPD pathway differentiated by RAG.</p>
+      </div>
+
+      <h2 id="s3-1">3.1 What is a Digital Lead?</h2>
+      <p>A Digital Lead is a teaching or support staff member, nominated within each curriculum area, who takes on a defined set of digital responsibilities alongside their main role. <strong>This is not a separate management grade — it is a recognised professional contribution.</strong> Digital Leads are distinct from Digital Champions, which is a separate learner-facing initiative for a future phase.</p>
+
+      <h3>3.2 Role Responsibilities</h3>
+      <div class="mech-grid" style="grid-template-columns:1fr 1fr">
+        <div class="mech-card">
+          <h4>Teams Digital Health Check</h4>
+          <p>Run the Health Check for their area termly (once trained). Share results with their HoA.</p>
+        </div>
+        <div class="mech-card">
+          <h4>First point of contact</h4>
+          <p>Triage digital queries within their team before escalating to the DPC.</p>
+        </div>
+        <div class="mech-card">
+          <h4>Good practice sharing</h4>
+          <p>Signpost colleagues to resources, lead short Teach Meet slots — at least once per year.</p>
+        </div>
+        <div class="mech-card">
+          <h4>QIP &amp; Business Plan support</h4>
+          <p>Support the HoA to complete digital data in Business Plans and Quality Improvement Plans.</p>
+        </div>
+        <div class="mech-card">
+          <h4>CPD pathway</h4>
+          <p>Complete the Digital Lead CPD pathway (see <a href="#s3-4">Section 3.4</a>) and maintain a brief evidence log.</p>
+        </div>
+        <div class="mech-card">
+          <h4>Network meetings</h4>
+          <p>Attend Digital Leads network meetings — one per term, facilitated by the DPC.</p>
+        </div>
+      </div>
+
+      <h2 id="s3-3">3.3 Named Digital Leads — April 2026</h2>
+      <p><strong>14 Digital Leads</strong> are currently named and in post. A further <strong>20 areas</strong> do not yet have a named Lead — identification is a priority action for Term 3. RAG ratings are linked to the <a href="https://weston-my.sharepoint.com/:x:/g/personal/graeme_wright_weston_ac_uk/IQC6Aa-3NPLKQIb89UyXQmTWAWbGPPIO-mvydnestKSNKJs?e=UUrKM5" target="_blank">HoA Digital Tracker</a>.</p>
+
+      <div class="leads-grid">
+        <div class="lead-card r1"><div class="lead-code">DCI</div><div class="lead-area">Digital Computing &amp; IT</div><div class="lead-name">Ben Hobbs</div><span class="rag rag-1">1 — Confident</span></div>
+        <div class="lead-card r1"><div class="lead-code">HBH</div><div class="lead-area">Hair, Beauty &amp; Hospitality</div><div class="lead-name">Nicola Smith / Jasmine Nickells</div><span class="rag rag-1">1 — Confident</span></div>
+        <div class="lead-card r2"><div class="lead-code">EMV</div><div class="lead-area">Engineering &amp; Motor Vehicle</div><div class="lead-name">Felix Coles</div><span class="rag rag-2">2 — Developing</span></div>
+        <div class="lead-card r2"><div class="lead-code">ENG</div><div class="lead-area">Engineering (General)</div><div class="lead-name">Thanos Adamos</div><span class="rag rag-2">2 — Developing</span></div>
+        <div class="lead-card r2"><div class="lead-code">SMS</div><div class="lead-area">Sixth Form</div><div class="lead-name">Ethan Shi</div><span class="rag rag-2">2 — Developing</span></div>
+        <div class="lead-card r2"><div class="lead-code">SMX</div><div class="lead-area">SOMAX</div><div class="lead-name">John Fowler / Dave Evans</div><span class="rag rag-2">2 — Developing</span></div>
+        <div class="lead-card r3"><div class="lead-code">AGF</div><div class="lead-area">Arts, Graphics &amp; Fashion</div><div class="lead-name">Ronnie Houselander-Cook</div><span class="rag rag-3">3 — Emerging</span></div>
+        <div class="lead-card r3"><div class="lead-code">CTC</div><div class="lead-area">Construction Training Centre</div><div class="lead-name">Dave Evans</div><span class="rag rag-3">3 — Emerging</span></div>
+        <div class="lead-card r3"><div class="lead-code">CON</div><div class="lead-area">Construction Trades</div><div class="lead-name">Victoria Howell</div><span class="rag rag-3">3 — Emerging</span></div>
+        <div class="lead-card r3"><div class="lead-code">EGL</div><div class="lead-area">English</div><div class="lead-name">Georgina Berritta</div><span class="rag rag-3">3 — Emerging</span></div>
+        <div class="lead-card r3"><div class="lead-code">MAT</div><div class="lead-area">Maths</div><div class="lead-name">Jed Randall</div><span class="rag rag-3">3 — Emerging</span></div>
+        <div class="lead-card r4"><div class="lead-code">ESO</div><div class="lead-area">ESOL</div><div class="lead-name">John Robertson</div><span class="rag rag-4">4 — Concern</span></div>
+        <div class="lead-card r4"><div class="lead-code">HAC</div><div class="lead-area">Health (inc. T-Level)</div><div class="lead-name">Dale Bond</div><span class="rag rag-4">4 — Concern</span></div>
+        <div class="lead-card r4"><div class="lead-code">PAP</div><div class="lead-area">Performance &amp; Production</div><div class="lead-name">Ronnie Houselander-Cook</div><span class="rag rag-4">4 — Concern</span></div>
+      </div>
+
+      <h3>Areas without a Digital Lead (to confirm by end of Term 3)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Code</th><th>Area</th><th>HoA</th><th>RAG</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>PSF</td><td>Public Services</td><td>David Beresford</td><td><span class="rag rag-5">5 — Urgent</span></td><td>Urgent — prioritise</td></tr>
+            <tr><td>SKB</td><td>Skills Bootcamps</td><td>Becky Morris</td><td><span class="rag rag-4">4 — Concern</span></td><td>Urgent — prioritise</td></tr>
+            <tr><td>ANM</td><td>Animal Management</td><td>Laura Link</td><td><span class="rag rag-3">3 — Emerging</span></td><td>Meeting held</td></tr>
+            <tr><td>BUI</td><td>Building Services</td><td>Richard Hanney</td><td><span class="rag rag-3">3 — Emerging</span></td><td>Meeting held</td></tr>
+            <tr><td>EEY</td><td>Education &amp; Early Years</td><td>Rachael Moger</td><td><span class="rag rag-3">3 — Emerging</span></td><td>Meeting held</td></tr>
+            <tr><td>PRA</td><td>Professional Apprenticeships</td><td>Georgina Hayden</td><td><span class="rag rag-3">3 — Emerging</span></td><td>Meeting held</td></tr>
+            <tr><td>PRE</td><td>Employment Services</td><td>Laura Taylor</td><td><span class="rag rag-3">3 — Emerging</span></td><td>Meeting held</td></tr>
+            <tr><td>FAU</td><td>FIP Autism</td><td>Andy Girling / Jess Gill</td><td><span class="rag rag-2">2 — Developing</span></td><td>Meeting held</td></tr>
+            <tr><td>FEH</td><td>FIP Supported Employment</td><td>Jess Gill</td><td><span class="rag rag-2">2 — Developing</span></td><td>Meeting held</td></tr>
+            <tr><td>GMA</td><td>Games, Media &amp; Animation</td><td>Gina Hele</td><td><span class="rag rag-1">1 — Confident</span></td><td>Meeting held</td></tr>
+            <tr><td>AHE</td><td>Access to HE</td><td>Not yet identified</td><td><span class="rag rag-n">Not rated</span></td><td>Meeting not held</td></tr>
+            <tr><td>BUS</td><td>Business &amp; Tourism</td><td>Ben Melhuish</td><td><span class="rag rag-n">Not rated</span></td><td>Meeting not held</td></tr>
+            <tr><td>CED</td><td>Community Education</td><td>Charlotte Hynes</td><td><span class="rag rag-n">Not rated</span></td><td>Meeting not held</td></tr>
+            <tr><td>EFE</td><td>Engineering WBL FE</td><td>Not yet identified</td><td><span class="rag rag-n">Not rated</span></td><td>Meeting not held</td></tr>
+            <tr><td>EHE</td><td>Engineering HE</td><td>Not yet identified</td><td><span class="rag rag-n">Not rated</span></td><td>Meeting not held</td></tr>
+            <tr><td>EXT</td><td>External Contracts</td><td>Not yet identified</td><td><span class="rag rag-n">Not rated</span></td><td>Meeting not held</td></tr>
+            <tr><td>FCO</td><td>FIP Complex Needs</td><td>Not yet identified</td><td><span class="rag rag-n">Not rated</span></td><td>Meeting not held</td></tr>
+            <tr><td>FPL</td><td>FIP Pre-Vocational</td><td>Not yet identified</td><td><span class="rag rag-n">Not rated</span></td><td>Meeting not held</td></tr>
+            <tr><td>PRS</td><td>Professional Studies</td><td>Louise Perkins (TBC)</td><td><span class="rag rag-n">Not rated</span></td><td>Meeting not held</td></tr>
+            <tr><td>SPO</td><td>Sport</td><td>Dan Pratlett</td><td><span class="rag rag-n">Not rated</span></td><td>Meeting not held</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="s3-4">3.4 Digital Lead CPD Pathway</h2>
+      <p>Every Digital Lead follows a structured three-phase pathway, differentiated by RAG rating. All resources are free via institutional licensing or open-access tiers. Some experienced leads may not need intensive training — this is discussed with the DPC during Health Check and Accessibility by Design training.</p>
+
+      <div class="phase ph1" id="phase1">
+        <div class="phase-hdr" onclick="togglePhase('phase1')" aria-expanded="false">
+          <div class="phase-num">1</div>
+          <div class="phase-meta">
+            <div class="phase-label">Phase 1 · Digital Foundations · All Leads</div>
+            <div class="phase-title">Digital Foundations</div>
+            <div class="phase-period">April – June 2026 · Term 3 · Minimum expectation before end of year</div>
+          </div>
+          <div class="phase-arrow">▾</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-head"><span>When</span><span>Focus</span><span>Platform / Resource</span><span>Outcome / Evidence</span></div>
+          <div class="phase-row"><div class="phase-cell">Apr–May 2026</div><div class="phase-cell">Teams environment fundamentals: channels, naming conventions, Assignments, accessibility settings</div><div class="phase-cell">Microsoft Learn: "Collaborate with Teams"</div><div class="phase-cell">Completion badge logged. Health Check run in own area.</div></div>
+          <div class="phase-row"><div class="phase-cell">Apr–May 2026</div><div class="phase-cell">Accessibility by Design: Accessibility Checker, alt text, captions, heading styles</div><div class="phase-cell">Microsoft Learn: "Create accessible content with M365"</div><div class="phase-cell">Completion badge. At least one resource audit completed in own area.</div></div>
+          <div class="phase-row"><div class="phase-cell">May–Jun 2026</div><div class="phase-cell">Digital inclusion awareness: WCAG 2.2 AA principles, assistive technology overview</div><div class="phase-cell">Jisc: "Developing your digital literacies" (Modules 1–2)</div><div class="phase-cell">Module completion logged. Shared one accessibility tip at team meeting.</div></div>
+          <div class="phase-row"><div class="phase-cell">June 2026</div><div class="phase-cell">Digital Lead induction session with DPC</div><div class="phase-cell">Facilitated by Graeme Wright — 90 mins, in person or Teams</div><div class="phase-cell">Attendance. Health Check completed and results shared with HoA.</div></div>
+        </div>
+      </div>
+
+      <div class="phase ph2" id="phase2">
+        <div class="phase-hdr" onclick="togglePhase('phase2')" aria-expanded="false">
+          <div class="phase-num">2</div>
+          <div class="phase-meta">
+            <div class="phase-label">Phase 2 · Digital Inclusion · RAG 3–5</div>
+            <div class="phase-title">Digital Inclusion</div>
+            <div class="phase-period">September 2026 – January 2027 · Terms 1–2 · RAG 1–2 may move directly to Phase 3</div>
+          </div>
+          <div class="phase-arrow">▾</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-head"><span>When</span><span>Focus</span><span>Platform / Resource</span><span>Outcome / Evidence</span></div>
+          <div class="phase-row"><div class="phase-cell">Sept–Oct 2026</div><div class="phase-cell">Digital pedagogy: active learning, formative assessment, student-facing Teams use</div><div class="phase-cell">Jisc: "Learning and Teaching" strand (Modules 3–5)</div><div class="phase-cell">Module completion. One Teach Meet contribution or coaching log entry.</div></div>
+          <div class="phase-row"><div class="phase-cell">Oct–Nov 2026</div><div class="phase-cell">AI in education: ethical use, prompt literacy, FE-specific guidance</div><div class="phase-cell">Microsoft Learn: "AI Fundamentals" + DPC-curated AI briefing</div><div class="phase-cell">AI module badge. Written reflection submitted to DPC (one paragraph).</div></div>
+          <div class="phase-row"><div class="phase-cell">Nov–Dec 2026</div><div class="phase-cell">Data and evidence: Teams Analytics, ProMonitor integration, learning walk data</div><div class="phase-cell">Microsoft Learn: "Excel / Forms for data" + DPC coaching session</div><div class="phase-cell">One data-informed intervention documented in team notes.</div></div>
+          <div class="phase-row"><div class="phase-cell">Jan 2027</div><div class="phase-cell">Digital Lead peer review — share practice with one other Digital Lead</div><div class="phase-cell">DPC-facilitated network session (Teams or in person)</div><div class="phase-cell">Peer review log completed. Good practice shared with DPC for wider circulation.</div></div>
+        </div>
+      </div>
+
+      <div class="phase ph3" id="phase3">
+        <div class="phase-hdr" onclick="togglePhase('phase3')" aria-expanded="false">
+          <div class="phase-num">3</div>
+          <div class="phase-meta">
+            <div class="phase-label">Phase 3 · Digital Innovation · RAG 1–2 and Phase 2 completers</div>
+            <div class="phase-title">Digital Innovation</div>
+            <div class="phase-period">February 2027 onwards · Leading change, not just embedding practice</div>
+          </div>
+          <div class="phase-arrow">▾</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-head"><span>When</span><span>Focus</span><span>Platform / Resource</span><span>Outcome / Evidence</span></div>
+          <div class="phase-row"><div class="phase-cell">Feb–Apr 2027</div><div class="phase-cell">Leading digital change: influencing culture, running CPD for peers</div><div class="phase-cell">LinkedIn Learning: "Leading Digital Transformation" or equivalent</div><div class="phase-cell">One peer CPD session delivered. Documented in DPC evidence log.</div></div>
+          <div class="phase-row"><div class="phase-cell">April 2027</div><div class="phase-cell">Specialist digital skills mapping in curriculum area (with HoA)</div><div class="phase-cell">Area-specific tools + DPC coaching</div><div class="phase-cell">Specialist digital skills map completed and signed off by HoA.</div></div>
+          <div class="phase-row"><div class="phase-cell">Ongoing</div><div class="phase-cell">External network engagement: Jisc community, DigiWest, sector events</div><div class="phase-cell">Jisc community of practice / DigiWest network</div><div class="phase-cell">Attendance or contribution logged termly.</div></div>
+          <div class="phase-row"><div class="phase-cell">July 2027</div><div class="phase-cell">Governance Review 3 contribution: Digital Lead impact report</div><div class="phase-cell">DPC-facilitated — input from Leads to annual review</div><div class="phase-cell">Written contribution (100 words) submitted to DPC for governance report.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-sep">
+
+    <!-- ══ SECTION 4 ══════════════════════════════════════════════ -->
+    <section id="s4" aria-labelledby="s4-title">
+      <div class="section-hero">
+        <div class="section-number">Section 4</div>
+        <h1 id="s4-title" class="section-title">All-Staff Digital Skills Development</h1>
+        <p class="section-lead">Light-touch administration, credible governance evidence, and a Jisc baseline that respects staff privacy — delivered through existing line management structures.</p>
+      </div>
+
+      <h2>4.1 Rationale</h2>
+      <p>Digital upskilling for all teaching staff is increasingly central to the college's quality agenda. As accountability for learner digital skills grows — moving towards parity with English and Maths expectations in funded programmes — <strong>staff confidence must keep pace. The college cannot hold learners to a standard that staff have not themselves reached.</strong></p>
+
+      <h2>4.2 Baseline: Jisc Building Digital Capability &amp; Discovery Tool</h2>
+      <p>The Jisc BDC service and its Discovery Tool provide the validated, sector-standard baseline for staff digital capability. Weston College has an institutional subscription covering both staff and learner use. The Discovery Tool is the recommended starting point for all teaching staff.</p>
+      <ul>
+        <li>Individual results remain <strong>private to the staff member</strong> — line managers and the DPC do not see personal scores.</li>
+        <li>TLAMs record the number of staff who have completed (Y/N only) — not scores.</li>
+        <li>Aggregate area-level data is shared with the DPC termly and used to target CPD offers.</li>
+        <li>LinkedIn Learning resources are <a href="https://digitalcapability.jisc.ac.uk/resources-and-community/discovery-tool-guidance/linkedin-learning-resources-mapped-to-framework/" target="_blank">mapped directly to the Jisc BDC framework</a> — specific content can be recommended based on a staff member's Discovery Tool profile.</li>
+      </ul>
+
+      <h2 id="s4-2a">4.2a Discovery Tool Question Sets — Recommended Sequence</h2>
+      <p>Setting all question sets at once overwhelms staff and produces a single data point with no year-on-year comparison. The recommended approach sequences three sets across the year, generating <strong>three comparable data points for governance reporting.</strong></p>
+
+      <div class="table-wrap">
+        <div class="qset-head"><span>When</span><span>Question Set</span><span>Rationale</span><span>Evidence Use</span></div>
+        <div class="qset-row"><div class="qset-cell">Sept 2026<br>Weeks 2–3</div><div class="qset-cell">Teaching staff (FE)</div><div class="qset-cell">DTPF-aligned baseline. The most important set for the programme — gives the core capability picture and informs coaching priorities for the year. All teaching staff.</div><div class="qset-cell">Baseline for governance. DPC uses aggregate to target coaching.</div></div>
+        <div class="qset-row"><div class="qset-cell">Nov 2026<br>Term 1</div><div class="qset-cell">Accessibility &amp; inclusion</div><div class="qset-cell">Follows Phase 1 CPD. Tests whether Accessibility by Design training has shifted confidence. Also surfaced in Learning Walk evidence. Digital Leads + AFI areas.</div><div class="qset-cell">Pre/post comparison with Phase 1 CPD. Feeds Inclusion KPI.</div></div>
+        <div class="qset-row"><div class="qset-cell">Feb 2027<br>Term 2</div><div class="qset-cell">Digital skills in AI &amp; generative AI</div><div class="qset-cell">New Jisc set (2024). Aligned with AI coaching strand. Sector-benchmarked picture of staff AI confidence — directly relevant to Ofsted EIF scrutiny of AI in curriculum. All teaching staff.</div><div class="qset-cell">Feeds AI coaching log and Staff Confidence KPI for Governance Review 2.</div></div>
+        <div class="qset-row"><div class="qset-cell">Phase 2+<br>Leads only</div><div class="qset-cell">Leading for digital change</div><div class="qset-cell">Designed for staff taking on digital leadership responsibilities. Use as a development reflection tool, not a baseline — set alongside the Phase 2 peer review.</div><div class="qset-cell">Personal development log. Not reported in aggregate.</div></div>
+        <div class="qset-row"><div class="qset-cell">Separate<br>learner track</div><div class="qset-cell">Current / new students (FE)</div><div class="qset-cell">The Discovery Tool is designed for both staff and learners. Learner sets are separate from staff sets and should be set via a different institutional profile. See <a href="#s5">Section 5</a>.</div><div class="qset-cell">Feeds Student Experience KPI. Complements Century IA data.</div></div>
+      </div>
+
+      <h2 id="s4-3">4.3 Development Pathways — All Teaching Staff</h2>
+      <p>Following the September Jisc baseline, staff self-direct development using the platforms below, supported by DPC coaching and peer support from their Digital Lead. <strong>Module completion alone is not the goal</strong> — the 1:1 coaching model and Teach Meet network are the integration layer that makes development curriculum-relevant.</p>
+
+      <div class="table-wrap">
+        <div class="pway-head"><span>DTPF Stage</span><span>Platform</span><span>Suggested Pathway</span><span>Time</span><span>Evidence Output</span></div>
+        <div class="pway-row"><div class="pway-cell">Stage 1 · Exploring</div><div class="pway-cell">Microsoft Learn</div><div class="pway-cell">"Microsoft 365 Fundamentals" + "Create accessible content with M365"</div><div class="pway-cell">3–5 hrs</div><div class="pway-cell">Completion certificates. Follow-up: 1:1 coaching with DPC to apply to teaching context.</div></div>
+        <div class="pway-row"><div class="pway-cell">Stage 1 · Exploring</div><div class="pway-cell">Jisc BDC</div><div class="pway-cell">Discovery Tool report → personal development plan agreed with line manager</div><div class="pway-cell">~50 min</div><div class="pway-cell">Discovery Tool completion logged. Development plan signed by line manager at next review.</div></div>
+        <div class="pway-row"><div class="pway-cell">Stage 2A · Adopting</div><div class="pway-cell">Microsoft Learn</div><div class="pway-cell">"Collaborate with Teams" + "Excel / Forms for educators"</div><div class="pway-cell">4–6 hrs</div><div class="pway-cell">Completion badge + one classroom application logged. Shared at next Teach Meet.</div></div>
+        <div class="pway-row"><div class="pway-cell">Stage 2A · Adopting</div><div class="pway-cell">LinkedIn Learning<br>(via BDC mapping)</div><div class="pway-cell">"Teaching with Technology" or BDC-mapped path from Discovery Tool report</div><div class="pway-cell">5–8 hrs</div><div class="pway-cell">Certificate of completion + one curriculum application documented in coaching log.</div></div>
+        <div class="pway-row"><div class="pway-cell">Stage 2B · Leading</div><div class="pway-cell">Jisc BDC</div><div class="pway-cell">"Learning and Teaching" strand — full pathway</div><div class="pway-cell">8–12 hrs</div><div class="pway-cell">Pathway certificate + one peer CPD session delivered (Teach Meet or team CPD).</div></div>
+        <div class="pway-row"><div class="pway-cell">Stage 2B · Leading</div><div class="pway-cell">Microsoft Learn</div><div class="pway-cell">"AI for Educators" + "Power Automate for productivity"</div><div class="pway-cell">5–7 hrs</div><div class="pway-cell">Completion badge + documented classroom impact. Input to AI coaching log.</div></div>
+        <div class="pway-row"><div class="pway-cell">Stage 3 · Innovating</div><div class="pway-cell">Self-directed<br>(DPC-agreed)</div><div class="pway-cell">Project or external contribution agreed with DPC and line manager</div><div class="pway-cell">Flexible</div><div class="pway-cell">Project output, external event contribution, or Teach Meet keynote. Documented by DPC.</div></div>
+      </div>
+
+      <h3>4.3a Teach Meets &amp; 1:1 Coaching — The Integration Layer</h3>
+      <p>Platform-based CPD on its own does not change teaching practice. These mechanisms are what make development stick.</p>
+      <div class="mech-grid">
+        <div class="mech-card">
+          <h4>Teach Meets</h4>
+          <p>Short practitioner-led sessions (10–15 min), termly, DPC-facilitated. Staff share one digital approach that has worked in their area. Digital Leads lead at least once per year. Themes curated from Discovery Tool aggregate data.</p>
+          <span class="mech-evidence">Attendance log · Presenter record · Feeds Staff Capability &amp; Confidence KPIs</span>
+        </div>
+        <div class="mech-card">
+          <h4>1:1 Coaching</h4>
+          <p>Focused sessions (30–60 min) addressing a specific digital challenge in the staff member's teaching context. Triggered by: Digital Lead referral, TLAM request, or Learning Walk finding. DPC logs all sessions.</p>
+          <span class="mech-evidence">Coaching log entry · Feeds Teaching Quality Indicators &amp; Value for Money KPIs</span>
+        </div>
+        <div class="mech-card">
+          <h4>Digital Leads peer support</h4>
+          <p>Digital Leads act as first point of contact for digital queries in their team, triaging before escalating to the DPC. Extends the reach of the coaching model without increasing the DPC's direct caseload.</p>
+          <span class="mech-evidence">Lead activity log · Evidences distributed capacity building</span>
+        </div>
+      </div>
+
+      <div class="callout callout-amber">
+        <div class="callout-title">Tracking model — needs refinement and approval</div>
+        <p>Individual Jisc data is not centrally accessible by design (GDPR). TLAMs record completion numbers (Y/N, not scores). Staff log module completions co-signed by their line manager. <strong>This approach needs to be refined and approved with Neil Davies before implementation.</strong></p>
+      </div>
+    </section>
+
+    <hr class="section-sep">
+
+    <!-- ══ SECTION 5 ══════════════════════════════════════════════ -->
+    <section id="s5" aria-labelledby="s5-title">
+      <div class="section-hero">
+        <div class="section-number">Section 5</div>
+        <h1 id="s5-title" class="section-title">Learner Digital Skills</h1>
+        <p class="section-lead">Century for General Digital Skills tracking, plus area-specific Specialist Digital Skills mapping agreed with each HoA.</p>
+      </div>
+
+      <h2>5.1 Two-Track Model</h2>
+      <div class="principles-grid">
+        <div class="principle-card" style="border-top-color:var(--mid)">
+          <h4>General Digital Skills</h4>
+          <p>Tracked via Century. Provides an Initial Assessment (IA) placing learners at Entry 3 or Level 1, followed by diagnostic assessments and targeted nugget-based learning.</p>
+        </div>
+        <div class="principle-card" style="border-top-color:var(--teal)">
+          <h4>Specialist Digital Skills</h4>
+          <p>Industry-specific tools and practices defined collaboratively with HoAs. Tracked through bespoke mapping agreed between the DPC and each HoA, evidenced through portfolios and learning walk observations.</p>
+        </div>
+      </div>
+
+      <div class="callout callout-blue">
+        <div class="callout-title">Jisc Discovery Tool vs Century — important distinction</div>
+        <p>The <strong>Jisc Discovery Tool is for teaching staff</strong> — it measures digital capability against the DTPF framework. <strong>Century is for learners</strong> — it measures General Digital Skills (aligned to EDS / DigComp). They serve different purposes and different audiences. Both should be in use; they should not be conflated or used interchangeably.</p>
+      </div>
+
+      <h2>5.2 Century: General Digital Skills Model</h2>
+      <div class="century-steps">
+        <div class="c-step"><div class="c-step-title">Initial Assessment</div><div class="c-step-body">All learners complete the Century IA at enrolment. Places them at Entry 3 or Level 1. Results visible to teaching team and DPC via the Century dashboard.</div></div>
+        <div class="c-step"><div class="c-step-title">Diagnostic assessments</div><div class="c-step-body">Teachers or DPC set up diagnostics by theme throughout the year (digital communication, data handling, online safety). Identifies specific gaps within a learner's level.</div></div>
+        <div class="c-step"><div class="c-step-title">Nugget learning</div><div class="c-step-body">Learners are assigned or self-select Century 'nuggets' — short, adaptive learning units — to address gaps. Progress is automatically tracked in the Century dashboard.</div></div>
+        <div class="c-step"><div class="c-step-title">Progress review</div><div class="c-step-body">Minimum termly: teachers and DPC review Century dashboard data to identify learners making insufficient progress. Interventions planned with HoA.</div></div>
+        <div class="c-step"><div class="c-step-title">Absent learners</div><div class="c-step-body">Century content remains accessible asynchronously via Teams. Teachers share resources in advance. Progress captured via Century dashboard.</div></div>
+        <div class="c-step"><div class="c-step-title">Train the Trainer</div><div class="c-step-body">DPC arranges Century (Sam) → Libby Heath-Tavener (E&amp;M lead) → E&amp;M team training. DPC supports and extends model to other areas.</div></div>
+      </div>
+
+      <h2>5.3 Specialist Digital Skills Mapping</h2>
+      <p>Every curriculum area must identify and track the specialist digital skills intrinsic to their vocational field. Agreed with each HoA through the mapping conversation, reviewed annually.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Code</th><th>Area</th><th>Specialist Digital Skills Theme</th><th>Century Path</th><th>Tracking</th></tr></thead>
+          <tbody>
+            <tr><td>EGL</td><td>English</td><td>Academic writing, AI literacy, digital communication</td><td>E3 / L1 IA</td><td>Century dashboard + HoA review</td></tr>
+            <tr><td>MAT</td><td>Maths</td><td>Desmos, GoTeach, data tools, statistical software</td><td>E3 / L1 IA</td><td>Century dashboard + HoA review</td></tr>
+            <tr><td>HAC</td><td>Health</td><td>ProMonitor, clinical data entry, e-portfolio tools</td><td>E3 / L1 IA</td><td>Century dashboard + HoA review</td></tr>
+            <tr><td>ENG</td><td>Engineering (General)</td><td>CAD, digital measurement, simulation tools</td><td>E3 / L1 IA</td><td>Century dashboard + HoA review</td></tr>
+            <tr><td>EMV</td><td>Engineering &amp; Motor Vehicle</td><td>EV diagnostics software, Copilot in Excel</td><td>E3 / L1 IA</td><td>Century dashboard + HoA review</td></tr>
+            <tr><td>CTC</td><td>Construction Training Centre</td><td>DTS, CITB, digital site management</td><td>E3 / L1 IA</td><td>Century dashboard + HoA review</td></tr>
+            <tr><td>ESO</td><td>ESOL</td><td>Digital communication, SpringPod, accessibility tools</td><td>E3 / L1 IA</td><td>Century dashboard + HoA review</td></tr>
+            <tr><td>AGF/PAP</td><td>Arts / Performance</td><td>GarageBand, QLab, Spotlight, digital portfolio</td><td>E3 / L1 IA</td><td>Century dashboard + HoA review</td></tr>
+            <tr><td>HBH</td><td>Hair, Beauty &amp; Hospitality</td><td>Social media, image editing, digital portfolio</td><td>E3 / L1 IA</td><td>Century dashboard + HoA review</td></tr>
+            <tr><td>PSF</td><td>Public Services</td><td>Drone/GPS, GIS, surveillance systems</td><td>E3 / L1 IA</td><td>Century dashboard + HoA review</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="section-sep">
+
+    <!-- ══ SECTION 6 ══════════════════════════════════════════════ -->
+    <section id="s6" aria-labelledby="s6-title">
+      <div class="section-hero">
+        <div class="section-number">Section 6</div>
+        <h1 id="s6-title" class="section-title">Implementation Timeline</h1>
+        <p class="section-lead">Five milestones across three academic terms and two years — with clear owners and measurable outcomes at each stage.</p>
+      </div>
+
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot">Apr–Jun<br>2026</div>
+          <div class="tl-content">
+            <div class="tl-period">Term 3 2025–26 · DPC + TLAMs</div>
+            <ul class="tl-actions">
+              <li>Confirm remaining Digital Leads in all 34 areas</li>
+              <li>Issue Jisc Discovery Tool to all teaching staff via TLAMs</li>
+              <li>Digital Lead induction session (DPC-facilitated)</li>
+              <li>Century train-the-trainer with Libby Heath-Tavener</li>
+              <li>Phase 1 CPD pathway launched for all named Digital Leads</li>
+              <li>Century IA data reviewed for E&amp;M areas</li>
+            </ul>
+            <span class="tl-milestone">Milestone: all 34 areas have a named Lead by end of June 2026</span>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot">Jul–Aug<br>2026</div>
+          <div class="tl-content">
+            <div class="tl-period">Summer 2026 · DPC + Quality Leadership · Governance Review 1</div>
+            <ul class="tl-actions">
+              <li>Jisc baseline aggregate data compiled by area</li>
+              <li>Digital Leads Phase 1 pathway completion verified</li>
+              <li>Century approach confirmed for September rollout across all areas</li>
+              <li>Specialist digital skills mapping templates sent to HoAs</li>
+              <li>Governance Review 1 (July 2026) — Digital Lead programme reported</li>
+            </ul>
+            <span class="tl-milestone">Milestone: Phase 1 CPD complete; Century rollout plan confirmed</span>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot">Sept–Dec<br>2026</div>
+          <div class="tl-content">
+            <div class="tl-period">Term 1 2026–27 · DPC + TLAMs + HoAs</div>
+            <ul class="tl-actions">
+              <li>Century IA run for all new learners in September</li>
+              <li>Phase 2 CPD pathway begins for Digital Leads</li>
+              <li>All-staff Jisc baseline: TLAMs report completion numbers</li>
+              <li>Digital Lead network meeting (October)</li>
+              <li>Digital Hours tracked through Century for E&amp;M and other areas</li>
+              <li>Specialist skills mapping reviewed with HoAs</li>
+            </ul>
+            <span class="tl-milestone">Milestone: Century data in use across all areas; Phase 2 underway</span>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot">Jan–Apr<br>2027</div>
+          <div class="tl-content">
+            <div class="tl-period">Term 2 2026–27 · DPC + Neil Davies · Governance Review 2</div>
+            <ul class="tl-actions">
+              <li>Phase 2 CPD completion check — Digital Lead peer reviews</li>
+              <li>Jisc aggregate data reported to quality leadership</li>
+              <li>Governance Review 2 (January 2027) — staff upskilling evidenced</li>
+              <li>Phase 3 CPD begins for leads at RAG 1–2</li>
+              <li>Century mid-year progress review with HoAs</li>
+            </ul>
+            <span class="tl-milestone">Milestone: Governance Review 2 evidence submitted</span>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot">May–Jul<br>2027</div>
+          <div class="tl-content">
+            <div class="tl-period">Term 3 2026–27 · DPC + Ben Manning · Governance Review 3</div>
+            <ul class="tl-actions">
+              <li>All staff development evidence compiled for 18-month review</li>
+              <li>Digital Leads submit impact contributions to DPC</li>
+              <li>Century end-of-year data reviewed — learner progress evidenced</li>
+              <li>Specialist digital skills maps updated and signed off by HoAs</li>
+              <li>Governance Review 3 (July 2027) — full programme evaluation</li>
+            </ul>
+            <span class="tl-milestone">Milestone: Full programme evidence portfolio complete</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-sep">
+
+    <!-- ══ SECTION 7 ══════════════════════════════════════════════ -->
+    <section id="s7" aria-labelledby="s7-title">
+      <div class="section-hero">
+        <div class="section-number">Section 7</div>
+        <h1 id="s7-title" class="section-title">Governance &amp; Evidence</h1>
+        <p class="section-lead">How this plan connects to existing accountability frameworks — KPIs, governance reviews, Ofsted EIF, and the DPC's 10 Professional Accountabilities.</p>
+      </div>
+
+      <p>This plan sits within the college's wider Quality Improvement framework. Evidence from it feeds directly into:</p>
+      <ul>
+        <li>The DPC's <strong>10 Professional Accountabilities</strong> — specifically Accountabilities 1, 2, 3, 4, 6, and 9.</li>
+        <li><strong>Governance Reviews</strong> at July 2026, January 2027, and July 2027.</li>
+        <li><strong>Ofsted EIF</strong> readiness: Curriculum and Teaching, Inclusion (standalone grade from November 2025), Learner Experience, and Leadership and Management. See <a href="#s8-2">Section 8.2</a> for the full Ofsted map.</li>
+      </ul>
+
+      <h3>KPI Framework</h3>
+      <div class="kpi-grid">
+        <span class="kpi">Staff Capability</span>
+        <span class="kpi">Staff Confidence</span>
+        <span class="kpi">Teaching Quality Indicators</span>
+        <span class="kpi">QIP Traction</span>
+        <span class="kpi">Student Experience</span>
+        <span class="kpi">Value for Money</span>
+      </div>
+
+      <p style="font-size:.78rem;color:var(--muted);margin-top:.75rem">Data held under this plan is processed in accordance with UK GDPR (legitimate interests basis — quality assurance and professional development). No learner personal data is held in this document. Staff data is limited to professional activity records. Data controller: Weston College Group.</p>
+    </section>
+
+    <hr class="section-sep">
+
+    <!-- ══ SECTION 8 ══════════════════════════════════════════════ -->
+    <section id="s8" aria-labelledby="s8-title">
+      <div class="section-hero">
+        <div class="section-number">Section 8</div>
+        <h1 id="s8-title" class="section-title">Integration with the College Quality Cycle</h1>
+        <p class="section-lead">This programme generates quality evidence as a byproduct of doing the work — not as a parallel data collection exercise. Digital pedagogy development is not a separate workstream: it is the quality cycle, seen through a digital lens.</p>
+      </div>
+
+      <h2>8.1 Quality Processes — Digital Connection Map</h2>
+      <p>Click each process to expand the detail.</p>
+
+      <div class="integration-grid">
+
+        <div class="int-card" id="ic1">
+          <div class="int-hdr" onclick="toggleInt('ic1')">
+            <div class="int-icon">🚶</div>
+            <div class="int-titles">
+              <div class="int-name">Learning Walks &amp; Developmental Observations</div>
+              <div class="int-freq">Three windows: Sept–Nov · Jan–Mar · Apr–Jun · All teaching staff: minimum 1 per year</div>
+            </div>
+            <div class="int-arrow">▾</div>
+          </div>
+          <div class="int-body">
+            <div class="int-cols">
+              <div class="int-col">
+                <div class="int-col-label blue">How digital development connects</div>
+                <p>LW narratives explicitly assess Teams environments, accessible resources, and whether digital tools purposefully change the learning experience. The DPC co-designs digital observation criteria with TLAMs and can support or co-conduct Developmental Observations for referred staff.</p>
+              </div>
+              <div class="int-col">
+                <div class="int-col-label teal">Evidence generated</div>
+                <p>LW narrative excerpts referencing digital TLA feed the Teaching Quality Indicators KPI. Before/after comparison between areas with and without a trained Digital Lead evidences programme impact. DPC logs all LW conversations involving digital coaching referrals.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="int-card" id="ic2">
+          <div class="int-hdr" onclick="toggleInt('ic2')">
+            <div class="int-icon">🔍</div>
+            <div class="int-titles">
+              <div class="int-name">Quality Review Activity (QRA)</div>
+              <div class="int-freq">Risk/volume basis throughout the year · One week's notice given</div>
+            </div>
+            <div class="int-arrow">▾</div>
+          </div>
+          <div class="int-body">
+            <div class="int-cols">
+              <div class="int-col">
+                <div class="int-col-label blue">How digital development connects</div>
+                <p>QRAs replicate Ofsted EIF methodology and explicitly scrutinise learning environments including digital resources, Teams environments, and learner evidence of digital skills. Areas with trained Digital Leads and completed Health Checks should demonstrate visibly stronger digital environments.</p>
+              </div>
+              <div class="int-col">
+                <div class="int-col-label teal">Evidence generated</div>
+                <p>QRA findings referencing digital environment quality feed directly into HoA RAG ratings and DPC coaching priorities. Areas flagged in QRAs are prioritised for DPC intervention. Improvement between QRAs is a measurable programme outcome.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="int-card" id="ic3">
+          <div class="int-hdr" onclick="toggleInt('ic3')">
+            <div class="int-icon">📋</div>
+            <div class="int-titles">
+              <div class="int-name">Programme Performance Reviews (PPRs)</div>
+              <div class="int-freq">Three times per year: Oct · Feb · May · ~1 hour per programme</div>
+            </div>
+            <div class="int-arrow">▾</div>
+          </div>
+          <div class="int-body">
+            <div class="int-cols">
+              <div class="int-col">
+                <div class="int-col-label blue">How digital development connects</div>
+                <p>PPRs are the formative self-assessment tool for each programme. Century diagnostic data, Jisc Discovery Tool progress, Teams Assignment analytics, and learner digital skills tracking all become PPR evidence. The DPC provides area-level digital data summaries in advance of each PPR window on request.</p>
+              </div>
+              <div class="int-col">
+                <div class="int-col-label teal">Evidence generated</div>
+                <p>PPR records referencing digital skills data evidence QIP Traction and Student Experience KPIs. DPC digital data summaries create a documented service record. Improvement trends between Term 1 and Term 3 PPRs show programme impact within a single academic year.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="int-card" id="ic4">
+          <div class="int-hdr" onclick="toggleInt('ic4')">
+            <div class="int-icon">🏛</div>
+            <div class="int-titles">
+              <div class="int-name">Curriculum Quality Review Panels (CQRPs)</div>
+              <div class="int-freq">Bi-annual: Nov–Dec (Term 1) · Mar–Apr (Term 2) · Chaired by VP Quality</div>
+            </div>
+            <div class="int-arrow">▾</div>
+          </div>
+          <div class="int-body">
+            <div class="int-cols">
+              <div class="int-col">
+                <div class="int-col-label blue">How digital development connects</div>
+                <p>CQRP agenda item 7 is explicitly "TLA Overview — Self, Peer, QRAs." Digital coaching records, HoA RAG ratings, and Digital Lead action plans feed this item directly. The DPC contributes a written summary to CQRPs for areas where digital development has been a focus.</p>
+              </div>
+              <div class="int-col">
+                <div class="int-col-label teal">Evidence generated</div>
+                <p>CQRP records documenting digital TLA strengths and AFIs provide panel-level evidence for Teaching Quality Indicators. Cross-college themes identified at CQRP (e.g. Teams environment consistency, accessibility gaps) inform the DPC's Teach Meet programme for the following term.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="int-card" id="ic5">
+          <div class="int-hdr" onclick="toggleInt('ic5')">
+            <div class="int-icon">📈</div>
+            <div class="int-titles">
+              <div class="int-name">Quality Improvement Plans (QIPs)</div>
+              <div class="int-freq">Reviewed three times per year in line with PPR and CQRP windows</div>
+            </div>
+            <div class="int-arrow">▾</div>
+          </div>
+          <div class="int-body">
+            <div class="int-cols">
+              <div class="int-col">
+                <div class="int-col-label blue">How digital development connects</div>
+                <p>Each area's QIP includes a CPD tab linking staff development to TLA impact. Digital skills AFIs identified through HoA meetings, LWs, or QRAs are translated into QIP actions by the DPC in collaboration with TLAMs and HoAs. The DPC supports TLAMs to articulate measurable digital improvement targets.</p>
+              </div>
+              <div class="int-col">
+                <div class="int-col-label teal">Evidence generated</div>
+                <p>Number of QIPs with digital inclusion actions is a direct KPI measure (QIP Traction). Completion rate of those actions at each review point evidences programme effectiveness. QIP actions referencing Century or Jisc data connect individual area improvement to college-wide digital capability data.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="int-card" id="ic6">
+          <div class="int-hdr" onclick="toggleInt('ic6')">
+            <div class="int-icon">💬</div>
+            <div class="int-titles">
+              <div class="int-name">Student Voice &amp; Student Surveys</div>
+              <div class="int-freq">First Impressions: Nov–Dec · End of Year: Apr–May · Apprentice Survey: Jan–Apr</div>
+            </div>
+            <div class="int-arrow">▾</div>
+          </div>
+          <div class="int-body">
+            <div class="int-cols">
+              <div class="int-col">
+                <div class="int-col-label blue">How digital development connects</div>
+                <p>One of the five key college survey questions is "How would you rate the quality of teaching on your course?" Digital TLA confidence, accessible resources, and well-structured Teams environments directly affect this score. Century progress data complements survey results by showing digital skills progression, not just satisfaction.</p>
+              </div>
+              <div class="int-col">
+                <div class="int-col-label teal">Evidence generated</div>
+                <p>Student survey scores on teaching quality cross-referenced with areas where the DPC has been active provide a learner-experience measure of programme impact. Century dashboard data provides a quantitative complement to the qualitative survey. Apprenticeship survey data is particularly relevant for areas using Smart Assessor and EPA portfolios.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="int-card" id="ic7">
+          <div class="int-hdr" onclick="toggleInt('ic7')">
+            <div class="int-icon">📝</div>
+            <div class="int-titles">
+              <div class="int-name">Self-Assessment Report (SAR)</div>
+              <div class="int-freq">Annual: Draft by November · Sign-off by December</div>
+            </div>
+            <div class="int-arrow">▾</div>
+          </div>
+          <div class="int-body">
+            <div class="int-cols">
+              <div class="int-col">
+                <div class="int-col-label blue">How digital development connects</div>
+                <p>The DPC supports the digital skills dimension of the annual SAR, drawing on aggregate data from Jisc Discovery Tool (staff baseline and progress), Century (learner digital skills), HoA RAG ratings, LW and QRA evidence, and coaching logs. This provides a coherent digital skills narrative for inspection readiness.</p>
+              </div>
+              <div class="int-col">
+                <div class="int-col-label teal">Evidence generated</div>
+                <p>The SAR digital dimension is itself an evidence output of the programme. Year-on-year improvement in the SAR digital narrative — supported by the data sources above — is the highest-level evidence of sustained programme impact. The DPC contributes a written summary to the Quality Team for SAR compilation.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="int-card" id="ic8">
+          <div class="int-hdr" onclick="toggleInt('ic8')">
+            <div class="int-icon">🎓</div>
+            <div class="int-titles">
+              <div class="int-name">COG Sessions (Continuing Organisational Growth)</div>
+              <div class="int-freq">Four per year · Digital Pedagogy focus themes across the year</div>
+            </div>
+            <div class="int-arrow">▾</div>
+          </div>
+          <div class="int-body">
+            <div class="int-cols">
+              <div class="int-col">
+                <div class="int-col-label blue">How digital development connects</div>
+                <p>COG sessions are the primary all-staff CPD vehicle. Digital Pedagogy Coach-led COG themes for 2026/27: Digital Learning Environments · Accessibility and Inclusion · Digital TLA · Using AI to Support Learning · 21st Century Learning Design. Teach Meets run in parallel, with Digital Leads presenting good practice to peers.</p>
+              </div>
+              <div class="int-col">
+                <div class="int-col-label teal">Evidence generated</div>
+                <p>COG attendance and Digital Lead Teach Meet contribution logs provide Staff Capability and Staff Confidence KPI data. COG themes are sequenced to align with Jisc Discovery Tool question set deployments — staff complete the relevant Discovery Tool set before or after the corresponding COG session, strengthening the connection between self-assessment and structured development.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <h2 id="s8-2">8.2 The Ofsted EIF Lens</h2>
+      <p>The renewed Ofsted EIF (November 2025) grades <strong>Inclusion as a standalone judgement area for the first time.</strong> The quality processes above generate inspection evidence as a structural feature of normal college operations — not as a special inspection preparation exercise.</p>
+
+      <div class="table-wrap">
+        <div class="ofsted-row" style="background:var(--navy)"><div class="ofsted-cell" style="color:#fff;font-size:.68rem;font-family:var(--font-mono);letter-spacing:.04em">EIF / Report Card Area</div><div class="ofsted-cell" style="color:#fff;font-size:.68rem;font-family:var(--font-mono);letter-spacing:.04em;border-right:none">How this programme contributes evidence</div></div>
+        <div class="ofsted-row"><div class="ofsted-cell">Curriculum and Teaching<br><span style="font-weight:400;font-size:.7rem;color:var(--muted)">(Quality of Education)</span></div><div class="ofsted-cell">LW and QRA evidence of digitally enriched, accessible teaching. Teams environments structured to support learning. DPC coaching records showing teacher development translating into practice change. Century data showing learner digital skills progression within curriculum time.</div></div>
+        <div class="ofsted-row"><div class="ofsted-cell">Inclusion<br><span style="font-weight:400;font-size:.7rem;color:var(--r4)">Standalone grade from Nov 2025</span></div><div class="ofsted-cell">Accessibility by Design training records. AT awareness and licence audit. WCAG 2.2 AA compliant resources documented. Discovery Tool Accessibility and Inclusion question set results. ESOL and SEND-specific digital inclusion strategies evidenced through HoA mapping.</div></div>
+        <div class="ofsted-row"><div class="ofsted-cell">Learner Experience<br><span style="font-weight:400;font-size:.7rem;color:var(--muted)">&amp; Outcomes</span></div><div class="ofsted-cell">Student Voice survey scores on teaching quality cross-referenced with digital coaching activity. Century progress data showing distance travelled in General Digital Skills. Specialist digital skills mapping showing industry-relevant digital learning embedded in curriculum.</div></div>
+        <div class="ofsted-row"><div class="ofsted-cell">Leadership and Management</div><div class="ofsted-cell">Digital Lead programme as evidence of distributed digital leadership. QIP digital actions tracked and completed. DPC evidence portfolio demonstrating strategic contribution to quality improvement. Governance Review reports for July 2026, January 2027, and July 2027.</div></div>
+      </div>
+    </section>
+
+    <p style="text-align:center;font-size:.7rem;color:var(--muted);font-family:var(--font-mono);margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+      Graeme Wright · Digital Pedagogy Coach · Weston College Group · April 2026 · WCAG 2.2 AA
+    </p>
+
+  </div>
+</div>
+
+<script>
+function togglePhase(id){
+  const el=document.getElementById(id);
+  el.classList.toggle('open');
+  const btn=el.querySelector('.phase-hdr');
+  btn.setAttribute('aria-expanded',el.classList.contains('open'));
+}
+function toggleInt(id){
+  const el=document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+/* Active nav highlight on scroll */
+const sections=document.querySelectorAll('section[id]');
+const navLinks=document.querySelectorAll('.nav-link');
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      navLinks.forEach(l=>l.classList.remove('active'));
+      const active=document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+      if(active)active.classList.add('active');
+    }
+  });
+},{threshold:.2,rootMargin:'-50px 0px -50% 0px'});
+sections.forEach(s=>observer.observe(s));
+</script>
+</body>
+</html>

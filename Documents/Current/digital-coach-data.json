@@ -1,0 +1,1968 @@
+{
+  "projects": [
+    {
+      "id": 1770130190597,
+      "title": "Resources for Self-Guided Teams Environment",
+      "priorityId": 1,
+      "milestoneLink": "Resources for Self-Guided Teams Environment",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-06",
+      "endDate": "2026-02-23",
+      "milestones": [
+        {
+          "title": "Structure of videos - what they demonstrate for the viewer",
+          "completed": true,
+          "completedDate": "2026-02-05T12:56:08.578Z",
+          "uuid": 1770146055985.9392,
+          "dueDate": "2026-02-09"
+        },
+        {
+          "title": "Create Videos - Teams Set Up",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.5881
+        },
+        {
+          "title": "Put together and share a Package of Teams Check Lists and Short Informal Video Guides",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.9143
+        },
+        {
+          "title": "Develop Teams Health Check List",
+          "completed": true,
+          "completedDate": "2026-02-04T10:33:40.492Z",
+          "uuid": 1770146055985.3552
+        },
+        {
+          "title": "Make this Check List a usable tick sheet for users???",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.2124
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-03T14:49:50.597Z",
+          "text": "Action initialized from Strategy Pillar."
+        },
+        {
+          "date": "2026-02-04T10:51:49.308Z",
+          "text": "I have created the Check List, but I need to make this an accessible web-based HTML for users to use.\nI also need to turn this into an interactive tick list.",
+          "link": "https://weston-my.sharepoint.com/:f:/g/personal/graeme_wright_weston_ac_uk/IgBxvLooad4tSbxFAjUhTJYUAWrLOK2RtlCmqGEjuSDg1GY?e=v8Fb3N"
+        },
+        {
+          "date": "2026-02-05T16:56:43.733Z",
+          "text": "List of videos, what they will show and the pedagogical reasoning. NEXT to follow with scripts and \"Click\" points for the video.",
+          "link": "https://weston-my.sharepoint.com/:w:/g/personal/graeme_wright_weston_ac_uk/IQAzAffO1TWBT6LaXH1I7i2SAQL_MCuK5ASbi-kQL7ikCv0?e=khM30H",
+          "source": "Other"
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "objective": "Package to Support Tutors in setting up their own Teams Learning Environment appropriately.",
+      "kpi": "Student Experience",
+      "qaLink": "Learning Walk Data",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1
+    },
+    {
+      "id": 1770131200804,
+      "title": "Meet with HoA / Digital Lead re: Digital Health Checks",
+      "priorityId": 1,
+      "milestoneLink": "Meet with HoA / Digital Lead re: Digital Health Checks",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-13",
+      "endDate": "2026-02-27",
+      "milestones": [
+        {
+          "title": "Book Meetings with HoA to discuss Digital Leads & Health Check",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.8953,
+          "dueDate": "2026-02-13"
+        },
+        {
+          "title": "Hold Meetings with HoA to discuss Digital Leads & Health Check",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.8667,
+          "dueDate": "2026-02-16"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-03T15:06:40.804Z",
+          "text": "Action initialized from Strategy Pillar."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "objective": "Aim here is to discuss the rationale and process of Digital Health Checks and the importance of assigning a Digital Lead for each Area",
+      "kpi": "Staff Capability",
+      "qaLink": "Teams Analytics",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1
+    },
+    {
+      "id": 1770131408700,
+      "title": "Train the Trainer - Digital Leads on HOW to carry out Digital Health Checks",
+      "priorityId": 1,
+      "milestoneLink": "Train the Trainer - Digital Leads on HOW to carry out Digital Health Checks",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-23",
+      "endDate": "2026-03-13",
+      "milestones": [
+        {
+          "title": "Hold Meetings with HoA to discuss Digital Leads & Health Check",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.5366
+        },
+        {
+          "title": "Train Digital Leads on carrying out Digital Health Checks",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.5925
+        },
+        {
+          "title": "Create NEW Digital Leads Team to support",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.7305
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-03T15:10:08.700Z",
+          "text": "Action initialized from Strategy Pillar."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "objective": "Train the Trainer to allow for more impact and more reach for developing Teams Environments. From here I can support areas quicker, understand the current Digital landscape, and support individuals quicker.",
+      "kpi": "Staff Capability",
+      "qaLink": "Coaching Record",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1
+    },
+    {
+      "id": 1770131784382,
+      "title": "Teams Health Audit Complete",
+      "priorityId": 1,
+      "milestoneLink": "Teams Health Audit Complete",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-03-16",
+      "endDate": "2026-04-24",
+      "milestones": [
+        {
+          "title": "Hold Check-In meetings with Digital Leads",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.162
+        },
+        {
+          "title": "Sample Digital Environments for Standardisation",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.0022
+        },
+        {
+          "title": "Support High Risk areas as identified by TLAMs",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.2498
+        },
+        {
+          "title": "Develop support strategy",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.5322
+        },
+        {
+          "title": "Agree iTrent Teach Meet sessions for supporting Teams Environment",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.5632
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-03T15:16:24.382Z",
+          "text": "Action initialized from Strategy Pillar."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "objective": "Along with Digital Leads / HoA I can develop a risk based picture of the Digital Environments for our learners. I can see who I need to work with urgently, and develop a strategic plan for multiple waves of intervention.",
+      "kpi": "Student Experience",
+      "qaLink": "Teams Analytics",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1
+    },
+    {
+      "id": 1770132586431,
+      "title": "Accessibility Toolkit Launched",
+      "priorityId": 1,
+      "milestoneLink": "Accessibility Toolkit Launched",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-04-20",
+      "endDate": "2026-08-14",
+      "milestones": [
+        {
+          "title": "What Tools exist",
+          "completed": true,
+          "completedDate": "2026-02-04T14:26:20.793Z",
+          "uuid": 1770146055985.715
+        },
+        {
+          "title": "Guidance work sheet",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.1187
+        },
+        {
+          "title": "Create video scripts",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.2039
+        },
+        {
+          "title": "Record the videos",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.826
+        },
+        {
+          "title": "Edit the videos",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.0957
+        },
+        {
+          "title": "Create the Accessibility / Assistive Technology Toolkit App",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.6096
+        },
+        {
+          "title": "Soft Launch with focus group and gather feedback",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.7805
+        },
+        {
+          "title": "Make iterations based on feedback",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.24
+        },
+        {
+          "title": "Launch Toolkit - September 2026",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.155
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-03T15:29:46.431Z",
+          "text": "Action initialized from Strategy Pillar."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "objective": "Developing a Student and Staff Toolkit to help identify Assistive Technology based on user preference.",
+      "kpi": "Student Experience",
+      "qaLink": "Learner Voice",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1
+    },
+    {
+      "id": 1770132636935,
+      "title": "Digital Champions Reframing & Launch",
+      "priorityId": 1,
+      "milestoneLink": "Digital Champions Reframing & Launch",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-06-01",
+      "endDate": "2026-09-04",
+      "milestones": [],
+      "updates": [
+        {
+          "date": "2026-02-03T15:30:36.935Z",
+          "text": "Action initialized from Strategy Pillar."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Staff Confidence",
+      "qaLink": "Coaching Record",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1
+    },
+    {
+      "id": 1770133282641,
+      "title": "AI focused training for Areas based on Specific Needs",
+      "priorityId": 2,
+      "milestoneLink": "AI focused training for Areas based on Specific Needs",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-03",
+      "endDate": "2026-07-24",
+      "milestones": [
+        {
+          "title": "Develop AI focused approach",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.178
+        },
+        {
+          "title": "Guidance on how to prompt",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.0662
+        },
+        {
+          "title": "Guidance on keeping Data Safe",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.635
+        },
+        {
+          "title": "Regular updates on AI in education and Case Study use",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.3787
+        },
+        {
+          "title": "Booking Page and Advertising through TLAMs",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.1848
+        },
+        {
+          "title": "Tracking of staff attendance and focus of training - what was covered",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.0525
+        },
+        {
+          "title": "Discuss this approach and support with Joe Abdulgani",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17703947274570363d6204d64b8"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-03T15:41:22.641Z",
+          "text": "Action initialized from Strategy Pillar."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "objective": "Training all Areas on how AI can be used in their curriculum.",
+      "kpi": "Staff Confidence",
+      "qaLink": "Staff Survey",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 2
+    },
+    {
+      "id": 1770133469536,
+      "title": "AI for Marking, Feedback and Assessment",
+      "priorityId": 2,
+      "milestoneLink": "AI for Marking, Feedback and Assessment",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-23",
+      "endDate": "2026-07-31",
+      "milestones": [
+        {
+          "title": "Research current use cases across FE & HE",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.5613
+        },
+        {
+          "title": "What are the BEST practices?",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.2163
+        },
+        {
+          "title": "What are the PITFALLS?",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.4006
+        },
+        {
+          "title": "Draft Report & Share",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.575
+        },
+        {
+          "title": "Produce final recommendations",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.498
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-03T15:44:29.536Z",
+          "text": "Action initialized from Strategy Pillar."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "objective": "Tutor and HoA guides on how to use AI for Assessment\nGuides for learners on how to use AI within their study",
+      "kpi": "Retention Proxy",
+      "qaLink": "Other",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 2
+    },
+    {
+      "id": 1770133606069,
+      "title": "Support Students with use of AI in their Study",
+      "priorityId": 2,
+      "milestoneLink": "Support Students with use of AI in their Study",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-03",
+      "endDate": "2026-08-14",
+      "milestones": [
+        {
+          "title": "Research National Picture of BEST practice",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.635
+        },
+        {
+          "title": "Make Bookings available for Tutors - iTrent - on how to use AI for study",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.907
+        },
+        {
+          "title": "Produce material guides",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.7112
+        },
+        {
+          "title": "Reports on which classes, tutors, Areas, etc have received training",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.1416
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-03T15:46:46.069Z",
+          "text": "Action initialized from Strategy Pillar."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "objective": "Guidance for Learners with using AI within their Study.\nWhat to do AND What not to do",
+      "kpi": "Student Experience",
+      "qaLink": "Learner Voice",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 2
+    },
+    {
+      "id": 1770133779370,
+      "title": "Horizon Scanning",
+      "priorityId": 2,
+      "milestoneLink": "Horizon Scanning",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-03",
+      "endDate": "2026-08-28",
+      "milestones": [
+        {
+          "title": "Continue Research",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.123
+        },
+        {
+          "title": "Monthly Update and Report",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.2761
+        },
+        {
+          "title": "Share Update with interested parties",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.474
+        },
+        {
+          "title": "Consider setting up a termly, or bi-termly focus group",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.5176
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-03T15:49:39.370Z",
+          "text": "Action initialized from Strategy Pillar."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "objective": "Keeping an eye out for critical changes, advice, and opportunities",
+      "kpi": "Retention Proxy",
+      "qaLink": "Other",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 2
+    },
+    {
+      "id": 1770133913846,
+      "title": "Sixth Form Parent Report Integration",
+      "priorityId": 2,
+      "milestoneLink": "Sixth Form Parent Report Integration",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-03",
+      "endDate": "2026-03-06",
+      "milestones": [
+        {
+          "title": "Arrange meeting with Maria Miles to discuss",
+          "completed": true,
+          "completedDate": "2026-02-03T19:14:29.515Z",
+          "dueDate": "2026-02-03",
+          "uuid": 1770146055985.877
+        },
+        {
+          "title": "Share initial report from meeting with TLAM",
+          "completed": true,
+          "completedDate": "2026-02-03T19:15:03.852Z",
+          "uuid": 1770146055985.7266
+        },
+        {
+          "title": "Set up meeting with Liam Fisher - Re: Power Automate",
+          "completed": true,
+          "completedDate": "2026-02-03T19:15:07.739Z",
+          "uuid": 1770146055985.3428
+        },
+        {
+          "title": "Work with Liam & Maria to develop PA to produce report",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.9011
+        },
+        {
+          "title": "Set up Power Automate with real data",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770230584835b86e145256c5c8"
+        },
+        {
+          "title": "Support Tutors to utilise and monitor Report Generation",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "177023059990254e801b9a5f51"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-03T15:51:53.846Z",
+          "text": "Action initialized from Strategy Pillar."
+        },
+        {
+          "date": "2026-02-03T15:59:02.013Z",
+          "text": "Spoke with Maria. What she wants is to pull PG Grades and SMART Targets from a downloaded data sheet (from ProMonitor via PowerBI) into an email to Parents without creating any additional work for tutors. My advice is to utilise Power Automate to pull the learner data into a template and send to the associated email of that learner. I have connected with Liam Fisher and arranged a meeting for Monday 9th Feb to discuss exactly how this can happen.",
+          "link": ""
+        }
+      ],
+      "deptCode": "SMS",
+      "tlam": "Emily Green",
+      "objective": "Develop strategies to improve termly, or bi-termly reporting to parents.\nWork with Maria Miles in Sixth Form to develop.",
+      "kpi": "Retention Proxy",
+      "qaLink": "Staff Survey",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 2
+    },
+    {
+      "id": 1770134413558,
+      "title": "Sixth Form Support for New Staff and existing Staff",
+      "priorityId": 1,
+      "milestoneLink": "Sixth Form Support for New Staff and existing Staff",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-03",
+      "endDate": "2026-04-10",
+      "milestones": [
+        {
+          "title": "Discuss need of training, and which staff with Maria",
+          "completed": true,
+          "completedDate": "2026-02-04T06:14:10.275Z",
+          "uuid": 1770146055985.4746
+        },
+        {
+          "title": "Share Booking Form with Maria for these staff",
+          "completed": true,
+          "completedDate": "2026-02-04T06:14:11.960Z",
+          "uuid": 1770146055985.2747
+        },
+        {
+          "title": "Discuss training F2F with staff members",
+          "completed": false,
+          "completedDate": null,
+          "uuid": 1770146055985.839
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-03T16:00:13.558Z",
+          "text": "Action initialized from Strategy Pillar."
+        },
+        {
+          "date": "2026-02-03T16:05:07.169Z",
+          "text": "Spoke with Maria today. I need to work with Mike Foster, the Physics Tutor, and the 2x NEW staff. Booking page has been shared with Maria. Follow up in Two weeks to track impact and effectiveness.",
+          "link": ""
+        }
+      ],
+      "deptCode": "SMS",
+      "tlam": "Emily Green",
+      "objective": "Work with some of Maria Miles staff - as identified by Maria - on developing Accessible Resources and sharing those with learners",
+      "kpi": "Staff Capability",
+      "qaLink": "Staff Survey",
+      "isQip": true,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1
+    },
+    {
+      "id": 1770192256492,
+      "title": "Liam Benson - Following Review and Reflect Session",
+      "priorityId": "2",
+      "milestoneLink": "",
+      "type": "coaching",
+      "milestones": [
+        {
+          "title": "Reach out to Liam Benson, regarding Megan's request, with booking form",
+          "completed": true,
+          "completedDate": "2026-02-04T08:11:20.146Z",
+          "uuid": "1770192583512ab0b4170f3c",
+          "dueDate": "2026-02-02"
+        },
+        {
+          "title": "Complete Coaching session",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "177019262350418a5d36a446f08",
+          "dueDate": "2026-02-12"
+        },
+        {
+          "title": "Write up Coaching notes",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17701926666576774a603d396b",
+          "dueDate": "2026-02-13"
+        }
+      ],
+      "updates": [],
+      "status": "Active",
+      "deptCode": "PRE",
+      "tlam": "Megan Brookes",
+      "startDate": "2026-02-02",
+      "endDate": "2026-02-12",
+      "objective": "Agreed Goals – Learner focused:\n  3. Enhance formative assessment opportunities.\n \nStrategies / Actions – Learner focused:\n  • Integrate quick quizzes or digital checks (Forms, polling). Menti-meter and/or padlet for example.\n  • Use results to adapt next steps in delivery.\n \nSupport / Training:\n  Digital CPD on MS Forms and assessment tools. –  possible session with GW to provide a short teach meet\n \n\t\nEvidence of impact / progress:\n  Evidence of assessment data informing planning; improved accuracy in learner responses.\n",
+      "kpi": "Staff Capability",
+      "qaLink": "Coaching Record",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": "2"
+    },
+    {
+      "id": 1770196626419,
+      "title": "Support Video Embed to SharePoint",
+      "priorityId": "",
+      "milestoneLink": "",
+      "type": "coaching",
+      "milestones": [
+        {
+          "title": "Upload Video to SharePoint",
+          "completed": true,
+          "completedDate": "2026-02-04T09:30:31.058Z",
+          "uuid": "17701966813433402a5e073043"
+        },
+        {
+          "title": "Check CC are available",
+          "completed": true,
+          "completedDate": "2026-02-04T09:30:32.229Z",
+          "uuid": "1770196695480a41c64669252a"
+        },
+        {
+          "title": "Make changes if necessary",
+          "completed": true,
+          "completedDate": "2026-02-04T09:30:33.015Z",
+          "uuid": "1770196704535d23f0780144a18"
+        },
+        {
+          "title": "Embed to SP",
+          "completed": true,
+          "completedDate": "2026-02-04T09:30:34.780Z",
+          "uuid": "17701967160122d638c0079fbc8"
+        }
+      ],
+      "updates": [],
+      "status": "Active",
+      "deptCode": "",
+      "tlam": "",
+      "startDate": "2026-02-04",
+      "endDate": "2026-02-04",
+      "objective": "Support Marisha West on how to upload video to SharePoint with CC",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": ""
+    },
+    {
+      "id": 1770206514957,
+      "title": "TLA Model Integration (21st Century Design)",
+      "priorityId": 3,
+      "milestoneLink": "TLA Model Integration (21st Century Design)",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-03-27",
+      "endDate": "2026-05-29",
+      "milestones": [],
+      "updates": [
+        {
+          "date": "2026-02-04T12:01:54.958Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Teaching Quality Indicators",
+      "qaLink": "",
+      "isQip": false,
+      "objective": "Linking digital tools explicitly to pedagogical theory to drive autonomy.",
+      "meetings": [],
+      "staff": "",
+      "pillarId": 3
+    },
+    {
+      "id": 1770211200897,
+      "title": "Digital Autonomy\" Framework Launch",
+      "priorityId": 3,
+      "milestoneLink": "TLA Model Integration (21st Century Design)",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-04",
+      "endDate": "2026-05-29",
+      "milestones": [
+        {
+          "title": "Audit current TLA models for digital gaps.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17702112396100eb4a2a119326"
+        },
+        {
+          "title": "Create \"21st Century Design\" one-pager for staff.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770211248179a1b312db39c13"
+        },
+        {
+          "title": "Present at Curriculum Quality Review Panel (CQRP).",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770211259673d76832a91b7248"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-04T13:20:00.897Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Teaching Quality Indicators",
+      "qaLink": "TLA Profile",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 3
+    },
+    {
+      "id": 1770211352738,
+      "title": "\"Digital Autonomy\" Framework Launch",
+      "priorityId": 3,
+      "milestoneLink": "TLA Model (21CLD) Integration",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-03-27",
+      "endDate": "2026-06-26",
+      "milestones": [
+        {
+          "title": "Audit current TLA models for digital gaps.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "177021137854656a8e1d3d8e8e8"
+        },
+        {
+          "title": "Create \"21st Century Design\" one-pager for staff.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770211384969f27e23ea0f5c9"
+        },
+        {
+          "title": "Present at Curriculum Quality Review Panel (CQRP).",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770211393098bff4101f2ca15"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-04T13:22:32.738Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Teaching Quality Indicators",
+      "qaLink": "TLA Profile",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 3
+    },
+    {
+      "id": 1770211417703,
+      "title": "Resource Creation Strategy",
+      "priorityId": 3,
+      "milestoneLink": "TLA Model (21CLD) Integration",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-04-10",
+      "endDate": "2026-04-24",
+      "milestones": [
+        {
+          "title": "Develop templates for \"Autonomous Learning\" guides.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770211461516b05ef0b71e6ee"
+        },
+        {
+          "title": "Pilot with 2 Champions.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770211469779dfc077857b07c8"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-04T13:23:37.703Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Student Experience",
+      "qaLink": "Learner Voice",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 3
+    },
+    {
+      "id": 1770211542279,
+      "title": "Visualiser & Recording Rollout",
+      "priorityId": 3,
+      "milestoneLink": "\"Moments of Modelling\" Campaign",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-04",
+      "endDate": "2026-09-25",
+      "milestones": [
+        {
+          "title": "Identify staff without access/skills.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770211551660997f917c69c448"
+        },
+        {
+          "title": "Create \"How-to\" video bank for screen recording.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17702115682529642a0a5cb1e88"
+        },
+        {
+          "title": "Distribute hardware where needed.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770211571605d60b3b090d231"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-04T13:25:42.279Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Staff Capability",
+      "qaLink": "Coaching Record",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 3
+    },
+    {
+      "id": 1770211614102,
+      "title": "Video Bank: Best Practice",
+      "priorityId": 3,
+      "milestoneLink": "\"Moments of Modelling\" Campaign",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-07-31",
+      "endDate": "2026-10-30",
+      "milestones": [
+        {
+          "title": "Record 5 examples of \"Live Modelling\" (e.g., solving a problem live).",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17702125155092a84501a39fc"
+        },
+        {
+          "title": "Share via Staff Newsletter/Teams.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17702125217807238281bdf91d"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-04T13:26:54.103Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Staff Confidence",
+      "qaLink": "Staff Survey",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 3
+    },
+    {
+      "id": 1770212690230,
+      "title": "Maths: Digital Inking Pilot",
+      "priorityId": 3,
+      "milestoneLink": "Targeted Interventions (Maths & Sixth Form)",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-08-24",
+      "endDate": "2026-12-18",
+      "milestones": [
+        {
+          "title": "1-to-1 coaching with Maths leads.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770212754061263846f2c3bbb8"
+        },
+        {
+          "title": "Observe a session using Inking.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770212761534442b9347e474e"
+        },
+        {
+          "title": "Gather student feedback on clarity.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17702127713092e7253d579f3f8"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-04T13:44:50.230Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Teaching Quality Indicators",
+      "qaLink": "Learning Walk Data",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 3
+    },
+    {
+      "id": 1770212787335,
+      "title": "Sixth Form: Live Feedback",
+      "priorityId": 3,
+      "milestoneLink": "Targeted Interventions (Maths & Sixth Form)",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-06-01",
+      "endDate": "2026-10-30",
+      "milestones": [
+        {
+          "title": "Setup \"Audio Feedback\" workflow in Teams/Turnitin.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17702128161009604f9d43da368"
+        },
+        {
+          "title": "Measure time saved vs. written marking.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17702128253975c64bea617609"
+        },
+        {
+          "title": "Review \"Assessment\" section of Dept QIP.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770212833332576f6951456548"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-04T13:46:27.335Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Retention Proxy",
+      "qaLink": "QIP Review",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 3
+    },
+    {
+      "id": 1770230788591,
+      "title": "Training TLAMs on what exists",
+      "priorityId": 3,
+      "milestoneLink": "How to digitally capture Live Modelling",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-06",
+      "endDate": "2026-02-17",
+      "milestones": [
+        {
+          "title": "List tools that can enable this",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "177023095269973d44b5158f0e8",
+          "dueDate": "2026-02-06"
+        },
+        {
+          "title": "Support TLAMs on what these tools are and how they help",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770230990926fae12c12c7a2a8",
+          "dueDate": "2026-02-13"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-04T18:46:28.591Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Teaching Quality Indicators",
+      "qaLink": "Learning Walk Data",
+      "isQip": false,
+      "objective": "Capturing Live Modelling through digital processes.\nThis is to ensure learners can recap, or catch up on learning.\nSupports the development of lasting learning.",
+      "meetings": [],
+      "staff": "",
+      "pillarId": 3
+    },
+    {
+      "id": 1770230807089,
+      "title": "Support Material for Staff",
+      "priorityId": 3,
+      "milestoneLink": "How to digitally capture Live Modelling",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-11",
+      "endDate": "2026-02-17",
+      "milestones": [
+        {
+          "title": "Develop resources that guide HOW TO use these resources",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "177023107965183e5fe50e443a8",
+          "dueDate": "2026-02-17"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-04T18:46:47.089Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Teaching Quality Indicators",
+      "qaLink": "Learning Walk Data",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 3
+    },
+    {
+      "id": 1770313836186,
+      "title": "Digital Hours in business plans - past and present",
+      "priorityId": 1770297373233,
+      "milestoneLink": "Unpick Digital Hours",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-05",
+      "endDate": "",
+      "milestones": [
+        {
+          "title": "Book Meetings with HoA through Cass",
+          "completed": true,
+          "completedDate": "2026-02-06T16:17:06.074Z",
+          "uuid": "177031389074272c424f55b50d",
+          "dueDate": "2026-02-06"
+        },
+        {
+          "title": "Track against Ben K BP guide",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770313915930b728e97b1bbec"
+        },
+        {
+          "title": "Discuss Expectations",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17703139530726fe242d5a9d0d"
+        },
+        {
+          "title": "Current picture",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770313985766d4e9304ed9c8f"
+        },
+        {
+          "title": "What to celebrate",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770313999777da1fa9eb896848"
+        },
+        {
+          "title": "Current BP and Next Year",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17703140207687e86c7fad45d38"
+        },
+        {
+          "title": "Discuss this with Joe Abdulgani",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17703946519114983e5bb85246"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-05T17:50:36.186Z",
+          "text": "Initialized."
+        },
+        {
+          "date": "2026-02-06T16:12:04.388Z",
+          "text": "See Notes from Meeting with Ben Manning and Neil Davies on 05/02/26",
+          "link": "",
+          "source": ""
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Teaching Quality Indicators",
+      "qaLink": "",
+      "isQip": false,
+      "objective": "College-wide understanding of the EXPACTATIONS of the Areas\nWhat IS happening\nCELEBRATE to best practice\nSHARE the best practice",
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770297373233
+    },
+    {
+      "id": 1770314087874,
+      "title": "What equipment do we have in each Area?",
+      "priorityId": 1770297373233,
+      "milestoneLink": "Digital Equipment",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-05",
+      "endDate": "",
+      "milestones": [],
+      "updates": [
+        {
+          "date": "2026-02-05T17:54:47.874Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770297373233
+    },
+    {
+      "id": 1770314112167,
+      "title": "What is needed? - Wish List",
+      "priorityId": 1770297373233,
+      "milestoneLink": "Digital Equipment",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-05",
+      "endDate": "",
+      "milestones": [],
+      "updates": [
+        {
+          "date": "2026-02-05T17:55:12.167Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770297373233
+    },
+    {
+      "id": 1770314155051,
+      "title": "Excelerating Digital Skills - course specific",
+      "priorityId": 1770297373233,
+      "milestoneLink": "What does Digital Look Like?",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-05",
+      "endDate": "",
+      "milestones": [],
+      "updates": [
+        {
+          "date": "2026-02-05T17:55:55.051Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770297373233
+    },
+    {
+      "id": 1770314171352,
+      "title": "Digital Learning Skills - General",
+      "priorityId": 1770297373233,
+      "milestoneLink": "What does Digital Look Like?",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-05",
+      "endDate": "",
+      "milestones": [],
+      "updates": [
+        {
+          "date": "2026-02-05T17:56:11.352Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770297373233
+    },
+    {
+      "id": 1770314188879,
+      "title": "Support needed?",
+      "priorityId": 1770297373233,
+      "milestoneLink": "What does Digital Look Like?",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-05",
+      "endDate": "",
+      "milestones": [],
+      "updates": [
+        {
+          "date": "2026-02-05T17:56:28.879Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770297373233
+    },
+    {
+      "id": 1770314197881,
+      "title": "Best practice?",
+      "priorityId": 1770297373233,
+      "milestoneLink": "What does Digital Look Like?",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-05",
+      "endDate": "",
+      "milestones": [],
+      "updates": [
+        {
+          "date": "2026-02-05T17:56:37.881Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770297373233
+    },
+    {
+      "id": 1770314224330,
+      "title": "Bids - possible money for equipment",
+      "priorityId": 1770297373233,
+      "milestoneLink": "Digital Equipment",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-05",
+      "endDate": "2026-03-27",
+      "milestones": [
+        {
+          "title": "Reach out to Richard Browne on Bids Opportunities",
+          "completed": true,
+          "completedDate": "2026-02-06T09:16:16.607Z",
+          "uuid": "17703692980322799ac3e0215b",
+          "dueDate": "2026-02-06"
+        },
+        {
+          "title": "Discuss and Present options following Bids opportunities",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17703693460091107bc02a3911"
+        },
+        {
+          "title": "Investigate the Digital Equipment currently in Areas, especially specialist equipment, to understand the \"Digital Skills for Learning\" in areas.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770369377692dacf390b2ae0c"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-05T17:57:04.330Z",
+          "text": "Initialized."
+        },
+        {
+          "date": "2026-02-06T09:19:07.154Z",
+          "text": "Richard tells me that there are two types of Bid opportunities - Staffing costs, and equipment. The equipment bids is limited currently, but Richard and his team will have a look.",
+          "link": "",
+          "source": ""
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "Value for Money",
+      "qaLink": "Other",
+      "isQip": false,
+      "objective": "Understanding the Digital Equipment we have around the college, what is needed, and expanding our offering.",
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770297373233
+    },
+    {
+      "id": 1770314251441,
+      "title": "Link with Assistive Tech and SEND - Lois Knight and Liz ?",
+      "priorityId": 1770297373233,
+      "milestoneLink": "Digital Equipment",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-05",
+      "endDate": "",
+      "milestones": [],
+      "updates": [
+        {
+          "date": "2026-02-05T17:57:31.442Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770297373233
+    },
+    {
+      "id": 1770315039822,
+      "title": "View of the many",
+      "priorityId": 1770297373233,
+      "milestoneLink": "What does Digital Look Like?",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-05",
+      "endDate": "",
+      "milestones": [
+        {
+          "title": "Speak to Joe about his take on what Digital Looks like, particularly about Digital Hours",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770315043797736cd7247dd64"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-05T18:10:39.822Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770297373233
+    },
+    {
+      "id": 1770368207391,
+      "title": "What does the Digital Champions CPD Program look like?",
+      "priorityId": 1770198688520,
+      "milestoneLink": "Digital Coaches – CPD incentivised ",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-06",
+      "endDate": "2026-05-29",
+      "milestones": [
+        {
+          "title": "Speak to existing or past Champions - what do they want?",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17703947800750e2bcd1541a6c8"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-06T08:56:47.391Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770198688520
+    },
+    {
+      "id": 1770368236810,
+      "title": "What does this model look like?",
+      "priorityId": 1770198688520,
+      "milestoneLink": "Digital Leads in Areas",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-06",
+      "endDate": "",
+      "milestones": [],
+      "updates": [
+        {
+          "date": "2026-02-06T08:57:16.810Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770198688520
+    },
+    {
+      "id": 1770369736057,
+      "title": "Meetings with HoA to investigate what Digital looks like ",
+      "priorityId": 1770297373233,
+      "milestoneLink": "Meetings with HoA to investigate what Digital looks like ",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-06",
+      "endDate": "",
+      "milestones": [
+        {
+          "title": "Cass to arrange with HoA",
+          "completed": true,
+          "completedDate": "2026-02-06T16:12:47.200Z",
+          "uuid": "1770369746101cb5a68ad04a3e"
+        },
+        {
+          "title": "Set up Forms to gather feedback during meeting",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770369766830d61533359cedf"
+        },
+        {
+          "title": "Set up report",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770369804732e6142b2c4f2a28"
+        },
+        {
+          "title": "Finalise report for Neil & Ben M",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770369813963a28b3ae6814c08"
+        },
+        {
+          "title": "Produce action plan and next steps - consider bids and training involvement",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770369829437cc3d126725711"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-06T09:22:16.057Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "meetings": [],
+      "staff": "",
+      "pillarId": 1770297373233
+    },
+    {
+      "id": 1770395457243,
+      "title": "Meet with Liz Burkley and Lois Knight - LEARN",
+      "priorityId": 1770395343946,
+      "milestoneLink": "Digital Accessibility, Assistive Technology, and Digital Inclusion",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-06",
+      "endDate": "2026-03-06",
+      "milestones": [
+        {
+          "title": "Arrange a meeting with both Liz and Lois",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770395471891d24333b022e338"
+        },
+        {
+          "title": "Notes from meeting - what gaps and learning have I taken",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770395485773f67917397e8b4"
+        },
+        {
+          "title": "Observe Assistive Technology in practice",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770395504332c26589e93b9ac8"
+        },
+        {
+          "title": "Assistive Tech needs",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17703955260380336cc56f7f5a8"
+        },
+        {
+          "title": "Report of training, gaps, approaches etc",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17703955377509f42bfd26bbf88"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-06T16:30:57.243Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "staff": "",
+      "meetings": [],
+      "pillarId": 1770395343946
+    },
+    {
+      "id": 1770395607302,
+      "title": "LRAs; Dev Obs; QRA",
+      "priorityId": 1770395559864,
+      "milestoneLink": "LRAs; Dev Obs; QRA",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-06",
+      "endDate": "",
+      "milestones": [
+        {
+          "title": "What are these?",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "177039561245078e3392b445508"
+        },
+        {
+          "title": "Develop notes for this understanding",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17703956192964dc51fdc9d773"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-06T16:33:27.302Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "staff": "",
+      "meetings": [],
+      "pillarId": 1770395559864
+    },
+    {
+      "id": 1770395672005,
+      "title": "Toolkit references – achievement, CT&T",
+      "priorityId": 1770395559864,
+      "milestoneLink": "Toolkit references – achievement, CT&T",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-06",
+      "endDate": "",
+      "milestones": [
+        {
+          "title": "how are you supporting learners and staff?",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770395684499f0ee35f5ff5788"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-06T16:34:32.005Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "staff": "",
+      "objective": "“Learners & apprentices their develop digital skills needed to study curriculum and learning goals”",
+      "meetings": [],
+      "pillarId": 1770395559864
+    },
+    {
+      "id": 1770395719678,
+      "title": "Digital planned hours in BPs based on min expectations",
+      "priorityId": 1770395559864,
+      "milestoneLink": "Digital planned hours in BPs based on min expectations",
+      "type": "Strategy",
+      "status": "Active",
+      "startDate": "2026-02-06",
+      "endDate": "",
+      "milestones": [
+        {
+          "title": "see BK guide on digital hours in Business Plan",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "177039572952187e0be87b4785"
+        },
+        {
+          "title": "oversight and unpick what each area / programme is doing?",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "17703957544148a0a4c7340d3d"
+        },
+        {
+          "title": "Meet managers and establish Digital Kit.",
+          "completed": false,
+          "completedDate": null,
+          "uuid": "1770395762976adac6df976843"
+        }
+      ],
+      "updates": [
+        {
+          "date": "2026-02-06T16:35:19.678Z",
+          "text": "Initialized."
+        }
+      ],
+      "deptCode": "",
+      "tlam": "",
+      "kpi": "",
+      "qaLink": "",
+      "isQip": false,
+      "staff": "",
+      "meetings": [],
+      "pillarId": 1770395559864
+    }
+  ],
+  "settings": {
+    "pillars": [
+      {
+        "id": 1,
+        "title": "Digital Ecosystem & Standards",
+        "intent": "Build reliable, accessible digital infrastructure",
+        "color": "#0891b2",
+        "strategicMilestones": []
+      },
+      {
+        "id": 2,
+        "title": "Pedagogy, Assessment & Innovation",
+        "intent": "Transform teaching through digital tools",
+        "color": "#7c3aed",
+        "strategicMilestones": []
+      },
+      {
+        "id": 3,
+        "title": "Inclusion & Accessibility",
+        "intent": "Ensure equitable digital access for all learners",
+        "color": "#059669",
+        "strategicMilestones": []
+      },
+      {
+        "id": 4,
+        "title": "Capacity Building & QA",
+        "intent": "Develop staff capability and quality processes",
+        "color": "#ea580c",
+        "strategicMilestones": []
+      }
+    ],
+    "kpis": [
+      "Teaching Quality Indicators",
+      "QIP Traction",
+      "Staff Capability",
+      "Staff Confidence",
+      "Student Experience",
+      "Retention Proxy",
+      "Value for Money",
+      "Digital Champions"
+    ],
+    "qaSources": [
+      "Learning Walk Data",
+      "TLA Profile",
+      "QIP Review",
+      "Coaching Record",
+      "Staff Survey",
+      "Learner Voice",
+      "Exit Interview",
+      "Teams Analytics",
+      "Other"
+    ],
+    "meetingCategories": [
+      "1:1 Line Manager",
+      "Wider Leadership",
+      "HoAs",
+      "Digital Leads",
+      "Champions",
+      "TLAMs",
+      "Quality Team",
+      "External",
+      "Other"
+    ]
+  },
+  "todos": [
+    {
+      "text": "Make this Check List a usable tick sheet for users???",
+      "completed": false,
+      "projectTitle": "Resources for Self-Guided Teams Environment",
+      "originalId": 1770146055985.2124,
+      "projectId": 1770130190597,
+      "id": 1770643778036.1982
+    },
+    {
+      "text": "List tools that can enable this",
+      "completed": false,
+      "projectTitle": "Training TLAMs on what exists",
+      "originalId": "177023095269973d44b5158f0e8",
+      "projectId": 1770230788591,
+      "id": 1770643778036.232
+    },
+    {
+      "text": "Have a look at the Tracker from Cass",
+      "completed": false,
+      "projectTitle": "Manual",
+      "originalId": null,
+      "id": 1770643778036.4426
+    },
+    {
+      "text": "Contact HR about my positioning",
+      "completed": false,
+      "projectTitle": "Manual",
+      "originalId": null,
+      "id": 1770643778036.692
+    },
+    {
+      "text": "How can I support students to learn the Digital skills needed to learn - Provide the evidence of this",
+      "completed": false,
+      "projectTitle": "Manual",
+      "originalId": null,
+      "id": 1770643778036.1208
+    },
+    {
+      "text": "Book Meetings with HoA to explore Digital Provision",
+      "completed": false,
+      "projectTitle": "Meeting Action",
+      "originalId": null,
+      "id": 1770643778036.14
+    },
+    {
+      "text": "What is the ISO process beyond the audit at the end of Feb? - ask Cass",
+      "completed": false,
+      "projectTitle": "Meeting Action",
+      "originalId": null,
+      "id": 1770643778036.7327
+    },
+    {
+      "text": "How can we have folders that have different permissions for users - Eg, Cass from the Test Folder",
+      "completed": false,
+      "projectTitle": "Meeting Action",
+      "originalId": null,
+      "id": 1770643778036.141
+    }
+  ],
+  "meetingNotes": [
+    {
+      "id": 1770644938412,
+      "title": "Sixth Form - PA for results",
+      "date": "2026-02-09",
+      "category": "Heads of Area (HoA)",
+      "content": "Using Power Automate to inform students and parents of their results and feedback.\nPRIOR NOTES:\n\"Maria Miles wants to send Reports home to parents with PG Grades and SMART Targets from ProMonitor.\nShe has Natalie in PowerBI team to download data for her team which includes these pieces of data in a Excel Spreadsheet.\nNow I've done your training I confidently stated that Power Automate can do that!!! Still no idea how though, well maybe a little idea.\nSo, I suggested, and please don't shout at me, that we can take data from the spreadsheet (PG Grades and SMART Targets) and insert them into the template email. Then it can send to assigned email addresses.\"\n\nMail Merge - 400 learners - how long does this take?\nHow long would a PA system take?\n",
+      "attendees": "LF, MM, GW",
+      "linkedProjectId": "prio:2",
+      "links": []
+    },
+    {
+      "id": 1770643804928,
+      "title": "",
+      "date": "2026-02-09",
+      "category": "Other",
+      "content": "Generated from Calendar",
+      "attendees": "",
+      "linkedProjectId": "",
+      "links": []
+    },
+    {
+      "id": 1770637110255,
+      "title": "ISO Catch Up",
+      "date": "2026-02-09",
+      "category": "Other",
+      "content": "Standard Operating Procedure:\n- How can I make the ISO process easier for the team\n- Can Agents help in any way?\n- What about Power Automate to complete tasks, policy reminders etc.\n\nGW to explore how to change permissions in folders within SharePoint",
+      "attendees": "ND, RL, CG, GW",
+      "linkedProjectId": "",
+      "links": []
+    },
+    {
+      "id": 1770395052286,
+      "title": "Initial 1:1",
+      "date": "2026-02-02",
+      "category": "1:1 Line Manager (Neil Davies)",
+      "content": "Focus on 1-3 core priorities (1 = foundations)  \n- Teams environments (Teams health check)\n- Use of AI for impactful strategies and time efficiencies – Power Automate\n- Live Modelling - Digital Tools to enhance learning\n\nContact Maria Miles and plan staff support & training in SMS \n\nRe-read and summarise for meeting with BM on Thursday 5th Feb to identify 1-3 core priorities for the most impact \n\nNB: See \"Graeme Wright 121s\" docx - usually saved on Edge favourites\n\nhttps://weston-my.sharepoint.com/:w:/r/personal/neil_davies_weston_ac_uk/_layouts/15/doc2.aspx?sourcedoc=%7B0369C2B3-320E-42F6-BD9F-E0864FDCF0D6%7D&file=Graeme%20Wright%20121s.docx&action=default&mobileredirect=true",
+      "attendees": "Neil Davies",
+      "linkedProjectId": "",
+      "links": []
+    },
+    {
+      "id": 1770394816002,
+      "title": "R.Houselander-Cook - Attractive Champs",
+      "date": "2026-02-06",
+      "category": "Digital Champions",
+      "content": "I asked Ronnie - \"If you were to be attracted back to the programme what would you like to see, and what to avoid?\"\n\nRonnie's response:\n- Time is an issue\n- Work on Digital things in CPD time, like Inset days\n- Use directed time to focus on making shiny exemplars, or innovate and experiment. Making this additional to role is difficult.\n- Don't give us projects - we don't like it.\n- Take us out on CPD events",
+      "attendees": "Ronnie Houselander-Cook",
+      "linkedProjectId": "prio:1770198688520",
+      "links": []
+    },
+    {
+      "id": 1770390234814,
+      "title": "BM - Catch Up",
+      "date": "2026-02-05",
+      "category": "Wider Leadership",
+      "content": "Initial meeting regarding my role as Digital Pedagogy Coach within Quality.\nDon't want to box me in to \"just\" digital. I need to develop my wider understanding of the work of Quality and to assist in all areas across the team.\n\nKey Discussion Points:\n1) EIF Toolkit - How can I support students to learn the Digital skills needed to learn - Provide the evidence of this.\nThis is a vitally important part of the toolkit, and the same statement about digital is mentioned several times. I paraphrase... \"to develop the English, Maths, and Digital Skills to learn and develop subject knowledge\".\n\n2) What is happening with Digital across the organisation?\n- Digital Hours - current and future. What is going towards them? NB - Look at the Business Planning guide from Ben Knocks - shared by BM\n- What the EXPECTATIONS of digital skills development?\n- Currently happening with digital and what are the Gaps?\n- What can be celebrated and shared?\n- What equipment do Areas currently have?\n- What is their wish list?\n- Work with R. Browne in Bids to explore money streams\n- Assistive Technology and Digital Inclusion practice - work with Lois K and Liz - include digital accessibility\n- Learn about Assistive Tech - what gaps do we have and how can we plug them?\n- Talk to Joe A about his experience and insight into Digital across the college\n",
+      "attendees": "Ben Manning and Neil Davies",
+      "linkedProjectId": "prio:1770297373233",
+      "links": []
+    }
+  ],
+  "calendarEvents": [
+    {
+      "id": 1770647863744,
+      "title": "Lunch",
+      "day": "Mon",
+      "time": "12:30",
+      "type": "work"
+    }
+  ]
+}

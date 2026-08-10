@@ -1,0 +1,729 @@
+**WESTON COLLEGE GROUP**
+
+Digital Pedagogy  |  Quality Team
+
+**Teacher Digital Skills**
+
+**and the Digital Learning Pyramid**
+
+*A framework for staff digital development aligned to the three levels of the Digital Learning Pyramid, with skills, tools, CPD levers, and a curated course directory for every stage*
+
+| **Author** | Graeme Wright, Digital Pedagogy Coach, Quality Team |
+| --- | --- |
+| **Date** | March 2026 |
+| **Status** | **Consultation document. For discussion.** |
+| **Accessibility** | WCAG 2.2 AA compliant |
+
+# **Section 1: The Digital Learning Pyramid**
+
+The Digital Learning Pyramid is the strategic architecture through which the Digital Pedagogy Coach role operates across Weston College. It has three levels, each representing a distinct phase of digital capability development for staff and learners. Everything in this document, from skills to tools to CPD routes, is organised in relation to these three levels.
+
+The Pyramid is built bottom-up. Digital Foundations must come first. They are the condition for everything else. Digital Inclusion builds on those foundations, extending good practice into accessible, equitable environments for all learners. Digital Innovation is the highest level, where individual practice influences systems, shapes strategy, and challenges what is possible.
+
+| **Why a Pyramid?** A pyramid communicates sequence and dependency. You cannot build inclusion without foundations. You cannot innovate sustainably without inclusion. The three levels are not separate programmes. They are a journey. Every member of staff is somewhere on that journey. This document is designed to help them know where they are, what comes next, and how to get there. |
+| --- |
+
+*The table below maps the three levels of the Pyramid to their definition, the staff development stage they correspond to, and the primary strategic focus at each level. The Pyramid logo will be embedded in the HTML resource as a visual anchor for this framework throughout the toolkit.*
+
+| **Level 1 — The Base** **Digital Foundations** *Including Digital Accessibility* | Every member of staff can use the tools available to them with confidence. Devices, software, email, digital learning environments, digital resourcing, and cloud storage are used reliably and professionally. Accessibility is understood as a professional standard, not an add-on. Every digital resource created by a staff member passes the Office Accessibility Checker before it is shared. WCAG 2.2 AA is the floor. Immersive Reader, Live Captions, and the Accessibility Checker are part of everyday practice. |
+| --- | --- |
+
+| **Level 2 — The Middle** **Digital Inclusion** *Developing Practice for All Learners* | Staff use digital tools purposefully to improve teaching, learning, and assessment for all learners. They understand how to use assistive technology, design inclusive digital environments, and adapt their practice for ESOL, SEND, and disadvantaged learners. Teams environments are well structured, Assignments use rubrics, and learners receive accessible digital feedback. This level aligns with UDL and Quality First Teaching principles. Staff at this level have moved beyond personal competence into pedagogical application. |
+| --- | --- |
+
+| **Level 3 — The Pinnacle** **Digital Innovation** *Leading Change and Shaping Practice* | Staff at this level are not just using digital tools. They are redesigning what teaching looks like with them. They innovate with AI, build automated workflows, challenge assumptions about what is possible, and influence others. They are Digital Leads, Digital Champions, and agents of change across the college. Their practice does not stay in their classroom. It spreads. |
+| --- | --- |
+
+## **How the Pyramid aligns to the Teacher Digital Skills stages**
+
+| **Pyramid Level** | **ETF DTPF Stage** | **DigCompEdu** | **Weston College Focus** |
+| --- | --- | --- | --- |
+| Digital Foundations (Level 1) | Stage 1: Exploring | A1 to A2 — Newcomer to Explorer | Confident use of M365 tools, accessibility habits established, WCAG 2.2 AA as a professional standard |
+| Digital Inclusion (Level 2a) | Stage 2A: Adopting, Developing | B1 — Integrator | Digital tools purposefully integrated into TLA; learner inclusion driving decisions; AT in use |
+| Digital Inclusion (Level 2b) | Stage 2B: Adopting, Embedding | B2 — Expert | Accessibility by design; AI used critically and transparently; EDS mapping articulated; QFT and UDL embedded in digital practice |
+| Digital Innovation (Level 3) | Stage 3: Leading | C1 to C2 — Leader to Pioneer | Coaching others; shaping strategy; building workflows; AI orchestration; driving institutional change |
+
+| **The Learn, Work, Life alignment** The Digital Learning Pyramid connects directly to the college's three-context model for digital skills: Learn (how staff and learners develop digital capability for study and professional growth), Work (how digital skills translate into employment-ready practice in vocational and professional contexts), and Life (how inclusive digital practice enables every learner to participate fully in society, access services, and live independently). Every level of the Pyramid speaks to all three contexts. |
+| --- |
+
+# **Section 2: Top 10 Digital Skills Aligned to the Pyramid**
+
+Each of the ten universal digital skills is placed within the Pyramid and mapped to the three-context model. This alignment supports coaching conversations with Heads of Area and helps staff understand why each skill matters and at which level of development it sits.
+
+The context column uses the Learn, Work, Life language throughout, in line with college policy.
+
+| **Rank** | **Skill** | **Pyramid Level** | **Learn, Work, Life** | **Why this level** |
+| --- | --- | --- | --- | --- |
+| 01 | AI Literacy and Prompt Skills | Digital Inclusion (Level 2b) | Work; Life | Critical, active use of AI tools is not a foundational skill. It requires strong digital foundations and inclusive judgment before it can be used ethically and effectively. |
+| 02 | Digital Communication and Collaboration | Digital Foundations (Level 1) | Learn; Work; Life | Professional use of Teams, email, and shared platforms is a baseline expectation for all staff and learners. The starting point, not a specialism. |
+| 03 | Information and Data Handling | Digital Foundations to Inclusion (Level 1 to 2) | Learn; Work | Finding and evaluating information is foundational. Using it to inform decisions, map to EDS categories, or produce evidence moves into Inclusion. |
+| 04 | Online Safety and Cybersecurity | Digital Foundations (Level 1) | Life; Work | Password hygiene, two-factor authentication, recognising phishing: these are non-negotiable baselines. Safety comes first. |
+| 05 | Digital Productivity Tools | Digital Foundations (Level 1) | Learn; Work | Word, Excel, PowerPoint, OneNote, Teams, cloud storage: the tools of organised, professional digital practice. Must be in place before anything else can be built. It is essential that all digital learning environments and digital resourcing is accessible to all users and enables the use of assistive technology. |
+| 06 | Problem Solving with Technology | Digital Inclusion (Level 2) | Work; Learn | Using digital tools to find solutions rather than seek step-by-step guidance signals a shift from user to practitioner. This is the gateway to inclusion. This can come from basic uses of AI, interpreting data, using and promoting the use of assistive technology. |
+| 07 | Digital Transactions and Services | Digital Foundations (Level 1) | Life | Accessing government services, online banking, NHS App, Universal Credit portal: infrastructure for independent living. A social inclusion imperative. |
+| 08 | Creating and Sharing Digital Content | Digital Inclusion (Level 2) | Learn; Work; Life | Creating accessible, purposeful digital content for defined audiences marks the shift from consuming to contributing. Accessibility by design is a requirement here. As is the promotion of Assistive Technology to support work, life, and learn. |
+| 09 | Virtual Collaboration and Remote Working | Digital Inclusion (Level 2) | Work | Professional digital etiquette and effective hybrid working are not just personal competencies. They shape learner environments and inclusion. Strong use of Teams learning environments and accessible digital resources is a must. |
+| 10 | Digital Wellbeing and Inclusion | Digital Inclusion (Level 2) | Life; Learn | Designing for accessibility, understanding tech's impact on wellbeing, and promoting inclusive digital environments: this is the heart of Learning Without Barriers. We have tools within the M365 ecosystem that support inclusion and wellbeing. |
+
+# **Section 3: General Digital Skills Aligned to the Pyramid**
+
+The five EDS categories applied across the three contexts of Learn, Work, and Life, each placed within the Digital Learning Pyramid. This section replaces the previous For Learning, For Work, For Society language throughout the framework, in line with college policy.
+
+## **For Learn**
+
+| **Skill** | **Pyramid Level** | **Context** | **What it looks like** |
+| --- | --- | --- | --- |
+| Navigating digital platforms | Foundations (Level 1) | Learn | Using Teams, SharePoint, and the Brighter Futures Hub (Moodle) VLE and other platforms to access timetables, resources, and learning materials independently without prompting |
+| Research and information literacy | Foundations to Inclusion (Level 1 to 2) | Learn; Life | Specific search terms; evaluating source credibility; identifying AI generated misinformation |
+| Digital note taking and organisation | Foundations (Level 1) | Learn | OneNote, Loops, other note-taking resources, and structured folders; version history; consistent naming conventions |
+| Collaborative digital working | Inclusion (Level 2) | Learn; Work | Co-editing in real time; contributing to Teams channels; managing asynchronous peer review |
+| AI assisted learning | Innovation (Level 3) | Learn; Work | Using AI tools to support research, drafting, and self quizzing with full academic integrity awareness. Active and critical use, not passive reliance. Utilising multiple forms of AI assistance to improve the quality of outcomes and reliable responses. |
+
+## **For Work**
+
+| **Skill** | **Pyramid Level** | **Context** | **What it looks like** |
+| --- | --- | --- | --- |
+| Professional communication | Foundations (Level 1) | Work | Email and Teams etiquette; video call protocol; knowing when to use which channel. NB — These are genuine skill gaps in most cohorts. |
+| Productivity and office applications | Foundations (Level 1) | Work; Learn | Word, Excel, PowerPoint, cloud storage, Outlook calendar; understanding how applications combine to save time |
+| Digital transactions and invoicing | Foundations (Level 1) | Work; Life | Online payments; Xero and Sage basics; HMRC Making Tax Digital; digital VAT submission. NB — Mandatory from 2026 for self-employed practitioners. |
+| Data handling and record keeping | Inclusion (Level 2) | Work | Accurate digital data entry; GDPR obligations; compliant records; interpreting basic workplace data |
+| AI literacy for the workplace | Innovation (Level 3) | Work | Using AI assistants to draft, summarise, and research; evaluating outputs critically; understanding ethical use and limitations |
+
+## **For Life**
+
+| **Skill** | **Pyramid Level** | **Context** | **What it looks like** |
+| --- | --- | --- | --- |
+| Accessing public and government services | Foundations (Level 1) | Life | Gov.UK, Universal Credit portal, NHS App, HMRC self-assessment. This is the infrastructure for independent living, not optional awareness. |
+| Online safety and privacy | Foundations (Level 1) | Life; Work | Password managers; two-factor authentication; recognising phishing; reviewing social media privacy settings actively |
+| Digital financial inclusion | Foundations (Level 1) | Life | Online banking; comparing providers; avoiding scams; understanding digital payment systems |
+| Critical engagement with media | Inclusion (Level 2) | Life | Identifying misinformation; understanding algorithmic bias and filter bubbles; responsible social media use |
+| Digital wellbeing and accessibility | Inclusion (Level 2) | Life; Learn | Screen time management; tech's impact on mental health; using and creating WCAG 2.2 AA accessible digital content; assistive technology awareness |
+
+# **Section 4: Teacher Digital Skills Framework**
+
+A fully expanded framework for FE and HE teaching staff at Weston College. Each stage sets out the skills staff should be demonstrating, the Microsoft and wider digital tools that anchor that stage, and the professional development levers from the Quality Handbook that support progression. The framework is designed to be useful for teaching staff navigating their own development, for TLAMs planning CPD, and for the Quality team evidencing digital capability growth across the college.
+
+| **Two dimensions of Teacher Digital Skills** This framework covers two distinct but inseparable dimensions. General Digital Skills: the personal digital competencies that every staff member needs to work effectively in a digital organisation. Teaching Digital Skills: the pedagogical capabilities that translate personal competence into high quality, inclusive teaching, learning, and assessment. Both dimensions are present at every stage. The difference is in how they are applied and evidenced. |
+| --- |
+
+| **How to use this framework** This is not an audit tool. It is a development conversation tool. When a TLAM or coach sits down with a member of staff, the question is not: which boxes can you tick? The question is: where are you now, what does the next stage look like for you, and what support is available to help you get there? The Jisc Building Digital Capability Discovery Tool provides the baseline self-assessment. This framework provides the roadmap. |
+| --- |
+
+## **Stage 1: Exploring**
+
+### **Pyramid Level: Digital Foundations | ETF DTPF: Exploring | DigCompEdu: A1 to A2**
+
+Staff at Stage 1 are beginning to engage with digital tools in their professional practice. They may be new to the FE sector, new to Weston College, or new to thinking about digital as a dimension of their teaching. They are aware of what is available but are not yet acting on it consistently. Their focus should be on building confidence with the tools they need every day, and on establishing accessibility as a professional habit from the outset.
+
+### **General Digital Skills — Stage 1**
+
+| **Skill Area** | **What staff should be able to demonstrate** |
+| --- | --- |
+| Device and account management | Log into college email, Teams, and SharePoint reliably. Use OneDrive to save and retrieve files. Understand the difference between local and cloud storage. Know how to access IT support. |
+| Email and communication | Write and send professional emails. Use appropriate tone. Reply with context. Attach files correctly. Use Teams chat for internal messaging. Know the difference between a reply and a reply all. |
+| File management | Create folders, name files consistently, and retrieve them reliably. Avoid duplicate files. Understand version history. Share files via OneDrive link rather than email attachment. Understand and use file permissions correctly for different audiences. |
+| Online safety basics | Use a strong, unique password for the college account. Enable two-factor authentication. Recognise and respond to phishing emails appropriately. Understand that personal and work data should not be mixed on college devices. Stay up to date with cyber and online safety training. |
+| Accessing digital services | Navigate SharePoint and the Quality Hub. Know where to access digital support. Access the staff CPD menu. Stay up to date with basic digital pedagogy to support TLA practice. Complete the New Staff Induction digital onboarding tasks. Use Gov.UK and DfE digital services relevant to role. |
+
+### **Teaching Digital Skills — Stage 1**
+
+| **Skill Area** | **What staff should be able to demonstrate** |
+| --- | --- |
+| Setting up a class Team | Create a class Team using the Education template. Add a welcoming first channel. Organise Channels to reflect the Scheme of Learning or planned learning experience. Upload a scheme of learning and key resources — these must be accessible by design. Invite students. Post a welcome message. Know how to navigate channels and the Files tab. |
+| Using Assignments | Create a basic assignment in Teams with a due date and attached brief. Know how to view, mark, feedback, and return student work. Understand the difference between Grades and Class Notebook. |
+| Basic accessibility | Understand the responsibilities we have for providing digitally accessible content. Run the Microsoft Office Accessibility Checker on any document before uploading it to Teams. Understand what alt text is and add it to images. Use built-in heading styles in Word rather than manual bold text. |
+| Attendance and record keeping | Record attendance digitally in the college system. Keep basic digital records of learner progress — this includes collecting baseline data. Know where lesson documentation should be saved. |
+| Awareness of inclusive tools | Know that Immersive Reader exists and what it does. Demonstrate it to all learners at induction, and regularly after, as a standard offer, not only those with a recorded need. Know what assistive technology is available to learners, and promote its use to all learners, not just those with a recorded need. Know that Live Captions can be enabled in Teams meetings. |
+
+### **Microsoft Ecosystem Tools — Stage 1**
+
+| **Tool** | **Primary Use at Stage 1** | **Free? Available in M365?** |
+| --- | --- | --- |
+| Microsoft Teams (Class Teams) | Create class environment; communicate with learners; share files and resources | Yes — M365 Education |
+| Microsoft Outlook | Professional email; calendar management; meeting invites | Yes — M365 |
+| Microsoft OneDrive | Cloud file storage; sharing resources; accessing files from any device | Yes — M365 |
+| Microsoft Word | Creating accessible lesson resources, schemes of learning, and documentation | Yes — M365 |
+| Microsoft PowerPoint | Presentations; visual resources for teaching and learning | Yes — M365 |
+| Office Accessibility Checker | Checking any document or presentation for WCAG 2.2 AA compliance before sharing | Yes — built into all Office apps |
+| Immersive Reader and Assistive Technology | Demonstrating inclusive reading support to all learners at induction, and regularly after. Promoting the use of assistive technology for learning. | Yes — built into Teams, Word, OneNote, Forms. AT often found in M365 and device systems. |
+| SharePoint (view only) | Accessing Quality Hub, team sites, and shared college documents | Yes — M365 |
+
+### **CPD Levers — Stage 1**
+
+The following CPD mechanisms from the Weston College Quality Assurance and Improvement Manual 2025/26 are most relevant to supporting staff at Stage 1. Each is named as it appears in the handbook.
+
+| **CPD Lever** | **How it supports Stage 1 development** | **When it happens** |
+| --- | --- | --- |
+| New Staff Induction (NSI) and Extended New Staff Induction | The four-day academic staff induction includes a dedicated Digital TLA session. The Extended NSI on Wednesdays in Term 1 includes Digital TLA sessions. The induction timetable includes Scavenger Hunt tasks using SharePoint, Teams, SMART Board, and Microsoft Forms as an early digital orientation. | Monthly throughout the year; August and September cohorts largest. Extended NSI: Wednesdays, Term 1 |
+| COGs — Digital Pedagogy | Four times a year staff learn to upskill in different elements of Digital Pedagogy. The focus areas are: Digital Learning Environments; Accessibility and Inclusion; Digital TLA; Using AI to support learning; 21st Century Learning Design. | Four times a year |
+| Developmental Observations | New staff to Weston College receive a developmental observation in addition to any learning walk. Staff who want further coaching on their TLA practice can self-refer to their TLAM. The observation focuses on the quality of teaching and learning, including the environment and resources available online. Digital Accessibility, Digital Environments, and Digital Inclusion can be a focus within the Dev Obs system. | Windows 1, 2, and 3 throughout the year |
+| 1:1 Coaching with Digital Pedagogy Coach | Graeme Wright as Digital Pedagogy Coach provides individual coaching and mentoring to support improvement of Digital TLA practice across the college. Stage 1 staff benefit most from targeted, individual coaching conversations focused on building tool confidence and establishing digital habits. | On referral or self-referral throughout the year |
+| Individual CPD | Jisc Building Digital Capability self-assessment and recommended learning pathways. ETF DTPF modules are the primary digital routes at this stage. All CPD is recorded on iTrent. | Throughout the year at own pace |
+| Teach-Meet | Several Teach-Meet style sessions can be arranged to support group and team training with various foci: Teams Environments; Accessibility; Digital Inclusion; AI; Digital TLA. | Several themed sessions per term |
+
+## **Stage 2A: Adopting (Developing)**
+
+### **Pyramid Level: Digital Inclusion | ETF DTPF: Adopting, Developing | DigCompEdu: B1 Integrator**
+
+Staff at Stage 2A have moved beyond basic tool use and are beginning to integrate digital purposefully into their teaching practice. They use Teams Assignments with more intention. They are aware of and beginning to apply the college AI policy. They are starting to see digital tools as a means of reducing their own workload and improving learner experience. The focus shifts from confidence to application.
+
+### **General Digital Skills — Stage 2A**
+
+| **Skill Area** | **What staff should be able to demonstrate** |
+| --- | --- |
+| Efficient M365 workflows | Use Outlook calendar for scheduling and sharing availability. Use 'Book with Me' or 'Bookings' for sharing meeting time availability. Use Teams channels to organise communication by topic. Filter, search, and retrieve emails efficiently. Use Copilot to interrogate emails and improve communication. Use OneNote or MS Loops for organised meeting notes. |
+| Data handling and spreadsheets | Create and use Excel spreadsheets with basic formulae. Use filters and sorting. Understand GDPR in the context of learner data. Record and interpret basic datasets. Use Copilot to interrogate data. Navigate other platforms like Power BI to understand the context of learners and their learning needs. |
+| Digital content creation | Create accessible presentations using correct heading structure and alt text. Create visually engaging content. Use Canva or equivalent for infographics and visual resources. Export accessible PDFs from Word. Create Digital Accessible Content by Design. |
+| AI tool awareness | Understand what Copilot is, what it can and cannot do, and what the college AI policy says. Use AI tools to reduce admin workload where permitted, for example quiz generation, resource drafting, or meeting summaries. Always verify outputs. |
+| Secure digital practice | Understand Caldicott principles for learner data if working in health-adjacent provision. Use GDPR-compliant file-sharing. Know the difference between college data storage and personal cloud services. |
+
+### **Teaching Digital Skills — Stage 2A**
+
+| **Skill Area** | **What staff should be able to demonstrate** |
+| --- | --- |
+| Teams Assignments with rubrics | Create Assignments with grading rubrics attached. Return work with written feedback via the Grades tab. Enable Teams Analytics and review basic engagement data for the class. |
+| Formative assessment with Forms | Create Microsoft Forms quizzes for formative assessment. Embed them in Teams. Review results in real time to identify misconceptions. Use the Forms summary view to inform next lesson planning. |
+| Accessible resource design | Apply WCAG 2.2 AA principles to all uploaded resources as a consistent professional habit, not an occasional check. Alt text on all images. Correct heading structure. Captions on all video. Colour contrast checked. |
+| Inclusive tools for learners | Demonstrate Immersive Reader with translation enabled for ESOL learners. Enable Live Captions as a default in all Teams sessions. Know how to set up Dictation and Speech to Text for learners who need it. Introduce Read and Write Gold for learners with SpLD. |
+| Hybrid readiness | Deliver an accessible, equivalent learning experience to learners attending remotely. Share slides and resources in the Teams session. Use the chat and reactions features inclusively. Know how to record a session for learners who miss it. |
+
+### **Microsoft Ecosystem Tools — Stage 2A**
+
+| **Tool** | **Primary Use at Stage 2A** | **Free? Available in M365?** |
+| --- | --- | --- |
+| Teams Assignments and Rubrics | Structured digital assessment with grading criteria; feedback via Grades tab | Yes — M365 Education |
+| Microsoft Forms | Formative quizzes; initial assessment; self-assessment; feedback collection | Yes — M365 |
+| Teams Analytics | Class engagement data; assignment completion rates; communication patterns | Yes — M365 Education |
+| Microsoft Sway | Visually engaging digital presentations and content pages for learners | Yes — M365 |
+| Microsoft Stream | Recording and sharing lesson videos; captions generated automatically | Yes — M365 |
+| Microsoft Copilot (where licensed) | Quiz and resource generation; meeting summaries; lesson plan drafting. Use only in accordance with the college AI policy and after completing Jisc AI Literacy Module 1. | Institutional licence — confirm status with IT |
+| Read and Write Gold | Text to speech, word prediction, and study skills support for learners with SpLD | College licence — check availability with IT |
+| Live Captions (Teams) | Real-time captions in 60+ languages as standard in all Teams sessions | Yes — M365. Requires IT to enable as default. |
+| Canva for Education | Accessible visual content creation; infographics; presentations. Free for educators. | Yes — free educator account at canva.com/education |
+
+### **CPD Levers — Stage 2A**
+
+| **CPD Lever** | **How it supports Stage 2A development** | **When it happens** |
+| --- | --- | --- |
+| Half-termly Teach Meets (Section and Area Level) | The primary half-termly CPD mechanism at area level. The QIP Tab 2 template explicitly links CPD and Teach Meet activity to QIP priorities and impact on TLA. Digital topics can be foregrounded here. The Digital Pedagogy Coach can present, model, or co-facilitate. | Half-termly, each curriculum area |
+| Learning Walks and Developmental Observations | At Stage 2A, the Learning Walk focuses on whether digital tools are changing the learning experience, not just being present in the room. Are Assignments being used with rubrics? Is the Teams environment well structured? Is there evidence of accessible resources? | Three windows: September to November; January to March; April to June |
+| Peer Reviews | Staff at Stage 2A benefit from reviewing peers who are stronger at digital TLA, and from being reviewed by colleagues exploring Stage 1. Reviews can focus on Teams environment quality, formative digital assessment, and inclusive tool use. All staff complete at least one peer review per year outside their own area. | Throughout the year; captured in CQRP windows |
+| Jisc AI Literacy Module 1 (Foundation Awareness) | This is the prerequisite for any AI tool adoption into teaching. Free via Jisc institutional access. Covers what AI tools are, how they work, ethical use, and the limitations staff need to understand before advising learners. Must be completed before using Copilot or any AI tool in a teaching context. | Self-paced; complete before any AI tool adoption |
+| Jisc Building Digital Capability (BDC) Self-Assessment | The Jisc Discovery Tool for staff provides a personal digital capability profile across six dimensions. At Stage 2A, staff revisit their profile to see progress and identify the next development priorities. Free for Jisc subscribing institutions. | On enrolment and annually; review mid-year |
+| Curriculum Quality Review Panels (CQRPs) | CQRPs include a TLA Overview section covering Self, Peer, and QRA evidence. Digital TLA development is increasingly visible in this evidence. TLAMs can use the Digital Health Check data as a CPD impact measure in these panels. | Twice per year |
+
+## **Stage 2B: Adopting (Embedding)**
+
+### **Pyramid Level: Digital Inclusion | ETF DTPF: Adopting, Embedding | DigCompEdu: B2 Expert**
+
+Stage 2B is where digital practice becomes genuinely embedded rather than occasionally applied. Staff at this level design learning sequences where digital tools purposefully change the experience for learners. Accessibility is a habit, not a check. They can articulate which EDS categories their learners are developing, they know how to run the Digital Health Check, and they are becoming a credible resource for colleagues. The Digital Lead role sits at Stage 2B moving towards Stage 3.
+
+### **General Digital Skills — Stage 2B**
+
+| **Skill Area** | **What staff should be able to demonstrate** |
+| --- | --- |
+| Advanced M365 workflows | Use Power Automate to automate a repetitive task such as notifications, data collection, or file organisation. Use Microsoft Lists to organise and track information. Use SharePoint to create structured team sites for curriculum resources. Build replicable workflows that colleagues can adopt. |
+| Data analysis and reporting | Use Excel pivot tables and basic charts to analyse learner data. Use Power BI dashboards for programme performance data where available. Interpret Teams Assignment analytics to inform feedback and planning. Present data in accessible, meaningful formats for quality conversations. |
+| AI tools in practice | Use Copilot (where licensed) to draft resources, generate quizzes, and summarise meeting notes. Always review and verify outputs. Understand when AI generated content requires disclosure. Model responsible AI use explicitly for learners. Use Copilot for data interrogation and content refinement as part of routine workflow. |
+| Digital project coordination | Use Teams Planner or Microsoft Lists to manage a project or CPD activity. Share progress with colleagues digitally. Use SharePoint for collaborative document management rather than emailed attachments. |
+| Digital professional presence | Maintain a professional digital profile on LinkedIn. Share good practice via college digital channels. Contribute to Teach Meets with digital examples. Understand the public digital footprint of a professional educator. |
+
+### **Teaching Digital Skills — Stage 2B**
+
+| **Skill Area** | **What staff should be able to demonstrate** |
+| --- | --- |
+| Digital curriculum design | Design lesson sequences where digital tools purposefully change the learning experience. The VLE is a live, learner-directed environment, not a file repository. Learners use digital tools in authentic vocational contexts rather than as isolated skills lessons. Every session demonstrates deliberate digital pedagogy choices. |
+| Accessibility by design | Every resource created passes the Office Accessibility Checker before being shared — this is a professional habit, not an occasional compliance check. Captions on all video content. Alt text on all images. Correct heading structure in all documents. Digital content is designed for all learners from the outset, not retrofitted. |
+| EDS mapping | Articulate which EDS categories learners are developing in their programme. Map digital hours to EDS categories in the Business Plan. Use DSF Tab 3 as a reference in curriculum planning. Contribute to the coaching conversation with the Digital Pedagogy Coach. |
+| Formative assessment pipeline | Use the Forms to Excel to Copilot model or equivalent to aggregate formative assessment data and identify learner gaps systematically. Learner digital skills progress is tracked alongside subject progress. Assessment design actively builds learner digital capability. |
+| Assistive technology for inclusion | Know what assistive technology is available to learners across the college. Introduce AT tools proactively to all learners rather than only those with a recorded need on their ILP. Advocate for AT resources where gaps exist. Demonstrate AT tools confidently in session. |
+| Digital Health Check | Run the Teams Digital Health Check for all class Teams each half-term. Address any gaps. Share the Health Check results with the TLAM. Support colleagues who are at Stage 1 with their own Teams environment. |
+
+### **Microsoft Ecosystem Tools — Stage 2B**
+
+| **Tool** | **Primary Use at Stage 2B** | **Free? Available in M365?** |
+| --- | --- | --- |
+| Microsoft Forms to Excel pipeline | Formative assessment data collection and aggregation. Results feed directly into Excel for analysis and gap identification. | Yes — M365 |
+| Microsoft Lists | Organising project tasks, tracking CPD, managing curriculum information | Yes — M365 |
+| SharePoint Sites | Creating structured team sites for curriculum resources accessible to learners and colleagues | Yes — M365 |
+| Power Automate (basic flows) | Automating repetitive notifications, data collection from Forms, or file organisation tasks | Yes — M365 |
+| Microsoft Power BI (basic) | Interpreting programme performance dashboards where available | Yes — M365 (view); Pro required for creation |
+| Microsoft Flip | Short student video responses; peer feedback; formative assessment alternatives to written work | Yes — free, included in M365 Education |
+| Microsoft Copilot (critical use) | Resource generation, quiz drafting, meeting summaries: always reviewed and verified. Modelled transparently for learners. Only after Jisc AI Literacy Module 1 is complete. | Institutional licence — confirm status with IT |
+| Tobii Eye Gaze / Proloquo2Go / Widgit (awareness) | Understanding what AT tools are available for FIP and SEND learners. Not necessarily operating them, but knowing they exist and advocating for them. | College licences — check with SEND team and IT |
+| Microsoft Reading Coach | Free AI-powered reading fluency tool embedded in Teams; particularly valuable for ESOL and literacy development | Yes — free, built into M365 Education |
+
+### **CPD Levers — Stage 2B**
+
+| **CPD Lever** | **How it supports Stage 2B development** | **When it happens** |
+| --- | --- | --- |
+| Digital Lead Induction (to be produced) | Staff confirmed as Digital Leads for their area receive a structured induction covering the Digital Health Check process, EDS mapping, and their role in supporting colleagues. The Digital Lead sits at Stage 2B and moves towards Stage 3. | On confirmation as Digital Lead; support ongoing from Digital Pedagogy Coach |
+| Quality Review Activity (QRA) | QRAs provide Ofsted-style scrutiny of the quality of education, including the learning environment and digital resources available. At Stage 2B, staff should be able to demonstrate accessible resources, a well-structured Teams environment, and learner evidence of digital skills development. | At-risk or volume basis throughout the year; one week's notice given |
+| Peer Reviews (cross-area) | At Stage 2B, peer reviews with colleagues from different areas are particularly valuable for cross-pollinating digital practice. The Digital Pedagogy Coach can broker peer review pairings. Reviews focus on curriculum design, inclusion, and assessment. | Throughout the year; captured in CQRP windows |
+| Jisc FE Accessibility Training Matrix Phase 2 | A structured self-assessment and training pathway for staff digital accessibility knowledge. Maps to roles across the college. Free via Jisc institutional access. Particularly important for staff in areas with SEND or ESOL learners. | Self-paced; recommended before Digital Lead confirmation |
+| Teach Meets with Digital Showcase | Stage 2B staff present good practice at half-termly Teach Meets. This is where the Forms to Excel to Copilot model, accessible resource design, and AT good practice get shared across teams. Teach Meets are the primary vehicle for spreading Stage 2B practice. | Half-termly |
+| Programme Performance Reviews (PPRs) | PPRs are held three times per year and focus on learner outcomes. Digital skills tracking data, Teams Assignment analytics, and Jisc Discovery Tool learner profiles all become PPR evidence at Stage 2B. The Digital Pedagogy Coach can provide data in advance. | Three times per year |
+
+## **Stage 3: Leading**
+
+### **Pyramid Level: Digital Innovation | ETF DTPF: Leading | DigCompEdu: C1 to C2 Leader to Pioneer**
+
+Stage 3 staff are not just expert digital practitioners. They are agents of change. They coach and mentor colleagues, design digital-first curriculum, evaluate EdTech critically, and lead their institution's thinking on AI, accessibility, and digital innovation. Their practice does not stay in their classroom. It spreads. The Digital Pedagogy Coach role sits at Stage 3. The best Digital Leads will move here.
+
+### **General Digital Skills — Stage 3**
+
+| **Skill Area** | **What staff should be able to demonstrate** |
+| --- | --- |
+| Workflow automation at scale | Build multi-step Power Automate flows that connect Forms, Lists, Teams notifications, and SharePoint. Create replicable models that other staff can adopt. The Forms to Excel to Copilot pipeline is an example of Stage 3 thinking made accessible. Contribute automation models to the area Digital Lead network. |
+| Strategic data use | Use Power BI or Excel dashboards to inform strategic decisions about curriculum, CPD, or inclusion. Present data to TLAMs and SLT in a compelling, accessible format. Connect learner data to EDS progression evidence. Contribute meaningful digital skills data to the SAR and QIP cycle. |
+| AI orchestration | Go beyond using AI tools to shaping how they are used institutionally. Understand AI policies, advise on ethical frameworks, model transparent AI use, and challenge colleagues' over-reliance on AI outputs without critical verification. Lead the college's thinking on responsible AI adoption. |
+| Digital leadership communication | Influence strategy through digital channels. Contribute to strategic documents, Quality Improvement Plans, and Business Plans with digital skills evidence. Use SharePoint and Teams to make good practice visible and accessible to all staff across the college. |
+| Open educational resources and knowledge sharing | Create resources that others can use and adapt. Publish good practice digitally. Contribute to external networks including Jisc communities and ETF sector groups. Represent Weston College in regional and national digital communities. |
+
+### **Teaching Digital Skills — Stage 3**
+
+| **Skill Area** | **What staff should be able to demonstrate** |
+| --- | --- |
+| Digital-first curriculum design | Design curriculum where the VLE is a live, learner-directed environment from day one. Learners are co-designers of digital resources. Authentic vocational tasks use digital tools as the default, not the exception. Digital design decisions are justified pedagogically, not just technologically. |
+| Critical EdTech evaluation | Evaluate new digital tools against pedagogical rationale, GDPR compliance, accessibility, sustainability, and cost before adoption. Challenge tools that add complexity without improving learner outcomes. Advocate for tools that demonstrably reduce barriers. Use the Jisc Digital Elevation Tool findings to inform evaluation decisions. |
+| Coaching and mentoring colleagues | Coach Stage 1 and Stage 2 staff on digital pedagogy in a way that builds their confidence rather than creating dependency. Use the Digital Learning Pyramid and the Jisc BDC profile to structure development conversations. Support the TLAM in identifying and addressing digital CPD needs across the team. |
+| Institutional AI leadership | Lead the team's thinking on AI in teaching and assessment. Develop and communicate clear guidance for learners on academic integrity and AI use. Model transparent AI practice. Advocate for Jisc AI Literacy Module 1 as a prerequisite for all staff before using AI tools in a teaching context. |
+| Digital inclusion advocacy | Champion assistive technology investment and training across the college. Advocate for WCAG 2.2 AA as a non-negotiable standard in all digital resource creation. Represent learners' digital access needs in quality conversations. Connect Learning Without Barriers to the QFT and UDL frameworks explicitly. |
+| Digital Champions development | Identify and develop Digital Champions among learners in the curriculum area. Support DCI learners in their peer mentoring role. Connect Champions across areas. Contribute to the Digital Champions programme at a strategic level. |
+
+### **Microsoft Ecosystem Tools — Stage 3**
+
+| **Tool** | **Primary Use at Stage 3** | **Free? Available in M365?** |
+| --- | --- | --- |
+| Power Automate (advanced flows) | Multi-step automation connecting Forms, Lists, SharePoint, Teams, and notifications across the organisation | Yes — M365 |
+| Microsoft Lists (multi-list systems) | Building relational data structures for coaching records, CPD tracking, and evidence management. The Digital Coaching Platform backend. | Yes — M365 |
+| Power BI (report creation) | Strategic dashboard creation for SLT and quality reporting. Visualising digital skills progression data. | M365 (view); Power BI Pro for creation |
+| SharePoint (site design) | Designing structured team sites, communication sites, and knowledge hubs for staff and learners | Yes — M365 |
+| Microsoft Copilot (institutional guidance) | Advising on institutional AI policy; modelling critical transparent use; leading staff AI literacy development | Institutional licence — confirm with IT |
+| Tobii / Proloquo2Go / Grid 3 / Clicker (strategic advocacy) | Advocating for investment, training, and consistent availability of AT tools across all relevant areas | College licences — strategic advocacy to ensure these are resourced |
+| Microsoft Viva (if available) | Learning and development platform integrating LinkedIn Learning within the M365 environment. Stage 3 staff can curate learning pathways for colleagues. | Requires Viva licence — check with IT |
+| Power Platform (full suite) | Power Apps, Power BI, Power Automate, and Power Pages as an integrated platform for building college-wide digital solutions | M365 (core); advanced features require additional licence |
+
+### **CPD Levers — Stage 3**
+
+| **CPD Lever** | **How it supports Stage 3 development** | **When it happens** |
+| --- | --- | --- |
+| Academic and Staff Conferences (Collegiate level) | Two per year. Stage 3 staff present, facilitate, or co-design digital sessions. The Transformational CPD category in the college's CPD framework explicitly references digital innovation in curriculum as a focus. | Academic Conference 20 September; Staff Conference 5 January |
+| INSET Days (Cross-College) | Three INSET days provide whole-college CPD opportunities. Stage 3 staff can lead digital sessions, showcase innovation, and build colleagues' capacity. The Digital Pedagogy Coach co-designs INSET digital content. | INSET WC 20 October; FE and HE INSET 2 April |
+| Curriculum Quality Review Panels (CQRPs) | At Stage 3, staff contribute evidence of digital skills development to CQRPs and support TLAMs in articulating the digital dimension of quality. The Digital Pedagogy Coach attends relevant CQRPs to provide a strategic digital perspective. | Twice per year |
+| Industry Updating | Stage 3 staff maintain awareness of sector-level digital innovation through industry networks, Jisc DigiFest, ETF conferences, and external CPD. Industry currency informs teaching innovation and prevents practice becoming insular. | Throughout the year; minimum expectation in Quality Handbook |
+| Professional Collaboration | The individual CPD category of Professional Collaboration includes contributing to national networks, writing for the sector, and sharing practice externally. Stage 3 staff contribute to Jisc communities, ETF networks, and regional digital leadership groups. | Throughout the year |
+| Jisc DigiFest and Sector Events | Annual national conference for digital innovation in education. Stage 3 staff attend and bring learning back to the college through structured Teach Meet presentations. | Annual; typically March |
+| Self-Assessment Reporting (SAR) contribution | Stage 3 staff contribute digital evidence to the annual SAR. The Digital Pedagogy Coach leads the digital skills dimension of the Quality Improvement Plan and SAR narrative. | Autumn term annually |
+
+# **Section 5: Digital Skills Assessment Tools**
+
+Three complementary assessment tools form the baseline and ongoing measurement strategy for digital skills development across staff and learners. Each serves a distinct purpose and audience. Together they provide the before, during, and after evidence that the coaching strategy needs.
+
+## **Jisc Building Digital Capability Discovery Tool**
+
+The Discovery Tool is the primary baseline assessment for both staff and learners. It is free for Jisc subscribing institutions, takes approximately 20 minutes to complete, and produces a personal digital capability profile across six dimensions: information, data, and media literacy; digital creation, problem solving, and innovation; communication, collaboration, and participation; digital learning and development; ICT proficiency; and digital identity and wellbeing.
+
+For staff, the Discovery Tool provides the baseline that coaching conversations are built on. For learners, it will be deployed in Weeks 1 and 2 of September 2026 as a standard part of induction across all curriculum areas. Results are reviewed at mid-year and end of year to track progression.
+
+The tool has role-specific question sets for FE teaching staff, general staff, new students, current students, and employability skills. The Digital Pedagogy Coach deploys the appropriate set for each audience and reviews anonymised organisational data through the institutional dashboard.
+
+| **How to access the Jisc Discovery Tool** Staff access the tool via the Jisc Building Digital Capability service, which Weston College subscribes to as a Jisc member. The tool produces a personal profile and a shareable link. Staff share their profile link with their TLAM or the Digital Pedagogy Coach at the start of a development conversation. Learner profiles are managed through the institutional account. Contact the Digital Pedagogy Coach for access details. Direct access: jisc.potential.ly/signin |
+| --- |
+
+[Jisc Building Digital Capability and Discovery Tool: digitalcapability.jisc.ac.uk](https://digitalcapability.jisc.ac.uk/)
+
+## **ETF Digital Teaching Professional Framework Self-Assessment**
+
+The ETF DTPF self-assessment tool supports staff in mapping their own teaching digital skills practice to the four stages of the framework, Exploring through to Leading. It is available via the ETF professional development platform and is free to all FE sector staff. It produces a personal development profile that maps to the Digital Learning Pyramid stages in this document.
+
+The Digital Pedagogy Coach uses the DTPF profile as the starting point for any structured coaching conversation with a staff member about their teaching practice. It is not a judgement tool. It is a development conversation tool. The DTPF self-assessment is used alongside, not instead of, the Jisc Discovery Tool — where the Jisc tool captures the breadth of digital capability, the DTPF captures the depth of teaching-specific digital practice.
+
+Note: ETF and SET are merging into a single MyETF platform launched 1 April 2026. Access all ETF resources via etfoundation.co.uk/professional-development using a free ETF account.
+
+[ETF Professional Development Platform: etfoundation.co.uk/professional-development](https://etfoundation.co.uk/professional-development/)
+
+## **Century Tech Digital Skills Initial Assessment and Diagnostics**
+
+Century Tech is an AI-powered learning platform with a specific digital skills initial assessment and diagnostic tool. The Digital Pedagogy Coach proposes to use Century for three purposes: an initial digital skills assessment at the start of the year to establish a baseline beyond what the Jisc Discovery Tool captures; Level 1 and Entry Level 3 diagnostic themes used throughout the year to track progression at specific qualification levels; and a channel for directing staff and learner learning toward structured, assessed digital skills content.
+
+The Century platform uses adaptive learning pathways that respond to each learner's responses, meaning the diagnostic experience is personalised rather than a fixed set of questions. This makes it particularly valuable for ESOL learners and learners with varying prior experience, where a one-size approach would be misleading.
+
+| **Century and the Jisc Discovery Tool: the relationship** The Jisc Discovery Tool measures self-perceived digital capability across six broad dimensions. Century provides a more granular, assessed measurement of actual digital skills performance at specific qualification levels. The two tools complement each other. Discovery Tool for orientation and strategic planning. Century for specific level tracking and progression evidence. Together they give the most complete picture of where learners and staff actually are. |
+| --- |
+
+[Century Tech: century.tech](https://www.century.tech/)
+
+# **Section 6: Curated Course Directory**
+
+A verified, curated set of free and low-cost courses supporting digital skills development for staff at every stage of the Digital Learning Pyramid. All courses verified as current in March 2026. Maximum age three years unless the content is evergreen. Courses are organised by Pyramid level and by audience: General Digital Skills (for all staff) and Teaching Digital Skills (specifically for practitioners).
+
+| **A note on LinkedIn Learning access** LinkedIn Learning requires a premium subscription for full access. Some courses are available free to all LinkedIn members as part of Microsoft and LinkedIn's global skills initiative. Institutions with a Microsoft 365 subscription can integrate LinkedIn Learning via Microsoft Viva. Staff with a personal LinkedIn account can access up to 10 free courses per month. The courses listed below are confirmed as current; availability without a premium subscription may vary. |
+| --- |
+
+| **ETF platform note — April 2026** ETF and SET are merging into a single MyETF platform launched 1 April 2026. The old pdp.etfoundation.co.uk address is transitioning. Use etfoundation.co.uk/professional-development as the stable entry point. All DTPF and EDS modules are confirmed as moving to the new platform and will be accessible via your free ETF account at learning.etfoundation.co.uk. |
+| --- |
+
+## **Level 1: Digital Foundations**
+
+### **General Digital Skills — Foundations**
+
+| **Course Title** | **Provider** | **Duration** | **Free?** | **URL** |
+| --- | --- | --- | --- | --- |
+| Essential Digital Skills — ETF modules (EDS foundation) | ETF / MyETF from Apr 2026 | Self-paced modules | Free for FE staff | etfoundation.co.uk/professional-development |
+| Introduction to Microsoft 365 (MS-900T01) | Microsoft Learn | Self-paced | Free | learn.microsoft.com/en-us/training/courses/ms-900t01 |
+| Microsoft 365 Basics Video Training | Microsoft Support | Short videos | Free | support.microsoft.com/en-us/office/microsoft-365-basics-video-training-396b8d9e-e118-42d0-8a0d-87d1f2f055fb |
+| Digital Skills for Work and Life | FutureLearn / Accenture | 2 weeks | Free to audit | futurelearn.com/courses/digital-skills-for-work-and-life |
+| Digital Literacy and Productivity Learning Pathway | LinkedIn Learning (free path) | Multiple courses | Free with LinkedIn | linkedin.com/learning/paths/digital-literacy-and-productivity-learning-pathway |
+| Microsoft Teams Essential Training | LinkedIn Learning | 3h 46m, released Dec 2024 | Free with LinkedIn | linkedin.com/learning/microsoft-teams-essential-training-17445610 |
+| Working Smarter with Microsoft 365 (Learning Path) | LinkedIn Learning | Multiple courses | Premium / institutional | linkedin.com/learning/paths/working-smarter-with-microsoft-365 |
+| OneDrive for Business Essential Training | LinkedIn Learning | 1h 8m, released May 2025 | Free with LinkedIn | linkedin.com/learning/onedrive-for-business-essential-training |
+| OneNote Essential Training | LinkedIn Learning | 3h 2m, released Mar 2025 | Premium / institutional | linkedin.com/learning/onenote-essential-training |
+| Outlook Essential Training (Microsoft 365) | LinkedIn Learning | 2h 12m, released Apr 2025 | Premium / institutional | linkedin.com/learning/outlook-essential-training-microsoft-365 |
+
+### **Teaching Digital Skills — Foundations**
+
+| **Course Title** | **Provider** | **Duration** | **Free?** | **URL** |
+| --- | --- | --- | --- | --- |
+| ETF DTPF Modules: Exploring Stage (37 modules, 4 hours) | ETF / MyETF from Apr 2026 | 4h total | Free for FE staff | etfoundation.co.uk/professional-development |
+| Jisc Building Digital Capability Discovery Tool (Teaching Staff question set) | Jisc / institutional access | ~25 mins | Free for Jisc members | jisc.potential.ly/signin |
+| Developing Digital Capability: Digital Learning and Development | Jisc | Self-paced | Free for Jisc members | jisc.ac.uk/training/developing-digital-capability-digital-learning-and-development |
+| Digital Accessibility Foundations (W3C WAI / edX) | W3C WAI and edX | Self-paced, free certificate | Free | w3.org/WAI/courses/foundations-course/ |
+| Introduction to UDL Guidelines | CAST | Self-paced | Free | udlguidelines.cast.org |
+| AI for Educators — Microsoft Learn path (4 hours) | Microsoft Learn | 4h self-paced | Free | learn.microsoft.com/en-us/training/paths/ai-education/ |
+| Embark on Your AI Journey with Free Microsoft Education Tools | Microsoft Learn | ~30 mins | Free | learn.microsoft.com/en-us/training/modules/embark-ai-journey-free-ai-tools-microsoft-education/ |
+| Make Your Content Accessible — Microsoft Accessibility Checker | Microsoft Support | Self-paced | Free | support.microsoft.com/en-us/office/make-your-content-accessible-to-everyone-with-the-accessibility-checker-38059c2d-45ef-4830-9797-618f0e96f3ab |
+| Teaching in a Digital Age (OpenTextbook) | BCcampus / Tony Bates | Self-paced | Free OER | pressbooks.bccampus.ca/teachinginadigitalagev3 |
+| Learning Microsoft Teams for Education | LinkedIn Learning | 1h 20m | Free with LinkedIn | linkedin.com/learning/learning-microsoft-teams-for-education |
+
+## **Level 2: Digital Inclusion**
+
+### **General Digital Skills — Inclusion**
+
+| **Course Title** | **Provider** | **Duration** | **Free?** | **URL** |
+| --- | --- | --- | --- | --- |
+| Jisc Building Digital Capability Discovery Tool (Staff question set — mid-year review) | Jisc / institutional access | ~25 mins | Free for Jisc members | jisc.potential.ly/signin |
+| Developing Digital Capability: Digital Communication and Participation | Jisc | Self-paced | Free for Jisc members | jisc.ac.uk/training/developing-digital-capability-digital-communication-and-participation |
+| Jisc AI in Education resources and generative AI primer | Jisc National Centre for AI | Self-paced | Free for Jisc members | jisc.ac.uk/innovation/artificial-intelligence |
+| Make Your Content Accessible — Microsoft Accessibility Checker | Microsoft Support | Self-paced | Free | support.microsoft.com/en-us/office/make-your-content-accessible-to-everyone-with-the-accessibility-checker-38059c2d-45ef-4830-9797-618f0e96f3ab |
+| Learning Microsoft 365 Copilot for Work (2024) | Microsoft / LinkedIn Learning | 29m, released Oct 2024 | Free with LinkedIn | linkedin.com/learning/learning-microsoft-365-copilot-for-work-2024 |
+| Microsoft 365 Copilot Shorts: 20 Skills in 20 Minutes | LinkedIn Learning | 18m, released Feb 2026 | Free with LinkedIn | linkedin.com/learning/microsoft-365-copilot-shorts-20-skills-in-20-minutes |
+| What is Generative AI? | LinkedIn Learning | 1h 3m, released Mar 2023 | Free with LinkedIn | linkedin.com/learning/what-is-generative-ai |
+| Responsible AI: Principles and Practical Applications | LinkedIn Learning | 1h 17m, released Nov 2022 | Free with LinkedIn | linkedin.com/learning/responsible-ai-principles-and-practical-applications |
+| Excel: Managing and Analyzing Data | LinkedIn Learning | Released Apr 2024 | Premium / institutional | linkedin.com/learning/excel-managing-and-analyzing-data |
+| Power BI Essential Training | LinkedIn Learning | 3h 34m, released Aug 2024 | Premium / institutional | linkedin.com/learning/power-bi-essential-training |
+| Copilot for Microsoft 365: Boosting Productivity in Excel, Word, PowerPoint, Outlook, and Teams | LinkedIn Learning | 3h 5m, released Oct 2024 | Premium / institutional | linkedin.com/learning/copilot-for-microsoft-365-boosting-productivity-in-excel-word-powerpoint-outlook-and-teams |
+| Microsoft Power Automate: Business Process Flows | LinkedIn Learning | 1h 25m | Premium / institutional | linkedin.com/learning/microsoft-power-automate-business-process-flows |
+
+### **Teaching Digital Skills — Inclusion**
+
+| **Course Title** | **Provider** | **Duration** | **Free?** | **URL** |
+| --- | --- | --- | --- | --- |
+| ETF DTPF Modules: Adopting Stage (inc. Accessibility and Inclusion element F) | ETF / MyETF from Apr 2026 | Self-paced | Free for FE staff | etfoundation.co.uk/professional-development |
+| Jisc AI Literacy Module 1: Understanding AI in Tertiary Education | Jisc National Centre for AI | ~1 hour live webinar | Free for Jisc members | jisc.ac.uk/training/understand-ai-basics-for-teaching-and-learning |
+| Jisc FE Accessibility Training Matrix Phase 2 | Jisc | Self-paced | Free for Jisc members | accessibility.jiscinvolve.org |
+| Developing Digital Capability: Digital Communication and Participation | Jisc | Self-paced | Free for Jisc members | jisc.ac.uk/training/developing-digital-capability-digital-communication-and-participation |
+| Developing Digital Capability: Digital Problem Solving and Innovation | Jisc | Self-paced | Free for Jisc members | jisc.ac.uk/training/developing-digital-capability-digital-problem-solving-and-innovation |
+| FE Digital Practice resources and Jisc AI guidance | Jisc Inspiring Learning | Self-paced resources | Free for Jisc members | jisc.ac.uk/further-education-and-skills |
+| ETF AI, EdTech and Digital Skills Support (EDS modules) | ETF Enhance platform | Self-paced | Free for FE staff | enhance.etfoundation.co.uk/eds |
+| Make Your Content Accessible — Microsoft Accessibility Checker | Microsoft Support | Self-paced | Free | support.microsoft.com/en-us/office/make-your-content-accessible-to-everyone-with-the-accessibility-checker-38059c2d-45ef-4830-9797-618f0e96f3ab |
+| UDL in Practice: Designing Accessible Learning Experiences | CAST | Self-paced | Free | udlguidelines.cast.org |
+| Copilot for Microsoft 365: Boosting Productivity | LinkedIn Learning | 3h 5m, released Oct 2024 | Premium / institutional | linkedin.com/learning/copilot-for-microsoft-365-boosting-productivity-in-excel-word-powerpoint-outlook-and-teams |
+
+## **Level 3: Digital Innovation**
+
+### **General Digital Skills — Innovation**
+
+| **Course Title** | **Provider** | **Duration** | **Free?** | **URL** |
+| --- | --- | --- | --- | --- |
+| Jisc AI Maturity Toolkit for Tertiary Education | Jisc National Centre for AI | Ongoing resource | Free for Jisc members | jisc.ac.uk/innovation/artificial-intelligence |
+| Jisc Building Digital Capability Community of Practice | Jisc | Community membership | Free for Jisc members | digitalcapability.jisc.ac.uk |
+| DigCompEdu Self-Assessment and Progression Tool | European Commission Joint Research Centre | Self-paced | Free | joint-research-centre.ec.europa.eu/digcompedu_en |
+| Microsoft Learn for Educators (MSLE) — full programme | Microsoft Learn / MSLE | Self-paced | Free | learn.microsoft.com/en-us/training/educator-center/programs/msle/ |
+| Microsoft Viva and Organisational Learning | Microsoft Learn | Self-paced | Free | learn.microsoft.com/en-us/viva |
+| Microsoft Power Automate Essential Training | LinkedIn Learning | 2h 1m, released Aug 2025 | Premium / institutional | linkedin.com/learning/microsoft-power-automate-essential-training-26159458 |
+| Power Automate Desktop: Beyond the Basics | LinkedIn Learning | 2h 22m, released Mar 2024 | Premium / institutional | linkedin.com/learning/power-automate-desktop-beyond-the-basics |
+| Microsoft Power Platform Foundations | LinkedIn Learning | 2h 7m, released Mar 2025 | Premium / institutional | linkedin.com/learning/microsoft-power-platform-foundations |
+| Introduction to Prompt Engineering for Generative AI | LinkedIn Learning | 1h 3m, released Aug 2024 | Free with LinkedIn | linkedin.com/learning/introduction-to-prompt-engineering-for-generative-ai-24636124 |
+| Advanced Prompt Engineering Techniques | LinkedIn Learning | 33m, released Nov 2023 | Free with LinkedIn | linkedin.com/learning/advanced-prompt-engineering-techniques |
+| Introduction to AI Governance | LinkedIn Learning | 59m, released Sep 2025 | Free with LinkedIn | linkedin.com/learning/topics/artificial-intelligence |
+| Power BI Essential Training | LinkedIn Learning | 3h 34m, released Aug 2024 | Premium / institutional | linkedin.com/learning/power-bi-essential-training |
+
+### **Teaching Digital Skills — Innovation**
+
+| **Course Title** | **Provider** | **Duration** | **Free?** | **URL** |
+| --- | --- | --- | --- | --- |
+| ETF DTPF Modules: Leading Stage | ETF / MyETF from Apr 2026 | Self-paced | Free for FE staff | etfoundation.co.uk/professional-development |
+| ETF AI, EdTech and Digital Skills Support (DTPF and EDS modules) | ETF Enhance platform | Ongoing resources | Free for FE staff | enhance.etfoundation.co.uk/eds |
+| Jisc AI Literacy Module 2: Essential AI Skills for Teaching and Learning | Jisc National Centre for AI | ~1 hour live session | Free for Jisc members | jisc.ac.uk/training/effective-use-of-ai-in-teaching-and-learning |
+| Jisc AI Literacy Module 3: Ethical and Responsible Use of AI | Jisc National Centre for AI | ~1 hour live session | Free for Jisc members | jisc.ac.uk/training/how-to-maintain-academic-integrity-in-an-ai-age-fe |
+| Jisc Building Digital Capability Community of Practice | Jisc | Community membership, biannual events | Free for Jisc members | digitalcapability.jisc.ac.uk |
+| Developing Digital Capability: Digital Problem Solving and Innovation | Jisc | Self-paced | Free for Jisc members | jisc.ac.uk/training/developing-digital-capability-digital-problem-solving-and-innovation |
+| DigCompEdu Self-Assessment and Progression Tool | European Commission Joint Research Centre | Self-paced | Free | joint-research-centre.ec.europa.eu/digcompedu_en |
+| Microsoft Learn for Educators — MSLE programme | Microsoft Learn / MSLE | Self-paced | Free | learn.microsoft.com/en-us/training/educator-center/programs/msle/ |
+| Microsoft Certified Educator (MCE) — 21CLD preparation | Microsoft Learn Educator Center | Self-paced | Free | learn.microsoft.com/en-us/credentials/certifications/microsoft-certified-educator/ |
+| Copilot in Teams: AI-Powered Collaboration | LinkedIn Learning | 21m | Premium / institutional | linkedin.com/learning/copilot-in-teams-ai-powered-collaboration |
+| Advanced Prompt Engineering Techniques | LinkedIn Learning | 33m, released Nov 2023 | Free with LinkedIn | linkedin.com/learning/advanced-prompt-engineering-techniques |
+
+| **Century Tech and Jisc Discovery Tool: staff pathways** Beyond the LinkedIn Learning and ETF courses listed above, staff development in digital skills is also channelled through two institution-level tools. The Jisc Building Digital Capability Discovery Tool provides the ongoing self-assessment baseline (digitalcapability.jisc.ac.uk). Century Tech provides structured digital skills learning pathways at EDS levels, aligned to the DfE Essential Digital Skills Framework, for both staff and learners (century.tech). These tools are not listed as individual courses above because they function as ongoing platforms rather than one-off courses. |
+| --- |
+
+# **Section 7: The Digital Development Strategy**
+
+This section brings together the what, why, and how of supporting digital skills and digital learning across Weston College. It is designed to make visible the connection between the Digital Learning Pyramid, the Teacher Digital Skills framework, QFT and UDL principles, and the quality processes that already exist. The strategy is not a new set of obligations. It is a way of naming what good practice already looks like and building more of it, systematically.
+
+## **What I am trying to achieve**
+
+The purpose of digital pedagogy coaching at Weston College is to create the conditions where every learner, regardless of their programme, their background, their ability, or their access to technology, can develop the digital skills they need for learning, for work, and for life.
+
+That purpose cannot be achieved by one person. It requires a whole-college approach where TLAMs, coaches, Heads of Area, Digital Leads, and teaching staff are all working with a shared vocabulary, a shared framework, and shared evidence of what good looks like. That is what the Digital Learning Pyramid, the Teacher Digital Skills framework, and the Digital Skills Framework together are designed to create.
+
+## **Why digital skills matter for quality, QFT, UDL, and 21CLD**
+
+| **Framework** | **The connection to digital skills development** |
+| --- | --- |
+| Quality First Teaching (QFT) | QFT requires high quality, inclusive, differentiated teaching without separate intervention. Digital tools, when designed in from the start, are the practical infrastructure of QFT. Accessible resources, Live Captions as a default, Immersive Reader available to everyone: these are QFT in action in a digital age. |
+| Universal Design for Learning (UDL) | UDL's three principles, multiple means of representation, action and expression, and engagement, are most richly realised when digital tools are embedded in teaching rather than added as afterthoughts. Every inclusive digital tool in this document addresses at least one UDL principle directly. |
+| 21st Century Learning Design (21CLD) | 21CLD identifies knowledge building, real-world problem solving, skilled communication, collaboration, ICT for learning, and self-regulation as the activities most likely to develop future-ready learners. All six are most powerfully realised through authentic, embedded digital tasks in vocational contexts. |
+| Ofsted EIF Report Card | The renewed EIF (November 2025) grades Inclusion as a standalone area for the first time. Digital inclusion, accessible resources, assistive technology provision, and systematic digital skills tracking are all directly evidenceable against the Inclusion and Curriculum and Teaching Report Card dimensions. The coaching strategy produces this evidence as a byproduct of doing good work. |
+
+## **How the quality team can support this**
+
+The Digital Pedagogy Coach role sits within the Quality team and reports through the quality structure. This is a strength, not a limitation. It means that digital skills development is embedded in the quality cycle rather than running parallel to it. The connection between the coaching work and the inspection evidence is direct.
+
+| **Quality Process** | **How digital skills development connects** |
+| --- | --- |
+| Learning Walks and Developmental Observations | Digital dimensions are visible in every Learning Walk: is the Teams environment well structured? Are resources accessible? Are digital tools purposefully changing the learning experience? The Digital Pedagogy Coach can co-design the digital observation criteria with TLAMs. |
+| Curriculum Quality Review Panels (CQRPs) | CQRPs include a TLA Overview covering Self, Peer, and QRA evidence. Digital skills coaching records, RAG ratings, and action plans feed this evidence directly. The Digital Coaching Platform is designed specifically to surface this data for quality panels. |
+| Programme Performance Reviews (PPRs) | Learner digital skills progression, Jisc Discovery Tool pre and post data, Teams Assignment analytics, and Century diagnostic data all become PPR evidence. The coaching strategy embeds digital evidence into the performance review cycle. |
+| Quality Improvement Plans (QIPs) | Each area's QIP Tab 2 links CPD and Teach Meet activity to TLA impact. Digital skills development actions sit naturally in this structure. The Digital Pedagogy Coach supports TLAMs in articulating digital AFIs and progress measures in their QIPs. |
+| Self-Assessment Report (SAR) | The Digital Pedagogy Coach leads the digital skills dimension of the annual SAR, drawing on the macro view of the Digital Coaching Platform, the Jisc DEI Survey results, and the collective coaching evidence from across all 30 areas. |
+
+| **The invisible impact** Much of the impact of strong digital pedagogy is soft and almost invisible in outcome data. A learner who can navigate a government portal independently. A student who self-corrects an AI output rather than submitting it unchecked. A staff member who runs the Accessibility Checker as a reflex rather than an obligation. These are not measurable in exam results. They are visible in the quality of learner experience, in the confidence of staff, and in the readiness of the college to meet the digital expectations of employers, inspectors, and the wider world. That is the case for this work. It is worth making explicitly. |
+| --- |
+
+## **The road ahead**
+
+The immediate priorities for the digital strategy in 2026/27 are clear. Every area has a named, trained Digital Lead. Every class Team meets the Digital Health Check standard. Digital hours are mapped to EDS categories in every Business Plan. The Jisc Discovery Tool is deployed in September 2026. All resources are Accessible by Design by Christmas 2026. The Digital Coaching Platform is built and in use by TLAMs and the Coach from the start of the autumn term.
+
+The longer term ambition is a college where digital skills development is as consistently tracked, evidenced, and named as English and Maths progression. Where every Head of Area can answer the question: what digital skills have your learners developed this year, and how do you know? Where Weston College is recognised regionally and nationally as a college that takes digital inclusion seriously and can prove it.
+
+That is where this framework, this strategy, and this document are pointing.
+
+ 
+
+*Sources and further reading are provided in the Digital Skills Leadership Toolkit (digital-skills-leadership-toolkit-v4.html) and the Digital Skills Framework document (digital-skills-framework.docx). All external sources were verified in March 2026.*
+
+# **Section 8: Collated Learning Pathways — Beginner to Innovator**
+
+Three complete learning pathways, one for each audience, taking learners from absolute beginner to innovator. Each pathway is structured in four stages: Beginner (no assumed prior experience), Developing (building confidence and applying skills), Embedding (consistent, purposeful practice), and Innovating (leading, shaping, and extending). Courses are drawn from LinkedIn Learning, Microsoft Learn, Jisc, ETF, and other verified free providers. All URLs verified March 2026.
+
+| **How to use these pathways** These pathways are not rigid sequences. They are signposted routes. A learner may enter at any stage. The Jisc Building Digital Capability Discovery Tool (jisc.potential.ly/signin) and the Century Tech Initial Assessment provide the personal baseline that determines where on a pathway each individual begins. Pathway progress is reviewed at mid-year using the same tools. The Digital Coaching Platform RAG rating maps to the four pathway stages: Red = Beginner, Amber (lower) = Developing, Amber (upper) = Embedding, Green = Innovating. |
+| --- |
+
+## **Pathway 1: Students — Learn, Work, Life**
+
+This pathway supports learners across all curriculum areas in developing the digital skills they need for their studies, for future employment, and for independent living. It maps to the DfE Essential Digital Skills (EDS) framework across five categories: Using Devices and Handling Information; Creating and Editing; Communicating; Transacting; and Being Safe and Responsible Online. It is designed for delivery alongside Jisc Discovery Tool assessment (New Students question set in September, Current Students mid-year, Employability Skills end of year) and Century Tech L1 and E3 diagnostic themes.
+
+| **Starting point: Jisc Discovery Tool for students** All learners complete the Jisc Discovery Tool New Students question set in Weeks 1 to 2 of induction. The personalised report generates recommended resources across the six digital capability elements. The Digital Pedagogy Coach provides the institution link via jisc.potential.ly/signin. Results inform the TLAM and inform coaching conversations. Learners revisit at mid-year using the Current Students set and at end of year using Employability Skills. |
+| --- |
+
+### **Beginner — Building the Foundation (EDS Entry Level 3 and below)**
+
+For learners with little or no prior digital experience. Focus is on devices, safety, accessing services, and basic communication. All courses below are free.
+
+| **Course / Resource** | **Provider** | **Time** | **Context** | **URL** |
+| --- | --- | --- | --- | --- |
+| Jisc Discovery Tool: New Students question set | Jisc / institutional access | ~20 mins | Learn / Work / Life — self-assessment across six digital capability elements; personalised report with free resources. Complete in Weeks 1 to 2 of induction. | jisc.potential.ly/signin |
+| EDS Entry Level 3 Diagnostic | Century Tech | Initial assessment | Learn / Life — baseline assessment for learners working at or below EDS E3; generates personalised adaptive pathway | century.tech |
+| Basic Digital Skills (UK Gov Skills Toolkit) | FutureLearn / Gov.UK Skills Toolkit | Self-paced, free | Life / Work — Gov-endorsed beginner courses covering communication, safety, and productivity | gov.uk/government/publications/the-skills-toolkit |
+| Microsoft 365 Basics Video Training | Microsoft Support | Short videos, free | Learn — using Teams, Word, and OneDrive as a student in the college environment | support.microsoft.com/en-us/office/microsoft-365-basics-video-training-396b8d9e-e118-42d0-8a0d-87d1f2f055fb |
+| Internet Safety for Beginners | Google Digital Garage | Self-paced, free | Life — phishing, passwords, safe browsing; essential digital safety habits | learndigital.withgoogle.com/digitalgarage |
+| Digital Skills for Work and Life | FutureLearn / Accenture | 2 weeks, free to audit | Life — navigating digital services, staying safe, communicating online | futurelearn.com/courses/digital-skills-for-work-and-life |
+| Digital Literacy and Productivity Learning Pathway | LinkedIn Learning (free path) | ~6h self-paced | Learn — devices, apps, and the internet; Work — foundational skills for employment; Life — accessing services online | linkedin.com/learning/paths/digital-literacy-and-productivity-learning-pathway |
+
+### **Developing — Applying Skills with Purpose (EDS Level 1)**
+
+For learners who can use devices and access the internet and are now building more purposeful digital skills for study and employability. All free or free-to-audit unless noted.
+
+| **Course / Resource** | **Provider** | **Time** | **Context** | **URL** |
+| --- | --- | --- | --- | --- |
+| Jisc Discovery Tool: Current Students question set | Jisc / institutional access | ~20 mins | Learn / Work / Life — mid-year reassessment; tracks progress against September baseline | jisc.potential.ly/signin |
+| EDS Level 1 Diagnostic and Pathway | Century Tech | Ongoing assessment | Learn / Work — Level 1 EDS-aligned diagnostics with personalised adaptive learning tasks | century.tech |
+| Introduction to Microsoft 365 (MS-900T01) | Microsoft Learn | Self-paced, free | Work — cloud productivity overview; useful for learners entering professional environments | learn.microsoft.com/en-us/training/courses/ms-900t01 |
+| Microsoft 365 Basics and Teams for Learning | Microsoft Support | Short videos, free | Learn / Work — building confidence with the college digital environment | support.microsoft.com/en-us/office/microsoft-365-basics-video-training-396b8d9e-e118-42d0-8a0d-87d1f2f055fb |
+| Career Essentials in Generative AI (Microsoft and LinkedIn) | LinkedIn Learning / Microsoft | ~4h, free with certificate | Work / Learn — foundational AI literacy, Copilot awareness, ethical use; free Microsoft Professional Certificate on completion | linkedin.com/learning/paths/career-essentials-in-generative-ai-by-microsoft-and-linkedin |
+| Your Top AI Questions Answered: AI Literacy for Everyone | LinkedIn Learning | 49m, free with LinkedIn | Work / Life — practical AI literacy for learners in any sector; released Aug 2025 | linkedin.com/learning/topics/artificial-intelligence |
+| Microsoft Teams Essential Training | LinkedIn Learning | 3h 46m, free with LinkedIn | Learn / Work — collaboration, channels, meetings, files; mirrors the learner's college environment | linkedin.com/learning/microsoft-teams-essential-training-17445610 |
+| Excel Essential Training (Microsoft 365) | LinkedIn Learning | ~3h, premium / institutional | Work — spreadsheets, data, formulae; core employability skill across all vocational areas | linkedin.com/learning/excel-essential-training-microsoft-365 |
+
+### **Embedding — Confident and Consistent (EDS Level 1 with distinction / vocational application)**
+
+For learners who are consistently using digital tools and are ready to develop more sophisticated skills in their vocational context, including data handling, digital content creation, and AI-assisted working.
+
+| **Course / Resource** | **Provider** | **Time** | **Context** | **URL** |
+| --- | --- | --- | --- | --- |
+| Jisc Discovery Tool: Employability Skills question set | Jisc / institutional access | ~20 mins | Work / Life — end-of-year employability-focused digital skills profile; shareable with employers and used in tutorials | jisc.potential.ly/signin |
+| DigComp 2.2 Self-Assessment | European Commission | Self-paced, free | Work / Life — EU digital competence framework; maps skills to employment levels across all sectors | joint-research-centre.ec.europa.eu/digcomp_en |
+| Digital Accessibility Foundations (W3C WAI / edX) | W3C WAI / edX | Self-paced, free certificate | Learn / Life — understanding accessibility and inclusive design; increasingly a vocational requirement | w3.org/WAI/courses/foundations-course/ |
+| Introduction to Microsoft 365 (MS-900T01) | Microsoft Learn | Self-paced, free | Work — cloud productivity and collaboration at professional level | learn.microsoft.com/en-us/training/courses/ms-900t01 |
+| Learning Microsoft 365 Copilot for Work (2024) | LinkedIn Learning | 29m, free with LinkedIn | Work — using AI assistant across Word, Excel, Teams, and Outlook in a professional context | linkedin.com/learning/learning-microsoft-365-copilot-for-work-2024 |
+| Introduction to Prompt Engineering for Generative AI | LinkedIn Learning | 1h 3m, free with LinkedIn | Work — writing effective prompts for AI tools; increasingly a vocational employability skill | linkedin.com/learning/introduction-to-prompt-engineering-for-generative-ai-24636124 |
+| Career Essentials in Generative AI (Microsoft and LinkedIn) | LinkedIn Learning / Microsoft | ~4h, free with certificate | Work — comprehensive AI literacy with a Microsoft Professional Certificate; strong employability evidence | linkedin.com/learning/paths/career-essentials-in-generative-ai-by-microsoft-and-linkedin |
+| Power BI: Dashboards for Beginners | LinkedIn Learning | 40m, free with LinkedIn | Work — data visualisation; particularly relevant to business, health, public services, and T Level learners | linkedin.com/learning/power-bi-dashboards-for-beginners |
+
+### **Innovating — Leading Digital Practice as a Learner**
+
+For learners who are digitally confident and ready to take on a Digital Champion, peer support, or leadership role in digital skills within their programme or the wider college.
+
+| **Course / Resource** | **Provider** | **Time** | **Context** | **URL** |
+| --- | --- | --- | --- | --- |
+| Digital Champion Peer Mentoring (college programme) | Weston College Digital Champions | Ongoing | Learn / Work / Life — Digital Champions support peers, model good digital practice, evidence their own digital leadership in the curriculum | Contact Digital Pedagogy Coach |
+| DigComp 2.2 Self-Assessment | European Commission | Self-paced, free | Work / Life — EU digital competence framework self-assessment for all citizens; strong for HE progression and employment | joint-research-centre.ec.europa.eu/digcomp_en |
+| Microsoft Learn Student Hub | Microsoft Learn | Self-paced, free | Work — cloud, AI, coding fundamentals; feeds into Microsoft Applied Skills credentials for employability | learn.microsoft.com/en-us/training/student-hub/ |
+| Build Your Generative AI Productivity Skills (Microsoft and LinkedIn) | LinkedIn Learning / Microsoft | ~5h learning path | Work — advanced Copilot use, prompt engineering, data analysis with AI; strong employability signal | linkedin.com/learning/paths/build-your-generative-ai-productivity-skills-with-microsoft-and-linkedin |
+| Ethics in the Age of Generative AI | LinkedIn Learning | 45m, free with LinkedIn | Work / Life — critical AI ethics; prepares learners to evaluate AI responsibly in the workplace | linkedin.com/learning/ethics-in-the-age-of-generative-ai |
+| Responsible AI: Principles and Practical Applications | LinkedIn Learning | 1h 17m, free with LinkedIn | Work — AI governance, bias, fairness; relevant to all sectors | linkedin.com/learning/responsible-ai-principles-and-practical-applications |
+
+## **Pathway 2: Teachers — Digital Skills and Digital TLA Pedagogy**
+
+This pathway covers both dimensions of Teacher Digital Skills: the personal digital competencies staff need to work effectively in a digital organisation, and the pedagogical capabilities that translate personal competence into high quality, inclusive teaching. It maps directly to the ETF Digital Teaching Professional Framework (DTPF) stages and the four stages of the Digital Learning Pyramid. The Jisc Building Digital Capability Discovery Tool (Teaching Staff question set) provides the baseline and mid-year review.
+
+| **Starting point for staff** All new teaching staff complete the Jisc Discovery Tool Teaching Staff question set in their first half-term. Existing staff are invited to complete it at the start of each academic year. The TLAM or Digital Pedagogy Coach reviews personalised reports in a one-to-one coaching conversation. The ETF DTPF self-assessment complements this by mapping specifically to pedagogical practice stages. Both tools are accessed through institutional accounts. |
+| --- |
+
+### **Beginner — Exploring (ETF DTPF Stage 1, DigCompEdu A1 to A2)**
+
+For staff who are new to the college, new to FE, or new to thinking about digital as a dimension of their practice. Focus is on core tool confidence and establishing accessibility as a professional standard from day one.
+
+| **Course / Resource** | **Provider** | **Time** | **Dimension** | **URL** |
+| --- | --- | --- | --- | --- |
+| Jisc Discovery Tool: Teaching Staff question set | Jisc / institutional access | ~25 mins | Both — establishes baseline across six digital capability elements; generates personalised development resources. Complete in first half-term. | jisc.potential.ly/signin |
+| ETF DTPF Exploring Stage Modules (37 modules, ~4 hours) | ETF / MyETF from Apr 2026 | 4h total, free for FE staff | Both — self-paced EdTech modules mapped to DTPF; covers six competency elements at the Exploring level | etfoundation.co.uk/professional-development |
+| Developing Digital Capability: Digital Learning and Development | Jisc | Self-paced, free for Jisc members | Pedagogy — CPD planning with digital tools; supporting learner digital capability development | jisc.ac.uk/training/developing-digital-capability-digital-learning-and-development |
+| Digital Accessibility Foundations (W3C WAI / edX) | W3C WAI and edX | Self-paced, free certificate | Both — WCAG 2.2 awareness, inclusive design habits; essential professional standard from day one | w3.org/WAI/courses/foundations-course/ |
+| Introduction to UDL Guidelines | CAST | Self-paced, free | Pedagogy — foundational UDL principles; connects directly to QFT and inclusive practice expectations | udlguidelines.cast.org |
+| Embark on Your AI Journey with Free Microsoft Education Tools | Microsoft Learn | ~30 mins, free | Pedagogy — introduces free Microsoft AI tools available to educators; starting point before any AI adoption | learn.microsoft.com/en-us/training/modules/embark-ai-journey-free-ai-tools-microsoft-education/ |
+| Make Your Content Accessible — Microsoft Accessibility Checker | Microsoft Support | Self-paced, free | Both — practical guide to running the Accessibility Checker on every document before sharing | support.microsoft.com/en-us/office/make-your-content-accessible-to-everyone-with-the-accessibility-checker-38059c2d-45ef-4830-9797-618f0e96f3ab |
+| Learning Microsoft Teams for Education | LinkedIn Learning | 1h 20m, free with LinkedIn | Pedagogy — class Teams, assignments, student management; the teaching-specific layer on top of Teams basics | linkedin.com/learning/learning-microsoft-teams-for-education |
+| Microsoft Teams Essential Training | LinkedIn Learning | 3h 46m, free with LinkedIn | General — foundational Teams confidence including channels, meetings, files, and notifications | linkedin.com/learning/microsoft-teams-essential-training-17445610 |
+
+### **Developing — Adopting Stage 2A (ETF DTPF Stage 2A, DigCompEdu B1)**
+
+For staff who are confident with core tools and are beginning to apply digital purposefully in their teaching. Focus moves from personal tool use to pedagogical application, formative assessment, and the responsible introduction of AI into practice.
+
+| **Course / Resource** | **Provider** | **Time** | **Dimension** | **URL** |
+| --- | --- | --- | --- | --- |
+| ETF DTPF Adopting Stage Modules (including Accessibility and Inclusion element F) | ETF / MyETF from Apr 2026 | Self-paced, free for FE staff | Both — structured progression through all six DTPF elements at Adopting level; element F covers accessibility and inclusion in teaching | etfoundation.co.uk/professional-development |
+| Jisc AI Literacy Module 1: Understanding AI in Tertiary Education | Jisc National Centre for AI | ~1 hour live webinar | Pedagogy — prerequisite for any AI tool adoption; covers AI basics, prompting, and implications for FE. Must complete before using Copilot or any AI tool in a teaching context. | jisc.ac.uk/training/understand-ai-basics-for-teaching-and-learning |
+| Developing Digital Capability: Digital Communication and Participation | Jisc | Self-paced, free for Jisc members | Both — professional digital communication, collaboration tools, online presence; maps to DTPF element B | jisc.ac.uk/training/developing-digital-capability-digital-communication-and-participation |
+| Developing Digital Capability: Digital Learning and Development | Jisc | Self-paced, free for Jisc members | Pedagogy — CPD planning, digital curation, tools for developing learners' digital skills; maps to DTPF element D | jisc.ac.uk/training/developing-digital-capability-digital-learning-and-development |
+| Jisc FE Accessibility Training Matrix Phase 1 | Jisc | Self-paced, free for Jisc members | Pedagogy — foundational accessibility training for FE practitioners; AT awareness, inclusive resource design | accessibility.jiscinvolve.org |
+| AI for Educators (Microsoft Learn path, 4 hours) | Microsoft Learn | 4h, free | Pedagogy — four-module path covering AI concepts, Copilot for educators, personalised learning, and accessible AI tools | learn.microsoft.com/en-us/training/paths/ai-education/ |
+| What is Generative AI? | LinkedIn Learning | 1h 3m, free with LinkedIn | General — foundational AI literacy for staff new to generative AI; safe and honest starting point | linkedin.com/learning/what-is-generative-ai |
+| Copilot for Microsoft 365: Boosting Productivity | LinkedIn Learning | 3h 5m, premium / institutional | General — systematic training in Copilot across every M365 application used in teaching | linkedin.com/learning/copilot-for-microsoft-365-boosting-productivity-in-excel-word-powerpoint-outlook-and-teams |
+| OneNote Essential Training | LinkedIn Learning | 3h 2m, released Mar 2025, premium / institutional | Both — Class Notebook for teaching; staff notebooks for CPD records; digital organisation | linkedin.com/learning/onenote-essential-training |
+
+### **Embedding — Adopting Stage 2B (ETF DTPF Stage 2B, DigCompEdu B2)**
+
+For staff who are consistently integrating digital into their teaching and are ready to embed accessibility by design, EDS mapping, AI into everyday workflows, and structured formative assessment pipelines.
+
+| **Course / Resource** | **Provider** | **Time** | **Dimension** | **URL** |
+| --- | --- | --- | --- | --- |
+| Jisc AI Literacy Module 2: Essential AI Skills for Teaching and Learning | Jisc National Centre for AI | ~1 hour live webinar | Pedagogy — practical AI skills for resource creation, differentiation, and feedback; builds on Module 1 | jisc.ac.uk/training/effective-use-of-ai-in-teaching-and-learning |
+| Jisc FE Accessibility Training Matrix Phase 2 | Jisc | Self-paced, free for Jisc members | Pedagogy — structured accessibility training for FE practitioners; covers AT, inclusive resources, and legal duties | accessibility.jiscinvolve.org |
+| Developing Digital Capability: Digital Problem Solving and Innovation | Jisc | Self-paced, free for Jisc members | Both — creative problem solving with digital tools; moving from Adopting to embedding innovation in practice | jisc.ac.uk/training/developing-digital-capability-digital-problem-solving-and-innovation |
+| ETF AI, EdTech and Digital Skills Support — DTPF and EDS modules | ETF Enhance platform | Self-paced, free for FE staff | Pedagogy — Accessibility and Inclusion element F in full; EDS category mapping for teachers | enhance.etfoundation.co.uk/eds |
+| DigCompEdu Self-Assessment Tool | European Commission JRC | Self-paced, free | Pedagogy — self-assessment against the European Educator Digital Competence framework; identifies next development targets | joint-research-centre.ec.europa.eu/digcompedu_en |
+| Microsoft Power Automate Essential Training | LinkedIn Learning | 2h 1m, released Aug 2025, premium / institutional | General — automating repetitive tasks including notifications, data collection from Forms, file organisation | linkedin.com/learning/microsoft-power-automate-essential-training-26159458 |
+| Introduction to Prompt Engineering for Generative AI | LinkedIn Learning | 1h 3m, released Aug 2024, free with LinkedIn | Both — crafting effective prompts for teaching resource generation; verifying and improving AI outputs | linkedin.com/learning/introduction-to-prompt-engineering-for-generative-ai-24636124 |
+| Responsible AI: Principles and Practical Applications | LinkedIn Learning | 1h 17m, free with LinkedIn | Both — AI ethics, bias, governance; prepares staff to model responsible AI use for learners | linkedin.com/learning/responsible-ai-principles-and-practical-applications |
+| Power BI Essential Training | LinkedIn Learning | 3h 34m, released Aug 2024, premium / institutional | General — interpreting learner and programme data; producing evidence for quality conversations | linkedin.com/learning/power-bi-essential-training |
+
+### **Innovating — Leading Stage 3 (ETF DTPF Stage 3, DigCompEdu C1 to C2)**
+
+For staff who are expert digital practitioners ready to coach others, shape institutional strategy, design digital-first curriculum, and lead the college's thinking on AI, accessibility, and innovation.
+
+| **Course / Resource** | **Provider** | **Time** | **Dimension** | **URL** |
+| --- | --- | --- | --- | --- |
+| Jisc AI Literacy Module 3: Ethical and Responsible Use of AI | Jisc National Centre for AI | ~1 hour live webinar | Pedagogy — academic integrity in AI age, bias, data protection, responsible AI leadership | jisc.ac.uk/training/how-to-maintain-academic-integrity-in-an-ai-age-fe |
+| Jisc Building Digital Capability Community of Practice | Jisc | Community, biannual events | Both — national community for FE and HE digital leaders; shares practice, challenges, and strategy | digitalcapability.jisc.ac.uk |
+| Developing Digital Capability: Digital Problem Solving and Innovation | Jisc | Self-paced, free for Jisc members | Both — innovation mindset, creative use of technology, leading digital change across the organisation | jisc.ac.uk/training/developing-digital-capability-digital-problem-solving-and-innovation |
+| Jisc AI Maturity Toolkit and FE AI Strategy resources | Jisc National Centre for AI | Ongoing resource | Both — strategic AI adoption for colleges; governance, responsible use, and sector leadership frameworks | jisc.ac.uk/innovation/artificial-intelligence |
+| ETF DTPF Modules: Leading Stage | ETF / MyETF from Apr 2026 | Self-paced, free for FE staff | Both — all six DTPF elements at Leading level; self-directed progression towards Stage 3 competence | etfoundation.co.uk/professional-development |
+| DigCompEdu Self-Assessment Tool (C1 to C2 targets) | European Commission JRC | Self-paced, free | Pedagogy — self-assessment against the European Educator Digital Competence framework at Leader to Pioneer level | joint-research-centre.ec.europa.eu/digcompedu_en |
+| Microsoft Learn for Educators — full MSLE programme | Microsoft Learn / MSLE | Self-paced, free | Pedagogy — access to Microsoft Official Curriculum, Applied Skills credentials, AI Bootcamp for Educators | learn.microsoft.com/en-us/training/educator-center/programs/msle/ |
+| Microsoft Certified Educator (MCE) — 21CLD preparation | Microsoft Learn Educator Center | Self-paced, free | Pedagogy — 21st Century Learning Design curriculum; international certification validating technology-enhanced pedagogy at the highest level | learn.microsoft.com/en-us/credentials/certifications/microsoft-certified-educator/ |
+| Advanced Prompt Engineering Techniques | LinkedIn Learning | 33m, released Nov 2023, free with LinkedIn | Both — chain-of-thought prompting, structured prompts for assessment design, curriculum planning with AI | linkedin.com/learning/advanced-prompt-engineering-techniques |
+| Introduction to AI Governance | LinkedIn Learning | 59m, released Sep 2025, free with LinkedIn | General — institutional AI governance frameworks; supports college AI policy development and leadership | linkedin.com/learning/topics/artificial-intelligence |
+| Microsoft Power Platform Foundations | LinkedIn Learning | 2h 7m, released Mar 2025, premium / institutional | General — full Power Platform (Automate, Apps, BI, Pages) as an integrated institutional system for leading staff | linkedin.com/learning/microsoft-power-platform-foundations |
+
+## **Pathway 3: General Digital Skills — All Staff**
+
+This pathway is for all staff, teaching and non-teaching, from early career to senior leadership. It focuses on the personal and professional digital skills that everyone in the organisation needs to work effectively, securely, and confidently in a digital environment. It does not assume a teaching context. The Jisc Building Digital Capability Discovery Tool (general staff question set) provides the baseline.
+
+| **Who this pathway is for** Support staff, administrators, curriculum managers, quality professionals, heads of area, and leaders. Anyone who has not already followed the Teacher pathway but who needs to develop their personal digital capability for their role. The four stages map directly to the Digital Learning Pyramid: Beginner and Developing sit within Digital Foundations, Embedding within Digital Inclusion, Innovating within Digital Innovation. |
+| --- |
+
+### **Beginner — Foundations for Everyone**
+
+For staff who are new to digital tools or who have gaps in their foundational skills. No technical knowledge assumed.
+
+| **Course / Resource** | **Provider** | **Time** | **Focus Area** | **URL** |
+| --- | --- | --- | --- | --- |
+| Jisc Building Digital Capability Discovery Tool (Staff question set) | Jisc / institutional access | ~25 mins | All — self-assessment across six digital capability elements; personalised report with free development resources. Complete at start of year. | jisc.potential.ly/signin |
+| Introduction to Microsoft 365 (MS-900T01) | Microsoft Learn | Self-paced, free | Overview of M365 suite; understanding how apps connect; useful for any new staff member | learn.microsoft.com/en-us/training/courses/ms-900t01 |
+| Microsoft 365 Basics Video Training | Microsoft Support | Short videos, free | Using Teams, Outlook, OneDrive, and Word for everyday professional tasks | support.microsoft.com/en-us/office/microsoft-365-basics-video-training-396b8d9e-e118-42d0-8a0d-87d1f2f055fb |
+| Digital Skills for Work and Life | FutureLearn / Accenture | 2 weeks, free to audit | Online safety, digital communication, government services; broad life and work foundation | futurelearn.com/courses/digital-skills-for-work-and-life |
+| Digital Literacy and Productivity Learning Pathway | LinkedIn Learning (free path) | ~6h, free | Devices, apps, productivity tools, safe internet use; foundational confidence for any role | linkedin.com/learning/paths/digital-literacy-and-productivity-learning-pathway |
+| Microsoft Teams Essential Training | LinkedIn Learning | 3h 46m, free with LinkedIn | Teams for professional communication and collaboration; core tool for all Weston College staff | linkedin.com/learning/microsoft-teams-essential-training-17445610 |
+| OneDrive for Business Essential Training | LinkedIn Learning | 1h 8m, free with LinkedIn | Cloud file storage, sharing, version history; replacing emailed attachments with shared links | linkedin.com/learning/onedrive-for-business-essential-training |
+| Outlook Essential Training (Microsoft 365) | LinkedIn Learning | 2h 12m, released Apr 2025, premium / institutional | Professional email management, calendar, scheduling meetings; essential for all roles | linkedin.com/learning/outlook-essential-training-microsoft-365 |
+
+### **Developing — Building Productive Digital Practice**
+
+For staff who can use the tools available to them and are building more productive, organised, and professional digital habits.
+
+| **Course / Resource** | **Provider** | **Time** | **Focus Area** | **URL** |
+| --- | --- | --- | --- | --- |
+| Developing Digital Capability: Digital Communication and Participation | Jisc | Self-paced, free for Jisc members | Professional digital communication, collaboration, and online presence; maps to the Jisc six elements framework | jisc.ac.uk/training/developing-digital-capability-digital-communication-and-participation |
+| Jisc Building Digital Capability Discovery Tool — mid-year review | Jisc / institutional access | ~25 mins | Progress tracking against September baseline across all six digital capability elements | jisc.potential.ly/signin |
+| Make Your Content Accessible — Microsoft Accessibility Checker | Microsoft Support | Self-paced, free | Running the Accessibility Checker as a professional habit on all documents, emails, and presentations | support.microsoft.com/en-us/office/make-your-content-accessible-to-everyone-with-the-accessibility-checker-38059c2d-45ef-4830-9797-618f0e96f3ab |
+| What is Generative AI? | LinkedIn Learning | 1h 3m, free with LinkedIn | Understanding AI tools, limitations, and appropriate use; essential awareness for all staff before using any AI tool | linkedin.com/learning/what-is-generative-ai |
+| Learning Microsoft 365 Copilot for Work (2024) | LinkedIn Learning | 29m, free with LinkedIn | Using AI assistant across M365 apps to draft, summarise, and analyse; accessible first step into Copilot | linkedin.com/learning/learning-microsoft-365-copilot-for-work-2024 |
+| Microsoft 365 Copilot Shorts: 20 Skills in 20 Minutes | LinkedIn Learning | 18m, released Feb 2026, free with LinkedIn | Quick-win Copilot skills across Teams, Outlook, Word, Excel; accessible for busy staff | linkedin.com/learning/microsoft-365-copilot-shorts-20-skills-in-20-minutes |
+| Working Smarter with Microsoft 365 (Learning Path) | LinkedIn Learning | Multiple courses, premium / institutional | Complete M365 productivity: Excel, Word, PowerPoint, Teams, OneDrive, SharePoint as an integrated system | linkedin.com/learning/paths/working-smarter-with-microsoft-365 |
+| Excel Essential Training (Microsoft 365) | LinkedIn Learning | ~3h, premium / institutional | Data entry, formulae, charts, pivot tables; core skill for any staff role handling information | linkedin.com/learning/excel-essential-training-microsoft-365 |
+
+### **Embedding — Efficient and Inclusive Digital Working**
+
+For staff who are digitally productive and ready to work more efficiently, manage data confidently, and develop an accessible and inclusive digital practice.
+
+| **Course / Resource** | **Provider** | **Time** | **Focus Area** | **URL** |
+| --- | --- | --- | --- | --- |
+| Developing Digital Capability: Digital Problem Solving and Innovation | Jisc | Self-paced, free for Jisc members | Using digital tools more creatively and critically to solve problems; gateway to digital innovation | jisc.ac.uk/training/developing-digital-capability-digital-problem-solving-and-innovation |
+| Jisc Building Digital Capability Discovery Tool — annual review | Jisc / institutional access | ~25 mins | End-of-year reassessment across all six digital capability elements; identifies next development stage and priorities | jisc.potential.ly/signin |
+| Career Essentials in Generative AI (Microsoft and LinkedIn) | LinkedIn Learning / Microsoft | ~4h, free with certificate | Comprehensive AI literacy with a Microsoft Professional Certificate; strong CPD evidence for any role | linkedin.com/learning/paths/career-essentials-in-generative-ai-by-microsoft-and-linkedin |
+| Responsible AI: Principles and Practical Applications | LinkedIn Learning | 1h 17m, free with LinkedIn | AI ethics, bias, governance; prepares all staff to use AI tools responsibly and to advise others | linkedin.com/learning/responsible-ai-principles-and-practical-applications |
+| Copilot for Microsoft 365: Boosting Productivity | LinkedIn Learning | 3h 5m, released Oct 2024, premium / institutional | Systematic Copilot integration across all M365 apps; moving from awareness to embedded daily use | linkedin.com/learning/copilot-for-microsoft-365-boosting-productivity-in-excel-word-powerpoint-outlook-and-teams |
+| Microsoft Power Automate Essential Training | LinkedIn Learning | 2h 1m, released Aug 2025, premium / institutional | Automating repetitive administrative tasks; notifications, form-to-spreadsheet flows, file routing | linkedin.com/learning/microsoft-power-automate-essential-training-26159458 |
+
+### **Innovating — Leading Digital Change**
+
+For staff in managerial, quality, or strategic roles who are ready to shape the college's digital environment, lead their teams' digital development, and use data and automation to drive improvement.
+
+| **Course / Resource** | **Provider** | **Time** | **Focus Area** | **URL** |
+| --- | --- | --- | --- | --- |
+| Jisc Digital Elevation Tool | Jisc / institutional access | Organisational tool | Institutional self-assessment across five digital themes: learners, curriculum, staff, leadership, and technology, including AI maturity. Updated Oct 2025. | jisc.ac.uk/further-education-and-skills |
+| Jisc AI Maturity Toolkit for Tertiary Education | Jisc National Centre for AI | Ongoing resource | Strategic AI adoption guidance; governance, operational AI, leading AI in colleges framework. Practical guide for FE leaders. | jisc.ac.uk/innovation/artificial-intelligence |
+| Jisc Building Digital Capability Community of Practice | Jisc | Community membership, biannual events | National community for FE and HE digital leaders; sector intelligence, shared practice, and strategic conversations | digitalcapability.jisc.ac.uk |
+| DigCompEdu Self-Assessment (organisational lens) | European Commission JRC | Self-paced, free | Using the European Educator Digital Competence framework to assess and lead team-wide digital capability development | joint-research-centre.ec.europa.eu/digcompedu_en |
+| Microsoft Learn for Educators — MSLE programme | Microsoft Learn / MSLE | Self-paced, free | For leaders supporting academic staff; Microsoft Official Curriculum, AI Bootcamp, and Applied Skills credentials | learn.microsoft.com/en-us/training/educator-center/programs/msle/ |
+| Introduction to AI Governance | LinkedIn Learning | 59m, released Sep 2025, free with LinkedIn | Institutional AI governance, policy frameworks, ethical oversight; for leaders responsible for AI adoption | linkedin.com/learning/topics/artificial-intelligence |
+| Build Your Generative AI Productivity Skills (Microsoft and LinkedIn) | LinkedIn Learning / Microsoft | ~5h learning path | Advanced Copilot, prompt engineering, data analysis with AI; strategic-level AI productivity | linkedin.com/learning/paths/build-your-generative-ai-productivity-skills-with-microsoft-and-linkedin |
+| Microsoft Power Platform Foundations | LinkedIn Learning | 2h 7m, released Mar 2025, premium / institutional | Power Apps, Power Automate, Power BI, and Power Pages as an integrated institutional capability platform | linkedin.com/learning/microsoft-power-platform-foundations |
+| Power BI Essential Training | LinkedIn Learning | 3h 34m, released Aug 2024, premium / institutional | Creating strategic dashboards for quality, HR, curriculum, and operational reporting | linkedin.com/learning/power-bi-essential-training |
+| Power Automate Desktop: Beyond the Basics | LinkedIn Learning | 2h 22m, released Mar 2024, premium / institutional | Advanced automation for process improvement and administrative efficiency at scale | linkedin.com/learning/power-automate-desktop-beyond-the-basics |
+
+| **Pathway summary: all three audiences at a glance** Students follow the Learn, Work, Life pathway anchored by the Jisc Discovery Tool (New Students, Current Students, Employability Skills question sets) and Century Tech EDS diagnostics. Teachers follow the Digital Skills and TLA Pedagogy pathway anchored by the Jisc Teaching Staff question set and the ETF DTPF stages. All Staff follow the General Digital Skills pathway anchored by the Jisc Staff question set. All three pathways converge at the Innovating stage around AI literacy, responsible use, and institutional leadership. Progress through all three pathways is tracked and evidenced through the Digital Coaching Platform. |
+| --- |

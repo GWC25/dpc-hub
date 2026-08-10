@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DPC Impact Hub — Digital Pedagogy Coach programme tracker, Weston College Group">
+  <title>Dashboard · DPC Impact Hub</title>
+  <link rel="stylesheet" href="css/design.css">
+</head>
+<body>
+
+<!-- ── SKIP LINK ──────────────────────────────────────────────── -->
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- ── SR LIVE REGION ────────────────────────────────────────── -->
+<div id="sr-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ── APP HEADER ─────────────────────────────────────────────── -->
+<header class="app-header" role="banner">
+  <h1 class="app-header__title">
+    DPC Impact Hub
+    <span class="app-header__sub">Weston College Group · 2025–27</span>
+  </h1>
+
+  <div class="app-header__actions">
+    <span class="save-indicator saved" id="save-indicator" aria-live="polite" aria-label="Save status">✓ Saved</span>
+    <button
+      class="btn-header save-btn"
+      id="btn-manual-save"
+      type="button"
+      title="Download dpc-data.json to drag into OneDrive"
+      aria-label="Save and download data file"
+    >
+      ⬇ Save
+    </button>
+    <button
+      class="theme-toggle"
+      id="btn-theme"
+      type="button"
+      aria-label="Toggle colour theme"
+      title="Toggle light / dark mode"
+    >☾</button>
+  </div>
+</header>
+
+<!-- ── SIDEBAR ────────────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar" aria-label="Main navigation">
+  <nav aria-label="Application navigation">
+
+    <span class="nav-section-label">Overview</span>
+
+    <button
+      class="nav-item active"
+      data-nav="dashboard"
+      onclick="DPC.App.navigateTo('dashboard')"
+      aria-current="page"
+      type="button"
+    >
+      <span class="nav-icon" aria-hidden="true">◈</span>
+      Dashboard
+    </button>
+
+    <button
+      class="nav-item"
+      data-nav="rag-summary"
+      onclick="DPC.App.navigateTo('rag-summary')"
+      aria-current="false"
+      type="button"
+    >
+      <span class="nav-icon" aria-hidden="true">⊡</span>
+      RAG Summary
+    </button>
+
+    <span class="nav-section-label">Curriculum Areas</span>
+
+    <button
+      class="nav-item"
+      data-nav="areas"
+      onclick="DPC.App.navigateTo('areas')"
+      aria-current="false"
+      type="button"
+    >
+      <span class="nav-icon" aria-hidden="true">◉</span>
+      All Areas
+    </button>
+
+    <button
+      class="nav-item"
+      data-nav="area"
+      onclick="DPC.App.navigateTo('area')"
+      aria-current="false"
+      type="button"
+      id="nav-area-btn"
+      style="display:none"
+    >
+      <span class="nav-icon" aria-hidden="true">→</span>
+      <span id="nav-area-label">Area View</span>
+    </button>
+
+    <span class="nav-section-label">College-Wide</span>
+
+    <button
+      class="nav-item"
+      data-nav="lwb"
+      onclick="DPC.App.navigateTo('lwb')"
+      aria-current="false"
+      type="button"
+    >
+      <span class="nav-icon" aria-hidden="true">◬</span>
+      Learning Without Barriers
+    </button>
+
+    <button
+      class="nav-item"
+      data-nav="individual-activities"
+      onclick="DPC.App.navigateTo('individual-activities')"
+      aria-current="false"
+      type="button"
+    >
+      <span class="nav-icon" aria-hidden="true">◎</span>
+      Individual Activities
+    </button>
+
+    <span class="nav-section-label">My Practice</span>
+
+    <button
+      class="nav-item"
+      data-nav="my-cpd"
+      onclick="DPC.App.navigateTo('my-cpd')"
+      aria-current="false"
+      type="button"
+    >
+      <span class="nav-icon" aria-hidden="true">◷</span>
+      My CPD
+    </button>
+
+    <span class="nav-section-label">Reporting</span>
+
+    <button
+      class="nav-item"
+      data-nav="reports"
+      onclick="DPC.App.navigateTo('reports')"
+      aria-current="false"
+      type="button"
+    >
+      <span class="nav-icon" aria-hidden="true">◫</span>
+      Report Builder
+    </button>
+
+    <span class="nav-section-label">System</span>
+
+    <button
+      class="nav-item"
+      data-nav="settings"
+      onclick="DPC.App.navigateTo('settings');DPC.App.renderSettings()"
+      aria-current="false"
+      type="button"
+    >
+      <span class="nav-icon" aria-hidden="true">◇</span>
+      Settings
+    </button>
+
+  </nav>
+</aside>
+
+<!-- ── MAIN CONTENT ───────────────────────────────────────────── -->
+<main class="main-content" id="main" tabindex="-1">
+
+  <!-- ── DASHBOARD ──────────────────────────────────────────── -->
+  <section
+    class="page-section active"
+    id="section-dashboard"
+    aria-labelledby="heading-dashboard"
+    aria-hidden="false"
+  >
+    <div class="page-inner">
+      <h2 class="section-heading" id="heading-dashboard">Dashboard</h2>
+      <p class="section-sub">Digital Pedagogy Coach · Weston College Group · Pilot 2025–27</p>
+
+      <div class="stat-row" id="dashboard-stats" aria-label="Key statistics">
+        <!-- Populated by app.js renderDashboard() -->
+      </div>
+
+      <div class="card mb-16">
+        <div class="card-header">
+          <span class="card-title">RAG Distribution</span>
+          <button class="btn btn-ghost btn-sm" onclick="DPC.App.navigateTo('rag-summary')" type="button">View full summary →</button>
+        </div>
+        <div class="card-body" id="rag-distribution">
+          <!-- Populated by app.js renderDashboard() -->
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Activity</span>
+          </div>
+          <div class="card-body" id="dashboard-recent">
+            <!-- Populated by app.js renderDashboard() -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Quick Navigation</span>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-secondary" onclick="DPC.App.navigateTo('rag-summary')" type="button">View RAG Summary Table</button>
+              <button class="btn btn-secondary" onclick="DPC.App.navigateTo('areas')" type="button">Browse All Areas</button>
+              <button class="btn btn-secondary" onclick="DPC.App.navigateTo('lwb')" type="button">Learning Without Barriers</button>
+              <button class="btn btn-ghost" onclick="DPC.App.navigateTo('settings');DPC.App.renderSettings()" type="button">Settings & Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RAG SUMMARY ────────────────────────────────────────── -->
+  <section
+    class="page-section"
+    id="section-rag-summary"
+    aria-labelledby="heading-rag-summary"
+    aria-hidden="true"
+  >
+    <div class="page-inner">
+      <h2 class="section-heading" id="heading-rag-summary">RAG Summary</h2>
+      <p class="section-sub">All curriculum areas · Click any row to open the area record</p>
+      <div id="rag-summary-content">
+        <!-- Populated by app.js renderRAGSummary() -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ALL AREAS (SELECTOR) ───────────────────────────────── -->
+  <section
+    class="page-section"
+    id="section-areas"
+    aria-labelledby="heading-areas"
+    aria-hidden="true"
+  >
+    <div class="page-inner">
+      <h2 class="section-heading" id="heading-areas">Curriculum Areas</h2>
+      <p class="section-sub">Select an area to view its full record, activity log, interventions, and RAG matrix</p>
+      <div id="area-selector-container">
+        <!-- Populated by DPC.Areas.renderSelector() -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── AREA VIEW ──────────────────────────────────────────── -->
+  <section
+    class="page-section"
+    id="section-area"
+    aria-labelledby="area-header-name"
+    aria-hidden="true"
+  >
+    <!-- Sticky area header (code, name, HoA, DL, scores) -->
+    <div class="area-header" id="area-header-content" aria-label="Area details">
+      <!-- Populated by DPC.Areas.renderArea() -->
+    </div>
+
+    <!-- Sticky tab strip -->
+    <div
+      class="area-tab-strip"
+      id="area-tabs-strip"
+      role="tablist"
+      aria-label="Area sections"
+    >
+      <!-- Populated by DPC.Areas.renderArea() -->
+    </div>
+
+    <!-- Tab panels -->
+    <div id="area-tab-panels" role="tabpanel" aria-label="Area content">
+      <!-- Populated by DPC.Areas.renderTabPanel() -->
+    </div>
+  </section>
+
+  <!-- ── LEARNING WITHOUT BARRIERS ─────────────────────────── -->
+  <section
+    class="page-section"
+    id="section-lwb"
+    aria-labelledby="heading-lwb"
+    aria-hidden="true"
+  >
+    <div class="page-inner">
+      <h2 class="section-heading" id="heading-lwb">Learning Without Barriers</h2>
+      <p class="section-sub">Activities and actions linked to the Learning Without Barriers framework</p>
+      <div id="lwb-content">
+        <!-- Populated by app.js renderLWB() -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INDIVIDUAL ACTIVITIES ──────────────────────────────── -->
+  <section
+    class="page-section"
+    id="section-individual-activities"
+    aria-labelledby="heading-ia"
+    aria-hidden="true"
+  >
+    <div class="page-inner">
+      <h2 class="section-heading" id="heading-ia">Individual Activities</h2>
+      <p class="section-sub">1:1 coaching, teach-meets, class support, planning, and ad-hoc meetings</p>
+      <div id="individual-activities-content">
+        <!-- Populated by app.js renderIndividualActivities() -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MY CPD ─────────────────────────────────────────────── -->
+  <section
+    class="page-section"
+    id="section-my-cpd"
+    aria-labelledby="heading-cpd"
+    aria-hidden="true"
+  >
+    <div class="page-inner">
+      <h2 class="section-heading" id="heading-cpd">My CPD</h2>
+      <p class="section-sub">External events, key takeaways, cost-effectiveness, and follow-up actions</p>
+      <div id="my-cpd-content">
+        <!-- Populated by app.js renderMyCPD() -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── REPORT BUILDER ─────────────────────────────────────── -->
+  <section
+    class="page-section"
+    id="section-reports"
+    aria-labelledby="heading-reports"
+    aria-hidden="true"
+  >
+    <div class="page-inner">
+      <h2 class="section-heading" id="heading-reports">Report Builder</h2>
+      <p class="section-sub">Generate audience-specific reports — preview in-browser, export for Word document generation</p>
+      <div id="reports-container">
+        <!-- Populated by DPC.Reports.renderUI() -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SETTINGS ───────────────────────────────────────────── -->
+  <section
+    class="page-section"
+    id="section-settings"
+    aria-labelledby="heading-settings"
+    aria-hidden="true"
+  >
+    <div class="page-inner">
+      <h2 class="section-heading" id="heading-settings">Settings</h2>
+      <p class="section-sub">Data management, OneDrive sync, and application preferences</p>
+      <div id="settings-content">
+        <!-- Populated by DPC.App.renderSettings() -->
+      </div>
+    </div>
+  </section>
+
+</main><!-- /#main -->
+
+<!-- ── GLOBAL MODAL ───────────────────────────────────────────── -->
+<div
+  class="modal-backdrop"
+  id="modal-backdrop"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modal-title"
+  aria-hidden="true"
+>
+  <div class="modal" id="modal-global">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-title">Modal</h2>
+      <button
+        class="btn-icon"
+        onclick="DPC.App.closeModal()"
+        aria-label="Close modal"
+        type="button"
+      >✕</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- Populated dynamically -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="DPC.App.closeModal()" type="button">Cancel</button>
+      <button class="btn btn-primary" onclick="DPC.App.confirmModal()" type="button" id="modal-confirm-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST CONTAINER ───────────────────────────────────────── -->
+<div class="toast-container" id="toast-container" aria-live="polite" aria-label="Notifications"></div>
+
+<!-- ── SCRIPTS (load order matters) ──────────────────────────── -->
+<script src="js/data.js"></script>
+<script src="js/rag.js"></script>
+<script src="js/areas.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/app.js"></script>
+
+<!-- ── INLINE POST-LOAD ───────────────────────────────────────── -->
+<script>
+  // Auth guard — redirect to login if not authenticated
+  (function() {
+    if (sessionStorage.getItem('dpc-hub-auth') !== 'granted') {
+      // Allow in dev/localhost without auth
+      const isLocal = location.hostname === 'localhost' ||
+                      location.hostname === '127.0.0.1' ||
+                      location.protocol === 'file:';
+      if (!isLocal) {
+        window.location.href = 'index.html';
+      }
+    }
+  })();
+
+  // Close modal on backdrop click
+  document.getElementById('modal-backdrop')?.addEventListener('click', function(e) {
+    if (e.target === this) DPC.App.closeModal();
+  });
+
+  // Close modal on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      const backdrop = document.getElementById('modal-backdrop');
+      if (backdrop.classList.contains('open')) DPC.App.closeModal();
+    }
+  });
+
+  // Show/hide "Area View" nav item when in area section
+  const origNavigateTo = DPC.App && DPC.App.navigateTo;
+  document.addEventListener('DOMContentLoaded', function() {
+    // Intercept navigateTo to manage area nav item visibility
+    const _nav = DPC.App.navigateTo.bind(DPC.App);
+    DPC.App.navigateTo = function(sectionId) {
+      _nav(sectionId);
+      const areaNavBtn = document.getElementById('nav-area-btn');
+      if (!areaNavBtn) return;
+      if (sectionId === 'area') {
+        areaNavBtn.style.display = '';
+        const code = DPC.Areas.currentArea;
+        if (code) {
+          const area = DPC.getArea(code);
+          document.getElementById('nav-area-label').textContent = area ? `${area.code} · ${area.name.slice(0,16)}` : 'Area View';
+        }
+      } else {
+        // Don't hide it so user can always get back to last area
+      }
+    };
+  });
+</script>
+
+</body>
+</html>
