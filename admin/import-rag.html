@@ -1,0 +1,2751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DPC Hub — Admin: Import RAG Matrix</title>
+<link rel="stylesheet" href="../css/design.css">
+<style>
+  body { font-family: Arial, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.5; }
+  h1 { font-size: 1.4rem; }
+  .step { border: 1px solid #ddd; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; background: #fafafa; }
+  button { background: #0b5fff; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-size: 0.95rem; cursor: pointer; }
+  button:disabled { background: #aaa; cursor: not-allowed; }
+  button.danger { background: #b00020; }
+  pre { background: #111; color: #d6f5d6; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.82rem; max-height: 320px; }
+  .warn { color: #b00020; font-weight: 600; }
+  .ok { color: #087f23; font-weight: 600; }
+  .hidden { display: none; }
+  code { background: #eee; padding: 1px 5px; border-radius: 3px; }
+  #saveIndicator { font-size: 0.85rem; color: #666; }
+</style>
+</head>
+<body>
+
+<p><a href="../hub.html">&larr; Back to Hub</a></p>
+<h1>Admin — Import RAG Matrix &amp; Action Plans</h1>
+<p>This runs inside the Hub itself and uses its normal save functions — same folder connection, same file writes as everything else you do in the Hub. One-time use for this import; safe to bookmark and re-run later since it never overwrites your own edits.</p>
+<p id="saveIndicator"></p>
+
+<div class="step" id="connectStep">
+  <h2>Step 1 — Connecting to your Data folder</h2>
+  <p id="connectStatus">Connecting...</p>
+</div>
+
+<div class="step hidden" id="previewStep">
+  <h2>Step 2 — Preview</h2>
+  <button id="previewBtn">Preview changes</button>
+  <div id="previewOutput"></div>
+</div>
+
+<div class="step hidden" id="applyStep">
+  <h2>Step 3 — Apply</h2>
+  <p>This calls the Hub's own <code>saveArea()</code> and <code>saveActionPlan()</code> functions, then saves immediately — the same functions the RAG Matrix and Action Plan screens use when you edit by hand, so the data shape is guaranteed correct.</p>
+  <button id="applyBtn" class="danger">Apply and save now</button>
+  <div id="applyOutput"></div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/schema.js"></script>
+<script src="../js/data.js"></script>
+<script>
+const SOURCE_MARKER = "rag-matrix-20260810";
+const RAG_DATA = {
+  "AGF": {
+    "areaCode": "AGF",
+    "areaName": "Arts, Graphics & Fashion",
+    "hoaName": "Chrissandra Boxley",
+    "digitalLeadNames": [
+      "Chrystal Bliss",
+      "Eva Jarvis"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "'Really positive meeting with clear understanding of role and future involvement.'",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 2,
+        "rationale": "All six CPD categories (curriculum-embedded, assessment, accessibility, AI literacy, data use, subject-specific software) rated High need on the Digital Hours survey \u2014 the most consistent full-High profile in the cohort.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Booked KN 18th June DL training; no note of non-attendance \u2014 attendance assumed per HoA Tracker green-marking convention.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 2,
+        "rationale": "Digital Health Check: 9 reviews, avg practice score 2.56/5, 100% action-point rate, support-priority 4.44 (Medium band) \u2014 the lowest average practice score outside Construction/Public Services.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "infrastructure",
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness"
+    ],
+    "notes": ""
+  },
+  "AHE": {
+    "areaCode": "AHE",
+    "areaName": "Access to HE",
+    "hoaName": "Sean Shearing (changing July)",
+    "digitalLeadNames": [
+      "Sean Shearing (interim)"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "Sean 'gets things done, is functional, and always meets requirements when asked' \u2014 a deliberately low-key but genuinely functional HoA, not a disengaged one. Lower investment in developing AHE specifically reflects the pending restructure (the area may move under a different role), not a leadership gap.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 2,
+        "rationale": "No confirmed future Digital Lead \u2014 the HoA/DL role is itself in handover; Sean is due to provide a briefing note before the new structure lands.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "infrastructure",
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": "Two source rows (RAG Summary and HoA Tracker) attach infrastructure/strengths text to AHE that directly contradicts Sean's own comment ('not great digitally') and appears to be copied from the DCI row by a spreadsheet error. Infrastructure and staff capability are left blank here rather than risk using data that belongs to a different area."
+  },
+  "AMTEC": {
+    "areaCode": "AMTEC",
+    "areaName": "Engineering (merged EFE + EHE)",
+    "hoaName": "Thanos Adamos (EHE) / Barney Wilis, response via Jayne Reynolds (EFE)",
+    "digitalLeadNames": [
+      "Akshay Ramteke (EHE)",
+      "Lisa Phillips (EFE)"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "Blended: EHE (Thanos) shows clear strategic leadership; EFE engagement is real but earlier-stage. Net: developing.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 2,
+        "rationale": "EFE: 'our staff do not have a lot of experience with the above, they rely on past resources and need to learn how to change these for a digital landscape.' EHE: self-rated 'Basic to Intermediate', with Significant Impact barriers on formative digital assessment and creating accessible resources.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 2,
+        "rationale": "EHE infrastructure audit scored Device access hindering teaching as 1/5 (Significant Impact) \u2014 the lowest device score of any respondent \u2014 plus software licensing gaps (MATLAB/CAD/SolidWorks off-campus access) and no reliable lecture-capture system.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Akshay Ramteke and Lisa Phillips both booked KN 18th June (EHE/EFE slots); no note of non-attendance \u2014 attendance assumed for both.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 3,
+        "rationale": "EHE has highly comprehensive integration of specialist tools (SolidWorks, ANSYS/MATLAB, Python) across formative and summative assessment. EFE integration is currently limited \u2014 cybersecurity/problem-solving treated as new to all learners, folded into PLC/CNC units.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "digitalSkillsAssessment",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "ANM": {
+    "areaCode": "ANM",
+    "areaName": "Animal Management",
+    "hoaName": "Laura Link",
+    "digitalLeadNames": [
+      "Joseph Bourke-Trotham"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "'Really engaged and positive about the potential and bigger picture of digital learning.'",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 2,
+        "rationale": "Infrastructure audit: Wi-Fi 'poor at Puxton', device access hinders teaching scored 5/5 (No Impact stated but framed inconsistently with narrative \u2014 treat with caution) alongside 'not sure' on device adequacy.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 3,
+        "rationale": "Most of the team assessed by the HoA as 'Stage 2b'; AI-as-teaching-productivity-tool and troubleshooting learner digital problems flagged as CPD needs.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Booked SWS 16th June; no note of non-attendance \u2014 attendance assumed.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "BUI": {
+    "areaCode": "BUI",
+    "areaName": "Building Services (Construction)",
+    "hoaName": "Richard Hanney",
+    "digitalLeadNames": [
+      "Steven Jakeway",
+      "Christie Ross"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "Richard has a clear industry-relevant digital skills vision (clocking-in resource, MS Fundamentals, business start-up programme) and is motivated, though delivery is still developing.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 2,
+        "rationale": "'Inconsistent Wi-Fi coverage in some workshop and practical spaces... connectivity drops when multiple learners access online systems simultaneously.' CAD/simulation software access is a named gap.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 2,
+        "rationale": "Steven Jakeway's training-table note reads 'Possibly no longer' \u2014 a stated exception, not assumed-attended despite the June 16th booking.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 2,
+        "rationale": "Health Check: 2 reviews, avg practice score 3.28/5, 100% action rate, support-priority 4.73/7 (High band) \u2014 'training and support to be given on accessibility'.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 3,
+        "rationale": "Learners access digital portfolios, Smart Assessor, and industry regulation resources, but the HoA's own audit is explicit that 'much of the current activity focuses on digital access and navigation rather than the deeper development of digital skills' in the trade.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "digitalSkillsAssessment",
+      "learnerReadiness"
+    ],
+    "notes": ""
+  },
+  "BUS": {
+    "areaCode": "BUS",
+    "areaName": "Business & Tourism",
+    "hoaName": "Ben Melhuish",
+    "digitalLeadNames": [
+      "April Nickells"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "'BUS HoA did not attend meeting' initially; conversations since have been positive and a new form was shared, but engagement has been slower to establish than most areas.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 4,
+        "rationale": "'Staff confident with AI, project management tools and dashboards. Less confident with CRMs and Digital Booking Systems (Travel)' \u2014 a specific, narrow gap rather than a broad one.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 4,
+        "rationale": "Strong device bank (417/420 combined = 40 PCs), described as 'accessible, well-organised', with more laptops planned. Device-access-hinders-teaching scored 3/5.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Booked KN 18th June; no note of non-attendance \u2014 attendance assumed.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "CED": {
+    "areaCode": "CED",
+    "areaName": "Community Education",
+    "hoaName": "Charlotte Hynes",
+    "digitalLeadNames": [
+      "Marsha Jones"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 2,
+        "rationale": "Charlotte declined the initial meeting; DPC's own note flags concern this may be 'the forgotten Area'.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalSkillsAssessment": {
+        "rating": 2,
+        "rationale": "'We don't currently have a formal measuring tool such as BKSB' \u2014 baseline assessment is 1:1 discussion at enrolment only.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 2,
+        "rationale": "'Not all staff currently have experience of online or blended delivery' and confidence in producing professional learning resources 'varies significantly'.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 3,
+        "rationale": "'We have some college laptops within the team, otherwise the learners must borrow them from the library'; smartboards described as inconsistent.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 2,
+        "rationale": "Marsha Jones's training-table note states she 'may be going through consultation... unable to attend training' \u2014 a stated exception, not assumed-attended.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "curriculumIntegration",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "CON": {
+    "areaCode": "CON",
+    "areaName": "Construction Trades",
+    "hoaName": "Richard Hanney",
+    "digitalLeadNames": [
+      "Steven Jakeway",
+      "Christie Ross"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "Richard 'understands industry digital skill requirements and aspirations'; the honest self-assessment that current activity is 'digital access and navigation rather than deeper skill development' is itself a mark of leadership clarity.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 2,
+        "rationale": "'Staff confidence and clarity around how digital skills should be embedded into vocational learning' is the named key gap; CPD need rated High across five of six categories.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 3,
+        "rationale": "Laser levels recently purchased for each workshop to support digital measurement/setting-out \u2014 concrete recent investment \u2014 but network connectivity in workshops remains inconsistent.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 1,
+        "rationale": "Digital Health Check: 4 reviews, avg practice score 2.5/5, 100% action rate, support-priority 5.5/7 \u2014 second-highest priority score in the whole cohort after Carpentry.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Christie Ross booked SWS 16th June; no note of non-attendance \u2014 attendance assumed.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness"
+    ],
+    "notes": ""
+  },
+  "COU": {
+    "areaCode": "COU",
+    "areaName": "FE Counselling",
+    "hoaName": "Tasha Thorne",
+    "digitalLeadNames": [
+      "Mel Probert"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "'Tasha is reflective and learner-focused'; inclusive resource design 'commendable'. Area code itself was unconfirmed in the tracker pending Neil Davies \u2014 now resolved via the confirmed Codes for Areas list.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 2,
+        "rationale": "'Working whiteboards \u2014 over the past 2 years we have had major issues with many whiteboards not working' \u2014 a two-year, still-unresolved barrier flagged as the most urgent practical issue.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 4,
+        "rationale": "'Immersive Reader is used a lot within the area'... 'all resources made inclusive as a matter of course' \u2014 described as embedded standard practice, ahead of most areas.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "learnerReadiness": {
+        "rating": 2,
+        "rationale": "Digital poverty flagged directly: many learners have been out of education for years and cannot access laptops at home; device-hinders-learning barriers scored at the extreme end (2/5 device, 5/5 software \u2014 mixed but device access is the acute constraint).",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Mel Probert booked SWS 16th June; no note of non-attendance \u2014 attendance assumed.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "digitalSkillsAssessment",
+      "curriculumIntegration"
+    ],
+    "notes": ""
+  },
+  "CTC": {
+    "areaCode": "CTC",
+    "areaName": "Construction Training Centre",
+    "hoaName": "John Fowler",
+    "digitalLeadNames": [
+      "John Fowler",
+      "Dave Evans"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "'Really positive and engaged. Keen to develop and showcase good practice.'",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 3,
+        "rationale": "CPD needs rated High for data/evidence use and subject-specific software, Moderate for AI literacy; 'staff are confident in delivery, but may benefit from some best practice.'",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 4,
+        "rationale": "Strong existing digital practice \u2014 Teams, Forms, rubrics, assignments; industry tools (DTS, CITB learning) in active use for HGV/LGV test preparation.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 2,
+        "rationale": "No training date recorded for John Fowler/Dave Evans and the tracker itself notes 'Under Consultation?' \u2014 this is a stated open item, not assumed-attended.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "infrastructure",
+      "digitalSkillsAssessment",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "DCI": {
+    "areaCode": "DCI",
+    "areaName": "Digital Computing & IT",
+    "hoaName": "Sean Shearing",
+    "digitalLeadNames": [
+      "Sean Shearing (interim \u2014 no separate DL formally identified)"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "Sean 'gets things done, is functional' \u2014 genuinely strong, well-evidenced performance ('highest-performing area digitally... good model for others'), without over-stating it to 'exceptional'.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 5,
+        "rationale": "'All staff are confident with the tools available within the area and provide each other with insight into new and exciting technologies.' T Level placement learners praised by employers for technical ability.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 4,
+        "rationale": "Strong specialist kit (PCs, VR, 3D printer, milling machine); named gaps are aspirational extensions (drones, 3D cameras, GPUs) rather than baseline shortfalls.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 3,
+        "rationale": "Sean's own audit is explicit: 'we do not make enough usage of the accessibility checker within Office 365 and this needs to become second nature' \u2014 a self-identified gap in an otherwise strong area. Confirmed by Health Check: avg practice scores across the Computing/Digital variants ranged 3.0\u20135.0, with 'no action points needed' on some reviews and explicit alt-text gaps on others.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 2,
+        "rationale": "'No Digital Lead formally identified' \u2014 the strongest area digitally has no confirmed DL distinct from the HoA himself.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness"
+    ],
+    "notes": ""
+  },
+  "EEY": {
+    "areaCode": "EEY",
+    "areaName": "Education & Early Years",
+    "hoaName": "Rachael Moger",
+    "digitalLeadNames": [
+      "Sharon Walters"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "HoA did not attend Meeting 1 directly (form completed, Rachael Moger proxy); support needed 'specifically around Assessment & Data'.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 3,
+        "rationale": "'Wifi is sometimes an issue in the EY corridor. Not enough printers.' College laptops available; iPads flagged as potentially useful to mirror industry (Tapestry/Famly).",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 3,
+        "rationale": "Navigate daily reflections and structured digital embedding by level (1hr/wk rising to 1.5hrs for T Level), but CPD-need ratings for curriculum-embedded and assessment/feedback digital are both rated Low-to-Moderate, i.e. relatively strong already.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 2,
+        "rationale": "Health Check (Education and Early Years row): 4 reviews, avg practice score 3.1/5, 100% action rate, priority score 3.9/7.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Sharon Walters confirmed as DL; Liam Fisher also identified in earlier notes as a secondary contact \u2014 active engagement.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "digitalSkillsAssessment",
+      "learnerReadiness"
+    ],
+    "notes": ""
+  },
+  "EGL": {
+    "areaCode": "EGL",
+    "areaName": "English",
+    "hoaName": "Libby Heath-Tavener",
+    "digitalLeadNames": [
+      "Georgina Berritta"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "'Libby is honest about the gaps \u2014 no formal baseline assessment, AT awareness poor, Teams strong for communication but weak for classroom use.' Honest self-assessment, engaged.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalSkillsAssessment": {
+        "rating": 2,
+        "rationale": "'No formal baseline currently \u2014 identified as a gap by HoA.'",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 2,
+        "rationale": "'Lots available, team unsure of what and how to use' is a precise description of the AT knowledge gap the Accessibility Teach-Meet is designed to solve. Staff CPD scored 5/5 (Significant Impact) on staff-capability-hinders-teaching for accessibility-adjacent measures.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 3,
+        "rationale": "Century already in active use for funded digital hours; College-wide deployment being confirmed with Maths.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Georgina Berritta booked LOX 11th June; no note of non-attendance \u2014 attendance assumed.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "infrastructure",
+      "learnerReadiness"
+    ],
+    "notes": ""
+  },
+  "EMV": {
+    "areaCode": "EMV",
+    "areaName": "Engineering & Motor Vehicle",
+    "hoaName": "Tish Moodhoo (Andreas Panos current HoA, Felix Coles Deputy)",
+    "digitalLeadNames": [
+      "Ben Holt"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "Felix (Deputy, future HoA) is enthusiastic about AI-assisted assessment (Forms auto-marking, Copilot in Excel), but the current HoA (Andreas) has not yet completed a form or full meeting.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 2,
+        "rationale": "'More laptops' needed; 'no printing infrastructure'; diagnostic equipment present but limited laptop access constrains delivery.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 4,
+        "rationale": "'Staff have a strong base understanding' of digital tools, with a specific, narrow gap: 'build confidence with supporting software and AI to aide digital use and proficiency.'",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 2,
+        "rationale": "Health Check 'Motor Vehicle' row: 4 reviews, avg practice score 3.1/5, 100% action rate, priority score 3.9/7 \u2014 'run checker on every document, include headings and images.'",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 3,
+        "rationale": "Ben Holt confirmed as DL; meeting with Felix and Ben Holt planned to map priorities and run a diagnostic equipment/software gap analysis.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness"
+    ],
+    "notes": ""
+  },
+  "ENG": {
+    "areaCode": "ENG",
+    "areaName": "Engineering (General)",
+    "hoaName": "Thanos Adamos",
+    "digitalLeadNames": [
+      "Thanos Adamos (self)"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "'Very engaged. Wants more engaging and fun learning to move away from PowerPoint-driven teaching.' Self-aware and motivated, but currently over-reliant on slide-led delivery.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 2,
+        "rationale": "'Over-reliance on PowerPoint slides' named directly as the pattern to move away from; Teams environment not yet assessed or standardised.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "infrastructure",
+      "digitalSkillsAssessment",
+      "learnerReadiness",
+      "accessibilityInclusion",
+      "digitalLeadEngagement"
+    ],
+    "notes": ""
+  },
+  "ESO": {
+    "areaCode": "ESO",
+    "areaName": "ESOL",
+    "hoaName": "Alexia Sporidis",
+    "digitalLeadNames": [
+      "Florian Zeqaj"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "'Alexia is very positive and forward-thinking' despite major infrastructure concerns raised in the same meeting.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 2,
+        "rationale": "'Kit/space/resource of laptop/computers \u2014 engineering book out the laptops at 7.30am and learners who arrive just before 9 are limited to a device.' Staff-capability, network and software all rated Critical/High impact barriers.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 2,
+        "rationale": "CPD needs rated Critical for curriculum-embedded digital and assessment/feedback \u2014 the only area with Critical (rather than High) ratings.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness",
+      "accessibilityInclusion",
+      "digitalLeadEngagement"
+    ],
+    "notes": ""
+  },
+  "EXT": {
+    "areaCode": "EXT",
+    "areaName": "External Contracts / Provision",
+    "hoaName": "Becky Morris & Ian Oakley",
+    "digitalLeadNames": [],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "Becky is proactive, but the area's confirmed wind-down makes 'establishing' language less meaningful here \u2014 kept neutral.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 1,
+        "rationale": "No Digital Lead identified. Becky and Ian have themselves flagged that EXT will not exist as an area next academic year, so this is a wind-down rather than a build-up.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "infrastructure",
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": "HoA has confirmed EXT will not continue as an area next academic year (per Support Dashboard note, 05/05/26) \u2014 treat any Action Plan here as transitional, not long-term."
+  },
+  "GMA": {
+    "areaCode": "GMA",
+    "areaName": "Games, Media & Animation",
+    "hoaName": "Gina Hele",
+    "digitalLeadNames": [
+      "Dan Campbell"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "'Gina confident digital foundations are strong. Invited Graeme in to explore and advise' \u2014 genuinely open to challenge.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 3,
+        "rationale": "Digitally rich device range (Macs, 3D printers, tablets, VR headsets) but 'WiFi is challenging' is flagged as a critical connectivity issue.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 3,
+        "rationale": "'Varying levels of confidence' with Adobe full suite, Maya, Blender, ZBrush \u2014 capability is real but uneven across the team.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "learnerReadiness": {
+        "rating": 2,
+        "rationale": "'Some digital poverty \u2014 require laptops from home' flagged directly as a learner-side barrier.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Dan Campbell booked LOX 11th June; no note of non-attendance \u2014 attendance assumed.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "HAC": {
+    "areaCode": "HAC",
+    "areaName": "Health (inc. Health T-Level)",
+    "hoaName": "Dale Bond",
+    "digitalLeadNames": [
+      "Maria Caudle"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "'Dale Bond is engaged... demonstrates strategic leadership,' and is himself leading Health Checks in his own area.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 1,
+        "rationale": "'Team very inexperienced in TLA, and especially so when it comes to digital assessments'; all six CPD categories rated High; source RAG=5, the highest-need rating in the cohort.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 4,
+        "rationale": "Simulation technology (responsive manikins, digital observation systems) described as 'outstanding' and producing strong learner outcomes.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalSkillsAssessment": {
+        "rating": 3,
+        "rationale": "Initial assessment and induction include a digital-skills self-assessment, Microsoft skills checks, AI-awareness discussions, and baseline confidence questionnaires \u2014 a structured method exists.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Maria Caudle booked LOX 11th June; Teams Learning Foundations already completed and follow-on training planned \u2014 attendance confirmed by later activity, not just the booking.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "curriculumIntegration",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "HBH": {
+    "areaCode": "HBH",
+    "areaName": "Hair, Beauty & Hospitality",
+    "hoaName": "Jenna Ratcliffe",
+    "digitalLeadNames": [
+      "Tracey White",
+      "Nicola Smith"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "Source RAG=1, the most confident HoA relationship in the cohort.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 4,
+        "rationale": "'The team are fairly confident'; main development need is the 'behind the scenes tracking of social media' rather than core capability.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 3,
+        "rationale": "'Limitations to laptop availability and suitability, computer rooms \u2014 this is our most significant barrier with only 1 computer room for the whole of HBH.'",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 4,
+        "rationale": "Padlet transition from WIX this year 'was a good decision' \u2014 moderator/EQA-approved, standardised, externally validated Teams folder structure.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Two DLs (Tracey White confirmed, Nicola Smith) plus Jasmine Nickells named specifically as excellent with Canva \u2014 strong, distributed digital leadership for the area.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "digitalSkillsAssessment",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "MAT": {
+    "areaCode": "MAT",
+    "areaName": "Maths",
+    "hoaName": "Libby Heath-Tavener",
+    "digitalLeadNames": [
+      "Jed Randall",
+      "Joel Baylis",
+      "Denholm Wilcox",
+      "Diego Fanhe"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "'Meeting with Century on 7th May' and active SharePoint page design \u2014 engaged, though DL confirmation among three named candidates was still pending.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 2,
+        "rationale": "'Most I would assess as having low confidence in using [Century]' \u2014 a specific, named, actionable capability gap from the HoA.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalSkillsAssessment": {
+        "rating": 4,
+        "rationale": "Initial diagnostics, Century assessments, in-class testing, and mocks provide 'a solid baseline framework' \u2014 genuinely established.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 3,
+        "rationale": "DL training booked KN 18th June and attendance is assumed, but the specific named Digital Lead is still unresolved among four candidates (Jed Randall, Joel Baylis, Denholm Wilcox, Diego Fanhe) \u2014 that naming decision, not attendance, is the open item.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "infrastructure",
+      "curriculumIntegration",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "NEE": {
+    "areaCode": "NEE",
+    "areaName": "NEET Provision and Engagement",
+    "hoaName": "",
+    "digitalLeadNames": [],
+    "ragDimensions": {},
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "hoaLeadership",
+      "infrastructure",
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness",
+      "accessibilityInclusion",
+      "digitalLeadEngagement"
+    ],
+    "notes": "Listed in the confirmed area codes reference but has no matching row in any of the four source documents (HoA Tracker, Digital Leads training table, Health Check, Infrastructure Audit). No RAG dimensions can be honestly scored \u2014 genuinely not enough data, not an oversight."
+  },
+  "PAP": {
+    "areaCode": "PAP",
+    "areaName": "Performance & Production",
+    "hoaName": "Chrissandra Boxley",
+    "digitalLeadNames": [
+      "Chrystal Bliss",
+      "Eva Jarvis"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 2,
+        "rationale": "'MORE NURTURING AND SUPPORTIVE CONVERSATIONS TO BE HELD' \u2014 same HoA as AGF, but PAP itself hasn't yet had the supportive meeting AGF has.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 2,
+        "rationale": "Health Check: 5 reviews, avg practice score 2.96/5, 100% action rate, priority score 4.04/7 (Medium band) \u2014 'run Accessibility Checker before sharing resources; add meaningful alt text.'",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 3,
+        "rationale": "PAP-specific digital tools (GarageBand, QLab, Spotlight) exist and need to be captured in EDS mapping; digital self-tape skills are a baseline employability requirement in this area.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Chrystal Bliss / Eva Jarvis booked KN 18th June (shared with AGF); no note of non-attendance \u2014 attendance assumed.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "infrastructure",
+      "digitalSkillsAssessment",
+      "learnerReadiness"
+    ],
+    "notes": ""
+  },
+  "PRA": {
+    "areaCode": "PRA",
+    "areaName": "Professional Apprenticeships / Project Management",
+    "hoaName": "Georgina Hayden / Mark Barnett",
+    "digitalLeadNames": [
+      "Mark Barnett"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "Georgina 'engaged and willing to involve her team'; Mark 'demonstrates strong ownership' as DL.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 2,
+        "rationale": "Mark's own self-assessment: 'Low confidence' overall, with a specific upskilling need around Copilot Pro; hybrid delivery (~95% off-site) raises the stakes on this gap.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 4,
+        "rationale": "'No gaps in digital infrastructure' reported directly \u2014 the area's constraint is staff confidence, not devices or connectivity.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 3,
+        "rationale": "AI literacy, data handling, and virtual collaboration are named priorities; embedding is 'limited' in course material and formative assessment so far, though CoPilot/Planner/NotebookLM are already in active use.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Mark Barnett booked KN 18th June; no note of non-attendance \u2014 attendance assumed.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "digitalSkillsAssessment",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "PRE": {
+    "areaCode": "PRE",
+    "areaName": "Employment Services (Pre-employment)",
+    "hoaName": "Laura Taylor",
+    "digitalLeadNames": [],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "'Laura was very positive. Invited Graeme to meet the team' \u2014 reflective, growth-oriented throughout.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 4,
+        "rationale": "'Rich AT knowledge across the team: Immersive Reader, dictation, Read&Write, Chrome Vox, Edge reader, translation video, alternate text links' \u2014 flagged as a potential exemplar for other areas.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 2,
+        "rationale": "No confirmed Digital Lead \u2014 Paul Haycraft named but status is 'DL currently unknown (?)' pending confirmation.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "learnerReadiness": {
+        "rating": 2,
+        "rationale": "Adult learners returning to education, often with 'significant digital confidence gaps and digital poverty'; no formal digital literacy initial assessment exists yet for short-course adults.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "infrastructure",
+      "digitalSkillsAssessment",
+      "curriculumIntegration"
+    ],
+    "notes": ""
+  },
+  "PRS": {
+    "areaCode": "PRS",
+    "areaName": "Professional Studies",
+    "hoaName": "Louise Perkins",
+    "digitalLeadNames": [
+      "Ffion Rose"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 2,
+        "rationale": "'No meeting held... no form.'",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 2,
+        "rationale": "'Digital strategy not clearly articulated. Limited AI/problem-solving integration.' Employer preference for paper in some cases named as a real constraint, not just an internal gap.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 3,
+        "rationale": "PRS/PRA online training was due 24th June and has since passed with no note of non-attendance \u2014 attendance assumed, though the HoA relationship itself (Louise Perkins, no meeting held) is still the weaker link.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "infrastructure",
+      "digitalSkillsAssessment",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "PSF": {
+    "areaCode": "PSF",
+    "areaName": "Public Services",
+    "hoaName": "David Beresford",
+    "digitalLeadNames": [
+      "Aaron Jones"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "'Really positive. Totally gets the idea for working together.' (Previously this dimension had inherited the area's overall RAG-5 urgency rating rather than reflecting David's own engagement \u2014 corrected.)",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 2,
+        "rationale": "'PC battery issues and WiFi escalated to IT team'; device access hinders teaching scored 2/5; learner digital poverty (no home devices) named as a significant barrier.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 1,
+        "rationale": "Digital Health Check: 3 reviews, avg practice score 1.93/5 \u2014 the lowest average practice score of any area with more than one review \u2014 100% action rate, priority score 5.07/7 (High/Urgent band).",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Aaron Jones scheduled for a 1:1 session on 6th July, since passed with no note of non-attendance \u2014 attendance assumed.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness"
+    ],
+    "notes": ""
+  },
+  "SEL": {
+    "areaCode": "SEL",
+    "areaName": "SEND / FIP (merged FAU + FCO + FEH + FPL)",
+    "hoaName": "Andy Girling / Jess Gill / Joe Radcliffe (legacy areas)",
+    "digitalLeadNames": [
+      "Liam Fisher (proposed)",
+      "Casie Atkinson or Warren Marsh (FEH, TBC)"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "Mixed across four legacy areas \u2014 FEH (Jess Gill) clearly stronger than FCO/FPL, net developing.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 1,
+        "rationale": "FEH: device access scored 1/5 (Significant Impact) \u2014 'currently the critical constraint.' A LapSafe for Arosfa is submitted and pending approval, flagged URGENT in the tracker's own phase plan.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 4,
+        "rationale": "FEH: 'the structured weekly digital skills session is exemplary \u2014 FEH is ahead of most areas on this,' assessed termly through projects and portfolios \u2014 a genuine model worth protecting through the merge.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "accessibilityInclusion": {
+        "rating": 4,
+        "rationale": "FAU: 'strong AT awareness. Jess Gill keen on staff development \u2014 Learning Accessible Digitally. Accessibility toolkit shared' \u2014 real strength, though device reliability is flagged as a safeguarding issue for FCO's cohort specifically.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 2,
+        "rationale": "No single confirmed DL across the merged area \u2014 FEH names Casie Atkinson or Warren Marsh as TBC, FPL names 'Becky Salter???', and FAU/FCO have no DL identified at all. This is the clearest structural gap the SEL merge needs to resolve.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "digitalSkillsAssessment",
+      "learnerReadiness"
+    ],
+    "notes": "This is a genuine merge of four previously separate legacy areas with uneven evidence depth (FEH is well-evidenced, FPL almost entirely undocumented). Treat the scores above as reflecting the strongest-evidenced legacy area (FEH) rather than an even blend \u2014 a fuller picture will need direct engagement with the FCO/FPL cohorts specifically."
+  },
+  "SKB": {
+    "areaCode": "SKB",
+    "areaName": "Kings Trust (was Bootcamps)",
+    "hoaName": "Becky Morris (day-to-day) / Candice Paisley",
+    "digitalLeadNames": [],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "'Becky was very engaged. Will share Forms link with others and Teams support page' \u2014 proactive, but no survey form submitted yet and Becky herself has indicated Bootcamps specifically won't need to be part of this process.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 1,
+        "rationale": "No Digital Lead identified for SKB.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "infrastructure",
+      "digitalSkillsAssessment",
+      "curriculumIntegration",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": "Per the Digital Leads training table, FPL and SKB are noted as 'combined in Sept' \u2014 a separate consolidation question from the FAU/FCO/FEH/FPL\u2192SEL merge already actioned. Worth a decision alongside that one rather than folded in silently here."
+  },
+  "SMS": {
+    "areaCode": "SMS",
+    "areaName": "Sixth Form",
+    "hoaName": "Maria Miles",
+    "digitalLeadNames": [
+      "Ethan Shi"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "'Digital Hours not a key focus for Sixth Form. CVs, media editing, portfolios. Plan to support some tutors.' Practical, if not yet strategic, engagement.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 3,
+        "rationale": "'Inconsistency in Teams usage across staff' and 'staff capability gaps with AI (early-stage training)' \u2014 real but bounded gaps rather than broad ones.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 3,
+        "rationale": "Digital Health Checks already completed by Maria's own team; data handling and AI literacy embedded via PG assessments, computing pathway offers Microsoft Office certifications.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Ethan Shi booked LOX 11th June; no note of non-attendance \u2014 attendance assumed, consistent with his active independent initiative (Power Automate reporting).",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "infrastructure",
+      "digitalSkillsAssessment",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  },
+  "SMX": {
+    "areaCode": "SMX",
+    "areaName": "SOMAX (Offsite / Prison)",
+    "hoaName": "John Fowler",
+    "digitalLeadNames": [
+      "John Fowler",
+      "Dave Evans"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 3,
+        "rationale": "Shared HoA with CTC (John Fowler manages both) \u2014 same positive, engaged pattern, but SOMAX's constraints are structural rather than attitudinal.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 2,
+        "rationale": "'Digital access restrictions mean standard approaches don't apply' \u2014 the offsite/prison context imposes real infrastructure limits that no amount of coaching resolves on its own.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "curriculumIntegration": {
+        "rating": 2,
+        "rationale": "'Foundational digital skills for post-release employment is the priority' \u2014 no SOMAX-specific digital skills mapping exists yet; standard approaches don't transfer directly.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 2,
+        "rationale": "No training date recorded \u2014 the one area you've flagged as still genuinely open, unlike every other area where attendance can be assumed.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "staffCapability",
+      "digitalSkillsAssessment",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": "SMX is noted in the confirmed area codes reference as 'facing redundancy' \u2014 treat any Action Plan here as time-bounded pending confirmation of the area's future."
+  },
+  "SPO": {
+    "areaCode": "SPO",
+    "areaName": "Sport",
+    "hoaName": "Dan Pratlett",
+    "digitalLeadNames": [
+      "Sylvia Bertie"
+    ],
+    "ragDimensions": {
+      "hoaLeadership": {
+        "rating": 4,
+        "rationale": "'Dan's response is thorough and demonstrates excellent self-awareness' \u2014 the most detailed audit response on record.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "staffCapability": {
+        "rating": 3,
+        "rationale": "'Most staff can use the core systems and platforms competently... the main gap is not day-to-day platform use, but confidence in modelling the digital skills clearly for learners' around VEO, heart-rate monitors, and ethical AI use \u2014 a specific, well-diagnosed gap rather than a broad one.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "infrastructure": {
+        "rating": 3,
+        "rationale": "LapSafe providing reliable device access; VEO analytics and heart-rate/GPS vests incoming, but coach-planning software and a large practical-space screen are named as still missing.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalSkillsAssessment": {
+        "rating": 2,
+        "rationale": "'These skills have only been partially baseline assessed' \u2014 general digital skills checked informally at induction, but sport-specific technology skills (VEO, heart-rate monitors) not yet baselined since the equipment itself is still arriving.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      },
+      "digitalLeadEngagement": {
+        "rating": 4,
+        "rationale": "Sylvia Bertie booked LOX 11th June; no note of non-attendance \u2014 attendance assumed.",
+        "source": "AI-assisted synthesis \u2014 HoA Digital Tracker, Digital Health Check 25-26, HoA Digital Skills & Infrastructure Audit (cross-referenced 10/08/26)",
+        "advisory": true
+      }
+    },
+    "dimensionsWithoutEvidence": [
+      "curriculumIntegration",
+      "learnerReadiness",
+      "accessibilityInclusion"
+    ],
+    "notes": ""
+  }
+};
+const ACTION_PLANS_DATA = {
+  "plans": [
+    {
+      "planId": "f2351030-bfb0-4994-ad3e-5a567fe55077",
+      "areaCode": "AGF",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Arts, Graphics & Fashion \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "34049cc4-9889-4bf8-a8b4-93780d062b13",
+          "description": "Book a Digital Learning Walk with Chrissandra and run a team CPD session on Teams environments.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "HoA Leadership"
+        },
+        {
+          "itemId": "945d3b85-34fd-42ba-a4ac-f76d304f2e9a",
+          "description": "Run Accessibility Checker / alt-text / colour-contrast workshop for the team, per the Health Check's Phase 2 High-priority coaching cohort (AGF, Construction, Public Services, Building services).",
+          "role": "digital-lead",
+          "accountableName": "Chrystal Bliss",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        },
+        {
+          "itemId": "68443625-3dc7-4155-a71f-611a63f098d6",
+          "description": "Share examples of strong Digital TLA \u2014 staff are visual learners and respond well to seeing good practice modelled.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Staff Capability"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "8f61ff85-65b5-435f-99d9-a052c3e75eee",
+      "areaCode": "AHE",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Access to HE \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "05c7e2de-2e67-47c3-9ab9-0bf30fe65a3c",
+          "description": "Chase the Digital Skills handover document from Sean before the July restructure, then re-plan support for the new team structure.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "HoA Leadership"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "83b983ee-6270-4269-936d-36bcd666f714",
+      "areaCode": "AMTEC",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Engineering (merged EFE + EHE) \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "3ea9d454-4da1-4e99-9024-cc6be551ae59",
+          "description": "Device and infrastructure escalation \u2014 reliable lecture capture, improved laptops, network in practical spaces (EHE's most critical blocker, scored 1/5).",
+          "role": "hoa",
+          "accountableName": "Thanos Adamos",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "70be5940-acbf-4eae-b2c5-3fbc13de544d",
+          "description": "Lisa Phillips DL induction and Health Check framework training (EFE side).",
+          "role": "digital-lead",
+          "accountableName": "Lisa Phillips",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        },
+        {
+          "itemId": "6979dfcb-23a6-4ad4-8f20-fa20d55e38bf",
+          "description": "Software licensing review \u2014 ensure MATLAB, CAD, SolidWorks are accessible off-campus for apprentices.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "71bf27c1-3a86-4993-86c1-89624cb09d14",
+      "areaCode": "ANM",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Animal Management \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "32d902bd-94b8-4cbe-8eca-19439105a338",
+          "description": "Follow up with the digital skills/infrastructure survey form and confirm the priority actions with Laura.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "HoA Leadership"
+        },
+        {
+          "itemId": "ecd9c5e8-b758-4ebc-839c-62f800146887",
+          "description": "Identify and confirm Joseph Bourke-Trotham's Digital Lead role formally.",
+          "role": "hoa",
+          "accountableName": "Laura Link",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "912be341-e88a-4ddd-b97b-02d2ef5def3e",
+      "areaCode": "BUI",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Building Services (Construction) \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "5492c166-5730-418c-8b7a-d29f1a7e1896",
+          "description": "Meet with Richard and DLs (Jakeway, Ross) to review Health Checks and prioritise CAD/simulation software options.",
+          "role": "digital-lead",
+          "accountableName": "Steven Jakeway",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        },
+        {
+          "itemId": "740b3d8c-6829-42c2-9184-8a5e276e619c",
+          "description": "Network infrastructure audit in workshops \u2014 inconsistent Wi-Fi is a recurring blocker.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "626eaf76-8453-46b7-acff-08250b43635e",
+          "description": "Run practical accessibility workshops (Accessibility Checker, alt text, colour contrast) as part of the Health Check Phase 2 cohort.",
+          "role": "digital-lead",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "566533a5-6e21-42bb-9b8b-6fc83b6e9e5b",
+      "areaCode": "BUS",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Business & Tourism \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "c7a37c3e-2e71-42d1-8211-27b6e510be7d",
+          "description": "CRM & booking system training; device equity audit; software licensing review, planned for June after exams.",
+          "role": "hoa",
+          "accountableName": "Ben Melhuish",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Staff Capability"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "421ecabe-e934-4545-8997-5df11a4c48df",
+      "areaCode": "CED",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Community Education \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "a0bedf81-54b1-464a-a824-9b30a0cc9f54",
+          "description": "1:1 support for Charlotte on data-tracking platforms, dashboards, and operating UDL/QFT with digital as the bedrock.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "HoA Leadership"
+        },
+        {
+          "itemId": "fb5436f7-b39b-4649-a180-3c6075085834",
+          "description": "Introduce a formal baseline digital-skills measuring tool for Solutions learners.",
+          "role": "digital-lead",
+          "accountableName": "Marsha Jones",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Skills Assessment"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "f4fe80a7-c14b-4314-8668-042afe595d26",
+      "areaCode": "CON",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Construction Trades \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "0194f673-562d-41eb-b14c-9b7fb83deae2",
+          "description": "Identify and implement a faculty-wide app/platform for digital skills development across construction programmes.",
+          "role": "hoa",
+          "accountableName": "Richard Hanney",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        },
+        {
+          "itemId": "8d215205-d006-4d69-b717-a2598654ff00",
+          "description": "PD sessions on practical digital tools \u2014 invoicing apps, online services relevant to trade practice.",
+          "role": "digital-lead",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Staff Capability"
+        },
+        {
+          "itemId": "128472e4-fe78-472c-bc2c-b50660a76029",
+          "description": "Increase use of digital technologies in workshops (laser levels, digital measuring) so learners regularly develop applied digital skills.",
+          "role": "hoa",
+          "accountableName": "Richard Hanney",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "3400f958-7cd9-47b2-8d7c-28def42edede",
+          "description": "Run the Phase-2 High-priority accessibility coaching workshop (Accessibility Checker, alt text, colour contrast).",
+          "role": "digital-lead",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "648a3fd4-3c0e-4bc0-ac36-58dcf5cc614a",
+      "areaCode": "COU",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "FE Counselling \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "b93ee3d4-7f29-4e42-9fe3-b30f934d9c72",
+          "description": "URGENT: escalate whiteboard repair/replacement \u2014 a two-year ongoing issue.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "aaea8af5-d4e6-4085-a2c1-982cd0ec3690",
+          "description": "Area laptop provision \u2014 library laptops are not reliably bookable when needed.",
+          "role": "hoa",
+          "accountableName": "Tasha Thorne",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "c5e1642b-4eab-49a6-b879-0ce5fe7b487a",
+          "description": "Mel Probert DL induction and Health Check training.",
+          "role": "digital-lead",
+          "accountableName": "Mel Probert",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "db78eaa0-741e-422f-ac19-35f456d2099c",
+      "areaCode": "CTC",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Construction Training Centre \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "ffbc50f6-e26b-4051-9c09-5c7f30ac7074",
+          "description": "Observe and document good practice for wider college sharing \u2014 CTC is a candidate showcase area.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        },
+        {
+          "itemId": "7a538ef7-c2d2-4e07-9eeb-fc7ec38a27a4",
+          "description": "Connect Dave Evans to the Digital Lead network.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "46721cf7-bb0f-4aca-ae60-d5e21cc2d80c",
+      "areaCode": "DCI",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Digital Computing & IT \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "28a05733-bd03-4c37-a73e-4a765ae334e7",
+          "description": "Identify a Digital Lead from Sean's team, distinct from the HoA \u2014 use DCI as a college showcase in the meantime.",
+          "role": "hoa",
+          "accountableName": "Sean Shearing",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        },
+        {
+          "itemId": "88106e96-9518-4f81-b910-6de960eb3d07",
+          "description": "Build routine use of the Office 365 Accessibility Checker into practice \u2014 self-identified gap.",
+          "role": "staff",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        },
+        {
+          "itemId": "a7254075-aaca-4f7d-9111-f588b5e80ac8",
+          "description": "Ask Sean to mentor one other area (e.g. Sixth Form or Creative & Digital) as a peer-support pathway.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "HoA Leadership"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "571e87e7-032e-4ad7-8f85-56e5f560475d",
+      "areaCode": "EEY",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Education & Early Years \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "3c650654-574a-46cb-bb20-ad51ea1fa383",
+          "description": "WiFi & printing infrastructure audit for the EY corridor.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "181b04a5-bb68-47a4-974a-566eb8bce552",
+          "description": "Famly platform adoption plan.",
+          "role": "hoa",
+          "accountableName": "Rachael Moger",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        },
+        {
+          "itemId": "be23741b-bdca-4bb2-9a9c-d534bc5bb819",
+          "description": "Run the accessibility coaching workshop from the Health Check Phase 2 cohort.",
+          "role": "digital-lead",
+          "accountableName": "Sharon Walters",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "6800efb9-a1ba-467d-80bb-4e3619540905",
+      "areaCode": "EGL",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "English \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "e8b9df75-d4c9-4013-bd93-9b5d69b4bf7f",
+          "description": "Priority attendance at the Accessibility Teach-Meet \u2014 direct response to the AT knowledge gap.",
+          "role": "staff",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        },
+        {
+          "itemId": "a55a252c-d010-4ef0-b51e-b849ae9fd2c0",
+          "description": "Agree a simple digital baseline assessment method for English and Maths learners.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Skills Assessment"
+        },
+        {
+          "itemId": "763cbe62-c919-4435-bbb9-3bf6808aa13a",
+          "description": "Formal request for laptops in M&E classrooms.",
+          "role": "hoa",
+          "accountableName": "Libby Heath-Tavener",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "e3798937-2caa-4397-b27a-11c09e5fa325",
+      "areaCode": "EMV",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Engineering & Motor Vehicle \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "e4be979c-eadf-4629-8871-059bfb9c977f",
+          "description": "Meet Felix and Ben Holt to map priorities, run a diagnostic equipment/software gap analysis, and plan laptop resourcing.",
+          "role": "digital-lead",
+          "accountableName": "Ben Holt",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "68a37186-d13b-44c4-9c57-5689de9781e2",
+          "description": "Book a Forms/Copilot coaching session, building on existing enthusiasm for AI-assisted marking.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Staff Capability"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "6bc2cbb1-2f1d-45c4-9961-f8f78be9da97",
+      "areaCode": "ENG",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Engineering (General) \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "361281a1-9670-4852-8612-038e06c57b21",
+          "description": "Health Check Thanos's Teams area and walk him through the report so he can run future Health Checks himself.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Skills Assessment"
+        },
+        {
+          "itemId": "0aacde46-abb7-464d-85e6-bc9c7ebb4c2b",
+          "description": "Book a session on dynamic PowerPoint/Sway approaches to move beyond slide-led delivery.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "ccade13b-ab76-46f3-8185-7bcf98cba763",
+      "areaCode": "ESO",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "ESOL \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "2d808a64-19d5-40ff-8aef-87c92203f00e",
+          "description": "Refresher training on Teams and Accessibility/Inclusion for the whole team.",
+          "role": "digital-lead",
+          "accountableName": "Florian Zeqaj",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Staff Capability"
+        },
+        {
+          "itemId": "5e61d8a2-d7be-40c7-bfb6-4f2cb1cfcd3f",
+          "description": "Major IT infrastructure concerns \u2014 escalate device booking/access constraints.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "67ddbdef-bd77-46d0-8214-a8079899e1af",
+          "description": "Hand the SpringPod investigation to Liam Fisher; explore an ESOL-specific digital inclusion strategy.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "0453dd4c-eae9-47dd-b513-4069c6ab81be",
+      "areaCode": "EXT",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "External Contracts / Provision \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "41f22fe9-dad6-4c04-aa3a-17811e944116",
+          "description": "Support Becky in reaching Charlotte Hynes (CED) as a bridge contact, given the area's planned wind-down.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "HoA Leadership"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "ea4f26d1-7c2b-4b40-91e1-cbb00800d334",
+      "areaCode": "GMA",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Games, Media & Animation \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "54bb3d63-2b8c-4b6b-8fba-112cba671030",
+          "description": "WiFi audit with IT \u2014 critical connectivity issue for a digitally-rich area.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "4bea87a2-0871-4ecd-81c9-dde96a12de33",
+          "description": "Adobe suite staff training plan and specialist software skills mapping.",
+          "role": "digital-lead",
+          "accountableName": "Dan Campbell",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Staff Capability"
+        },
+        {
+          "itemId": "09cf8084-1f88-44f7-a7ba-f039199576f1",
+          "description": "Digital poverty mitigation strategy for learners without home devices.",
+          "role": "hoa",
+          "accountableName": "Gina Hele",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Learner Readiness"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "19b55c0e-203b-44a4-9c30-4ee260afdcf2",
+      "areaCode": "HAC",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Health (inc. Health T-Level) \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "287e9d27-938b-4b53-b7d2-e16a46bd7466",
+          "description": "Staff CPD plan for basic digital fluency \u2014 the majority of the team need a starting point, not advanced training.",
+          "role": "hoa",
+          "accountableName": "Dale Bond",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Staff Capability"
+        },
+        {
+          "itemId": "55d9850a-83e8-4956-b410-1f3cd14474f3",
+          "description": "Evaluate training versions of EMIS/SystmOne (EPR systems) for learner preparation.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        },
+        {
+          "itemId": "f0dc6d44-eff4-4722-8504-60ad2e48a58e",
+          "description": "Teams consistency \u2014 agree a HAC standard and deliver a training session for all staff.",
+          "role": "digital-lead",
+          "accountableName": "Maria Caudle",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "11b81330-3df8-4f1e-adbb-9c080c152b31",
+      "areaCode": "HBH",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Hair, Beauty & Hospitality \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "af6ff0d1-9290-43b0-b70e-64693939659c",
+          "description": "Accessibility teach-meet \u2014 so the team knows exactly what assistive technology is available and how best to apply it.",
+          "role": "digital-lead",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        },
+        {
+          "itemId": "d25f02b8-9665-4156-bd37-5ed6c52114d5",
+          "description": "iPad provision timeline and implementation planning (bid submitted, pending approval).",
+          "role": "hoa",
+          "accountableName": "Jenna Ratcliffe",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "f1c707fb-d32e-4790-9e98-390d3358e39a",
+          "description": "Support Nicola and Jasmine as Digital Leads; map existing digital practice to EDS categories for business-plan purposes.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "cc4e62a2-f007-4423-ae91-a9700e4c76db",
+      "areaCode": "MAT",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Maths \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "d4d83eb5-f049-4039-9a09-88a424b4a6e1",
+          "description": "Confirm the Digital Lead from the four names put forward \u2014 decision needed immediately.",
+          "role": "hoa",
+          "accountableName": "Libby Heath-Tavener",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        },
+        {
+          "itemId": "edb5302e-70ff-4d42-967a-0e8f66df3305",
+          "description": "Century training for the whole team \u2014 the explicit top priority request from the HoA.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Staff Capability"
+        },
+        {
+          "itemId": "6979c8be-d7e9-4ad4-a87a-f69a27565cd6",
+          "description": "Confirm Desmos as a formal digital tool in the business plan (already used in GCSE exams).",
+          "role": "hoa",
+          "accountableName": "Libby Heath-Tavener",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "9680e043-fb92-46de-bd3b-84ba29384f52",
+      "areaCode": "PAP",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Performance & Production \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "2670c00e-3af5-44a9-9bd7-40cc11fbb6c4",
+          "description": "Book time with the department's Digital Leads to discuss a specific action plan (shared with AGF).",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "HoA Leadership"
+        },
+        {
+          "itemId": "df85f8bb-3969-455a-b589-72cf3226631d",
+          "description": "Ensure PAP-specific digital tools (GarageBand, QLab, Spotlight) are captured in EDS mapping.",
+          "role": "digital-lead",
+          "accountableName": "Chrystal Bliss",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        },
+        {
+          "itemId": "97ff2d74-9b9d-4024-92ea-ea51f916aeba",
+          "description": "Run the Phase-2 accessibility coaching workshop for the team.",
+          "role": "digital-lead",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "d2ecca00-a6be-45b3-bbea-ca239ad23c6a",
+      "areaCode": "PRA",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Professional Apprenticeships / Project Management \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "3781fe8b-a851-45da-a435-a6b551b3e93c",
+          "description": "AT review \u2014 audit what assistive technology is needed and available; not currently reviewed.",
+          "role": "digital-lead",
+          "accountableName": "Mark Barnett",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        },
+        {
+          "itemId": "16ead393-58a6-4b94-8f05-cf13cbc58b0b",
+          "description": "Staff upskilling \u2014 CoPilot Pro training pathway, directly requested by the HoA.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Staff Capability"
+        },
+        {
+          "itemId": "61acad4f-b903-4da7-b6e6-e496ee5528b6",
+          "description": "Evaluate project-management simulation software (Prendo, Major Projects Simulator).",
+          "role": "hoa",
+          "accountableName": "Mark Barnett",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "492cfb78-b673-4fed-bdf6-06fa5b0440a1",
+      "areaCode": "PRE",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Employment Services (Pre-employment) \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "a04f3d11-3644-4e93-b8f8-41a2a32b542d",
+          "description": "Identify and confirm the Digital Lead \u2014 currently unknown.",
+          "role": "hoa",
+          "accountableName": "Laura Taylor",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        },
+        {
+          "itemId": "2f385a00-89e1-4efb-aaa8-270d835761f0",
+          "description": "Develop a basic digital literacy initial assessment for adult short-course learners.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Skills Assessment"
+        },
+        {
+          "itemId": "b7970560-1bc0-423f-b518-9b538b634230",
+          "description": "AT showcase \u2014 Pre-employment as an exemplar area for assistive technology practice.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "dad3cd03-02fd-4b0d-b964-d9b577a094a9",
+      "areaCode": "PRS",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Professional Studies \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "f94ffbcf-3e4f-4e7e-b428-15120da0484a",
+          "description": "Identify the PRS HoA and arrange a meeting \u2014 currently no direct contact established.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "HoA Leadership"
+        },
+        {
+          "itemId": "003de70c-0fb0-45c3-8d30-18ea9be93f62",
+          "description": "Digital strategy co-creation with Louise and the wider team, focused on academic digital research skills for HE/professional context.",
+          "role": "hoa",
+          "accountableName": "Louise Perkins",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "a9507759-533f-4113-a3a7-3727f2ee0040",
+      "areaCode": "PSF",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Public Services \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "0809ff15-ec8a-4b8b-94d4-893855887f8b",
+          "description": "IT access and support \u2014 PC battery issues and WiFi escalated to the IT team.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "96a2f803-0fc2-4b2b-9409-a6de83063fb5",
+          "description": "CAD and data analysis software \u2014 submit a formal request via the HoA (drone/GPS/GIS tools relevant to the curriculum).",
+          "role": "hoa",
+          "accountableName": "David Beresford",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        },
+        {
+          "itemId": "b9c268b4-5667-4222-ba93-cc2b214b41f7",
+          "description": "Run the urgent-tier accessibility support plan (1:1 coaching + resource review) given the lowest average practice score in the cohort.",
+          "role": "digital-lead",
+          "accountableName": "Aaron Jones",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        },
+        {
+          "itemId": "7a16193a-ca1e-4689-b0a3-0aadf6fdf7ac",
+          "description": "Digital poverty mitigation \u2014 device loan/bursary for learners without home access.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Learner Readiness"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "50b9aa12-967d-42f8-a610-0e1e6a931801",
+      "areaCode": "SEL",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "SEND / FIP (merged FAU + FCO + FEH + FPL) \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "2b48c8af-e7ce-44c1-9c4d-b4fe9bb1885d",
+          "description": "URGENT: Device provision \u2014 LapSafe for Arosfa. Plans submitted; follow up on approval and timeline.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        },
+        {
+          "itemId": "26c70176-aabc-4a81-920f-2b8dcafbed4a",
+          "description": "Confirm a single Digital Lead for the merged SEL area \u2014 currently three different unconfirmed names across the legacy areas.",
+          "role": "hoa",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        },
+        {
+          "itemId": "cfaaf975-ce62-4b73-9161-c4897d0edb9d",
+          "description": "Protect and extend FEH's weekly structured digital-skills-session model across the merged area rather than losing it in the consolidation.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        },
+        {
+          "itemId": "5dc70924-f8f3-4ec3-83d2-a2e217315abb",
+          "description": "Meet Liz Burkey re adaptive/intelligent TLA for SEND, and add videos to the accessibility toolkit.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Accessibility & Inclusion"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "a0554228-824e-4cf2-9af4-0af17812a298",
+      "areaCode": "SKB",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Kings Trust (was Bootcamps) \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "fff20ce6-0089-45d7-b4a7-b719d13132cd",
+          "description": "Follow up for survey completion and identify a Digital Lead for SKB.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "34e17c5b-8e8e-497a-8e58-5f6040db3cdd",
+      "areaCode": "SMS",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Sixth Form \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "07567989-f869-4ce8-8ec6-353f99d4c70c",
+          "description": "Clarify SMS digital hours expectations with Ben Manning and Neil Davies \u2014 currently unclear.",
+          "role": "hoa",
+          "accountableName": "Maria Miles",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Curriculum Integration"
+        },
+        {
+          "itemId": "98aab261-704d-4315-9227-ace7814d23fd",
+          "description": "Support Michael Foster on Teams organisation \u2014 named individual capability gap.",
+          "role": "digital-lead",
+          "accountableName": "Ethan Shi",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Staff Capability"
+        },
+        {
+          "itemId": "9025103a-3ab9-4e1e-ae36-9cc2334e8f84",
+          "description": "Follow up on Ethan Shi's Power Automate reporting system to reduce admin time.",
+          "role": "digital-lead",
+          "accountableName": "Ethan Shi",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "75160106-27b3-497a-8a12-62645eb814d0",
+      "areaCode": "SMX",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "SOMAX (Offsite / Prison) \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "792ddd66-2de1-4e7f-ac68-e98b06ac0883",
+          "description": "Develop a SOMAX-specific digital skills approach that accounts for the site's infrastructure restrictions, rather than reusing the CTC approach unmodified.",
+          "role": "hoa",
+          "accountableName": "John Fowler",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    },
+    {
+      "planId": "d01c29a7-4d60-4492-8712-5cbdc69b03a5",
+      "areaCode": "SPO",
+      "type": "AI-assisted RAG follow-up",
+      "focus": "Sport \u2014 Digital Pyramid action plan (from RAG Matrix synthesis, 10/08/26)",
+      "staffIds": [],
+      "aim": "Address the specific gaps and opportunities identified in the RAG Matrix synthesis for this area.",
+      "successCriteria": "Each flagged dimension moves at least one RAG level at the next review cycle.",
+      "targetDate": null,
+      "status": "active",
+      "actionItems": [
+        {
+          "itemId": "b5417d39-aca0-4d3e-9aa5-201590b6f234",
+          "description": "Teams structure standardisation \u2014 agree a Sport standard with Sylvia and all staff.",
+          "role": "digital-lead",
+          "accountableName": "Sylvia Bertie",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Lead Engagement"
+        },
+        {
+          "itemId": "f81ab5c1-b992-4515-a704-7dc2ef9ae30b",
+          "description": "Formal digital skills baseline \u2014 agree a method for mapping learner starting points once VEO/heart-rate equipment arrives.",
+          "role": "dpc",
+          "accountableName": "",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Digital Skills Assessment"
+        },
+        {
+          "itemId": "cb781301-47cb-40ee-8db7-a7a1138c2611",
+          "description": "VEO analytics onboarding training for all staff; consider decommissioning Dartfish, which is unused.",
+          "role": "digital-lead",
+          "accountableName": "Sylvia Bertie",
+          "timeframe": null,
+          "done": false,
+          "sourceDomain": "Infrastructure & Devices"
+        }
+      ],
+      "linkedInstances": [],
+      "linkedAFIIds": [],
+      "createdAt": "2026-08-10T07:39:06.000Z",
+      "lastUpdated": "2026-08-10T07:39:06.000Z"
+    }
+  ]
+};
+const CODE_REMAP = { "AMTEC": "AMT" }; // synthesis code -> real live area code
+
+let previewResult = null;
+
+// Minimal UI shim satisfying what loadHub()/forceSaveNow() call into.
+const ui = {
+  showSaveIndicator: (state) => {
+    document.getElementById("saveIndicator").textContent =
+      state === "saving" ? "Saving..." : state === "saved" ? "✓ Saved to OneDrive" : "";
+  },
+  showToast: (type, msg) => {
+    const el = document.getElementById("applyOutput");
+    el.innerHTML += `<p class="${type === 'warning' || type === 'error' ? 'warn' : 'ok'}">${msg}</p>`;
+  },
+  showBanner: () => {},
+  showMondayBanner: () => {},
+  showRestoreBanner: () => {},
+  hideRestoreBanner: () => {},
+  showFatalError: (msg) => {
+    document.getElementById("connectStatus").innerHTML = '<span class="warn">✗ ' + msg + '</span>';
+  },
+};
+
+(async () => {
+  const connectStatus = document.getElementById("connectStatus");
+  try {
+    const ok = await loadHub(ui);
+    if (!ok) {
+      connectStatus.innerHTML = '<span class="warn">✗ Could not load the Hub data — see the page for details (likely an unsupported browser).</span>';
+      return;
+    }
+    const areaCount = (window.DPC_DATA.areas.areas || []).length;
+    const planCount = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans || []).length;
+    if (areaCount === 0) {
+      connectStatus.innerHTML = '<span class="warn">✗ Connected, but 0 areas loaded — this usually means the folder picker needs you to click through it once. Try reloading this page.</span>';
+      return;
+    }
+    connectStatus.innerHTML = '<span class="ok">✓ Connected — loaded ' + areaCount + ' areas and ' + planCount + ' existing action plans directly from your live OneDrive data.</span>';
+    document.getElementById("previewStep").classList.remove("hidden");
+  } catch (err) {
+    connectStatus.innerHTML = '<span class="warn">✗ ' + err.message + '</span>';
+  }
+})();
+
+function computeMerge() {
+  const areaByCode = new Map((window.DPC_DATA.areas.areas || []).map(a => [a.areaCode, a]));
+  const unmatchedCodes = [];
+  let dimsToWrite = [];
+  let dimsSkippedHuman = 0;
+
+  for (const [ragCode, entry] of Object.entries(RAG_DATA)) {
+    const liveCode = CODE_REMAP[ragCode] || ragCode;
+    const area = areaByCode.get(liveCode);
+    if (!area) { unmatchedCodes.push(ragCode); continue; }
+    const existingDims = area.ragDimensions || {};
+    for (const [dimId, dim] of Object.entries(entry.ragDimensions)) {
+      const existing = existingDims[dimId];
+      if (!existing || existing.source === SOURCE_MARKER || existing.advisory === true) {
+        dimsToWrite.push({ liveCode, dimId, dim });
+      } else {
+        dimsSkippedHuman++;
+      }
+    }
+  }
+
+  const existingPlans = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [];
+  const alreadyImported = new Set(existingPlans.filter(p => p.sourceBuild === SOURCE_MARKER).map(p => p.areaCode));
+  const plansToAdd = [];
+  let plansSkipped = 0;
+  for (const plan of ACTION_PLANS_DATA.plans) {
+    const liveCode = CODE_REMAP[plan.areaCode] || plan.areaCode;
+    if (alreadyImported.has(liveCode)) { plansSkipped++; continue; }
+    if (!areaByCode.has(liveCode)) continue;
+    plansToAdd.push({ ...plan, areaCode: liveCode });
+  }
+
+  return { unmatchedCodes, dimsToWrite, dimsSkippedHuman, plansToAdd, plansSkipped };
+}
+
+document.getElementById("previewBtn").addEventListener("click", () => {
+  previewResult = computeMerge();
+  const r = previewResult;
+  let html = "";
+  html += '<p>RAG dimensions that would be written: <b>' + r.dimsToWrite.length + '</b></p>';
+  html += '<p>RAG dimensions skipped (your own hand-entered scores, protected): <b>' + r.dimsSkippedHuman + '</b></p>';
+  html += '<p>Action plans that would be added: <b>' + r.plansToAdd.length + '</b></p>';
+  html += '<p>Action plans skipped (already imported previously): <b>' + r.plansSkipped + '</b></p>';
+  if (r.unmatchedCodes.length) {
+    html += '<p class="warn">⚠ ' + r.unmatchedCodes.length + ' area code(s) not found in your live areas: ' + r.unmatchedCodes.join(", ") + '</p>';
+  }
+  document.getElementById("previewOutput").innerHTML = html;
+  document.getElementById("applyStep").classList.remove("hidden");
+});
+
+document.getElementById("applyBtn").addEventListener("click", async () => {
+  if (!previewResult) previewResult = computeMerge();
+  const r = previewResult;
+  const out = document.getElementById("applyOutput");
+  out.innerHTML = "Applying via saveArea() / saveActionPlan()...";
+
+  const areaByCode = new Map((window.DPC_DATA.areas.areas || []).map(a => [a.areaCode, a]));
+
+  // Group dimension writes by area so saveArea() is called once per area, not once per dimension
+  const byArea = new Map();
+  for (const { liveCode, dimId, dim } of r.dimsToWrite) {
+    if (!byArea.has(liveCode)) byArea.set(liveCode, {});
+    byArea.get(liveCode)[dimId] = { score: dim.rating, rationale: dim.rationale, updatedAt: nowISO(), source: SOURCE_MARKER, advisory: true };
+  }
+  for (const [liveCode, newDims] of byArea.entries()) {
+    const area = areaByCode.get(liveCode);
+    const merged = { ...area, ragDimensions: { ...(area.ragDimensions || {}), ...newDims } };
+    saveArea(merged);
+  }
+
+  for (const plan of r.plansToAdd) {
+    saveActionPlan({ ...plan, sourceBuild: SOURCE_MARKER });
+  }
+
+  await forceSaveNow(ui);
+
+  out.innerHTML = '<p class="ok">✓ Done. ' + byArea.size + ' areas updated (' + r.dimsToWrite.length + ' dimensions), ' + r.plansToAdd.length + ' action plans added, and saved to your OneDrive Data folder.</p>' +
+    '<p><b><a href="../hub.html">Go to the Hub now</a></b> to see it.</p>';
+  document.getElementById("applyBtn").disabled = true;
+});
+</script>
+</body>
+</html>
