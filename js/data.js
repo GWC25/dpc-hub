@@ -784,6 +784,14 @@ const ACTION_ITEM_ROLE_LABELS = Object.freeze({
   dpc: 'Me (DPC)', 'digital-lead': 'Digital Lead', hoa: 'Head of Area', staff: 'Staff',
 });
 
+// Session (10/08/26): added the `editable` option and the matching
+// wireActionPlanCard() below. Before this, only the Digital Leads
+// drill-down could add items / tick items done / close a plan — Staff
+// and Areas could only view. That's exactly the drift this shared
+// renderer was built to prevent (see Session 51 comment history),
+// just recurring in a different shape: display had stayed shared,
+// but editing had quietly grown its own private copy in Digital Leads.
+// Both now go through this one function.
 function renderActionPlanCard(plan, opts = {}) {
   const esc = opts.esc || ((s) => s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'));
   const fmtDate = opts.fmtDate || ((iso) => { if (!iso) return ''; try { return new Date(iso.split('T')[0]+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); } catch { return iso; } });
@@ -791,6 +799,8 @@ function renderActionPlanCard(plan, opts = {}) {
   const staffNames = (plan.staffIds || []).map(id => { const s = allStaff.find(x => x.staffId === id); return s ? s.name : id; }).join(', ') || 'Whole team';
   const items = plan.actionItems || [];
   const openCount = items.filter(i => !i.done).length;
+  const editable = !!opts.editable;
+  const isComplete = plan.status === 'complete';
   // Extension points — callers pass extra HTML in rather than the shared
   // template being spliced into afterwards, which is fragile and breaks
   // silently the moment this template's structure changes.
@@ -818,6 +828,7 @@ function renderActionPlanCard(plan, opts = {}) {
             <th style="text-align:left;padding:4px;color:var(--color-muted);">Role</th>
             <th style="text-align:left;padding:4px;color:var(--color-muted);">Accountable</th>
             <th style="text-align:left;padding:4px;color:var(--color-muted);">By</th>
+            ${editable ? '<th style="padding:4px;"></th>' : ''}
           </tr></thead>
           <tbody>
             ${items.map(item => `
@@ -826,15 +837,128 @@ function renderActionPlanCard(plan, opts = {}) {
                 <td style="padding:4px;">${esc(ACTION_ITEM_ROLE_LABELS[item.role]||item.role||'—')}</td>
                 <td style="padding:4px;">${esc(item.accountableName||'—')}</td>
                 <td style="padding:4px;">${item.timeframe?fmtDate(item.timeframe):'—'}</td>
+                ${editable ? `<td style="padding:4px;">
+                  ${!isComplete ? `
+                    <input type="checkbox" class="ap-item-done" data-plan-id="${plan.planId}" data-item-id="${item.itemId}" ${item.done?'checked':''} aria-label="Mark done">
+                    ${!item.done && typeof createTaskFromSource === 'function' ? `<button type="button" class="ap-item-create-task" data-plan-id="${plan.planId}" data-item-id="${item.itemId}" style="font-size:10px;background:none;border:none;color:var(--color-teal);cursor:pointer;text-decoration:underline;margin-left:4px;">task</button>` : ''}
+                  ` : (item.done ? '✓' : '')}
+                </td>` : ''}
               </tr>`).join('')}
           </tbody>
         </table>
       ` : `<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-sm);">No specific action items yet — general aim: ${esc(plan.aim||'not set')}</p>`}
 
+      ${editable && !isComplete ? `
+        <div class="ap-add-item-form" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:4px;margin-top:var(--space-sm);">
+          <input type="text" class="form-input ap-item-desc" placeholder="Action description" style="min-height:32px;font-size:10px;">
+          <select class="form-select ap-item-role" style="min-height:32px;font-size:10px;">
+            <option value="dpc">Me (DPC)</option>
+            <option value="digital-lead">Digital Lead</option>
+            <option value="hoa">Head of Area</option>
+            <option value="staff">Staff</option>
+          </select>
+          <input type="text" class="form-input ap-item-accountable" placeholder="Accountable" style="min-height:32px;font-size:10px;">
+          <input type="date" class="form-input ap-item-timeframe" style="min-height:32px;font-size:10px;">
+          <button type="button" class="btn btn--ghost btn--sm ap-add-item-btn" data-plan-id="${plan.planId}">+ Add</button>
+        </div>
+      ` : ''}
+
       ${plan.successCriteria ? `<p style="font-size:var(--text-xs);color:var(--color-slate);margin-top:var(--space-sm);"><strong>Success criteria:</strong> ${esc(plan.successCriteria)}</p>` : ''}
       ${(plan.linkedInstances || []).length > 0 ? `<p style="font-size:var(--text-xs);color:var(--color-teal);margin-top:var(--space-sm);">${plan.linkedInstances.length} session(s) already assigned</p>` : ''}
+
+      ${editable ? (!isComplete ? `
+        <button type="button" class="btn btn--secondary btn--sm ap-close-btn" data-plan-id="${plan.planId}" style="margin-top:var(--space-sm);">Close plan</button>
+        <div class="ap-close-form" data-plan-id="${plan.planId}" style="display:none;margin-top:var(--space-sm);">
+          <textarea class="form-textarea ap-close-report" rows="2" placeholder="What happened? What was the impact?"></textarea>
+          <button type="button" class="btn btn--primary btn--sm ap-close-confirm" data-plan-id="${plan.planId}" style="margin-top:4px;">Confirm close</button>
+        </div>
+      ` : `
+        <div style="background:var(--color-light);border-radius:var(--radius-sm);padding:var(--space-sm);margin-top:var(--space-sm);">
+          <p style="font-size:10px;color:var(--color-muted);text-transform:uppercase;">Closure report — ${plan.closureReport?fmtDate(plan.closureReport.closedAt):''}</p>
+          <p style="font-size:var(--text-xs);color:var(--color-slate);">${esc(plan.closureReport?.text || 'No report recorded.')}</p>
+          <button type="button" class="btn btn--ghost btn--sm ap-reopen-btn" data-plan-id="${plan.planId}" style="margin-top:var(--space-sm);">Reopen plan</button>
+        </div>
+      `) : ''}
       ${footerHtml}
     </div>`;
+}
+
+// Delegated event wiring for one or more renderActionPlanCard(..., {editable:true})
+// cards inside `container`. One listener per event type on the container
+// itself (not per-button), so it keeps working across re-renders without
+// re-querying every element by hand — the exact bug class that made three
+// separate copies of this logic drift apart before.
+// `opts.refresh()` is called after every mutation so the caller re-renders
+// its own tab/list however it normally does; this function never assumes
+// how the caller's surrounding UI is structured.
+function wireActionPlanCard(container, opts = {}) {
+  if (!container || container._apWired) return; // avoid double-binding on re-use
+  container._apWired = true;
+  const refresh = typeof opts.refresh === 'function' ? opts.refresh : () => {};
+  const toast = (type, msg) => { if (typeof UI !== 'undefined') UI.showToast(type, msg); };
+
+  container.addEventListener('change', (e) => {
+    if (e.target.matches('.ap-item-done')) {
+      toggleActionItemDone(e.target.dataset.planId, e.target.dataset.itemId, e.target.checked);
+      refresh();
+    }
+  });
+
+  container.addEventListener('click', (e) => {
+    const createTaskBtn = e.target.closest('.ap-item-create-task');
+    if (createTaskBtn) {
+      const plan = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || []).find(p => p.planId === createTaskBtn.dataset.planId);
+      const item = plan && (plan.actionItems || []).find(i => i.itemId === createTaskBtn.dataset.itemId);
+      if (!item) return;
+      const task = createTaskFromSource(
+        { title: item.description, date: item.timeframe || todayISO(), areaCode: plan.areaCode, personRefs: item.accountableName ? [item.accountableName] : [], notes: `From Action Plan: ${plan.focus || plan.aim || ''}` },
+        'action-plan', { planId: plan.planId, itemId: item.itemId }
+      );
+      toast('success', `Task created: ${task.title}`);
+      createTaskBtn.textContent = '✓'; createTaskBtn.disabled = true;
+      return;
+    }
+
+    const addBtn = e.target.closest('.ap-add-item-btn');
+    if (addBtn) {
+      const card = addBtn.closest('.ap-shared-card');
+      const desc = card.querySelector('.ap-item-desc').value.trim();
+      if (!desc) { toast('error', 'Please describe the action.'); return; }
+      addActionItem(addBtn.dataset.planId, {
+        description: desc,
+        role: card.querySelector('.ap-item-role').value,
+        accountableName: card.querySelector('.ap-item-accountable').value.trim(),
+        timeframe: card.querySelector('.ap-item-timeframe').value || null,
+      });
+      refresh();
+      return;
+    }
+
+    const closeBtn = e.target.closest('.ap-close-btn');
+    if (closeBtn) {
+      const form = container.querySelector(`.ap-close-form[data-plan-id="${closeBtn.dataset.planId}"]`);
+      if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      return;
+    }
+
+    const closeConfirmBtn = e.target.closest('.ap-close-confirm');
+    if (closeConfirmBtn) {
+      const card = closeConfirmBtn.closest('.ap-shared-card');
+      const report = card.querySelector('.ap-close-report').value.trim();
+      closeActionPlan(closeConfirmBtn.dataset.planId, report);
+      toast('success', 'Plan closed.');
+      refresh();
+      return;
+    }
+
+    const reopenBtn = e.target.closest('.ap-reopen-btn');
+    if (reopenBtn) {
+      reopenActionPlan(reopenBtn.dataset.planId);
+      toast('success', 'Plan reopened.');
+      refresh();
+      return;
+    }
+  });
 }
 
 function generateActionPlanFromHealthCheck(review, staffId) {

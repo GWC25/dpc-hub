@@ -467,6 +467,7 @@ function _renderAPList(areaCode) {
     return typeof renderActionPlanCard === 'function' ? renderActionPlanCard(p, {
       esc: _escHtml,
       fmtDate: _formatDateShort,
+      editable: true,
       extraBadgeHtml: openLoops > 0 ? `<div><span style="font-size:var(--text-xs);font-weight:bold;color:var(--color-amber);">${openLoops} open loop${openLoops!==1?'s':''}</span></div>` : '',
       footerHtml: (plan) => `
         <div class="btn-row" style="margin-top:var(--space-sm);">
@@ -480,6 +481,10 @@ function _renderAPList(areaCode) {
   container.querySelectorAll('.ap-assign-btn').forEach(btn => {
     btn.addEventListener('click', () => _toggleAPAssignForm(btn.dataset.planId, areaCode));
   });
+
+  if (typeof wireActionPlanCard === 'function') {
+    wireActionPlanCard(container, { refresh: () => _renderAPList(areaCode) });
+  }
 }
 
 function _toggleAPAssignForm(planId, areaCode) {

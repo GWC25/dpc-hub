@@ -933,12 +933,18 @@ function _dlRenderTrainingDrill(panel, dl) {
 }
 
 // ── Action Plans drill-down: Active + Closed, refined detail ─────
+// Session (10/08/26): rebuilt on top of the shared renderActionPlanCard()
+// / wireActionPlanCard() (js/data.js) instead of a private markup copy.
+// This was the one place with real editing power (add item, tick done,
+// close plan) that Staff and Areas didn't have — now all three go
+// through the same renderer, so a future change to how a plan looks or
+// behaves only needs making once. The Active/Closed tab split is
+// DL-specific UI and stays here; only the card itself moved.
 function _dlRenderActionPlansDrill(panel, dl) {
   const allPlans = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [];
   const areaPlans = allPlans.filter(p => p.areaCode === dl.areaCode);
   const active = areaPlans.filter(p => p.status !== 'complete');
   const closed = areaPlans.filter(p => p.status === 'complete');
-  const roleLabels = { dpc: 'Me (DPC)', 'digital-lead': 'Digital Lead', hoa: 'Head of Area', staff: 'Staff' };
 
   panel.innerHTML = `
     <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Action Plans — ${_dlEsc(dl.areaCode)}</h4>
@@ -948,13 +954,13 @@ function _dlRenderActionPlansDrill(panel, dl) {
     </div>
     <div id="dl-ap-content"></div>
   `;
-  _dlRenderAPTabContent('active', active, closed, roleLabels, panel, dl);
+  _dlRenderAPTabContent('active', active, closed, panel, dl);
   panel.querySelectorAll('.dl-ap-tab').forEach(btn => {
-    btn.addEventListener('click', () => _dlRenderAPTabContent(btn.dataset.apTab, active, closed, roleLabels, panel, dl));
+    btn.addEventListener('click', () => _dlRenderAPTabContent(btn.dataset.apTab, active, closed, panel, dl));
   });
 }
 
-function _dlRenderAPTabContent(tab, active, closed, roleLabels, panel, dl) {
+function _dlRenderAPTabContent(tab, active, closed, panel, dl) {
   const content = panel.querySelector('#dl-ap-content');
   const list = tab === 'active' ? active : closed;
 
@@ -963,111 +969,14 @@ function _dlRenderAPTabContent(tab, active, closed, roleLabels, panel, dl) {
     return;
   }
 
-  content.innerHTML = list.map(p => `
-    <div class="dl-ap-card" data-plan-id="${p.planId}" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
-      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_dlEsc(p.focus||p.aim||'Untitled plan')}</p>
-      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-sm);">Target: ${p.targetDate?_dlFmtDate(p.targetDate):'No date'} · Success criteria: ${_dlEsc(p.successCriteria||'—')}</p>
+  content.innerHTML = list.map(p => typeof renderActionPlanCard === 'function'
+    ? renderActionPlanCard(p, { esc: _dlEsc, fmtDate: _dlFmtDate, editable: true })
+    : ''
+  ).join('');
 
-      ${(p.actionItems||[]).length > 0 ? `
-        <table style="width:100%;border-collapse:collapse;font-size:var(--text-xs);margin-bottom:var(--space-sm);">
-          <thead><tr style="border-bottom:1px solid var(--color-border);">
-            <th style="text-align:left;padding:4px;color:var(--color-muted);">Action</th>
-            <th style="text-align:left;padding:4px;color:var(--color-muted);">Role</th>
-            <th style="text-align:left;padding:4px;color:var(--color-muted);">Accountable</th>
-            <th style="text-align:left;padding:4px;color:var(--color-muted);">By</th>
-            <th style="padding:4px;"></th>
-          </tr></thead>
-          <tbody>
-            ${p.actionItems.map(item => `
-              <tr style="border-bottom:1px solid var(--color-border);${item.done?'opacity:0.5;':''}">
-                <td style="padding:4px;">${_dlEsc(item.description)}</td>
-                <td style="padding:4px;">${_dlEsc(roleLabels[item.role]||item.role||'—')}</td>
-                <td style="padding:4px;">${_dlEsc(item.accountableName||'—')}</td>
-                <td style="padding:4px;">${item.timeframe?_dlFmtDate(item.timeframe):'—'}</td>
-                <td style="padding:4px;">
-                  ${tab==='active' ? `
-                    <input type="checkbox" class="dl-ap-item-done" data-plan-id="${p.planId}" data-item-id="${item.itemId}" ${item.done?'checked':''}>
-                    ${!item.done && typeof createTaskFromSource === 'function' ? `<button type="button" class="dl-ap-item-create-task" data-plan-id="${p.planId}" data-item-id="${item.itemId}" style="font-size:10px;background:none;border:none;color:var(--color-teal);cursor:pointer;text-decoration:underline;margin-left:4px;">task</button>` : ''}
-                  ` : (item.done ? '✓' : '')}
-                </td>
-              </tr>`).join('')}
-          </tbody>
-        </table>` : '<p style="font-size:var(--text-xs);color:var(--color-muted);">No action items yet.</p>'}
-
-      ${tab === 'active' ? `
-        <div class="dl-ap-add-item-form" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:4px;margin-top:var(--space-sm);">
-          <input type="text" class="form-input dl-ap-item-desc" placeholder="Action description" style="min-height:32px;font-size:10px;">
-          <select class="form-select dl-ap-item-role" style="min-height:32px;font-size:10px;">
-            <option value="dpc">Me (DPC)</option>
-            <option value="digital-lead">Digital Lead</option>
-            <option value="hoa">Head of Area</option>
-            <option value="staff">Staff</option>
-          </select>
-          <input type="text" class="form-input dl-ap-item-accountable" placeholder="Accountable" style="min-height:32px;font-size:10px;">
-          <input type="date" class="form-input dl-ap-item-timeframe" style="min-height:32px;font-size:10px;">
-          <button type="button" class="btn btn--ghost btn--sm dl-ap-add-item-btn" data-plan-id="${p.planId}">+ Add</button>
-        </div>
-        <button type="button" class="btn btn--secondary btn--sm dl-ap-close-btn" data-plan-id="${p.planId}" style="margin-top:var(--space-sm);">Close plan</button>
-        <div class="dl-ap-close-form" data-plan-id="${p.planId}" style="display:none;margin-top:var(--space-sm);">
-          <textarea class="form-textarea dl-ap-close-report" rows="2" placeholder="What happened? What was the impact?"></textarea>
-          <button type="button" class="btn btn--primary btn--sm dl-ap-close-confirm" data-plan-id="${p.planId}" style="margin-top:4px;">Confirm close</button>
-        </div>
-      ` : `
-        <div style="background:var(--color-light);border-radius:var(--radius-sm);padding:var(--space-sm);margin-top:var(--space-sm);">
-          <p style="font-size:10px;color:var(--color-muted);text-transform:uppercase;">Closure report — ${p.closureReport?_dlFmtDate(p.closureReport.closedAt):''}</p>
-          <p style="font-size:var(--text-xs);color:var(--color-slate);">${_dlEsc(p.closureReport?.text || 'No report recorded.')}</p>
-        </div>
-      `}
-    </div>`).join('');
-
-  content.querySelectorAll('.dl-ap-item-done').forEach(cb => {
-    cb.addEventListener('change', () => {
-      toggleActionItemDone(cb.dataset.planId, cb.dataset.itemId, cb.checked);
-      _dlOpenDrillRefresh(panel, dl);
-    });
-  });
-  content.querySelectorAll('.dl-ap-item-create-task').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const plan = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || []).find(p => p.planId === btn.dataset.planId);
-      const item = plan && (plan.actionItems || []).find(i => i.itemId === btn.dataset.itemId);
-      if (!item) return;
-      const task = createTaskFromSource(
-        { title: item.description, date: item.timeframe || todayISO(), areaCode: plan.areaCode, personRefs: item.accountableName ? [item.accountableName] : [], notes: `From Action Plan: ${plan.focus || plan.aim || ''}` },
-        'action-plan', { planId: plan.planId, itemId: item.itemId }
-      );
-      if (typeof UI !== 'undefined') UI.showToast('success', `Task created: ${task.title}`);
-      btn.textContent = '✓'; btn.disabled = true;
-    });
-  });
-  content.querySelectorAll('.dl-ap-add-item-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const card = btn.closest('.dl-ap-card');
-      const desc = card.querySelector('.dl-ap-item-desc').value.trim();
-      if (!desc) { if (typeof UI!=='undefined') UI.showToast('error','Please describe the action.'); return; }
-      addActionItem(btn.dataset.planId, {
-        description: desc,
-        role: card.querySelector('.dl-ap-item-role').value,
-        accountableName: card.querySelector('.dl-ap-item-accountable').value.trim(),
-        timeframe: card.querySelector('.dl-ap-item-timeframe').value || null,
-      });
-      _dlOpenDrillRefresh(panel, dl);
-    });
-  });
-  content.querySelectorAll('.dl-ap-close-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const form = content.querySelector(`.dl-ap-close-form[data-plan-id="${btn.dataset.planId}"]`);
-      if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    });
-  });
-  content.querySelectorAll('.dl-ap-close-confirm').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const card = btn.closest('.dl-ap-card');
-      const report = card.querySelector('.dl-ap-close-report').value.trim();
-      closeActionPlan(btn.dataset.planId, report);
-      if (typeof UI!=='undefined') UI.showToast('success', 'Plan closed.');
-      _dlOpenDrillRefresh(panel, dl);
-    });
-  });
+  if (typeof wireActionPlanCard === 'function') {
+    wireActionPlanCard(content, { refresh: () => _dlOpenDrillRefresh(panel, dl) });
+  }
 }
 
 function _dlOpenDrillRefresh(panel, dl) {
