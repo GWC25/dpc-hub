@@ -462,7 +462,14 @@ function _repDocTable(docx, headers, rows, colWidths) {
     width: { size: tableWidth, type: WidthType.DXA },
     columnWidths: colWidths,
     rows: [
-      new TableRow({ children: headers.map((h,i) => _repDocHeaderCell(docx, h, colWidths[i])) }),
+      // tableHeader: true marks this as a real header row for assistive
+      // tech (screen readers announce "column header" navigating the
+      // table) as well as repeating it on each printed page — not just
+      // bold/coloured text that looks like a header. This was missing
+      // from every existing report before this fix (Session 60,
+      // 11/08/26) — applies retroactively to all five report types,
+      // not just the one that surfaced it.
+      new TableRow({ tableHeader: true, children: headers.map((h,i) => _repDocHeaderCell(docx, h, colWidths[i])) }),
       ...rows.map(r => new TableRow({ children: r.map((c,i) => _repDocCell(docx, c, colWidths[i])) })),
     ],
   });
