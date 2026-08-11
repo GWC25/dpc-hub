@@ -224,7 +224,9 @@ function renderPlaceholder(label, icon) {
 }
 
 // Session 48: initTasks moved to js/tasks.js — real module now, no longer a placeholder.
-function initMeetings()     { renderPlaceholder('Meetings', '💬'); }
+// Session 60 (11/08/26): initMeetings moved to js/meetings.js — real
+// module now, built from the existing VIEW 6 spec, no longer a
+// placeholder. Same pattern as Tasks (Session 48).
 function initNotes()        { renderPlaceholder('Notes', '✏'); }
 
 // ── Quick Capture button ──────────────────────────────────────

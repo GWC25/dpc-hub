@@ -447,8 +447,10 @@ function _wireCalendarEvents() {
   document.getElementById('cal-entry-delete')?.addEventListener('click', _deleteEntry);
 
   document.getElementById('cal-open-meetings-btn')?.addEventListener('click', () => {
+    const entryId = document.getElementById('cal-entry-id').value;
     _closeEntryModal();
-    navigateTo('meetings');
+    if (entryId) openMeeting(entryId);
+    else navigateTo('meetings');
   });
 
   const modal = document.getElementById('cal-modal');
