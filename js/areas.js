@@ -455,6 +455,11 @@ function _renderIndustrySkillsTab(panel, areaCode) {
       <input type="text" id="ds-new-stage3" class="form-input" placeholder="Stage 3 — applies to novel problems" style="margin-bottom:8px;">
       <button type="button" id="ds-add-btn" class="btn btn--primary btn--sm">+ Add skill</button>
     </div>
+
+    <div style="margin-top:var(--space-lg);padding-top:var(--space-md);border-top:1px solid var(--color-border);">
+      <button type="button" id="ds-download-btn" class="btn btn--secondary btn--sm">Download Digital Skills Statement (Word)</button>
+      <p id="ds-download-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;"></p>
+    </div>
   `;
 
   _wireIndustrySkillsTab(areaCode);
@@ -523,7 +528,87 @@ function _wireIndustrySkillsTab(areaCode) {
       });
       _renderIndustrySkillsTab(panel, areaCode);
     }
+
+    if (e.target.id === 'ds-download-btn') {
+      _generateIndustrySkillsDoc(areaCode);
+    }
   });
+}
+
+// ── Digital Skills Statement — downloadable Word doc (Session 60) ──
+// Design intent (see Documents/Current design notes, 11/08/26): the
+// skill list itself must stay STRUCTURED — a table with a plain
+// Yes/No "Include?" column, not free prose — because that's the part
+// that eventually needs to flow back into the Hub via AI Support once
+// the amendment loop is built. A HoA typing "No" in a table cell is a
+// discrete, unambiguous signal; a HoA writing a paragraph explaining
+// why isn't. The method/cadence suggestions stay as plain prose
+// deliberately — that's a genuine negotiation Graeme reads and judges
+// himself, not something that needs parsing.
+//
+// Real Word checkbox content controls were considered and rejected:
+// this vendored docx-js build has no first-class support for them,
+// and a plain Yes/No text cell is actually MORE accessible (a real
+// screen-reader-readable cell, not a glyph pretending to be an
+// interactive control) as well as simpler to parse reliably later.
+function _generateIndustrySkillsDoc(areaCode) {
+  const status = document.getElementById('ds-download-status');
+  const setStatus = (msg, isError) => { if (status) { status.textContent = msg; status.style.color = isError ? 'var(--color-red)' : 'var(--color-muted)'; } };
+
+  if (typeof window.docx === 'undefined') {
+    setStatus('lib/docx.min.js has not loaded — check the script tag in hub.html.', true);
+    return;
+  }
+  const docx = window.docx;
+  const area = _getArea(areaCode);
+  if (!area) { setStatus('Area not found.', true); return; }
+
+  const skills = area.industrySkills || [];
+  const version = (area.industrySkillsDocVersion || 0) + 1;
+  const today = _formatDateShort ? _formatDateShort(todayISO()) : todayISO();
+
+  const skillRows = skills.map(s => [
+    s.name + (s.isCustom ? ' (custom)' : ''),
+    s.stage1 || '—', s.stage2 || '—', s.stage3 || '—',
+    s.selected ? 'Yes' : 'No',
+  ]);
+  const colW = [2400, 2000, 2000, 2000, 1200];
+
+  const children = [
+    _repDocTitle(docx, `Industry-Specific Digital Skills — ${area.areaName} (${area.areaCode})`),
+    _repDocPara(docx, `HoA: ${area.hoaName || '—'}  ·  Prepared: ${today}  ·  Version ${version}`, { italics: true, spacing: { after: 200 } }),
+
+    _repDocSectionHeading(docx, 'Agreed Digital Skills'),
+    _repDocPara(docx, 'This table lists the digital skills identified for this area, researched against real apprenticeship standards and sector body guidance. Please review the "Include?" column and change Yes/No where you disagree, and reword any Stage description that does not fit how this is actually taught here.', { spacing: { after: 160 } }),
+    skills.length > 0
+      ? _repDocTable(docx, ['Skill / Tool', 'Stage 1 — Guided', 'Stage 2 — Independent', 'Stage 3 — Novel problems', 'Include?'], skillRows, colW)
+      : _repDocPara(docx, 'No research-backed digital skills are currently listed for this area — please add any relevant skills in the table below.'),
+
+    _repDocSectionHeading(docx, 'Additional skills to add'),
+    _repDocPara(docx, 'Use the rows below for any skill not already listed above. One row per skill.', { spacing: { after: 160 } }),
+    _repDocTable(docx, ['Skill / Tool', 'Stage 1 — Guided', 'Stage 2 — Independent', 'Stage 3 — Novel problems', 'Include?'],
+      [['', '', '', '', 'Yes'], ['', '', '', '', 'Yes'], ['', '', '', '', 'Yes']], colW),
+
+    _repDocSectionHeading(docx, 'Suggested baselining method'),
+    _repDocPara(docx, 'Tutors self-assess against these skills via a short Forms survey, completed once a skill has genuinely been taught and evidenced — not as a separate formal test. The Digital Lead reviews the tutor responses and records one overall rating for the area, on the same 1–5 scale used elsewhere in the Hub. The standard applied: default to a rating of 3 unless there is clear evidence supporting a 2 or a 4 — this keeps ratings honest rather than optimistic by default.'),
+
+    _repDocSectionHeading(docx, 'Suggested cadence'),
+    _repDocPara(docx, 'One baseline rating near the start of the year, and a further checkpoint later in the year to show movement. This may grow to a breakdown by level and year group in future once the process is established — starting with one overall rating per area for now.'),
+
+    _repDocSectionHeading(docx, 'Your comments'),
+    _repDocPara(docx, 'Please add any comments on the method or cadence above — this section is read directly, so free text is fine here.', { spacing: { after: 160 } }),
+    _repDocPara(docx, '[Add your comments here]', { italics: true }),
+  ];
+
+  const doc = new (docx.Document)({
+    sections: [{ properties: { page: { margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 } } }, children: children.flat() }],
+  });
+
+  setStatus('Building document…');
+  _repDownloadDoc(docx, doc, `industry-digital-skills-${areaCode}-v${version}-${todayISO()}.docx`);
+  area.industrySkillsDocVersion = version;
+  saveArea(area);
+  setStatus(`Downloaded as version ${version}.`);
 }
 // Wires together three things that already exist rather than inventing
 // new ones: Templates (js/templates.js — teach-meet template + instance
