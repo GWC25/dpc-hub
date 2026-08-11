@@ -227,7 +227,9 @@ function renderPlaceholder(label, icon) {
 // Session 60 (11/08/26): initMeetings moved to js/meetings.js — real
 // module now, built from the existing VIEW 6 spec, no longer a
 // placeholder. Same pattern as Tasks (Session 48).
-function initNotes()        { renderPlaceholder('Notes', '✏'); }
+// Session 60 (11/08/26): initNotes moved to js/notes.js — real module
+// now, built from the existing VIEW 18 spec. Data layer (saveNote,
+// data-notes.json) already existed; only the UI was a placeholder.
 
 // ── Quick Capture button ──────────────────────────────────────
 
