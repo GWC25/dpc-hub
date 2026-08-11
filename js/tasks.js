@@ -67,6 +67,7 @@ function initTasks() {
         <div class="btn-row">
           <button id="task-modal-save" type="button" class="btn btn--primary">Save</button>
           <button id="task-modal-cancel" type="button" class="btn btn--secondary">Cancel</button>
+          <button id="task-modal-delete" type="button" class="btn btn--ghost" style="color:var(--color-red);border-color:var(--color-red);display:none;">Delete</button>
         </div>
       </div>
     </div>
@@ -75,6 +76,22 @@ function initTasks() {
   _tasksPopulateAreaDropdown();
   _renderTaskList();
   _wireTaskEvents();
+
+  // Cross-module deep link (Session 51) — matches openStaffProfile() /
+  // openAreaProfile() / openLoop(). Opens straight to a specific task's
+  // edit modal rather than just landing on the Tasks list.
+  if (window._pendingTaskOpen) {
+    const targetId = window._pendingTaskOpen;
+    window._pendingTaskOpen = null;
+    _openTaskModal(targetId);
+  }
+}
+
+// Public: navigate to Tasks and open a specific one — callable from
+// anywhere that shows a task reference (Action Plan cards).
+function openTask(taskId) {
+  window._pendingTaskOpen = taskId;
+  navigateTo('tasks');
 }
 
 function _renderTaskList() {
@@ -130,12 +147,20 @@ function _tSetTaskDone(taskId, done) {
   if (!task) return;
   task.status = done ? TASK_STATUS.COMPLETE : TASK_STATUS.UPCOMING;
   saveCalendarEntry(task);
+  // Session (11/08/26): a task created from an Action Plan item (via
+  // createTaskFromSource) used to be a one-way copy — completing it here
+  // never fed back to the item it came from, so the Action Plan and the
+  // Tasks tab silently disagreed about whether the work was actually done.
+  if (task.source === 'action-plan' && task.sourceRef && typeof toggleActionItemDone === 'function') {
+    toggleActionItemDone(task.sourceRef.planId, task.sourceRef.itemId, done);
+  }
   _renderTaskList();
 }
 
 function _openTaskModal(taskId = null) {
   const modal = document.getElementById('task-modal');
   const titleEl = document.getElementById('task-modal-title');
+  const deleteBtn = document.getElementById('task-modal-delete');
   if (!modal) return;
   const task = taskId ? _getAllTasks().find(t => t.entryId === taskId) : null;
   titleEl.textContent = task ? 'Edit task' : 'New task';
@@ -145,6 +170,7 @@ function _openTaskModal(taskId = null) {
   document.getElementById('task-person').value = task ? (task.personRefs || []).join(', ') : '';
   document.getElementById('task-notes').value = task ? (task.notes || '') : '';
   document.getElementById('task-modal-id').value = taskId || '';
+  if (deleteBtn) deleteBtn.style.display = task ? 'inline-flex' : 'none';
   modal.style.display = 'flex';
   document.getElementById('task-title').focus();
 }
@@ -186,6 +212,15 @@ function _wireTaskEvents() {
   document.getElementById('task-modal-close')?.addEventListener('click', () => { document.getElementById('task-modal').style.display = 'none'; });
   document.getElementById('task-modal-cancel')?.addEventListener('click', () => { document.getElementById('task-modal').style.display = 'none'; });
   document.getElementById('task-modal-save')?.addEventListener('click', _saveTaskModal);
+  document.getElementById('task-modal-delete')?.addEventListener('click', () => {
+    const taskId = document.getElementById('task-modal-id').value;
+    if (!taskId) return;
+    if (!confirm('Delete this task permanently? This cannot be undone.')) return;
+    deleteCalendarEntry(taskId);
+    document.getElementById('task-modal').style.display = 'none';
+    _renderTaskList();
+    if (typeof UI !== 'undefined') UI.showToast('success', 'Task deleted.');
+  });
   document.getElementById('task-modal')?.addEventListener('click', e => { if (e.target === document.getElementById('task-modal')) document.getElementById('task-modal').style.display = 'none'; });
 
   document.querySelectorAll('.task-filter-btn').forEach(btn => {
