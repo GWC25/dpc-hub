@@ -496,6 +496,81 @@ function saveArea(areaData) {
   _writeLocalSnapshot();
 }
 
+// ── Industry-Specific Digital Skills (Session 60, 11/08/26) ────────
+// Design: INDUSTRY_SKILLS_DEFAULTS (schema.js) is a default MENU per
+// area, seeded from the researched baselining framework. Each area's
+// actual agreed set lives on area.industrySkills[] — seeded once,
+// then select/deselect/reword/add per area from there. Editing the
+// defaults later never retroactively changes an area already seeded —
+// that's deliberate, matching how a HoA's agreed list is meant to be a
+// point-in-time agreement, not silently redrawn under them.
+//
+// Deselecting greys a skill out — it stays in the list, visible, one
+// click to restore. It is never deleted. Only genuinely custom skills
+// (isCustom: true) can be deleted outright, since they were never part
+// of the research-anchored default and have no agreement history yet.
+function initIndustrySkillsForArea(areaCode) {
+  const area = window.DPC_DATA.areas.areas.find(a => a.areaCode === areaCode);
+  if (!area) return null;
+  if (!area.industrySkills) {
+    const defaults = (typeof INDUSTRY_SKILLS_DEFAULTS !== 'undefined' && INDUSTRY_SKILLS_DEFAULTS[areaCode]) || [];
+    area.industrySkills = defaults.map(d => ({
+      skillId: generateId(),
+      name: d.name,
+      stage1: d.stage1,
+      stage2: d.stage2,
+      stage3: d.stage3,
+      selected: true,
+      isCustom: false,
+      source: 'research-2026',
+    }));
+    saveArea(area);
+  }
+  return area;
+}
+
+function toggleIndustrySkillSelected(areaCode, skillId, selected) {
+  const area = window.DPC_DATA.areas.areas.find(a => a.areaCode === areaCode);
+  if (!area || !area.industrySkills) return;
+  const skill = area.industrySkills.find(s => s.skillId === skillId);
+  if (!skill) return;
+  skill.selected = selected;
+  saveArea(area);
+}
+
+function updateIndustrySkillField(areaCode, skillId, field, value) {
+  const area = window.DPC_DATA.areas.areas.find(a => a.areaCode === areaCode);
+  if (!area || !area.industrySkills) return;
+  const skill = area.industrySkills.find(s => s.skillId === skillId);
+  if (!skill || !['name','stage1','stage2','stage3'].includes(field)) return;
+  skill[field] = value;
+  saveArea(area);
+}
+
+function addCustomIndustrySkill(areaCode, { name, stage1, stage2, stage3 }) {
+  const area = window.DPC_DATA.areas.areas.find(a => a.areaCode === areaCode);
+  if (!area) return;
+  area.industrySkills = area.industrySkills || [];
+  area.industrySkills.push({
+    skillId: generateId(),
+    name: name || 'Untitled skill',
+    stage1: stage1 || '', stage2: stage2 || '', stage3: stage3 || '',
+    selected: true,
+    isCustom: true,
+    source: 'custom',
+  });
+  saveArea(area);
+}
+
+function deleteCustomIndustrySkill(areaCode, skillId) {
+  const area = window.DPC_DATA.areas.areas.find(a => a.areaCode === areaCode);
+  if (!area || !area.industrySkills) return;
+  const skill = area.industrySkills.find(s => s.skillId === skillId);
+  if (!skill || !skill.isCustom) return; // research-sourced skills are never deletable, only greyed
+  area.industrySkills = area.industrySkills.filter(s => s.skillId !== skillId);
+  saveArea(area);
+}
+
 // ── Area rename / archive (Session 38) ──────────────────────────
 // Built because the real area structure turned out to be genuinely
 // unsettled — two source documents partially disagreed, several codes
