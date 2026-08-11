@@ -862,7 +862,7 @@ function renderActionPlanCard(plan, opts = {}) {
                 ${editable ? `<td style="padding:4px;">
                   ${!isComplete ? `
                     <input type="checkbox" class="ap-item-done" data-plan-id="${plan.planId}" data-item-id="${item.itemId}" ${item.done?'checked':''} aria-label="Mark done">
-                    ${!item.done && typeof createTaskFromSource === 'function' ? `<button type="button" class="ap-item-create-task" data-plan-id="${plan.planId}" data-item-id="${item.itemId}" style="font-size:10px;background:none;border:none;color:var(--color-teal);cursor:pointer;text-decoration:underline;margin-left:4px;">task</button>` : ''}
+                    ${_renderTaskLinkForItem(plan.planId, item.itemId)}
                   ` : (item.done ? '✓' : '')}
                 </td>` : ''}
               </tr>`).join('')}
@@ -886,7 +886,7 @@ function renderActionPlanCard(plan, opts = {}) {
       ` : ''}
 
       ${plan.successCriteria ? `<p style="font-size:var(--text-xs);color:var(--color-slate);margin-top:var(--space-sm);"><strong>Success criteria:</strong> ${esc(plan.successCriteria)}</p>` : ''}
-      ${(plan.linkedInstances || []).length > 0 ? `<p style="font-size:var(--text-xs);color:var(--color-teal);margin-top:var(--space-sm);">${plan.linkedInstances.length} session(s) already assigned</p>` : ''}
+      ${_renderLinkedLoopsPreview(plan, esc, fmtDate)}
 
       ${editable ? (!isComplete ? `
         <button type="button" class="btn btn--secondary btn--sm ap-close-btn" data-plan-id="${plan.planId}" style="margin-top:var(--space-sm);">Close plan</button>
@@ -905,6 +905,49 @@ function renderActionPlanCard(plan, opts = {}) {
     </div>`;
 }
 
+// Session (11/08/26): "N session(s) already assigned" used to be static
+// text with no way to reach what it referred to — exactly the gap Graeme
+// flagged ("linked work should be accessible from multiple spaces, not
+// just referenced"). Now shows each linked Loop with a short inline
+// preview (status + description) and a real link via openLoop(), which
+// navigates to Loops and opens that record's detail panel directly.
+function _renderLinkedLoopsPreview(plan, esc, fmtDate) {
+  const afiIds = plan.linkedAFIIds || [];
+  if (afiIds.length === 0) return '';
+  const allAfis = (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || [];
+  const loops = afiIds.map(id => allAfis.find(a => a.afiId === id)).filter(Boolean);
+  if (loops.length === 0) return '';
+
+  const statusColour = { open: 'var(--color-amber)', actioned: 'var(--color-teal)', 'impact-checked': 'var(--color-green)', closed: 'var(--color-muted)', 're-opened': 'var(--color-red)' };
+
+  return `
+    <div style="margin-top:var(--space-sm);">
+      <p style="font-size:10px;color:var(--color-muted);text-transform:uppercase;margin-bottom:4px;">${loops.length} linked loop${loops.length!==1?'s':''}</p>
+      ${loops.map(afi => `
+        <button type="button" class="ap-loop-link" data-afi-id="${afi.afiId}" style="
+          display:block;width:100%;text-align:left;background:var(--color-light);border:none;border-left:3px solid ${statusColour[afi.status]||'var(--color-muted)'};
+          border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:4px 8px;margin-bottom:4px;cursor:pointer;font:inherit;">
+          <span style="font-size:10px;font-weight:bold;color:${statusColour[afi.status]||'var(--color-muted)'};text-transform:capitalize;">${esc(afi.status)}</span>
+          <span style="font-size:var(--text-xs);color:var(--color-slate);"> — ${esc((afi.description||'').slice(0,80))}${(afi.description||'').length>80?'…':''}</span>
+        </button>`).join('')}
+    </div>`;
+}
+// Session (11/08/26): the "task" link used to always mean "create a new
+// one", even if you'd already clicked it before — clicking twice made two
+// tasks pointing at the same item. Now checks for an existing linked task
+// first and shows a real "open task" link to it instead of "task" again.
+function _renderTaskLinkForItem(planId, itemId) {
+  const existing = ((window.DPC_DATA.calendar && window.DPC_DATA.calendar.entries) || [])
+    .find(t => t.source === 'action-plan' && t.sourceRef && t.sourceRef.planId === planId && t.sourceRef.itemId === itemId);
+  if (existing) {
+    return `<button type="button" class="ap-item-open-task" data-task-id="${existing.entryId}" style="font-size:10px;background:none;border:none;color:var(--color-navy);cursor:pointer;text-decoration:underline;margin-left:4px;">open task</button>`;
+  }
+  if (typeof createTaskFromSource === 'function') {
+    return `<button type="button" class="ap-item-create-task" data-plan-id="${planId}" data-item-id="${itemId}" style="font-size:10px;background:none;border:none;color:var(--color-teal);cursor:pointer;text-decoration:underline;margin-left:4px;">task</button>`;
+  }
+  return '';
+}
+
 // Delegated event wiring for one or more renderActionPlanCard(..., {editable:true})
 // cards inside `container`. One listener per event type on the container
 // itself (not per-button), so it keeps working across re-renders without
@@ -921,12 +964,34 @@ function wireActionPlanCard(container, opts = {}) {
 
   container.addEventListener('change', (e) => {
     if (e.target.matches('.ap-item-done')) {
-      toggleActionItemDone(e.target.dataset.planId, e.target.dataset.itemId, e.target.checked);
+      const planId = e.target.dataset.planId, itemId = e.target.dataset.itemId, done = e.target.checked;
+      toggleActionItemDone(planId, itemId, done);
+      // Session (11/08/26): keep any task created from this item (via the
+      // "task" link) in sync — see the matching fix in tasks.js for the
+      // reverse direction. Same underlying bug, same fix, both directions.
+      const linkedTask = ((window.DPC_DATA.calendar && window.DPC_DATA.calendar.entries) || [])
+        .find(t => t.source === 'action-plan' && t.sourceRef && t.sourceRef.planId === planId && t.sourceRef.itemId === itemId);
+      if (linkedTask && typeof TASK_STATUS !== 'undefined') {
+        linkedTask.status = done ? TASK_STATUS.COMPLETE : TASK_STATUS.UPCOMING;
+        saveCalendarEntry(linkedTask);
+      }
       refresh();
     }
   });
 
   container.addEventListener('click', (e) => {
+    const loopLink = e.target.closest('.ap-loop-link');
+    if (loopLink && typeof openLoop === 'function') {
+      openLoop(loopLink.dataset.afiId);
+      return;
+    }
+
+    const openTaskBtn = e.target.closest('.ap-item-open-task');
+    if (openTaskBtn && typeof openTask === 'function') {
+      openTask(openTaskBtn.dataset.taskId);
+      return;
+    }
+
     const createTaskBtn = e.target.closest('.ap-item-create-task');
     if (createTaskBtn) {
       const plan = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || []).find(p => p.planId === createTaskBtn.dataset.planId);
@@ -937,7 +1002,7 @@ function wireActionPlanCard(container, opts = {}) {
         'action-plan', { planId: plan.planId, itemId: item.itemId }
       );
       toast('success', `Task created: ${task.title}`);
-      createTaskBtn.textContent = '✓'; createTaskBtn.disabled = true;
+      refresh();
       return;
     }
 
@@ -1162,6 +1227,26 @@ function saveCalendarEntry(entry) {
 function deleteCalendarEntry(entryId) {
   window.DPC_DATA.calendar.entries = window.DPC_DATA.calendar.entries.filter(e => e.entryId !== entryId);
   _dirty.add('data-calendar.json');
+  _writeLocalSnapshot();
+}
+
+// Session (11/08/26): deleteAFI() didn't exist at all — Loops could be
+// created (including automatically, via "Assign Teach Meet" on an Action
+// Plan) but never removed. Also cleans up the plan.linkedAFIIds
+// back-reference so a deleted Loop doesn't leave a dangling "N open
+// loops" count on the Action Plan that created it.
+function deleteAFI(afiId) {
+  window.DPC_DATA.afi.afis = (window.DPC_DATA.afi.afis || []).filter(a => a.afiId !== afiId);
+  _dirty.add('data-afi.json');
+
+  const plans = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [];
+  plans.forEach(p => {
+    if (p.linkedAFIIds && p.linkedAFIIds.includes(afiId)) {
+      p.linkedAFIIds = p.linkedAFIIds.filter(id => id !== afiId);
+      _dirty.add('data-action-plans.json');
+    }
+  });
+
   _writeLocalSnapshot();
 }
 
