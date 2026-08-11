@@ -80,18 +80,28 @@ async function _idbClearHandle() {
 // Tries to silently restore a real, still-valid connection from a
 // previously stored handle. Returns true only if _folderHandle is now
 // genuinely usable — never shows any UI, never requires a click.
+//
+// Session (11/08/26): queryPermission() can benignly return 'prompt'
+// instead of 'granted' on the very first check of a session even when
+// permission genuinely was granted previously — a known Chromium timing
+// quirk, worse on managed-browser setups. One retry after a short delay
+// resolves this in the common case without ever bothering the user.
 async function tryReconnectSilently() {
   const handle = await _idbGetHandle();
   if (!handle) return false;
-  try {
-    const perm = await handle.queryPermission({ mode: 'readwrite' });
-    if (perm === 'granted') {
-      _folderHandle = handle;
-      return true;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const perm = await handle.queryPermission({ mode: 'readwrite' });
+      if (perm === 'granted') {
+        _folderHandle = handle;
+        return true;
+      }
+    } catch {
+      // Handle reference is stale (e.g. file moved/deleted) — no point
+      // retrying, fall through to the normal picker flow below.
+      return false;
     }
-  } catch {
-    // Handle reference is stale (e.g. file moved/deleted) — fall through
-    // to the normal picker flow below.
+    if (attempt === 0) await new Promise(r => setTimeout(r, 300));
   }
   return false;
 }
@@ -433,10 +443,22 @@ async function loadHub(ui) {
       localStorage.removeItem(DPC_CONFIG.LS_KEYS.FOLDER_HANDLE_STORED);
       localStorage.removeItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE);
       await selectFolderFirstTime(ui);
-    } else if (permState === 'expired') {
+    } else {
+      // Session (11/08/26): 'expired' AND 'valid' both land here now.
+      // Previously only 'expired' triggered the reconnect modal — if
+      // localStorage said the permission was still 'valid' but the live
+      // browser check (tryReconnectSilently) failed anyway, the Hub used
+      // to silently continue in a fully empty offline state with no
+      // indication anything was wrong. That silent-blank state is the
+      // bug being fixed here: any time we believe we should be connected
+      // but genuinely aren't, the user gets the same one-click reconnect
+      // modal already used for the weekly-expiry case, instead of an
+      // unexplained empty Hub that only a manual hard refresh happened
+      // to fix.
       await reconnectFolder(ui);
     }
-    // If still no folder (offline mode) — continue with defaults
+    // If still no folder after this (user chose offline mode) — continue
+    // with defaults, same as before.
   }
 
   await loadManifest(ui);
