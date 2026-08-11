@@ -189,13 +189,13 @@ function _renderAreaDetail(areaCode) {
 
     <!-- Tabs -->
     <div role="tablist" aria-label="Area sections" style="display:flex;border-bottom:2px solid var(--color-border);margin-bottom:var(--space-lg);gap:0;">
-      ${['overview','rag','activity','staff','resources','healthchecks','actionplan'].map(tab => `
+      ${['overview','rag','activity','staff','resources','healthchecks','actionplan','industryskills'].map(tab => `
         <button role="tab" type="button" id="tab-${tab}" data-tab="${tab}"
           aria-selected="${tab===_areasDetailTab?'true':'false'}"
           style="padding:10px 20px;border:none;border-bottom:3px solid ${tab===_areasDetailTab?'var(--color-teal)':'transparent'};
           background:none;cursor:pointer;font:${tab===_areasDetailTab?'bold':''} var(--text-base) Arial,sans-serif;
           color:${tab===_areasDetailTab?'var(--color-teal)':'var(--color-muted)'};min-height:44px;white-space:nowrap;">
-          ${{overview:'Overview',rag:'RAG Matrix',activity:'Activity Log',staff:'Staff',resources:'Resources Shared',healthchecks:'Health Checks',actionplan:'Action Plan'}[tab]}
+          ${{overview:'Overview',rag:'RAG Matrix',activity:'Activity Log',staff:'Staff',resources:'Resources Shared',healthchecks:'Health Checks',actionplan:'Action Plan',industryskills:'Digital Skills'}[tab]}
         </button>`).join('')}
     </div>
 
@@ -419,9 +419,112 @@ function _renderAreaTab(tab, areaCode) {
   if (tab === 'actionplan') {
     _renderActionPlanTab(panel, areaCode);
   }
+
+  if (tab === 'industryskills') {
+    _renderIndustrySkillsTab(panel, areaCode);
+  }
 }
 
-// ── Action Plan tab (Session 41) ──────────────────────────────────
+// ── Industry-Specific Digital Skills tab (Session 60, 11/08/26) ────
+// Default menu seeded once from INDUSTRY_SKILLS_DEFAULTS (schema.js),
+// researched from real IfATE/Skills England standards and sector
+// bodies. From there it's the area's own agreed list — select/
+// deselect (deselecting greys out, never deletes), reword the stage
+// descriptions, or add a genuinely custom skill. Tier B areas
+// (academic/generic) get an empty default deliberately — see the
+// comment on INDUSTRY_SKILLS_DEFAULTS for why.
+function _renderIndustrySkillsTab(panel, areaCode) {
+  const area = initIndustrySkillsForArea(areaCode);
+  const skills = (area && area.industrySkills) || [];
+
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm);">
+      <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);">Industry-Specific Digital Skills (${skills.filter(s=>s.selected).length} agreed)</h3>
+    </div>
+    <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-md);">
+      Seeded from the researched baselining framework. Untick a skill to grey it out rather than delete it — its history stays if it's needed again.
+      ${skills.length === 0 ? ' No research-backed defaults exist for this area — it\u2019s treated as academic/generic and baselined against the DfE Essential Digital Skills Framework instead. Add a custom skill below if this area should be tracked differently.' : ''}
+    </p>
+    <div id="ds-skill-list">${skills.map(s => _renderIndustrySkillCard(s)).join('')}</div>
+
+    <div style="border:1px dashed var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-top:var(--space-md);">
+      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-sm);">+ Add a custom skill</p>
+      <input type="text" id="ds-new-name" class="form-input" placeholder="Skill / tool name" style="margin-bottom:4px;">
+      <input type="text" id="ds-new-stage1" class="form-input" placeholder="Stage 1 — guided use" style="margin-bottom:4px;">
+      <input type="text" id="ds-new-stage2" class="form-input" placeholder="Stage 2 — independent use" style="margin-bottom:4px;">
+      <input type="text" id="ds-new-stage3" class="form-input" placeholder="Stage 3 — applies to novel problems" style="margin-bottom:8px;">
+      <button type="button" id="ds-add-btn" class="btn btn--primary btn--sm">+ Add skill</button>
+    </div>
+  `;
+
+  _wireIndustrySkillsTab(areaCode);
+}
+
+function _renderIndustrySkillCard(s) {
+  const greyed = !s.selected;
+  return `
+    <div class="ds-skill-card" data-skill-id="${s.skillId}" style="border:1px solid var(--color-border);border-radius:var(--radius-md);
+      padding:var(--space-sm) var(--space-md);margin-bottom:var(--space-sm);${greyed?'opacity:0.45;background:var(--color-light);':''}">
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <input type="checkbox" class="ds-skill-toggle" data-skill-id="${s.skillId}" ${s.selected?'checked':''}
+          style="margin-top:4px;" aria-label="Include this skill in the agreed list">
+        <div style="flex:1;">
+          <input type="text" class="form-input ds-skill-field" data-skill-id="${s.skillId}" data-field="name" value="${_escHtml(s.name)}"
+            style="font-weight:bold;color:var(--color-navy);border:none;background:none;padding:2px 0;width:100%;">
+          ${s.isCustom ? '<span style="font-size:10px;color:var(--color-teal);">custom</span>' : `<span style="font-size:10px;color:var(--color-muted);">researched — ${_escHtml(s.source||'')}</span>`}
+        </div>
+        ${s.isCustom ? `<button type="button" class="ds-skill-delete" data-skill-id="${s.skillId}" style="background:none;border:none;color:var(--color-red);cursor:pointer;font-size:var(--text-xs);text-decoration:underline;">delete</button>` : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;">
+        <div><p style="font-size:10px;color:var(--color-muted);text-transform:uppercase;">Stage 1 \u2014 guided</p>
+          <textarea class="form-textarea ds-skill-field" data-skill-id="${s.skillId}" data-field="stage1" rows="2" style="font-size:var(--text-xs);">${_escHtml(s.stage1||'')}</textarea></div>
+        <div><p style="font-size:10px;color:var(--color-muted);text-transform:uppercase;">Stage 2 \u2014 independent</p>
+          <textarea class="form-textarea ds-skill-field" data-skill-id="${s.skillId}" data-field="stage2" rows="2" style="font-size:var(--text-xs);">${_escHtml(s.stage2||'')}</textarea></div>
+        <div><p style="font-size:10px;color:var(--color-muted);text-transform:uppercase;">Stage 3 \u2014 novel problems</p>
+          <textarea class="form-textarea ds-skill-field" data-skill-id="${s.skillId}" data-field="stage3" rows="2" style="font-size:var(--text-xs);">${_escHtml(s.stage3||'')}</textarea></div>
+      </div>
+    </div>`;
+}
+
+function _wireIndustrySkillsTab(areaCode) {
+  const panel = document.getElementById('area-tab-panel');
+  if (!panel || panel._dsWired) return; // guard against re-render stacking duplicate listeners — same bug class wireActionPlanCard() already guards against
+  panel._dsWired = true;
+
+  panel.addEventListener('change', (e) => {
+    if (e.target.matches('.ds-skill-toggle')) {
+      toggleIndustrySkillSelected(areaCode, e.target.dataset.skillId, e.target.checked);
+      _renderIndustrySkillsTab(panel, areaCode);
+    }
+  });
+
+  panel.addEventListener('blur', (e) => {
+    if (e.target.matches('.ds-skill-field')) {
+      updateIndustrySkillField(areaCode, e.target.dataset.skillId, e.target.dataset.field, e.target.value);
+    }
+  }, true);
+
+  panel.addEventListener('click', (e) => {
+    const delBtn = e.target.closest('.ds-skill-delete');
+    if (delBtn) {
+      if (!confirm('Delete this custom skill? This cannot be undone (research-sourced skills can only be greyed out, but this one was custom-added).')) return;
+      deleteCustomIndustrySkill(areaCode, delBtn.dataset.skillId);
+      _renderIndustrySkillsTab(panel, areaCode);
+      return;
+    }
+    if (e.target.id === 'ds-add-btn') {
+      const name = document.getElementById('ds-new-name').value.trim();
+      if (!name) { if (typeof UI !== 'undefined') UI.showToast('error', 'Give the skill a name first.'); return; }
+      addCustomIndustrySkill(areaCode, {
+        name,
+        stage1: document.getElementById('ds-new-stage1').value.trim(),
+        stage2: document.getElementById('ds-new-stage2').value.trim(),
+        stage3: document.getElementById('ds-new-stage3').value.trim(),
+      });
+      _renderIndustrySkillsTab(panel, areaCode);
+    }
+  });
+}
 // Wires together three things that already exist rather than inventing
 // new ones: Templates (js/templates.js — teach-meet template + instance
 // pattern, including the reflection-form URL), Loops (js/afi.js — an

@@ -406,3 +406,84 @@ function todayISO() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+
+// ── Industry-Specific Digital Skills — default menu per area ──────────
+// Session (11/08/26): seeded from the researched Industry-Specific
+// Digital Skills Baselining Framework (IfATE/Skills England standards,
+// sector bodies, awarding-body specs — see Documents/Current for the
+// full sourced research). This is a DEFAULT MENU, not a fixed list —
+// each area's actual agreed set lives on the area record itself
+// (industrySkills[]), seeded from these defaults, then select/deselect/
+// add-your-own per area. Editing this array does not retroactively
+// change any area that's already been seeded — see initIndustrySkillsForArea().
+//
+// Tier A areas (named industry tools, evidenced against a real
+// standard) get real defaults below. Tier B areas (academic/generic —
+// AHE, CED, COU, EGL, ESO, MAT, NEE, PRA, PRE, PRS, PSF, SEL, SKB, SMS)
+// deliberately have none: per the research, they don't map to a single
+// industry tool, and should be baselined against the DfE Essential
+// Digital Skills Framework instead, not a fabricated tool list.
+const INDUSTRY_SKILLS_DEFAULTS = Object.freeze({
+  AGF: [
+    { name: 'Adobe Photoshop (image editing)', stage1: 'Guided use on set briefs with templates', stage2: 'Independently produces artwork across print and digital, manages files and brand guidelines', stage3: 'Adapts artwork for novel platforms/outputs; integrates generative AI (Firefly) into a professional workflow' },
+    { name: 'Adobe Illustrator (vector)', stage1: 'Guided use on set briefs with templates', stage2: 'Independently produces vector artwork to a brief', stage3: 'Adapts vector work for novel outputs and complex briefs' },
+    { name: 'Adobe InDesign (layout)', stage1: 'Guided use on set layout tasks', stage2: 'Independently produces print/digital layouts to brand guidelines', stage3: 'Designs complex multi-page/multi-format layouts independently' },
+  ],
+  AMT: [
+    { name: 'SolidWorks (mechanical 3D CAD)', stage1: 'Guided basic 3D parts and 2D drawings', stage2: 'Independent modelling of assemblies and production-ready drawings', stage3: 'Designs and validates components for novel manufacturing problems, moving between CAD and CAM' },
+    { name: 'AutoCAD / Autodesk Inventor or Fusion (CAD/CAM)', stage1: 'Guided 2D/3D CAD on set exercises', stage2: 'Independent CAD modelling and drawing production', stage3: 'Applies CAD/CAM to solve novel design/manufacture problems' },
+  ],
+  ANM: [
+    { name: 'Digital husbandry/welfare record systems', stage1: 'Guided digital record-keeping of husbandry/welfare data', stage2: 'Independent maintenance of animal records, environmental logs and medicines tracking', stage3: 'Interprets welfare/environmental data to improve practice and compliance' },
+  ],
+  BUI: [
+    { name: 'Building Management System (BMS) monitoring', stage1: 'Guided reading of BMS set-points and manufacturer digital manuals', stage2: 'Independent use of BMS to size/commission systems', stage3: 'Diagnoses and optimises building services using digital monitoring data for complex/novel installations' },
+    { name: 'CIBSE-verified design/calculation software (e.g. H2X)', stage1: 'Guided use for simple sizing calculations', stage2: 'Independent use of calculation tools to size/commission systems', stage3: 'Uses calculation software to solve complex/novel design problems' },
+  ],
+  BUS: [
+    { name: 'Sage / Xero / QuickBooks (accounting)', stage1: 'Guided record-keeping', stage2: 'Independent bookkeeping, reconciliations and reporting', stage3: 'Selects the most appropriate digital solution for a business problem and analyses data' },
+    { name: 'GDS booking systems (Amadeus / Sabre / Travelport) — Travel & Tourism strand', stage1: 'Guided booking-system use', stage2: 'Independent transactions across booking systems', stage3: 'Optimises bookings against complex customer needs' },
+  ],
+  CON: [
+    { name: 'Digital drawing/specification interpretation', stage1: 'Guided reading of digital drawings/specifications', stage2: 'Independently extracts information from digital drawings and estimates resources', stage3: 'Engages with modern methods of construction and digital modelling concepts on complex/refurbishment projects' },
+    { name: 'E-portfolio evidencing (e.g. OneFile, Smart Assessor)', stage1: 'Guided upload of evidence with support', stage2: 'Independently evidences own work against unit criteria', stage3: 'Curates a coherent evidence portfolio demonstrating progression' },
+  ],
+  CTC: [
+    { name: 'Digital tachograph operation', stage1: 'Guided use of the digital tachograph (card insertion, mode selection)', stage2: 'Independent daily operation of tachograph and telematics with compliant records', stage3: 'Interprets tachograph/telematics data to manage drivers\u2019 hours and resolve compliance issues' },
+    { name: 'On-board telematics / hand-held scanners', stage1: 'Guided use under supervision', stage2: 'Independent operation as part of normal duties', stage3: 'Uses telematics data to inform operational decisions' },
+  ],
+  DCI: [
+    { name: 'Cloud platforms (AWS / Azure / GCP)', stage1: 'Guided use of one cloud console', stage2: 'Independently provisions/configures infrastructure', stage3: 'Automates provisioning/monitoring and solves novel infrastructure problems' },
+    { name: 'Version control (Git) and DevOps tooling', stage1: 'Guided use of basic commit/push workflow', stage2: 'Independent use of version control in a real project', stage3: 'Uses DevOps tooling (CI/CD, containers) to solve novel deployment problems' },
+    { name: 'Scripting (PowerShell / Linux)', stage1: 'Guided use of basic scripts', stage2: 'Independently writes scripts to automate routine tasks', stage3: 'Writes and debugs scripts for novel/complex problems' },
+  ],
+  EEY: [
+    { name: 'Tapestry (EYFS online learning journal)', stage1: 'Guided recording of photo/video/text observations', stage2: 'Independent tagging of observations to EYFS areas and sharing with families', stage3: 'Uses assessment data to plan for individual needs and evaluate provision' },
+  ],
+  EMV: [
+    { name: 'Manufacturer diagnostic software', stage1: 'Guided use of diagnostic equipment under supervision', stage2: 'Independent methodical fault-finding using scopes and manufacturer diagnostic software', stage3: 'Diagnoses complex/novel faults including EV high-voltage and integrated control systems' },
+    { name: 'EV/hybrid high-voltage diagnostics (IMI-aligned)', stage1: 'Guided awareness of EV safety and basic checks', stage2: 'Independent EV diagnostic tasks under IMI-aligned protocols', stage3: 'Diagnoses complex EV/hybrid faults independently' },
+  ],
+  ENG: [
+    { name: 'CAD (SolidWorks / AutoCAD / Inventor / Fusion)', stage1: 'Guided 2D/3D CAD on set exercises', stage2: 'Independent CAD modelling and drawing production', stage3: 'Applies CAD/CAM to solve novel design/manufacture problems' },
+  ],
+  GMA: [
+    { name: 'Unity or Unreal Engine (game engine)', stage1: 'Guided use of the editor and basic asset creation', stage2: 'Independently builds interactive scenes/gameplay with scripting and 3D assets', stage3: 'Designs and optimises novel game systems across the production pipeline' },
+    { name: 'Maya / Blender / Substance 3D (DCC tools)', stage1: 'Guided modelling on set exercises', stage2: 'Independently produces game-ready 3D assets', stage3: 'Produces and optimises complex assets for novel production pipelines' },
+  ],
+  HAC: [
+    { name: 'Clinical/EPR systems awareness (EMIS / SystmOne / Vision)', stage1: 'Guided navigation of a clinical record system (simulated/awareness)', stage2: 'Independent, accurate data entry and record management within role scope', stage3: 'Uses clinical systems and coding to support safe, coordinated care and e-referrals' },
+  ],
+  HBH: [
+    { name: 'Salon/booking management software (e.g. Phorest)', stage1: 'Guided use of the booking system and digital consultation/consent forms', stage2: 'Independent management of appointments, client records and POS', stage3: 'Uses reporting/marketing analytics and retention tools to grow the client base' },
+  ],
+  PAP: [
+    { name: 'DAW (Pro Tools / Logic Pro / Ableton Live)', stage1: 'Guided recording/editing on set projects', stage2: 'Independent multitrack recording, MIDI and mixing', stage3: 'Produces and masters original work and solves novel production/signal-flow problems' },
+  ],
+  PM: [
+    { name: 'Microsoft Project (scheduling)', stage1: 'Guided creation of a schedule/Gantt', stage2: 'Independent scheduling, resource allocation and progress tracking', stage3: 'Manages complex multi-workstream projects with critical-path analysis and reporting' },
+  ],
+  SPO: [
+    { name: 'Video/performance analysis (Hudl / Veo / Dartfish)', stage1: 'Guided video capture and basic tagging', stage2: 'Independent match/technique analysis and GPS-data review', stage3: 'Integrates video + GPS/wearable data to inform coaching decisions for novel performance problems' },
+  ],
+});
