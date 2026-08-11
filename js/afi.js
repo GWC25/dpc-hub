@@ -71,6 +71,22 @@ function initAFIs() {
   _afiRenderMetrics();
   _afiRenderList();
   _wireAFIEvents();
+
+  // Cross-module deep link (Session 51) — set by openLoop() from anywhere
+  // that shows a Loop count/reference (Action Plans, Areas), matching the
+  // existing openStaffProfile()/openAreaProfile() pattern.
+  if (window._pendingAFIOpen) {
+    const targetId = window._pendingAFIOpen;
+    window._pendingAFIOpen = null;
+    _openAFIDetail(targetId);
+  }
+}
+
+// Public: navigate to Loops and open a specific one — callable from any
+// module that shows a Loop reference (Action Plan cards, Area/Staff tabs).
+function openLoop(afiId) {
+  window._pendingAFIOpen = afiId;
+  navigateTo('afis');
 }
 
 // ── Metrics ───────────────────────────────────────────────────
@@ -292,6 +308,8 @@ function _openAFIDetail(afiId) {
         <button id="afi-ev-cancel" type="button" class="btn btn--secondary btn--sm">Cancel</button>
       </div>
     </div>
+
+    <button id="afi-delete-btn" type="button" class="btn btn--ghost btn--sm" style="color:var(--color-red);border-color:var(--color-red);margin-top:var(--space-md);">Delete this loop</button>
   `;
 
   // Wire detail panel events
@@ -299,6 +317,16 @@ function _openAFIDetail(afiId) {
     _afiCurrentId = null;
     document.getElementById('afi-detail-panel').style.display = 'none';
     _afiRenderList();
+  });
+
+  document.getElementById('afi-delete-btn')?.addEventListener('click', () => {
+    if (!confirm('Delete this loop permanently? This removes it from any Action Plan it was assigned from too. This cannot be undone.')) return;
+    deleteAFI(afiId);
+    _afiCurrentId = null;
+    document.getElementById('afi-detail-panel').style.display = 'none';
+    _afiRenderMetrics();
+    _afiRenderList();
+    if (typeof UI !== 'undefined') UI.showToast('success', 'Loop deleted.');
   });
 
   document.getElementById('afi-status-update')?.addEventListener('click', () => {
