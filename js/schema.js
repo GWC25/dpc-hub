@@ -320,6 +320,33 @@ const CALENDAR_TYPE = Object.freeze({
   MICRO_TASK: 'micro-task',
 });
 
+// ── Meeting types (Session 60, 11/08/26) ─────────────────────────
+// Named directly from Graeme's real meeting categories, not invented —
+// grouping in the Meetings module list uses these.
+const MEETING_TYPE = Object.freeze({
+  QUALITY_TEAM:   'quality-team',
+  DIGITAL_LEAD:   'digital-lead',
+  HOA:            'hoa',
+  DIGITAL_PROJECTS_TEAM: 'digital-projects-team',
+  AP_JOE:         'ap-joe',       // Joe Abulgani, AP Digital Lead
+  AP_NEIL:        'ap-neil',      // Neil Davies, AP Quality
+  VP_BEN:         'vp-ben',       // Ben Manning, VP Quality
+  EXTERNAL_PARTNER: 'external-partner',
+  OTHER_STAFF:    'other-staff',  // other staff/professionals, within or external to the college
+});
+
+const MEETING_TYPE_LABELS = Object.freeze({
+  [MEETING_TYPE.QUALITY_TEAM]: 'Quality Team',
+  [MEETING_TYPE.DIGITAL_LEAD]: 'Digital Lead',
+  [MEETING_TYPE.HOA]: 'HoA',
+  [MEETING_TYPE.DIGITAL_PROJECTS_TEAM]: 'Digital Projects Team',
+  [MEETING_TYPE.AP_JOE]: 'AP — Joe Abulgani',
+  [MEETING_TYPE.AP_NEIL]: 'AP — Neil Davies',
+  [MEETING_TYPE.VP_BEN]: 'VP — Ben Manning',
+  [MEETING_TYPE.EXTERNAL_PARTNER]: 'External Partner',
+  [MEETING_TYPE.OTHER_STAFF]: 'Other Staff/Professional',
+});
+
 // ── Task status ───────────────────────────────────────────────
 const TASK_STATUS = Object.freeze({
   UPCOMING:    'upcoming',
