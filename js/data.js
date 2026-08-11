@@ -1451,6 +1451,12 @@ function saveNote(note) {
   _writeLocalSnapshot();
 }
 
+function deleteNote(noteId) {
+  window.DPC_DATA.notes.notes = window.DPC_DATA.notes.notes.filter(n => n.noteId !== noteId);
+  _dirty.add('data-notes.json');
+  _writeLocalSnapshot();
+}
+
 // ── Public: mark all files dirty (used after restore) ────────
 function markAllDirty() {
   _dirty.add('data-areas.json');
