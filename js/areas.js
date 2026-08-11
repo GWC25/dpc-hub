@@ -460,6 +460,16 @@ function _renderIndustrySkillsTab(panel, areaCode) {
       <button type="button" id="ds-download-btn" class="btn btn--secondary btn--sm">Download Digital Skills Statement (Word)</button>
       <p id="ds-download-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;"></p>
     </div>
+
+    <div style="margin-top:var(--space-lg);padding-top:var(--space-md);border-top:1px solid var(--color-border);">
+      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:4px;">Upload an amended document</p>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-sm);">A HoA/DL's returned Word doc, an Excel sheet, a PDF, or a screenshot of tracked changes. Nothing is applied automatically — you'll see exactly what's proposed before anything changes.</p>
+      <input type="file" id="ds-amend-file" accept=".docx,.xlsx,.xls,.pdf,.png,.jpg,.jpeg,.webp" style="margin-bottom:8px;">
+      <br>
+      <button type="button" id="ds-analyze-btn" class="btn btn--secondary btn--sm">Analyze amendment</button>
+      <p id="ds-analyze-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;"></p>
+      <div id="ds-diff-preview"></div>
+    </div>
   `;
 
   _wireIndustrySkillsTab(areaCode);
@@ -532,10 +542,125 @@ function _wireIndustrySkillsTab(areaCode) {
     if (e.target.id === 'ds-download-btn') {
       _generateIndustrySkillsDoc(areaCode);
     }
+
+    if (e.target.id === 'ds-analyze-btn') {
+      _analyzeIndustrySkillsAmendment(areaCode);
+    }
+
+    _wireIndustrySkillsDiffPreview(e, areaCode);
   });
 }
 
-// ── Digital Skills Statement — downloadable Word doc (Session 60) ──
+// ── Amendment analysis + confirm-before-apply (Session 60) ─────────
+async function _analyzeIndustrySkillsAmendment(areaCode) {
+  const fileInput = document.getElementById('ds-amend-file');
+  const status = document.getElementById('ds-analyze-status');
+  const preview = document.getElementById('ds-diff-preview');
+  const setStatus = (msg, isError) => { if (status) { status.textContent = msg; status.style.color = isError ? 'var(--color-red)' : 'var(--color-muted)'; } };
+
+  if (!fileInput.files || fileInput.files.length === 0) { setStatus('Choose a file first.', true); return; }
+  if (typeof DPC === 'undefined' || !DPC.AISupport) { setStatus('AI Support module not loaded.', true); return; }
+
+  const area = _getArea(areaCode);
+  const currentSkills = (area && area.industrySkills) || [];
+
+  setStatus('Analyzing — this calls Claude, may take a few seconds…');
+  preview.innerHTML = '';
+
+  const result = await DPC.AISupport.analyzeIndustrySkillsAmendment(areaCode, fileInput.files[0], currentSkills);
+
+  if (!result.ok) {
+    setStatus(`Analysis failed: ${result.error}`, true);
+    return;
+  }
+
+  setStatus(`Found ${result.changes.length} proposed change(s), ${result.newSkills.length} new skill(s), ${result.uncertain.length} flagged as uncertain.`);
+  _dsLastDiffResult = result;
+  preview.innerHTML = _renderIndustrySkillsDiffPreview(result, currentSkills);
+}
+
+let _dsLastDiffResult = null;
+
+function _renderIndustrySkillsDiffPreview(result, currentSkills) {
+  const skillById = Object.fromEntries(currentSkills.map(s => [s.skillId, s]));
+  let html = '<div style="border:1px solid var(--color-teal);border-radius:var(--radius-md);padding:var(--space-md);margin-top:var(--space-md);">';
+
+  if (result.changes.length === 0 && result.newSkills.length === 0 && result.uncertain.length === 0) {
+    html += '<p style="font-size:var(--text-sm);color:var(--color-muted);">No clear changes were found in this document.</p>';
+    html += '</div>';
+    return html;
+  }
+
+  if (result.changes.length > 0) {
+    html += '<p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:8px;">Proposed changes — untick any you don\u2019t want applied</p>';
+    result.changes.forEach((c, i) => {
+      const skillName = skillById[c.skillId]?.name || `Unknown skill (${c.skillId})`;
+      html += `
+        <label style="display:block;font-size:var(--text-xs);margin-bottom:6px;">
+          <input type="checkbox" class="ds-diff-change" data-idx="${i}" checked>
+          <strong>${_escHtml(skillName)}</strong> — ${_escHtml(c.field)}: "${_escHtml(String(c.oldValue))}" → "${_escHtml(String(c.newValue))}"
+        </label>`;
+    });
+  }
+
+  if (result.newSkills.length > 0) {
+    html += '<p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin:12px 0 8px;">New skills to add — untick any you don\u2019t want added</p>';
+    result.newSkills.forEach((s, i) => {
+      html += `
+        <label style="display:block;font-size:var(--text-xs);margin-bottom:6px;">
+          <input type="checkbox" class="ds-diff-newskill" data-idx="${i}" checked>
+          <strong>${_escHtml(s.name)}</strong>
+        </label>`;
+    });
+  }
+
+  if (result.uncertain.length > 0) {
+    html += '<p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-amber);margin:12px 0 8px;">Flagged as uncertain — not actionable, for you to read and decide yourself</p>';
+    html += '<ul style="font-size:var(--text-xs);color:var(--color-slate);padding-left:20px;">';
+    result.uncertain.forEach(u => { html += `<li>${_escHtml(u)}</li>`; });
+    html += '</ul>';
+  }
+
+  if (result.changes.length > 0 || result.newSkills.length > 0) {
+    html += `<button type="button" id="ds-diff-apply-btn" class="btn btn--primary btn--sm" style="margin-top:8px;">Apply confirmed changes</button>`;
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function _wireIndustrySkillsDiffPreview(e, areaCode) {
+  const applyBtn = e.target.closest('#ds-diff-apply-btn');
+  if (!applyBtn || !_dsLastDiffResult) return;
+
+  const result = _dsLastDiffResult;
+  const preview = document.getElementById('ds-diff-preview');
+
+  const checkedChangeIdx = Array.from(preview.querySelectorAll('.ds-diff-change:checked')).map(el => Number(el.dataset.idx));
+  const checkedNewIdx = Array.from(preview.querySelectorAll('.ds-diff-newskill:checked')).map(el => Number(el.dataset.idx));
+
+  checkedChangeIdx.forEach(i => {
+    const c = result.changes[i];
+    if (!c) return;
+    if (c.field === 'selected') {
+      const boolVal = /^(yes|true)$/i.test(String(c.newValue).trim());
+      toggleIndustrySkillSelected(areaCode, c.skillId, boolVal);
+    } else if (['stage1','stage2','stage3','name'].includes(c.field)) {
+      updateIndustrySkillField(areaCode, c.skillId, c.field, c.newValue);
+    }
+  });
+
+  checkedNewIdx.forEach(i => {
+    const s = result.newSkills[i];
+    if (!s) return;
+    addCustomIndustrySkill(areaCode, s);
+  });
+
+  if (typeof UI !== 'undefined') UI.showToast('success', `Applied ${checkedChangeIdx.length + checkedNewIdx.length} change(s).`);
+  _dsLastDiffResult = null;
+  _renderIndustrySkillsTab(document.getElementById('area-tab-panel'), areaCode);
+}
+
 // Design intent (see Documents/Current design notes, 11/08/26): the
 // skill list itself must stay STRUCTURED — a table with a plain
 // Yes/No "Include?" column, not free prose — because that's the part

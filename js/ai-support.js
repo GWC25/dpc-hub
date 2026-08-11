@@ -189,4 +189,139 @@ DPC.AISupport = {
     }
   },
 
+  // ── Multi-format document analysis (Session 60, 11/08/26) ──────
+  // Reads an uploaded file — .docx, .xlsx/.xls, .pdf, or an image
+  // (screenshot) — and asks Claude to compare it against a current
+  // data set, returning a STRUCTURED diff, never freeform prose.
+  //
+  // PDF and images are the easy half: sent to the API natively as
+  // document/image content blocks, no client-side parsing needed.
+  // Word and Excel need real extraction first (mammoth / SheetJS,
+  // vendored in lib/ the same way docx.min.js already is) since the
+  // API doesn't parse those formats itself.
+  //
+  // The prompt is deliberately conservative: told explicitly to flag
+  // anything ambiguous under `uncertain` rather than guess, and to
+  // change nothing it isn't confident about — matching the "never
+  // silently overwrite, review before commit" pattern used everywhere
+  // else data has flowed into this Hub today (RAG import, the merge
+  // script, wireActionPlanCard).
+  _fileToBase64: function(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = () => reject(new Error('Could not read the file.'));
+      reader.readAsDataURL(file);
+    });
+  },
+
+  _extractDocxText: async function(file) {
+    if (typeof mammoth === 'undefined') throw new Error('lib/mammoth.min.js has not loaded.');
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
+  },
+
+  _extractXlsxText: async function(file) {
+    if (typeof XLSX === 'undefined') throw new Error('lib/xlsx.min.js has not loaded.');
+    const arrayBuffer = await file.arrayBuffer();
+    const wb = XLSX.read(arrayBuffer, { type: 'array' });
+    return wb.SheetNames.map(name => {
+      const csv = XLSX.utils.sheet_to_csv(wb.Sheets[name]);
+      return `--- Sheet: ${name} ---\n${csv}`;
+    }).join('\n\n');
+  },
+
+  // areaCode, file: the uploaded amendment. currentSkills: the area's
+  // real industrySkills array right now (caller's responsibility to
+  // pass the live data, not a stale copy).
+  // Returns: { ok:true, changes:[{skillId,field,oldValue,newValue}],
+  //            newSkills:[{name,stage1,stage2,stage3}], uncertain:[string] }
+  //       or { ok:false, error }
+  analyzeIndustrySkillsAmendment: async function(areaCode, file, currentSkills) {
+    const apiKey = await DPC.AISupport._promptForKey();
+    if (!apiKey) return { ok: false, error: 'No API key provided — analysis cancelled.' };
+
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    let contentBlocks;
+
+    try {
+      if (ext === 'docx') {
+        const text = await DPC.AISupport._extractDocxText(file);
+        contentBlocks = [{ type: 'text', text: `Amended document (Word, extracted text):\n\n${text}` }];
+      } else if (ext === 'xlsx' || ext === 'xls') {
+        const text = await DPC.AISupport._extractXlsxText(file);
+        contentBlocks = [{ type: 'text', text: `Amended document (Excel, extracted as CSV per sheet):\n\n${text}` }];
+      } else if (ext === 'pdf') {
+        const b64 = await DPC.AISupport._fileToBase64(file);
+        contentBlocks = [{ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } }];
+      } else if (['png','jpg','jpeg','webp'].includes(ext)) {
+        const b64 = await DPC.AISupport._fileToBase64(file);
+        const mediaType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+        contentBlocks = [{ type: 'image', source: { type: 'base64', media_type: mediaType, data: b64 } }];
+      } else {
+        return { ok: false, error: `Unsupported file type ".${ext}" — expected .docx, .xlsx, .xls, .pdf, .png, .jpg, .jpeg or .webp.` };
+      }
+    } catch (e) {
+      return { ok: false, error: `Could not read the file: ${e.message}` };
+    }
+
+    const systemPrompt = `You are comparing a CURRENT agreed list of digital skills for a college curriculum area against an AMENDED document someone has sent back with edits. Identify ONLY clear, unambiguous changes:
+- A skill's "Include?" column changed from Yes to No, or No to Yes
+- A Stage 1/2/3 description was reworded (give the exact new text)
+- A genuinely new skill was added in the "Additional skills to add" section, with at least a name
+
+Do NOT guess at ambiguous edits — if a comment or change isn't a clear, discrete edit to a specific field, list it under "uncertain" instead of proposing a change. Never invent a change that isn't actually evidenced in the document.
+
+Respond ONLY with valid JSON, no other text, no markdown fences, in exactly this shape:
+{"changes":[{"skillId":"...","field":"selected|stage1|stage2|stage3","oldValue":"...","newValue":"..."}],"newSkills":[{"name":"...","stage1":"...","stage2":"...","stage3":"..."}],"uncertain":["short description of anything ambiguous"]}`;
+
+    const userText = `CURRENT skills for area ${areaCode} (skillId is what you must reference in "changes"):\n${JSON.stringify(currentSkills.map(s => ({ skillId: s.skillId, name: s.name, stage1: s.stage1, stage2: s.stage2, stage3: s.stage3, selected: s.selected })), null, 2)}`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: DPC.AISupport.NARRATIVE_MODEL,
+          max_tokens: 3000,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: [{ type: 'text', text: userText }, ...contentBlocks] }],
+        }),
+      });
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        const msg = errBody.error?.message || `API error (HTTP ${response.status})`;
+        if (response.status === 401) DPC.AISupport._sessionKey = null;
+        return { ok: false, error: msg };
+      }
+
+      const data = await response.json();
+      const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+      const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+
+      let parsed;
+      try {
+        parsed = JSON.parse(cleaned);
+      } catch (e) {
+        return { ok: false, error: `Could not parse the AI's response as JSON: ${e.message}. Raw response: ${text.slice(0, 300)}` };
+      }
+
+      return {
+        ok: true,
+        changes: Array.isArray(parsed.changes) ? parsed.changes : [],
+        newSkills: Array.isArray(parsed.newSkills) ? parsed.newSkills : [],
+        uncertain: Array.isArray(parsed.uncertain) ? parsed.uncertain : [],
+      };
+    } catch (e) {
+      return { ok: false, error: `Network or fetch error: ${e.message}` };
+    }
+  },
+
 };
