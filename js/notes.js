@@ -29,12 +29,6 @@ function initNotes() {
       <button type="button" id="n-quick-add-btn" class="btn btn--primary btn--sm">+ New note</button>
     </div>
 
-    <div id="n-quick-add" style="display:none;margin-bottom:var(--space-md);border:1px solid var(--color-teal);border-radius:var(--radius-md);padding:var(--space-md);">
-      <textarea id="n-quick-text" class="form-textarea" rows="3" placeholder="Start writing…" style="width:100%;margin-bottom:8px;"></textarea>
-      <button type="button" id="n-quick-save" class="btn btn--primary btn--sm">Save</button>
-      <button type="button" id="n-quick-cancel" class="btn btn--ghost btn--sm">Cancel</button>
-    </div>
-
     <div id="n-organise-banner"></div>
 
     <div style="display:flex;gap:8px;margin-bottom:var(--space-md);flex-wrap:wrap;">
@@ -201,33 +195,7 @@ function _nRenderList() {
 }
 
 function _nWireEvents() {
-  document.getElementById('n-quick-add-btn')?.addEventListener('click', () => {
-    document.getElementById('n-quick-add').style.display = 'block';
-    document.getElementById('n-quick-text').focus();
-  });
-  document.getElementById('n-quick-cancel')?.addEventListener('click', () => {
-    document.getElementById('n-quick-add').style.display = 'none';
-    document.getElementById('n-quick-text').value = '';
-  });
-  document.getElementById('n-quick-save')?.addEventListener('click', () => {
-    const text = document.getElementById('n-quick-text').value.trim();
-    if (!text) return;
-    const note = { noteId: generateId(), text, createdAt: nowISO(), areaCode: null, personRef: null, personStaffId: null, departmentId: null, projectRef: null, linkedMeetingId: null, linkedAfiId: null };
-    saveNote(note);
-    document.getElementById('n-quick-text').value = '';
-    document.getElementById('n-quick-add').style.display = 'none';
-    _nRenderList();
-    // Session 66: real gap -- "I can't actually attach it to anything...
-    // by actually opening note, I can't attach it to anything or
-    // anyone." The linking fields always existed, but only in the
-    // detail view, which nothing ever pointed you toward after a
-    // quick-add -- you'd have to already know to go click the note in
-    // the list afterward. Opening detail immediately after saving
-    // means the attach options are the very next thing you see, not
-    // a separate step you have to already know exists.
-    _nOpenDetail(note.noteId);
-  });
-
+  document.getElementById('n-quick-add-btn')?.addEventListener('click', () => _nOpenDetail(null));
   document.getElementById('n-search')?.addEventListener('input', _nRenderList);
   document.getElementById('n-filter-area')?.addEventListener('change', _nRenderList);
   document.getElementById('n-filter-person')?.addEventListener('input', _nRenderList);
@@ -290,9 +258,18 @@ function _nWireEvents() {
 
   document.getElementById('n-detail-save')?.addEventListener('click', () => {
     const noteId = modal.dataset.noteId;
-    const n = _nGet(noteId);
-    if (!n) return;
-    n.text = document.getElementById('n-detail-text').value.trim();
+    const text = document.getElementById('n-detail-text').value.trim();
+    if (!text) { document.getElementById('n-detail-text').focus(); return; }
+
+    // Session 67: create-or-update in one place now, since +New note
+    // opens this same modal with noteId left empty rather than a
+    // separate pre-created record — nothing exists until this Save
+    // actually runs, matching how Tasks/Meetings avoid orphaned
+    // blank records from a cancelled creation.
+    const n = noteId ? _nGet(noteId) : { noteId: generateId(), createdAt: nowISO() };
+    if (noteId && !n) return;
+
+    n.text = text;
     n.areaCode = document.getElementById('n-detail-area').value || null;
     n.projectRef = document.getElementById('n-detail-project').value.trim() || null;
     n.linkedMeetingId = document.getElementById('n-detail-meeting').value || null;
@@ -349,27 +326,41 @@ function _nWireEvents() {
   });
 }
 
-function _nOpenDetail(noteId) {
-  const n = _nGet(noteId);
-  if (!n) return;
+function _nOpenDetail(noteId = null) {
+  const n = noteId ? _nGet(noteId) : null;
+  if (noteId && !n) return; // asked for a real note that no longer exists
   const modal = document.getElementById('n-modal');
-  modal.dataset.noteId = noteId;
-  document.getElementById('n-detail-text').value = n.text || '';
-  document.getElementById('n-detail-area').value = n.areaCode || '';
-  document.getElementById('n-detail-person').value = n.personRef || '';
-  document.getElementById('n-detail-project').value = n.projectRef || '';
-  document.getElementById('n-detail-meeting').value = n.linkedMeetingId || '';
-  document.getElementById('n-detail-dept').value = n.departmentId || '';
+  modal.dataset.noteId = noteId || '';
+  document.getElementById('n-modal-title').textContent = n ? 'Note' : 'New note';
+  document.getElementById('n-detail-text').value = n?.text || '';
+  document.getElementById('n-detail-area').value = n?.areaCode || '';
+  document.getElementById('n-detail-person').value = n?.personRef || '';
+  document.getElementById('n-detail-project').value = n?.projectRef || '';
+  document.getElementById('n-detail-meeting').value = n?.linkedMeetingId || '';
+  document.getElementById('n-detail-dept').value = n?.departmentId || '';
   document.getElementById('n-detail-dept-other').style.display = 'none';
   document.getElementById('n-detail-dept-other').value = '';
 
   _nRefreshLoopDropdown(); // must run before setting the loop value, since options depend on the area just set above
-  document.getElementById('n-detail-loop').value = n.linkedAfiId || '';
+  document.getElementById('n-detail-loop').value = n?.linkedAfiId || '';
 
-  _nToggleOpenBtn('n-open-area-btn', n.areaCode);
-  _nToggleOpenBtn('n-open-meeting-btn', n.linkedMeetingId);
-  _nToggleOpenBtn('n-open-loop-btn', n.linkedAfiId);
+  _nToggleOpenBtn('n-open-area-btn', n?.areaCode);
+  _nToggleOpenBtn('n-open-meeting-btn', n?.linkedMeetingId);
+  _nToggleOpenBtn('n-open-loop-btn', n?.linkedAfiId);
   _nCheckPersonMatch();
+
+  // Session 67 (11/08/26): real feedback -- "I have to tap save to
+  // access this [the attach fields]. The form should just be there
+  // from the moment I tap +New note." Previously this modal only
+  // ever opened for a note that already existed -- +New note went
+  // through a separate, minimal quick-capture box first, requiring a
+  // Save just to reach these fields, then a second Save to actually
+  // use them. Now +New note opens straight into this same modal with
+  // noteId left empty -- nothing is created until Save is actually
+  // clicked (matching how Tasks/Meetings avoid creating orphaned
+  // blank records too), so Delete makes no sense yet either.
+  const deleteBtn = document.getElementById('n-detail-delete');
+  if (deleteBtn) deleteBtn.style.display = n ? 'inline-flex' : 'none';
 
   modal.style.display = 'flex';
   document.getElementById('n-detail-text').focus();
