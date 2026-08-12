@@ -142,6 +142,7 @@ window.DPC_DATA = {
     { id: 'mis', name: 'MIS' },
     { id: 'student-services', name: 'Student Services' },
   ] },
+  aiRuns:        { runs: [] },
 };
 
 // Dirty tracking: which files have unsaved changes
@@ -1522,6 +1523,24 @@ function getAIPrompts() {
   return (window.DPC_DATA.templates.templates || []).filter(t => t.templateType === TEMPLATE_TYPE.AI_PROMPT);
 }
 
+// Session 63 (11/08/26): real gap found — a workbench run genuinely
+// costs money the moment it's clicked, and before this there was no
+// record of it beyond a thin status line that's easy to miss and
+// disappears on the next page load. "I spent 4p from my budget, but
+// nothing is in my Tasks, and AI Support doesn't tell me if it was
+// successful or not, or any recent activities." Every run now logs
+// here regardless of outcome — success with a real count, zero
+// results, or a failure with the actual error — so "nothing happened"
+// is never ambiguous again. Capped at 50 so this can't grow
+// unbounded; oldest entries drop off first.
+function logAIRun(entry) {
+  const runs = window.DPC_DATA.aiRuns.runs;
+  runs.unshift({ runId: generateId(), timestamp: nowISO(), ...entry });
+  if (runs.length > 50) runs.length = 50;
+  _dirty.add('data-ai-runs.json');
+  _writeLocalSnapshot();
+}
+
 // ── Resource Library (Session 32) ───────────────────────────────
 // saveLibraryEntry: manual entries only (LinkedIn Pathway / DPC-created).
 // Learning Studio entries are never saved here — see LIBRARY_TYPE in schema.js.
@@ -1706,6 +1725,7 @@ function _assignToStore(filename, data) {
     'data-health-checks.json': 'healthChecks',
     'data-action-plans.json': 'actionPlans',
     'data-departments.json':  'departments',
+    'data-ai-runs.json':      'aiRuns',
   };
   const key = keyMap[filename];
   if (key && data) window.DPC_DATA[key] = data;
@@ -1728,6 +1748,7 @@ function _getDataForFile(filename) {
     'data-health-checks.json': window.DPC_DATA.healthChecks,
     'data-action-plans.json': window.DPC_DATA.actionPlans,
     'data-departments.json':  window.DPC_DATA.departments,
+    'data-ai-runs.json':      window.DPC_DATA.aiRuns,
     [DPC_CONFIG.MANIFEST_FILENAME]: window.DPC_DATA.manifest,
   };
   return keyMap[filename] || null;
