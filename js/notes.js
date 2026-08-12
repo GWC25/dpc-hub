@@ -39,11 +39,15 @@ function initNotes() {
 
     <div id="n-list"></div>
 
-    <div id="n-modal" class="modal-overlay" role="presentation" style="display:none;">
-      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="n-modal-title" style="max-width:560px;">
-        <div class="card-header"><span class="card-title" id="n-modal-title">Note</span></div>
-        <div class="card-body">
-          <textarea id="n-detail-text" class="form-textarea" rows="5" style="width:100%;margin-bottom:8px;"></textarea>
+    <div id="n-modal" role="dialog" aria-modal="true" aria-labelledby="n-modal-title" style="
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);
+      z-index:600;align-items:center;justify-content:center;padding:var(--space-lg);">
+      <div style="background:var(--color-white);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:var(--space-xl);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-lg);">
+          <h2 id="n-modal-title" style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">Note</h2>
+          <button id="n-modal-close" type="button" aria-label="Close" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--color-muted);min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;">×</button>
+        </div>
+        <textarea id="n-detail-text" class="form-textarea" rows="5" style="width:100%;margin-bottom:8px;"></textarea>
 
           <p style="font-size:var(--text-xs);font-weight:bold;color:var(--color-navy);margin-bottom:6px;">Attach this note to:</p>
 
@@ -83,7 +87,6 @@ function initNotes() {
             <button type="button" id="n-detail-cancel" class="btn btn--secondary btn--sm">Cancel</button>
             <button type="button" id="n-detail-delete" class="btn btn--ghost btn--sm" style="color:var(--color-red);border-color:var(--color-red);margin-left:auto;">Delete</button>
           </div>
-        </div>
       </div>
     </div>
   `;
@@ -214,6 +217,7 @@ function _nWireEvents() {
 
   const modal = document.getElementById('n-modal');
   document.getElementById('n-detail-cancel')?.addEventListener('click', () => { modal.style.display = 'none'; });
+  document.getElementById('n-modal-close')?.addEventListener('click', () => { modal.style.display = 'none'; });
   modal?.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
 
   // Cross-link "Open →" buttons — same openXProfile()/openLoop()/
