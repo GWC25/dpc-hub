@@ -26,6 +26,10 @@ function initDashboards() {
         style="padding:10px 20px;border:none;border-bottom:3px solid transparent;background:none;cursor:pointer;font:var(--text-base) Arial,sans-serif;color:var(--color-muted);min-height:44px;">
         Numerical Impact
       </button>
+      <button role="tab" type="button" id="dash-tab-college" aria-selected="false" data-dash="college"
+        style="padding:10px 20px;border:none;border-bottom:3px solid transparent;background:none;cursor:pointer;font:var(--text-base) Arial,sans-serif;color:var(--color-muted);min-height:44px;">
+        College Overview
+      </button>
     </div>
 
     <div id="dash-panel"></div>
@@ -46,6 +50,7 @@ function initDashboards() {
       if(btn.dataset.dash==='hc') _renderDashHC();
       if(btn.dataset.dash==='loops') _renderDashLoops();
       if(btn.dataset.dash==='impact') _renderDashImpact();
+      if(btn.dataset.dash==='college') _renderDashCollege();
     });
   });
 }
@@ -219,6 +224,155 @@ function _renderRAGTable() {
 // not re-typed or re-uploaded. Matches the shape of the old tracker's
 // own "Numerical Impact" sheet (Problem / Action / Impact by numbers)
 // where that made sense, but sourced from real records throughout.
+// ── College Overview: Collegiate Action Plans + Risk Items (Session 69) ──
+// Real ask: "a tab that is filterable and has the Collegiate Action
+// Plans and... Risk items. This comes from the action plans, the
+// health checks, the other RAG data, but organised for the whole
+// college." Deliberately scoped to real, existing data with a real
+// definition for each source — not a vague synthesis:
+// - RAG risk: any dimension currently scoring 1 or 2 (the RAG scale's
+//   own "immediate priority"/"significant development" bands).
+// - Health Check risk: any domain where actionIdentified is true —
+//   the DPC's own real flag from the review itself, not a guess.
+// - Loop risk: any open AFI whose severity is genuinely
+//   AFI_SEVERITY.IMMEDIATE ("Areas for Immediate Improvement") — not
+//   every open loop, since "Strength" and "Areas to Strengthen" are
+//   not risks in the sense being asked for here.
+//
+// Scope note for future work: "I will in time need to add other
+// departments too and the Executive branch" — right now this only
+// covers curriculum Areas, because that's the only scope with real
+// RAG/Health Check/Action Plan data behind it. Departments (the
+// Notes-linkable reference list — Executive, IT, Marketing etc.) have
+// no equivalent data model yet. Building a fake toggle for it now
+// would be hollow; the real next step is giving Departments their own
+// RAG/Action Plan tracking once that's actually wanted, then this tab
+// extends to include them using the same _repGatherCollegeActionItems
+// pattern, not a rebuild.
+let _dashCollegeAreaFilter = null; // null = all areas, else array of areaCodes
+let _dashCollegeSubTab = 'actionplans';
+
+function _renderDashCollege() {
+  const panel = document.getElementById('dash-panel');
+  if (!panel) return;
+  const areas = _getAreas() || [];
+
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md);flex-wrap:wrap;gap:8px;">
+      <div role="tablist" style="display:flex;gap:8px;">
+        <button type="button" class="dash-college-subtab" data-sub="actionplans" style="padding:6px 14px;border-radius:999px;border:1px solid var(--color-teal);background:${_dashCollegeSubTab==='actionplans'?'var(--color-teal)':'var(--color-white)'};color:${_dashCollegeSubTab==='actionplans'?'var(--color-white)':'var(--color-teal)'};cursor:pointer;font-size:var(--text-sm);font-weight:bold;">Collegiate Action Plans</button>
+        <button type="button" class="dash-college-subtab" data-sub="risk" style="padding:6px 14px;border-radius:999px;border:1px solid var(--color-red);background:${_dashCollegeSubTab==='risk'?'var(--color-red)':'var(--color-white)'};color:${_dashCollegeSubTab==='risk'?'var(--color-white)':'var(--color-red)'};cursor:pointer;font-size:var(--text-sm);font-weight:bold;">Risk Items</button>
+      </div>
+      <button type="button" id="dash-college-download-btn" class="btn btn--ghost btn--sm">Download this as a Word doc →</button>
+    </div>
+
+    <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:8px;">Currently covers curriculum Areas — Departments and the Executive branch will extend this once they have their own RAG/Action Plan tracking.</p>
+
+    <div style="margin-bottom:var(--space-md);">
+      <input type="text" id="dash-college-area-filter" class="form-input" placeholder="Filter by area name or code…" style="max-width:280px;">
+    </div>
+
+    <div id="dash-college-body"></div>
+  `;
+
+  _renderDashCollegeBody();
+
+  document.querySelectorAll('.dash-college-subtab').forEach(btn => {
+    btn.addEventListener('click', () => { _dashCollegeSubTab = btn.dataset.sub; _renderDashCollege(); });
+  });
+  document.getElementById('dash-college-area-filter')?.addEventListener('input', _renderDashCollegeBody);
+  document.getElementById('dash-college-download-btn')?.addEventListener('click', () => {
+    if (typeof openReportType === 'function') openReportType(REPORT_TYPES.COLLEGE_ACTION_PLAN);
+    else if (typeof navigateTo === 'function') navigateTo('reports');
+  });
+}
+
+function _dashCollegeMatchingAreaCodes() {
+  const search = (document.getElementById('dash-college-area-filter')?.value || '').toLowerCase().trim();
+  const areas = _getAreas() || [];
+  if (!search) return null; // null = no filter, include everything
+  return areas.filter(a => (a.areaCode + a.areaName).toLowerCase().includes(search)).map(a => a.areaCode);
+}
+
+function _renderDashCollegeBody() {
+  const body = document.getElementById('dash-college-body');
+  if (!body) return;
+  const areaCodeFilter = _dashCollegeMatchingAreaCodes();
+
+  if (_dashCollegeSubTab === 'actionplans') {
+    const themes = typeof _repGatherCollegeActionItems === 'function' ? _repGatherCollegeActionItems(areaCodeFilter, null) : [];
+    if (themes.length === 0) { body.innerHTML = '<p style="color:var(--color-muted);font-size:var(--text-sm);">No open action items match the current filter.</p>'; return; }
+    body.innerHTML = themes.map(t => `
+      <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-sm);">
+        <p style="font-weight:bold;color:var(--color-navy);">${_dEsc(t.theme)} <span style="font-weight:normal;color:var(--color-muted);font-size:var(--text-xs);">— ${t.areaCount} area(s), ${t.items.length} item(s)</span></p>
+        ${t.items.map(i => `<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:4px;padding-left:12px;border-left:2px solid var(--color-border);"><strong>${_dEsc(i.areaName)}</strong> — ${_dEsc(i.description)}${i.accountableName ? ` <span style="color:var(--color-muted);">(${_dEsc(i.accountableName)})</span>` : ''}</p>`).join('')}
+      </div>`).join('');
+    return;
+  }
+
+  // Risk Items
+  const risks = _dashGatherRiskItems(areaCodeFilter);
+  if (risks.length === 0) { body.innerHTML = '<p style="color:var(--color-muted);font-size:var(--text-sm);">No flagged risk items match the current filter.</p>'; return; }
+  const typeColours = { 'RAG': 'var(--color-red)', 'Health Check': 'var(--color-amber)', 'Loop': 'var(--color-navy)' };
+  body.innerHTML = risks.map(r => `
+    <div style="border-left:3px solid ${typeColours[r.type]||'var(--color-muted)'};background:var(--color-light);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:8px 12px;margin-bottom:6px;">
+      <p style="font-size:10px;font-weight:bold;text-transform:uppercase;color:${typeColours[r.type]||'var(--color-muted)'};">${_dEsc(r.type)} · ${_dEsc(r.areaName)}</p>
+      <p style="font-size:var(--text-sm);color:var(--color-navy);font-weight:bold;">${_dEsc(r.description)}</p>
+      ${r.detail ? `<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:2px;">${_dEsc(r.detail)}</p>` : ''}
+    </div>`).join('');
+}
+
+function _dashGatherRiskItems(areaCodeFilter) {
+  const areas = _getAreas() || [];
+  const areaName = (code) => areas.find(a => a.areaCode === code)?.areaName || code;
+  const risks = [];
+
+  areas.forEach(area => {
+    if (areaCodeFilter && !areaCodeFilter.includes(area.areaCode)) return;
+    const dims = area.ragDimensions || {};
+    (typeof RAG_DIMENSIONS !== 'undefined' ? RAG_DIMENSIONS : []).forEach(dim => {
+      const d = dims[dim.id];
+      if (d && d.score && d.score <= 2) {
+        risks.push({
+          type: 'RAG', severity: d.score,
+          areaCode: area.areaCode, areaName: area.areaName,
+          description: `${dim.label}: ${(typeof RAG_LABELS !== 'undefined' && RAG_LABELS[d.score]) || 'Low score'} (${d.score})`,
+          detail: d.rationale || '',
+        });
+      }
+    });
+  });
+
+  const reviews = (window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.reviews) || [];
+  reviews.forEach(review => {
+    if (areaCodeFilter && !areaCodeFilter.includes(review.areaCode)) return;
+    Object.entries(review.domains || {}).forEach(([domainId, d]) => {
+      if (d.actionIdentified) {
+        const focusArea = (typeof HC_FOCUS_AREAS !== 'undefined' ? HC_FOCUS_AREAS : []).find(fa => fa.id === domainId);
+        risks.push({
+          type: 'Health Check', severity: d.avgScore || 3,
+          areaCode: review.areaCode, areaName: areaName(review.areaCode),
+          description: `${focusArea ? focusArea.label : domainId} — flagged for action`,
+          detail: d.actionDescription || '',
+        });
+      }
+    });
+  });
+
+  const afis = (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || [];
+  afis.filter(a => a.status !== 'closed' && a.severity === AFI_SEVERITY.IMMEDIATE).forEach(afi => {
+    if (areaCodeFilter && !areaCodeFilter.includes(afi.areaCode)) return;
+    risks.push({
+      type: 'Loop', severity: 1,
+      areaCode: afi.areaCode, areaName: areaName(afi.areaCode),
+      description: (afi.description || '').slice(0, 100),
+      detail: '',
+    });
+  });
+
+  return risks.sort((a, b) => a.severity - b.severity);
+}
+
 function _renderDashImpact() {
   const panel = document.getElementById('dash-panel');
   if (!panel) return;
