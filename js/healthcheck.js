@@ -47,8 +47,12 @@ function initHealthChecks() {
     <div id="banner-container" aria-live="polite"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm);flex-wrap:wrap;gap:var(--space-sm);">
       <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);">Digital Health Checks</h1>
-      <button id="hc-import-btn" type="button" class="btn btn--ghost btn--sm">Import baseline data (2026)</button>
+      <div style="display:flex;gap:var(--space-sm);">
+        <button id="hc-import-btn" type="button" class="btn btn--ghost btn--sm">Import baseline data (2026)</button>
+        <button id="hc-bulk-generate-btn" type="button" class="btn btn--secondary btn--sm">Generate all Action Plans</button>
+      </div>
     </div>
+    <p id="hc-bulk-generate-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:4px;"></p>
     <p style="font-size:var(--text-base);color:var(--color-muted);margin-bottom:var(--space-xl);">Accessibility and Inclusion Practice Review — staff-level observation across five focus areas.</p>
 
     <div id="hc-import-panel" style="display:none;margin-bottom:var(--space-2xl);"></div>
@@ -428,6 +432,14 @@ function _wireHCEvents() {
   });
   document.getElementById('hc-new-review-btn')?.addEventListener('click', _hcStartNewReview);
   document.getElementById('hc-import-btn')?.addEventListener('click', _hcOpenBaselineImport);
+  document.getElementById('hc-bulk-generate-btn')?.addEventListener('click', () => {
+    const status = document.getElementById('hc-bulk-generate-status');
+    if (status) status.textContent = 'Generating…';
+    const result = bulkGenerateActionPlansFromHealthChecks();
+    const msg = `${result.created} Action Plan(s) created. ${result.skippedExisting} already had one. ${result.skippedNoActions} had no flagged actions.`;
+    if (status) status.textContent = msg;
+    if (typeof UI !== 'undefined') UI.showToast('success', `${result.created} Action Plan(s) created.`);
+  });
 }
 
 // ── Baseline import (Session 37) ─────────────────────────────────

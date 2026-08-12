@@ -1137,6 +1137,33 @@ function wireActionPlanCard(container, opts = {}) {
   });
 }
 
+// Session 61 (11/08/26): the per-review generateActionPlanFromHealthCheck()
+// already existed, wired to a click-once-per-page-session button on each
+// Staff profile — real gap at scale: "potentially 600 staff to go through
+// and tick Generate Action Plan." This scans every review with flagged
+// domains in one pass. Real dedup by sourceHealthCheckReviewId, not just
+// the button-disables-itself trick the single version relied on, which
+// only protected against clicking twice in the same page load, not
+// against running it again after a reload or from here after using the
+// individual button.
+function bulkGenerateActionPlansFromHealthChecks() {
+  const reviews = (window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.reviews) || [];
+  const existingPlans = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [];
+  const alreadyPlanned = new Set(existingPlans.map(p => p.sourceHealthCheckReviewId).filter(Boolean));
+
+  let created = 0, skippedExisting = 0, skippedNoActions = 0;
+
+  reviews.forEach(review => {
+    const hasActions = Object.values(review.domains || {}).some(d => d.actionIdentified && d.actionDescription);
+    if (!hasActions) { skippedNoActions++; return; }
+    if (alreadyPlanned.has(review.reviewId)) { skippedExisting++; return; }
+    generateActionPlanFromHealthCheck(review, review.staffId);
+    created++;
+  });
+
+  return { created, skippedExisting, skippedNoActions, totalReviews: reviews.length };
+}
+
 function generateActionPlanFromHealthCheck(review, staffId) {
   const staff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff || []).find(s => s.staffId === staffId);
   const plan = {

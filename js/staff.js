@@ -296,6 +296,14 @@ function _renderStaffTab(tab, staffId) {
         }).join('');
 
     panel.querySelectorAll('.s-generate-ap-btn').forEach(btn => {
+      // Real dedup (Session 61) — was previously disabled-on-click only,
+      // which protects against clicking twice in the same page load but
+      // not against reloading and clicking again, or the review already
+      // having a plan from the new bulk generator. Check first.
+      const alreadyExists = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [])
+        .some(p => p.sourceHealthCheckReviewId === btn.dataset.reviewId);
+      if (alreadyExists) { btn.textContent = 'Action Plan already exists'; btn.disabled = true; return; }
+
       btn.addEventListener('click', () => {
         const review = (typeof _hcGetReviewsForStaff === 'function' ? _hcGetReviewsForStaff(staffId) : []).find(r => r.reviewId === btn.dataset.reviewId);
         if (!review || typeof generateActionPlanFromHealthCheck !== 'function') return;
