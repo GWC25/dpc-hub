@@ -3,13 +3,18 @@
    AI Support module: Anthropic API calls live here and ONLY here.
    No other module should call the Anthropic API directly.
 
-   Current scope (Phase 7, reports.js dependency):
+   Current scope:
    - generateNarrative() — performance review AI narrative prose
+   - analyzeIndustrySkillsAmendment() — Industry Digital Skills
+     multi-format diff-and-confirm (Session 60). Lives on each Area's
+     Digital Skills tab, not as its own screen here, since it needs
+     that area's live skill list as context — but this page links to
+     it (Session 61: it wasn't discoverable from here before).
 
-   Future scope (later Phase 7 work, not built yet):
-   - Strengths synthesis
-   - AFI risk surfacing
-   - Action plan generation
+   Future scope (not built yet):
+   - Area overview synthesis (individual-support vs whole-team-thread)
+     for Action Plans
+   - Bulk Action Plan generation from Health Checks
 
    Key handling: the Anthropic API key is never stored in DPC.DB,
    never written to OneDrive, never persisted to localStorage.
@@ -28,33 +33,56 @@ function initAISupport() {
   if (!el) return;
 
   const hasKey = !!DPC.AISupport._sessionKey;
+  const areas = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
 
   el.innerHTML = `
     <div class="card" style="max-width:640px;">
       <div class="card-header"><span class="card-title">AI Support</span></div>
       <div class="card-body">
         <p style="color:var(--color-muted);margin-bottom:var(--space-md);">
-          Anthropic API calls for the Hub live here. Currently in use for the
-          <strong>performance review narrative</strong> in Reports.
+          Anthropic API calls for the Hub live here. This page lists what's actually built and where to use it — not everything AI Support powers has its own screen here, since some of it only makes sense with an Area already open.
         </p>
 
         <div style="background:var(--color-light);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
           <p style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:4px;">Session API key</p>
           <p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-sm);">
-            ${hasKey ? 'A key is set for this browser session.' : 'No key set — you\u2019ll be asked for one the first time a report needs the AI narrative.'}
+            ${hasKey ? 'A key is set for this browser session.' : 'No key set — you\u2019ll be asked for one the first time any AI Support feature is used.'}
           </p>
           ${hasKey ? `<button class="btn btn--ghost btn--sm" id="ai-clear-key-btn" type="button">Clear session key</button>` : ''}
         </div>
 
-        <div class="empty-state" style="padding:var(--space-lg) 0;">
-          <p class="empty-state__body">Strengths synthesis, AFI risk surfacing, and action plan generation
-            are planned for later in Phase 7 and will appear here.</p>
+        <p style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:8px;">What's live right now</p>
+
+        <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-sm);">
+          <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">Performance review narrative</p>
+          <p style="font-size:var(--text-xs);color:var(--color-muted);">In Reports — generates the written narrative for a staff performance review.</p>
+        </div>
+
+        <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+          <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">Industry Digital Skills — amendment analysis</p>
+          <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:8px;">
+            On each Area's Digital Skills tab: upload a HoA/DL's amended Word doc, Excel sheet, PDF, or a screenshot, and it proposes a structured diff against that area's current skill list — nothing applies automatically, you confirm each change first.
+          </p>
+          ${areas.length > 0 ? `
+            <select id="ai-jump-area" class="form-select" style="max-width:280px;">
+              <option value="">Jump to an area's Digital Skills tab…</option>
+              ${areas.map(a => `<option value="${a.areaCode}">${a.areaName} (${a.areaCode})</option>`).join('')}
+            </select>
+          ` : ''}
+        </div>
+
+        <div class="empty-state" style="padding:var(--space-md) 0;">
+          <p class="empty-state__body">Area overview synthesis (individual-support vs whole-team-thread) for Action Plans, and bulk Action Plan generation from Health Checks, are next in progress.</p>
         </div>
       </div>
     </div>`;
 
   const clearBtn = document.getElementById('ai-clear-key-btn');
   if (clearBtn) clearBtn.addEventListener('click', () => { DPC.AISupport.clearSessionKey(); initAISupport(); });
+
+  document.getElementById('ai-jump-area')?.addEventListener('change', (e) => {
+    if (e.target.value && typeof openAreaProfile === 'function') openAreaProfile(e.target.value, 'industryskills');
+  });
 }
 
 DPC.AISupport = {
