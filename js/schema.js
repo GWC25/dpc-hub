@@ -306,15 +306,14 @@ const TEMPLATE_TYPE = Object.freeze({
   COACHING_QUESTIONS:  'coaching-questions',
   MEETING_AGENDA:      'meeting-agenda',
   OBSERVATION_FRAMEWORK:'observation-framework',
-  AI_PROMPT:           'ai-prompt',
 });
 
-// ── AI Support document-workbench data types (Session 62) ────────
-// Which existing (or future) part of the Hub a saved prompt's result
-// is meant to land in. Only 'tasks' has a real handler wired up so
-// far (see DPC.AISupport.runDocumentPrompt in ai-support.js) — the
-// rest are real, named destinations waiting on real source data to
-// prove them against, not placeholders invented for their own sake.
+// ── AI Support import data types (Session 62, updated Session 65) ─
+// Which existing (or future) part of the Hub an imported outcome is
+// meant to land in. Only 'tasks' has a real apply-handler wired up
+// so far (see _aiPreviewImport in ai-support.js) — the rest are real,
+// named destinations waiting on real source data to prove them
+// against, not placeholders invented for their own sake.
 const AI_PROMPT_DATA_TYPES = Object.freeze({
   TASKS:         'tasks',
   RAG:           'rag',

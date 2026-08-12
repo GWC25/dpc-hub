@@ -1082,20 +1082,30 @@ function renderAreaOverviewPanel(result) {
     </div>`).join('');
 }
 
-// Wires a "AI Support: Area overview" button + results container that
-// already exist in the caller's HTML (button id and results container
-// id are passed in, since Areas and Digital Leads use different ids
-// for their surrounding layout).
-function wireAreaOverviewButton(btnId, resultsId, areaCode) {
+// Session 65 (11/08/26): removed the live Claude API call entirely,
+// same as the Industry Skills amendment analysis and the performance
+// review narrative — "we don't have any AI API call paths at all."
+// btnId/resultsId/textareaId are passed in since Areas and Digital
+// Leads use different ids for their surrounding layout, but both
+// call the exact same function, so there's still only one place this
+// logic lives, not two that could drift.
+function wireAreaOverviewButton(btnId, resultsId, textareaId, areaCode) {
   const btn = document.getElementById(btnId);
   const results = document.getElementById(resultsId);
-  if (!btn || !results || btn._wired) return;
+  const textarea = document.getElementById(textareaId);
+  if (!btn || !results || !textarea || btn._wired) return;
   btn._wired = true;
-  btn.addEventListener('click', async () => {
-    if (typeof DPC === 'undefined' || !DPC.AISupport) { results.innerHTML = '<p style="color:var(--color-red);font-size:var(--text-sm);">AI Support module not loaded.</p>'; return; }
-    results.innerHTML = '<p style="color:var(--color-muted);font-size:var(--text-sm);">Analysing — this calls Claude, may take a few seconds…</p>';
-    const items = _gatherAreaActionItems(areaCode);
-    const result = await DPC.AISupport.analyzeAreaActionPatterns(areaCode, items);
+  btn.addEventListener('click', () => {
+    const raw = textarea.value.trim();
+    if (!raw) { results.innerHTML = '<p style="color:var(--color-red);font-size:var(--text-sm);">Paste the JSON result first.</p>'; return; }
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (e) {
+      results.innerHTML = `<p style="color:var(--color-red);font-size:var(--text-sm);">Not valid JSON: ${e.message}</p>`;
+      return;
+    }
+    const result = { ok: true, themes: Array.isArray(parsed.themes) ? parsed.themes : [] };
     results.innerHTML = renderAreaOverviewPanel(result);
   });
 }
@@ -1499,28 +1509,6 @@ function saveTemplate(template) {
   }
   _dirty.add('data-templates.json');
   _writeLocalSnapshot();
-}
-
-// Session 62 (11/08/26): the Prompt Library for AI Support's document
-// workbench, reusing Templates' existing storage rather than a new
-// store — a saved prompt is just a Template with templateType
-// AI_PROMPT. "If there are future departments I can edit the prompt"
-// — editing is just saveAIPrompt() called again with the same
-// templateId, same as editing any other template.
-function saveAIPrompt(promptText, dataType, title, templateId = null) {
-  const prompt = {
-    templateId: templateId || generateId(),
-    templateType: TEMPLATE_TYPE.AI_PROMPT,
-    title: title || promptText.slice(0, 60),
-    promptText,
-    dataType,
-    version: 1,
-  };
-  saveTemplate(prompt);
-  return prompt;
-}
-function getAIPrompts() {
-  return (window.DPC_DATA.templates.templates || []).filter(t => t.templateType === TEMPLATE_TYPE.AI_PROMPT);
 }
 
 // Session 63 (11/08/26): real gap found — a workbench run genuinely

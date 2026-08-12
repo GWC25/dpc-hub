@@ -462,11 +462,14 @@ function _renderIndustrySkillsTab(panel, areaCode) {
     </div>
 
     <div style="margin-top:var(--space-lg);padding-top:var(--space-md);border-top:1px solid var(--color-border);">
-      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:4px;">Upload an amended document</p>
-      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-sm);">A HoA/DL's returned Word doc, an Excel sheet, a PDF, or a screenshot of tracked changes. Nothing is applied automatically — you'll see exactly what's proposed before anything changes.</p>
-      <input type="file" id="ds-amend-file" accept=".docx,.xlsx,.xls,.pdf,.png,.jpg,.jpeg,.webp" style="margin-bottom:8px;">
-      <br>
-      <button type="button" id="ds-analyze-btn" class="btn btn--secondary btn--sm">Analyze amendment</button>
+      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:4px;">Import an amendment (no API cost)</p>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-sm);">Have a HoA/DL's returned document analysed in a Claude conversation or Project, then paste the resulting JSON here. Same review-before-apply screen as before — nothing changes until you confirm.</p>
+      <details style="margin-bottom:8px;">
+        <summary style="cursor:pointer;font-size:var(--text-xs);color:var(--color-teal);">What shape does the JSON need to be?</summary>
+        <pre style="background:var(--color-light);border-radius:var(--radius-sm);padding:8px;font-size:10px;overflow-x:auto;margin-top:4px;">{"changes":[{"skillId":"...","field":"selected|stage1|stage2|stage3","oldValue":"...","newValue":"..."}],"newSkills":[{"name":"...","stage1":"...","stage2":"...","stage3":"..."}],"uncertain":["..."]}</pre>
+      </details>
+      <textarea id="ds-amend-json" class="form-textarea" rows="4" placeholder="Paste the JSON result here…" style="width:100%;font-family:monospace;font-size:11px;margin-bottom:8px;"></textarea>
+      <button type="button" id="ds-analyze-btn" class="btn btn--secondary btn--sm">Preview import</button>
       <p id="ds-analyze-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;"></p>
       <div id="ds-diff-preview"></div>
     </div>
@@ -552,29 +555,38 @@ function _wireIndustrySkillsTab(areaCode) {
 }
 
 // ── Amendment analysis + confirm-before-apply (Session 60) ─────────
-async function _analyzeIndustrySkillsAmendment(areaCode) {
-  const fileInput = document.getElementById('ds-amend-file');
+// Session 65 (11/08/26): removed the live Claude API call entirely,
+// per "we don't have any AI API call paths at all... we just use it
+// through this process [Import]." The analysis now happens in an
+// external Claude conversation/Project; this just parses the pasted
+// JSON and renders through the exact same, unchanged diff preview —
+// same review-before-apply guarantee, zero API cost.
+function _analyzeIndustrySkillsAmendment(areaCode) {
   const status = document.getElementById('ds-analyze-status');
   const preview = document.getElementById('ds-diff-preview');
-  const setStatus = (msg, isError) => { if (status) { status.textContent = msg; status.style.color = isError ? 'var(--color-red)' : 'var(--color-muted)'; } };
+  const setStatus = (msg, isError) => { if (status) { status.textContent = msg; status.style.color = isError ? 'var(--color-red)' : 'var(--color-green)'; } };
 
-  if (!fileInput.files || fileInput.files.length === 0) { setStatus('Choose a file first.', true); return; }
-  if (typeof DPC === 'undefined' || !DPC.AISupport) { setStatus('AI Support module not loaded.', true); return; }
+  const raw = document.getElementById('ds-amend-json').value.trim();
+  if (!raw) { setStatus('Paste the JSON result first.', true); return; }
 
   const area = _getArea(areaCode);
   const currentSkills = (area && area.industrySkills) || [];
 
-  setStatus('Analyzing — this calls Claude, may take a few seconds…');
-  preview.innerHTML = '';
-
-  const result = await DPC.AISupport.analyzeIndustrySkillsAmendment(areaCode, fileInput.files[0], currentSkills);
-
-  if (!result.ok) {
-    setStatus(`Analysis failed: ${result.error}`, true);
+  let result;
+  try {
+    const parsed = JSON.parse(raw);
+    result = {
+      ok: true,
+      changes: Array.isArray(parsed.changes) ? parsed.changes : [],
+      newSkills: Array.isArray(parsed.newSkills) ? parsed.newSkills : [],
+      uncertain: Array.isArray(parsed.uncertain) ? parsed.uncertain : [],
+    };
+  } catch (e) {
+    setStatus(`Not valid JSON: ${e.message}`, true);
     return;
   }
 
-  setStatus(`Found ${result.changes.length} proposed change(s), ${result.newSkills.length} new skill(s), ${result.uncertain.length} flagged as uncertain.`);
+  setStatus(`✓ Found ${result.changes.length} proposed change(s), ${result.newSkills.length} new skill(s), ${result.uncertain.length} flagged as uncertain.`);
   _dsLastDiffResult = result;
   preview.innerHTML = _renderIndustrySkillsDiffPreview(result, currentSkills);
 }
@@ -753,8 +765,16 @@ function _renderActionPlanTab(panel, areaCode) {
       <button id="ap-new-btn" type="button" class="btn btn--primary btn--sm">+ New action plan</button>
     </div>
     <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);">
-      <button id="ap-ai-overview-btn" type="button" class="btn btn--secondary btn--sm">AI Support: Area overview</button>
-      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;">Groups open action items into themes, and suggests whether each needs individual support or a whole-team session.</p>
+      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:4px;">Area overview (no API cost)</p>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:8px;">Groups open action items into themes, and suggests individual support vs a whole-team session. Copy the action items into a Claude conversation, paste the result back here.</p>
+      <button id="ap-ai-copy-btn" type="button" class="btn btn--ghost btn--sm">Copy action items for Claude</button>
+      <p id="ap-ai-copy-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;"></p>
+      <details style="margin:8px 0;">
+        <summary style="cursor:pointer;font-size:var(--text-xs);color:var(--color-teal);">What shape does the JSON need to be?</summary>
+        <pre style="background:var(--color-light);border-radius:var(--radius-sm);padding:8px;font-size:10px;overflow-x:auto;margin-top:4px;">{"themes":[{"description":"...","staffInvolved":["..."],"classification":"individual|whole-team","recommendation":"..."}]}</pre>
+      </details>
+      <textarea id="ap-ai-overview-json" class="form-textarea" rows="3" placeholder="Paste the JSON result here…" style="width:100%;font-family:monospace;font-size:11px;margin-bottom:8px;"></textarea>
+      <button id="ap-ai-overview-btn" type="button" class="btn btn--secondary btn--sm">Preview</button>
       <div id="ap-ai-overview-results" style="margin-top:var(--space-sm);"></div>
     </div>
     <div id="ap-new-form" style="display:none;"></div>
@@ -763,7 +783,15 @@ function _renderActionPlanTab(panel, areaCode) {
 
   _renderAPList(areaCode);
   document.getElementById('ap-new-btn')?.addEventListener('click', () => _renderAPNewForm(areaCode));
-  wireAreaOverviewButton('ap-ai-overview-btn', 'ap-ai-overview-results', areaCode);
+  document.getElementById('ap-ai-copy-btn')?.addEventListener('click', () => {
+    const items = _gatherAreaActionItems(areaCode);
+    const text = `Group these action items into themes, classify each as "individual" (1-2 people) or "whole-team" (common thread), and suggest a next step for each. Respond only with JSON: {"themes":[{"description":"...","staffInvolved":["..."],"classification":"individual|whole-team","recommendation":"..."}]}\n\nAction items for area ${areaCode}:\n${JSON.stringify(items, null, 2)}`;
+    navigator.clipboard.writeText(text).then(() => {
+      const s = document.getElementById('ap-ai-copy-status');
+      if (s) { s.textContent = '✓ Copied — paste into a Claude conversation, then paste the reply into the box below.'; s.style.color = 'var(--color-green)'; }
+    });
+  });
+  wireAreaOverviewButton('ap-ai-overview-btn', 'ap-ai-overview-results', 'ap-ai-overview-json', areaCode);
 }
 
 function _renderAPList(areaCode) {
