@@ -14,6 +14,7 @@ function initStaff() {
       <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);">Staff</h1>
       <div style="display:flex;gap:var(--space-sm);align-items:center;">
         <input id="staff-search" class="form-input" type="search" placeholder="Search by name or area…" style="width:220px;min-height:40px;font-size:var(--text-sm);" aria-label="Search staff">
+        <button id="staff-sync-btn" type="button" class="btn btn--ghost btn--sm">Sync Digital Leads & HoAs</button>
         <button id="staff-new-btn" type="button" class="btn btn--primary btn--sm">+ New profile</button>
       </div>
     </div>
@@ -497,6 +498,11 @@ function _sPopulateDepartmentSelect(areaCode, selectedCode) {
 function _wireStaffEvents() {
   document.getElementById('staff-search')?.addEventListener('input', _renderStaffList);
   document.getElementById('staff-new-btn')?.addEventListener('click', () => _openStaffModal());
+  document.getElementById('staff-sync-btn')?.addEventListener('click', () => {
+    const { created, alreadyLinked } = syncDLsAndHoAsToStaff();
+    if (typeof UI !== 'undefined') UI.showToast('success', `${created} profile(s) created, ${alreadyLinked} already linked.`);
+    _renderStaffList();
+  });
   document.getElementById('staff-area')?.addEventListener('change', e => _sPopulateDepartmentSelect(e.target.value, ''));
   document.getElementById('staff-modal-close')?.addEventListener('click', () => { document.getElementById('staff-modal').style.display='none'; });
   document.getElementById('staff-modal-cancel')?.addEventListener('click', () => { document.getElementById('staff-modal').style.display='none'; });
