@@ -50,12 +50,35 @@ function initNotes() {
         <div class="card-header"><span class="card-title" id="n-modal-title">Note</span></div>
         <div class="card-body">
           <textarea id="n-detail-text" class="form-textarea" rows="5" style="width:100%;margin-bottom:8px;"></textarea>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+
+          <div style="display:grid;grid-template-columns:2fr auto;gap:4px;align-items:center;margin-bottom:8px;">
             <select id="n-detail-area" class="form-select"><option value="">No area</option></select>
-            <input type="text" id="n-detail-person" class="form-input" placeholder="Person">
+            <button type="button" id="n-open-area-btn" class="btn btn--ghost btn--sm" style="display:none;">Open →</button>
           </div>
+
+          <div style="display:grid;grid-template-columns:2fr auto;gap:4px;align-items:center;margin-bottom:8px;">
+            <input type="text" id="n-detail-person" class="form-input" list="n-staff-list" placeholder="Person (type a name — links automatically if it matches Staff)">
+            <button type="button" id="n-open-person-btn" class="btn btn--ghost btn--sm" style="display:none;">Open →</button>
+          </div>
+          <datalist id="n-staff-list"></datalist>
+
+          <div style="display:grid;grid-template-columns:1fr auto;gap:4px;align-items:center;margin-bottom:8px;">
+            <select id="n-detail-dept" class="form-select"><option value="">No department</option><option value="__other__">Other…</option></select>
+          </div>
+          <input type="text" id="n-detail-dept-other" class="form-input" placeholder="Name the department" style="display:none;margin-bottom:8px;">
+
           <input type="text" id="n-detail-project" class="form-input" placeholder="Project reference" style="margin-bottom:8px;">
-          <select id="n-detail-meeting" class="form-select" style="margin-bottom:8px;"><option value="">Attach to a meeting…</option></select>
+
+          <div style="display:grid;grid-template-columns:2fr auto;gap:4px;align-items:center;margin-bottom:8px;">
+            <select id="n-detail-meeting" class="form-select"><option value="">No meeting</option></select>
+            <button type="button" id="n-open-meeting-btn" class="btn btn--ghost btn--sm" style="display:none;">Open →</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:2fr auto;gap:4px;align-items:center;margin-bottom:var(--space-md);">
+            <select id="n-detail-loop" class="form-select"><option value="">No loop</option></select>
+            <button type="button" id="n-open-loop-btn" class="btn btn--ghost btn--sm" style="display:none;">Open →</button>
+          </div>
+
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--space-md);">
             <button type="button" id="n-make-task-btn" class="btn btn--ghost btn--sm">Make this a task</button>
           </div>
@@ -81,20 +104,52 @@ function _nFmtDate(iso) { if (!iso) return '—'; try { return new Date(iso).toL
 
 function _nPopulateAreaDropdowns() {
   const areas = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
-  const opts = areas.map(a => `<option value="${a.areaCode}">${_nEsc(a.areaName)} (${a.areaCode})</option>`).join('');
+  const areaOpts = areas.map(a => `<option value="${a.areaCode}">${_nEsc(a.areaName)} (${a.areaCode})</option>`).join('');
   const filterSel = document.getElementById('n-filter-area');
   const detailSel = document.getElementById('n-detail-area');
-  if (filterSel) filterSel.innerHTML += opts;
-  if (detailSel) detailSel.innerHTML += opts;
+  if (filterSel) filterSel.innerHTML += areaOpts;
+  if (detailSel) detailSel.innerHTML += areaOpts;
 
   const meetings = ((window.DPC_DATA.calendar && window.DPC_DATA.calendar.entries) || []).filter(e => e.entryType === CALENDAR_TYPE.MEETING);
   const meetingSel = document.getElementById('n-detail-meeting');
   if (meetingSel) meetingSel.innerHTML += meetings.map(m => `<option value="${m.entryId}">${_nEsc(m.title)} (${_nFmtDate(m.date)})</option>`).join('');
+
+  const depts = (window.DPC_DATA.departments && window.DPC_DATA.departments.departments) || [];
+  const deptSel = document.getElementById('n-detail-dept');
+  if (deptSel) {
+    const otherOpt = deptSel.querySelector('option[value="__other__"]');
+    depts.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.id; opt.textContent = d.name;
+      deptSel.insertBefore(opt, otherOpt);
+    });
+  }
+
+  const staffList = document.getElementById('n-staff-list');
+  const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  if (staffList) staffList.innerHTML = allStaff.map(s => `<option value="${_nEsc(s.name)}">`).join('');
+
+  _nRefreshLoopDropdown();
+}
+
+// Loops are scoped to whichever area is currently selected — a
+// college-wide flat list of every Loop would be unusably long, and a
+// note's loop link only makes sense in the context of its area anyway.
+function _nRefreshLoopDropdown() {
+  const areaCode = document.getElementById('n-detail-area')?.value || '';
+  const loopSel = document.getElementById('n-detail-loop');
+  if (!loopSel) return;
+  const currentValue = loopSel.value;
+  const loops = ((window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []).filter(a => !areaCode || a.areaCode === areaCode);
+  loopSel.innerHTML = '<option value="">No loop</option>' +
+    loops.map(l => `<option value="${l.afiId}">${_nEsc((l.description||'').slice(0,60))} (${_nEsc(l.status)})</option>`).join('');
+  if (loops.some(l => l.afiId === currentValue)) loopSel.value = currentValue;
 }
 
 // "Organised" = has at least an area, person, or project link. A note
 // with none of those is the thing the amber banner is nudging toward.
-function _nIsOrganised(note) { return !!(note.areaCode || note.personRef || note.projectRef); }
+function _nIsOrganised(note) { return !!(note.areaCode || note.personRef || note.projectRef || note.departmentId); }
+function _nDeptName(id) { const d = ((window.DPC_DATA.departments && window.DPC_DATA.departments.departments) || []).find(x => x.id === id); return d ? d.name : id; }
 
 function _nRenderList() {
   const list = document.getElementById('n-list');
@@ -135,6 +190,7 @@ function _nRenderList() {
             ${_nFmtDate(n.createdAt)}
             ${n.areaCode ? ` · <span style="background:var(--color-light);padding:1px 6px;border-radius:999px;">${_nEsc(n.areaCode)}</span>` : ''}
             ${n.personRef ? ` · <span style="background:var(--color-light);padding:1px 6px;border-radius:999px;">${_nEsc(n.personRef)}</span>` : ''}
+            ${n.departmentId ? ` · <span style="background:var(--color-light);padding:1px 6px;border-radius:999px;">${_nEsc(_nDeptName(n.departmentId))}</span>` : ''}
             ${n.projectRef ? ` · <span style="background:var(--color-light);padding:1px 6px;border-radius:999px;">${_nEsc(n.projectRef)}</span>` : ''}
           </p>
         </div>
@@ -154,7 +210,7 @@ function _nWireEvents() {
   document.getElementById('n-quick-save')?.addEventListener('click', () => {
     const text = document.getElementById('n-quick-text').value.trim();
     if (!text) return;
-    saveNote({ noteId: generateId(), text, createdAt: nowISO(), areaCode: null, personRef: null, projectRef: null });
+    saveNote({ noteId: generateId(), text, createdAt: nowISO(), areaCode: null, personRef: null, personStaffId: null, departmentId: null, projectRef: null, linkedMeetingId: null, linkedAfiId: null });
     document.getElementById('n-quick-text').value = '';
     document.getElementById('n-quick-add').style.display = 'none';
     _nRenderList();
@@ -180,17 +236,79 @@ function _nWireEvents() {
   document.getElementById('n-detail-cancel')?.addEventListener('click', () => { modal.style.display = 'none'; });
   modal?.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
 
+  // Cross-link "Open →" buttons — same openXProfile()/openLoop()/
+  // openMeeting() pattern as everywhere else in the Hub. Each only
+  // shows once the corresponding field actually has a value, and
+  // navigating away closes the modal first so the deep link lands
+  // cleanly rather than opening underneath it.
+  document.getElementById('n-open-area-btn')?.addEventListener('click', () => {
+    const code = document.getElementById('n-detail-area').value;
+    if (code && typeof openAreaProfile === 'function') { modal.style.display = 'none'; openAreaProfile(code); }
+  });
+  document.getElementById('n-open-meeting-btn')?.addEventListener('click', () => {
+    const id = document.getElementById('n-detail-meeting').value;
+    if (id && typeof openMeeting === 'function') { modal.style.display = 'none'; openMeeting(id); }
+  });
+  document.getElementById('n-open-loop-btn')?.addEventListener('click', () => {
+    const id = document.getElementById('n-detail-loop').value;
+    if (id && typeof openLoop === 'function') { modal.style.display = 'none'; openLoop(id); }
+  });
+  document.getElementById('n-open-person-btn')?.addEventListener('click', () => {
+    const staffId = document.getElementById('n-open-person-btn').dataset.staffId;
+    if (staffId && typeof openStaffProfile === 'function') { modal.style.display = 'none'; openStaffProfile(staffId); }
+  });
+
+  document.getElementById('n-detail-area')?.addEventListener('change', () => {
+    _nToggleOpenBtn('n-open-area-btn', document.getElementById('n-detail-area').value);
+    _nRefreshLoopDropdown(); // loops are scoped to the selected area
+  });
+  document.getElementById('n-detail-meeting')?.addEventListener('change', () => {
+    _nToggleOpenBtn('n-open-meeting-btn', document.getElementById('n-detail-meeting').value);
+  });
+  document.getElementById('n-detail-loop')?.addEventListener('change', () => {
+    _nToggleOpenBtn('n-open-loop-btn', document.getElementById('n-detail-loop').value);
+  });
+  document.getElementById('n-detail-person')?.addEventListener('input', _nCheckPersonMatch);
+
+  document.getElementById('n-detail-dept')?.addEventListener('change', () => {
+    const isOther = document.getElementById('n-detail-dept').value === '__other__';
+    document.getElementById('n-detail-dept-other').style.display = isOther ? 'block' : 'none';
+    if (isOther) document.getElementById('n-detail-dept-other').focus();
+  });
+
   document.getElementById('n-detail-save')?.addEventListener('click', () => {
     const noteId = modal.dataset.noteId;
     const n = _nGet(noteId);
     if (!n) return;
     n.text = document.getElementById('n-detail-text').value.trim();
     n.areaCode = document.getElementById('n-detail-area').value || null;
-    n.personRef = document.getElementById('n-detail-person').value.trim() || null;
     n.projectRef = document.getElementById('n-detail-project').value.trim() || null;
     n.linkedMeetingId = document.getElementById('n-detail-meeting').value || null;
+    n.linkedAfiId = document.getElementById('n-detail-loop').value || null;
+
+    // Person: link to a real Staff record if the typed name matches one
+    // exactly (via the datalist), otherwise keep it as free text with no
+    // link — a note about "the plumber who fixed the WiFi" shouldn't
+    // require a Staff record to exist just to write it down.
+    const personText = document.getElementById('n-detail-person').value.trim();
+    const matchedStaff = personText ? ((window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || []).find(s => s.name.toLowerCase() === personText.toLowerCase()) : null;
+    n.personRef = personText || null;
+    n.personStaffId = matchedStaff ? matchedStaff.staffId : null;
+
+    // Department: growable — "Other" + free text saves a new one
+    // permanently via saveDepartment(), so it's a real option next time.
+    const deptSelectVal = document.getElementById('n-detail-dept').value;
+    if (deptSelectVal === '__other__') {
+      const otherName = document.getElementById('n-detail-dept-other').value.trim();
+      const newDept = otherName ? saveDepartment(otherName) : null;
+      n.departmentId = newDept ? newDept.id : null;
+    } else {
+      n.departmentId = deptSelectVal || null;
+    }
+
     saveNote(n);
     modal.style.display = 'none';
+    _nPopulateAreaDropdowns(); // pick up any newly-added department immediately
     _nRenderList();
   });
 
@@ -229,6 +347,36 @@ function _nOpenDetail(noteId) {
   document.getElementById('n-detail-person').value = n.personRef || '';
   document.getElementById('n-detail-project').value = n.projectRef || '';
   document.getElementById('n-detail-meeting').value = n.linkedMeetingId || '';
+  document.getElementById('n-detail-dept').value = n.departmentId || '';
+  document.getElementById('n-detail-dept-other').style.display = 'none';
+  document.getElementById('n-detail-dept-other').value = '';
+
+  _nRefreshLoopDropdown(); // must run before setting the loop value, since options depend on the area just set above
+  document.getElementById('n-detail-loop').value = n.linkedAfiId || '';
+
+  _nToggleOpenBtn('n-open-area-btn', n.areaCode);
+  _nToggleOpenBtn('n-open-meeting-btn', n.linkedMeetingId);
+  _nToggleOpenBtn('n-open-loop-btn', n.linkedAfiId);
+  _nCheckPersonMatch();
+
   modal.style.display = 'flex';
   document.getElementById('n-detail-text').focus();
+}
+
+function _nToggleOpenBtn(btnId, value) {
+  const btn = document.getElementById(btnId);
+  if (btn) btn.style.display = value ? 'inline-flex' : 'none';
+}
+
+// Shows the "Open →" link next to Person only when the currently-typed
+// text exactly matches a real Staff record — a partial/in-progress name
+// shouldn't offer a link to the wrong person, or to nothing at all.
+function _nCheckPersonMatch() {
+  const text = document.getElementById('n-detail-person')?.value.trim().toLowerCase() || '';
+  const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  const match = text ? allStaff.find(s => s.name.toLowerCase() === text) : null;
+  const btn = document.getElementById('n-open-person-btn');
+  if (!btn) return;
+  btn.style.display = match ? 'inline-flex' : 'none';
+  if (match) btn.dataset.staffId = match.staffId;
 }
