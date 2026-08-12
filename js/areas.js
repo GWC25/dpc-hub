@@ -748,9 +748,14 @@ function _renderActionPlanTab(panel, areaCode) {
     .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
 
   panel.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md);">
       <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);">Action Plan (${plans.length})</h3>
       <button id="ap-new-btn" type="button" class="btn btn--primary btn--sm">+ New action plan</button>
+    </div>
+    <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);">
+      <button id="ap-ai-overview-btn" type="button" class="btn btn--secondary btn--sm">AI Support: Area overview</button>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;">Groups open action items into themes, and suggests whether each needs individual support or a whole-team session.</p>
+      <div id="ap-ai-overview-results" style="margin-top:var(--space-sm);"></div>
     </div>
     <div id="ap-new-form" style="display:none;"></div>
     <div id="ap-list"></div>
@@ -758,6 +763,7 @@ function _renderActionPlanTab(panel, areaCode) {
 
   _renderAPList(areaCode);
   document.getElementById('ap-new-btn')?.addEventListener('click', () => _renderAPNewForm(areaCode));
+  wireAreaOverviewButton('ap-ai-overview-btn', 'ap-ai-overview-results', areaCode);
 }
 
 function _renderAPList(areaCode) {

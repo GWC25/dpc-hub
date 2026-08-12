@@ -352,4 +352,76 @@ Respond ONLY with valid JSON, no other text, no markdown fences, in exactly this
     }
   },
 
+  // ── Area overview: individual vs whole-team synthesis (Session 61) ──
+  // "help generate an Area overview of Action, whether it is likely
+  // individual support because there is only one instance (or a
+  // couple), or whole team because there is a common thread." Takes
+  // every action item across an area's Action Plans (staff-specific
+  // and whole-team) and asks Claude to group them into real themes,
+  // each classified individual vs whole-team by how many people it
+  // actually shows up for — not guessed, counted from the real data
+  // handed to it. Read-only synthesis: this never creates or edits
+  // anything itself, it's a reading aid for you to act on, same
+  // spirit as the RAG Matrix advisory pattern from earlier sessions.
+  analyzeAreaActionPatterns: async function(areaCode, actionItems) {
+    const apiKey = await DPC.AISupport._promptForKey();
+    if (!apiKey) return { ok: false, error: 'No API key provided — analysis cancelled.' };
+
+    if (!actionItems || actionItems.length === 0) {
+      return { ok: true, themes: [] };
+    }
+
+    const systemPrompt = `You are looking at every open action item logged against a college curriculum area's Action Plans — some tied to a named individual staff member, some whole-team. Group them into real recurring THEMES (not one theme per item — genuinely similar items belong together), and for each theme:
+- List which named people it applies to (from the data given, never invent a name)
+- Classify as "individual" if it genuinely only applies to one or two people, or "whole-team" if it's a common thread across several people or was already logged as whole-team
+- Suggest a concrete next step: for "individual", 1:1 coaching; for "whole-team", a Teach Meet or team briefing
+
+Do not invent themes that aren't evidenced in the data. If an item is genuinely standalone with nothing to group it with, still include it as its own single-item theme rather than forcing it into an unrelated group.
+
+Respond ONLY with valid JSON, no other text, no markdown fences, in exactly this shape:
+{"themes":[{"description":"...","staffInvolved":["..."],"classification":"individual|whole-team","recommendation":"..."}]}`;
+
+    const userText = `Action items for area ${areaCode}:\n${JSON.stringify(actionItems, null, 2)}`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: DPC.AISupport.NARRATIVE_MODEL,
+          max_tokens: 3000,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userText }],
+        }),
+      });
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        const msg = errBody.error?.message || `API error (HTTP ${response.status})`;
+        if (response.status === 401) DPC.AISupport._sessionKey = null;
+        return { ok: false, error: msg };
+      }
+
+      const data = await response.json();
+      const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+      const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+
+      let parsed;
+      try {
+        parsed = JSON.parse(cleaned);
+      } catch (e) {
+        return { ok: false, error: `Could not parse the AI's response as JSON: ${e.message}. Raw response: ${text.slice(0, 300)}` };
+      }
+
+      return { ok: true, themes: Array.isArray(parsed.themes) ? parsed.themes : [] };
+    } catch (e) {
+      return { ok: false, error: `Network or fetch error: ${e.message}` };
+    }
+  },
+
 };

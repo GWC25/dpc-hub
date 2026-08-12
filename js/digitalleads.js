@@ -948,6 +948,11 @@ function _dlRenderActionPlansDrill(panel, dl) {
 
   panel.innerHTML = `
     <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Action Plans — ${_dlEsc(dl.areaCode)}</h4>
+    <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+      <button id="dl-ap-ai-overview-btn" type="button" class="btn btn--secondary btn--sm">AI Support: Area overview</button>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;">Groups open action items into themes, and suggests whether each needs individual support or a whole-team session.</p>
+      <div id="dl-ap-ai-overview-results" style="margin-top:var(--space-sm);"></div>
+    </div>
     <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-md);">
       <button type="button" class="btn btn--ghost btn--sm dl-ap-tab" data-ap-tab="active" style="font-weight:bold;">Active (${active.length})</button>
       <button type="button" class="btn btn--ghost btn--sm dl-ap-tab" data-ap-tab="closed">Closed (${closed.length})</button>
@@ -958,6 +963,7 @@ function _dlRenderActionPlansDrill(panel, dl) {
   panel.querySelectorAll('.dl-ap-tab').forEach(btn => {
     btn.addEventListener('click', () => _dlRenderAPTabContent(btn.dataset.apTab, active, closed, panel, dl));
   });
+  wireAreaOverviewButton('dl-ap-ai-overview-btn', 'dl-ap-ai-overview-results', dl.areaCode);
 }
 
 function _dlRenderAPTabContent(tab, active, closed, panel, dl) {

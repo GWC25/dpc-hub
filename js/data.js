@@ -1045,6 +1045,60 @@ function _renderTaskLinkForItem(planId, itemId) {
 // `opts.refresh()` is called after every mutation so the caller re-renders
 // its own tab/list however it normally does; this function never assumes
 // how the caller's surrounding UI is structured.
+// ── Area overview: gather + render (Session 61) ──────────────────
+// Shared by areas.js (Area's Action Plan tab) and digitalleads.js
+// (Digital Leads drill-down) — same button, same underlying data and
+// rendering, in both places, rather than two copies that could drift.
+function _gatherAreaActionItems(areaCode) {
+  const plans = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [])
+    .filter(p => p.areaCode === areaCode && p.status !== 'complete');
+  const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+
+  const items = [];
+  plans.forEach(plan => {
+    const staffNames = (plan.staffIds || []).map(id => allStaff.find(s => s.staffId === id)?.name).filter(Boolean);
+    const attribution = staffNames.length > 0 ? staffNames.join(', ') : 'Whole team';
+    (plan.actionItems || []).filter(i => !i.done).forEach(item => {
+      items.push({ description: item.description, staffName: attribution, sourceDomain: item.sourceDomain || null, planFocus: plan.focus || plan.aim || '' });
+    });
+  });
+  return items;
+}
+
+function renderAreaOverviewPanel(result) {
+  if (!result.ok) {
+    return `<p style="font-size:var(--text-sm);color:var(--color-red);">Analysis failed: ${result.error}</p>`;
+  }
+  if (result.themes.length === 0) {
+    return `<p style="font-size:var(--text-sm);color:var(--color-muted);">No open action items to analyse for this area.</p>`;
+  }
+  return result.themes.map(t => `
+    <div style="border-left:3px solid ${t.classification==='whole-team'?'var(--color-teal)':'var(--color-amber)'};background:var(--color-light);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:8px 12px;margin-bottom:8px;">
+      <p style="font-size:10px;font-weight:bold;text-transform:uppercase;color:${t.classification==='whole-team'?'var(--color-teal)':'var(--color-amber)'};">${t.classification === 'whole-team' ? 'Whole team — common thread' : 'Individual support'}</p>
+      <p style="font-size:var(--text-sm);color:var(--color-navy);font-weight:bold;">${(t.description||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);">Applies to: ${(t.staffInvolved||[]).join(', ') || '—'}</p>
+      <p style="font-size:var(--text-xs);color:var(--color-slate);margin-top:4px;"><strong>Suggested:</strong> ${(t.recommendation||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+    </div>`).join('');
+}
+
+// Wires a "AI Support: Area overview" button + results container that
+// already exist in the caller's HTML (button id and results container
+// id are passed in, since Areas and Digital Leads use different ids
+// for their surrounding layout).
+function wireAreaOverviewButton(btnId, resultsId, areaCode) {
+  const btn = document.getElementById(btnId);
+  const results = document.getElementById(resultsId);
+  if (!btn || !results || btn._wired) return;
+  btn._wired = true;
+  btn.addEventListener('click', async () => {
+    if (typeof DPC === 'undefined' || !DPC.AISupport) { results.innerHTML = '<p style="color:var(--color-red);font-size:var(--text-sm);">AI Support module not loaded.</p>'; return; }
+    results.innerHTML = '<p style="color:var(--color-muted);font-size:var(--text-sm);">Analysing — this calls Claude, may take a few seconds…</p>';
+    const items = _gatherAreaActionItems(areaCode);
+    const result = await DPC.AISupport.analyzeAreaActionPatterns(areaCode, items);
+    results.innerHTML = renderAreaOverviewPanel(result);
+  });
+}
+
 function wireActionPlanCard(container, opts = {}) {
   if (!container || container._apWired) return; // avoid double-binding on re-use
   container._apWired = true;
