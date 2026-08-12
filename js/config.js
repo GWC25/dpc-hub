@@ -39,6 +39,7 @@ const DPC_CONFIG = Object.freeze({
     'data-resource-library.json',
     'data-health-checks.json',
     'data-action-plans.json',
+    'data-departments.json',
   ],
   // ── Hub version ───────────────────────────────────────────
   HUB_VERSION: '1.0.0',
