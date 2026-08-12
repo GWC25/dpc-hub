@@ -949,8 +949,16 @@ function _dlRenderActionPlansDrill(panel, dl) {
   panel.innerHTML = `
     <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Action Plans — ${_dlEsc(dl.areaCode)}</h4>
     <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
-      <button id="dl-ap-ai-overview-btn" type="button" class="btn btn--secondary btn--sm">AI Support: Area overview</button>
-      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;">Groups open action items into themes, and suggests whether each needs individual support or a whole-team session.</p>
+      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:4px;">Area overview (no API cost)</p>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:8px;">Groups open action items into themes, and suggests individual support vs a whole-team session. Copy the action items into a Claude conversation, paste the result back here.</p>
+      <button id="dl-ap-ai-copy-btn" type="button" class="btn btn--ghost btn--sm">Copy action items for Claude</button>
+      <p id="dl-ap-ai-copy-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;"></p>
+      <details style="margin:8px 0;">
+        <summary style="cursor:pointer;font-size:var(--text-xs);color:var(--color-teal);">What shape does the JSON need to be?</summary>
+        <pre style="background:var(--color-light);border-radius:var(--radius-sm);padding:8px;font-size:10px;overflow-x:auto;margin-top:4px;">{"themes":[{"description":"...","staffInvolved":["..."],"classification":"individual|whole-team","recommendation":"..."}]}</pre>
+      </details>
+      <textarea id="dl-ap-ai-overview-json" class="form-textarea" rows="3" placeholder="Paste the JSON result here…" style="width:100%;font-family:monospace;font-size:11px;margin-bottom:8px;"></textarea>
+      <button id="dl-ap-ai-overview-btn" type="button" class="btn btn--secondary btn--sm">Preview</button>
       <div id="dl-ap-ai-overview-results" style="margin-top:var(--space-sm);"></div>
     </div>
     <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-md);">
@@ -963,7 +971,15 @@ function _dlRenderActionPlansDrill(panel, dl) {
   panel.querySelectorAll('.dl-ap-tab').forEach(btn => {
     btn.addEventListener('click', () => _dlRenderAPTabContent(btn.dataset.apTab, active, closed, panel, dl));
   });
-  wireAreaOverviewButton('dl-ap-ai-overview-btn', 'dl-ap-ai-overview-results', dl.areaCode);
+  document.getElementById('dl-ap-ai-copy-btn')?.addEventListener('click', () => {
+    const items = _gatherAreaActionItems(dl.areaCode);
+    const text = `Group these action items into themes, classify each as "individual" (1-2 people) or "whole-team" (common thread), and suggest a next step for each. Respond only with JSON: {"themes":[{"description":"...","staffInvolved":["..."],"classification":"individual|whole-team","recommendation":"..."}]}\n\nAction items for area ${dl.areaCode}:\n${JSON.stringify(items, null, 2)}`;
+    navigator.clipboard.writeText(text).then(() => {
+      const s = document.getElementById('dl-ap-ai-copy-status');
+      if (s) { s.textContent = '✓ Copied — paste into a Claude conversation, then paste the reply into the box below.'; s.style.color = 'var(--color-green)'; }
+    });
+  });
+  wireAreaOverviewButton('dl-ap-ai-overview-btn', 'dl-ap-ai-overview-results', 'dl-ap-ai-overview-json', dl.areaCode);
 }
 
 function _dlRenderAPTabContent(tab, active, closed, panel, dl) {
