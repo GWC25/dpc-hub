@@ -164,7 +164,17 @@ function _renderWeekView() {
   let html = `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
     <thead><tr>`;
   days.forEach(d => {
-    const isToday = d.toISOString().split('T')[0] === todayStr;
+    // Session 67 (11/08/26): real bug -- comparing this day's UTC
+    // ISO string (.toISOString()) against todayStr (built from LOCAL
+    // date parts, matching todayISO()) silently disagreed for anyone
+    // in a positive UTC offset timezone (UK BST is UTC+1 in August).
+    // A Date built at LOCAL midnight for the 13th converts to
+    // 23:00 UTC on the 12th, so .toISOString() reports "the 12th" --
+    // exactly matching today's real date and marking the WRONG day
+    // (the 13th) as "today". Fixed to build this day's string from
+    // local parts too, the same way todayISO() does, so the two
+    // sides of the comparison can never disagree over timezone.
+    const isToday = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` === todayStr;
     html += `<th style="width:${100/7}%;padding:var(--space-sm) var(--space-xs);text-align:center;font-size:var(--text-xs);font-weight:var(--font-bold);
       color:${isToday ? 'var(--color-teal)' : 'var(--color-muted)'};border:1px solid var(--color-border);
       background:${isToday ? 'var(--color-teal-lt)' : 'var(--color-light)'};">
