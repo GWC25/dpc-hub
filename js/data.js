@@ -1500,6 +1500,28 @@ function saveTemplate(template) {
   _writeLocalSnapshot();
 }
 
+// Session 62 (11/08/26): the Prompt Library for AI Support's document
+// workbench, reusing Templates' existing storage rather than a new
+// store — a saved prompt is just a Template with templateType
+// AI_PROMPT. "If there are future departments I can edit the prompt"
+// — editing is just saveAIPrompt() called again with the same
+// templateId, same as editing any other template.
+function saveAIPrompt(promptText, dataType, title, templateId = null) {
+  const prompt = {
+    templateId: templateId || generateId(),
+    templateType: TEMPLATE_TYPE.AI_PROMPT,
+    title: title || promptText.slice(0, 60),
+    promptText,
+    dataType,
+    version: 1,
+  };
+  saveTemplate(prompt);
+  return prompt;
+}
+function getAIPrompts() {
+  return (window.DPC_DATA.templates.templates || []).filter(t => t.templateType === TEMPLATE_TYPE.AI_PROMPT);
+}
+
 // ── Resource Library (Session 32) ───────────────────────────────
 // saveLibraryEntry: manual entries only (LinkedIn Pathway / DPC-created).
 // Learning Studio entries are never saved here — see LIBRARY_TYPE in schema.js.
