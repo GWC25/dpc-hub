@@ -130,7 +130,7 @@ window.DPC_DATA = {
   actionPlans:   { plans: [] },
   departments:   { departments: [
     // Seeded defaults (Session 61, 11/08/26) — non-curriculum groups
-    // Notes can link to, distinct from Areas. Growable: saveDepartment()
+    // Notes can link to, distinct from Areas. Growable: saveNoteDepartment()
     // adds a new one permanently the first time someone uses "Other".
     { id: 'executive', name: 'Executive' },
     { id: 'exams', name: 'Exams' },
@@ -1641,7 +1641,17 @@ function deleteNote(noteId) {
 // time someone types a genuinely new one via "Other", it's saved here
 // permanently so it shows up as a real option next time, not re-typed
 // from scratch every time.
-function saveDepartment(name) {
+// Session 68 (11/08/26) rename: this used to be named saveDepartment(),
+// silently colliding with the pre-existing saveDepartment(areaCode,
+// dept) above (Area sub-departments — a completely different concept).
+// Both are plain `function` declarations in the same global scope, so
+// this one (loaded later, being lower in the same file) was silently
+// overwriting the older one everywhere — breaking all six of Settings'
+// real department-management call sites without any error, exactly
+// the same silent-collision bug class as _openEntryModal. Renamed to
+// make the distinction unmistakable in the name itself, not just in a
+// comment someone has to already know to read.
+function saveNoteDepartment(name) {
   const trimmed = (name || '').trim();
   if (!trimmed) return null;
   const depts = window.DPC_DATA.departments.departments;
