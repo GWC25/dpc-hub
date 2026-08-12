@@ -213,7 +213,7 @@ function _renderWeekView() {
   // with that date -- a real, previously-missing way to add
   // something directly from the day you actually want it on.
   grid.querySelectorAll('.cal-empty-cell-add').forEach(btn => {
-    btn.addEventListener('click', () => _openEntryModal(null, btn.dataset.date));
+    btn.addEventListener('click', () => _calOpenEntryModal(null, btn.dataset.date));
   });
 }
 
@@ -348,12 +348,12 @@ function _buildEntryChip(entry, compact=false) {
 function _wireChipClicks(grid) {
   grid.addEventListener('click', e => {
     const chip = e.target.closest('[data-entry-id]');
-    if (chip) _openEntryModal(chip.dataset.entryId);
+    if (chip) _calOpenEntryModal(chip.dataset.entryId);
   });
 }
 
 // ── Entry modal ───────────────────────────────────────────────
-function _openEntryModal(entryId, prefillDate) {
+function _calOpenEntryModal(entryId, prefillDate) {
   const modal = document.getElementById('cal-modal');
   if (!modal) return;
 
@@ -409,7 +409,7 @@ function _closeEntryModal() {
   if (modal) modal.style.display = 'none';
 }
 
-function _saveEntry() {
+function _calSaveEntry() {
   const title = document.getElementById('cal-entry-title').value.trim();
   if (!title) { document.getElementById('cal-entry-title').focus(); return; }
   const date = document.getElementById('cal-entry-date').value;
@@ -480,7 +480,7 @@ function _wireCalendarEvents() {
   document.getElementById('cal-prev')?.addEventListener('click', () => _navigate(-1));
   document.getElementById('cal-next')?.addEventListener('click', () => _navigate(1));
   document.getElementById('cal-today')?.addEventListener('click', () => { _calAnchor = new Date(); _renderCalendar(); });
-  document.getElementById('cal-add-btn')?.addEventListener('click', () => _openEntryModal(null));
+  document.getElementById('cal-add-btn')?.addEventListener('click', () => _calOpenEntryModal(null));
 
   document.querySelectorAll('.cal-view-btn').forEach(btn => {
     btn.addEventListener('click', () => _setView(btn.dataset.view));
@@ -488,7 +488,7 @@ function _wireCalendarEvents() {
 
   document.getElementById('cal-modal-close')?.addEventListener('click', _closeEntryModal);
   document.getElementById('cal-entry-cancel')?.addEventListener('click', _closeEntryModal);
-  document.getElementById('cal-entry-save')?.addEventListener('click', _saveEntry);
+  document.getElementById('cal-entry-save')?.addEventListener('click', _calSaveEntry);
   document.getElementById('cal-entry-delete')?.addEventListener('click', _deleteEntry);
 
   document.getElementById('cal-open-meetings-btn')?.addEventListener('click', () => {
