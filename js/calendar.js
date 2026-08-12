@@ -33,6 +33,7 @@ function initCalendar() {
     </div>
 
     <!-- Calendar grid -->
+    <style>.cal-entry-chip:hover { filter: brightness(0.95); }</style>
     <div id="cal-grid" style="background:var(--color-white);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;"></div>
 
     <!-- Entry modal -->
@@ -341,7 +342,7 @@ function _buildEntryChip(entry, compact=false) {
     cursor:pointer;margin-bottom:4px;
     white-space:normal;word-wrap:break-word;overflow-wrap:break-word;
     min-height:${compact ? '20px' : 'var(--touch-target)'};
-  " aria-label="Entry: ${_escHtml(label)}" onmouseover="this.style.filter='brightness(0.95)'" onmouseout="this.style.filter='none'">${_escHtml(label)}</button>`;
+  " aria-label="Entry: ${_escHtml(label)}" class="cal-entry-chip">${_escHtml(label)}</button>`;
 }
 
 function _wireChipClicks(grid) {
@@ -371,7 +372,7 @@ function _openEntryModal(entryId, prefillDate) {
     document.getElementById('cal-entry-time').value     = entry.startTime || '';
     document.getElementById('cal-entry-end-time').value = entry.endTime || '';
     document.getElementById('cal-entry-person').value   = (entry.personRefs || []).join(', ');
-    document.getElementById('cal-entry-location').value = entry.notes ? '' : '';
+    document.getElementById('cal-entry-location').value = entry.location || '';
     document.getElementById('cal-entry-area').value     = entry.areaCode || '';
     document.getElementById('cal-entry-notes').value    = entry.notes || '';
     document.getElementById('cal-entry-id').value       = entry.entryId;
@@ -427,6 +428,7 @@ function _saveEntry() {
     endTime:    document.getElementById('cal-entry-end-time').value || null,
     personRefs,
     areaCode:   document.getElementById('cal-entry-area').value || null,
+    location:   document.getElementById('cal-entry-location').value.trim() || null,
     projectRef: null,
     status:     TASK_STATUS.UPCOMING,
     notes:      document.getElementById('cal-entry-notes').value.trim() || null,
