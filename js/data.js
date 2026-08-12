@@ -128,6 +128,20 @@ window.DPC_DATA = {
   notes:         { notes: [] },
   healthChecks:  { reviews: [] },
   actionPlans:   { plans: [] },
+  departments:   { departments: [
+    // Seeded defaults (Session 61, 11/08/26) — non-curriculum groups
+    // Notes can link to, distinct from Areas. Growable: saveDepartment()
+    // adds a new one permanently the first time someone uses "Other".
+    { id: 'executive', name: 'Executive' },
+    { id: 'exams', name: 'Exams' },
+    { id: 'it', name: 'IT' },
+    { id: 'marketing', name: 'Marketing' },
+    { id: 'hr', name: 'HR' },
+    { id: 'finance', name: 'Finance' },
+    { id: 'estates', name: 'Estates' },
+    { id: 'mis', name: 'MIS' },
+    { id: 'student-services', name: 'Student Services' },
+  ] },
 };
 
 // Dirty tracking: which files have unsaved changes
@@ -1457,6 +1471,25 @@ function deleteNote(noteId) {
   _writeLocalSnapshot();
 }
 
+// Session 61 (11/08/26): departments are a distinct, broader concept
+// from Areas — non-curriculum groups (Executive, Exams, IT, Marketing,
+// etc.) that Notes and other records can link to. Growable: the first
+// time someone types a genuinely new one via "Other", it's saved here
+// permanently so it shows up as a real option next time, not re-typed
+// from scratch every time.
+function saveDepartment(name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return null;
+  const depts = window.DPC_DATA.departments.departments;
+  const existing = depts.find(d => d.name.toLowerCase() === trimmed.toLowerCase());
+  if (existing) return existing;
+  const dept = { id: generateId(), name: trimmed };
+  depts.push(dept);
+  _dirty.add('data-departments.json');
+  _writeLocalSnapshot();
+  return dept;
+}
+
 // ── Public: mark all files dirty (used after restore) ────────
 function markAllDirty() {
   _dirty.add('data-areas.json');
@@ -1515,6 +1548,7 @@ function _assignToStore(filename, data) {
     'data-resource-library.json': 'resourceLibrary',
     'data-health-checks.json': 'healthChecks',
     'data-action-plans.json': 'actionPlans',
+    'data-departments.json':  'departments',
   };
   const key = keyMap[filename];
   if (key && data) window.DPC_DATA[key] = data;
@@ -1536,6 +1570,7 @@ function _getDataForFile(filename) {
     'data-resource-library.json': window.DPC_DATA.resourceLibrary,
     'data-health-checks.json': window.DPC_DATA.healthChecks,
     'data-action-plans.json': window.DPC_DATA.actionPlans,
+    'data-departments.json':  window.DPC_DATA.departments,
     [DPC_CONFIG.MANIFEST_FILENAME]: window.DPC_DATA.manifest,
   };
   return keyMap[filename] || null;
