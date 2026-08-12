@@ -72,10 +72,37 @@ function initAISupport() {
         </div>
 
         <div class="empty-state" style="padding:var(--space-md) 0;">
-          <p class="empty-state__body">Area overview synthesis (individual-support vs whole-team-thread) for Action Plans, and bulk Action Plan generation from Health Checks, are next in progress.</p>
+          <p class="empty-state__body">RAG Matrix, Health Checks, Meeting Notes, and QSR document-workbench data types are next in progress — the workbench below is built generally, they'll slot in as their own dataType without changing how it works.</p>
         </div>
+
+        <hr style="border:none;border-top:1px solid var(--color-border);margin:var(--space-lg) 0;">
+
+        <p style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:4px;">Document workbench</p>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-md);">Upload a document (Word, Excel, PDF, or a screenshot), pick or write a prompt, tag what it's for, and run it. Nothing is created until you review and confirm.</p>
+
+        <input type="file" id="ai-doc-file" accept=".docx,.xlsx,.xls,.pdf,.png,.jpg,.jpeg,.webp" style="margin-bottom:8px;">
+
+        <select id="ai-prompt-select" class="form-select" style="margin-bottom:8px;">
+          <option value="">Write a custom prompt…</option>
+          ${getAIPrompts().map(p => `<option value="${p.templateId}">${_aiEsc(p.title)} (${_aiEsc(AI_PROMPT_DATA_TYPE_LABELS[p.dataType]||p.dataType)})</option>`).join('')}
+        </select>
+
+        <textarea id="ai-prompt-text" class="form-textarea" rows="2" placeholder="e.g. Extract tasks assigned to me from this document" style="width:100%;margin-bottom:8px;"></textarea>
+
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:8px;">
+          <select id="ai-data-type" class="form-select">
+            ${Object.values(AI_PROMPT_DATA_TYPES).map(dt => `<option value="${dt}" ${dt==='tasks'?'selected':''}>${_aiEsc(AI_PROMPT_DATA_TYPE_LABELS[dt])}</option>`).join('')}
+          </select>
+          <label style="font-size:var(--text-xs);white-space:nowrap;"><input type="checkbox" id="ai-save-prompt-cb"> Save this prompt for reuse</label>
+        </div>
+
+        <button type="button" id="ai-run-btn" class="btn btn--primary btn--sm">Run</button>
+        <p id="ai-run-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;"></p>
+        <div id="ai-run-results" style="margin-top:var(--space-md);"></div>
       </div>
     </div>`;
+
+  el.querySelector('.card').style.maxWidth = '760px';
 
   const clearBtn = document.getElementById('ai-clear-key-btn');
   if (clearBtn) clearBtn.addEventListener('click', () => { DPC.AISupport.clearSessionKey(); initAISupport(); });
@@ -83,6 +110,93 @@ function initAISupport() {
   document.getElementById('ai-jump-area')?.addEventListener('change', (e) => {
     if (e.target.value && typeof openAreaProfile === 'function') openAreaProfile(e.target.value, 'industryskills');
   });
+
+  document.getElementById('ai-prompt-select')?.addEventListener('change', (e) => {
+    const promptId = e.target.value;
+    const textArea = document.getElementById('ai-prompt-text');
+    const dataTypeSel = document.getElementById('ai-data-type');
+    if (!promptId) { textArea.value = ''; return; }
+    const prompt = getAIPrompts().find(p => p.templateId === promptId);
+    if (prompt) {
+      textArea.value = prompt.promptText;
+      dataTypeSel.value = prompt.dataType;
+    }
+  });
+
+  document.getElementById('ai-run-btn')?.addEventListener('click', _aiRunDocumentWorkbench);
+}
+
+function _aiEsc(s) { return s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function _aiRunDocumentWorkbench() {
+  const fileInput = document.getElementById('ai-doc-file');
+  const status = document.getElementById('ai-run-status');
+  const results = document.getElementById('ai-run-results');
+  const setStatus = (msg, isError) => { if (status) { status.textContent = msg; status.style.color = isError ? 'var(--color-red)' : 'var(--color-muted)'; } };
+
+  if (!fileInput.files || fileInput.files.length === 0) { setStatus('Choose a file first.', true); return; }
+  const promptText = document.getElementById('ai-prompt-text').value.trim();
+  const dataType = document.getElementById('ai-data-type').value;
+  const saveIt = document.getElementById('ai-save-prompt-cb').checked;
+  const selectedPromptId = document.getElementById('ai-prompt-select').value || null;
+
+  if (saveIt && promptText) {
+    saveAIPrompt(promptText, dataType, promptText.slice(0, 60), selectedPromptId);
+  }
+
+  setStatus('Running — this calls Claude, may take a few seconds…');
+  results.innerHTML = '';
+
+  const myName = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff.find(s => s.role === 'Digital Pedagogy Coach')?.name) || null;
+  const result = await DPC.AISupport.runDocumentPrompt(fileInput.files[0], promptText, dataType, { myName });
+
+  if (!result.ok) { setStatus(`Failed: ${result.error}`, true); return; }
+  setStatus(`Found ${dataType === 'tasks' ? (result.tasks||[]).length : 0} item(s).`);
+
+  if (dataType === 'tasks') {
+    _aiLastExtractedTasks = result.tasks;
+    results.innerHTML = _aiRenderTaskExtractionResults(result.tasks);
+    results.querySelectorAll('.ai-task-create-btn').forEach(btn => btn.addEventListener('click', _aiCreateSelectedTasks));
+  }
+}
+
+let _aiLastExtractedTasks = [];
+
+function _aiRenderTaskExtractionResults(tasks) {
+  if (!tasks || tasks.length === 0) return '<p style="font-size:var(--text-sm);color:var(--color-muted);">No tasks found in this document.</p>';
+  return `
+    <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:8px;">Extracted tasks — untick any you don't want created</p>
+    ${tasks.map((t, i) => `
+      <label style="display:block;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:6px;cursor:pointer;">
+        <input type="checkbox" class="ai-task-cb" data-idx="${i}" ${t.isMine ? 'checked' : ''}>
+        <strong>${_aiEsc(t.description)}</strong>
+        ${t.isMine ? '<span style="font-size:10px;color:var(--color-teal);margin-left:6px;">yours</span>' : ''}
+        <br><span style="font-size:var(--text-xs);color:var(--color-muted);margin-left:20px;">Assigned to: ${_aiEsc(t.assignedTo)}${t.deadline ? ` · Due: ${_aiEsc(t.deadline)}` : ''}</span>
+        ${t.detail ? `<br><span style="font-size:var(--text-xs);color:var(--color-slate);margin-left:20px;">${_aiEsc(t.detail)}</span>` : ''}
+      </label>`).join('')}
+    <button type="button" class="btn btn--primary btn--sm ai-task-create-btn" style="margin-top:8px;">Create selected tasks</button>
+  `;
+}
+
+function _aiCreateSelectedTasks(e) {
+  const results = document.getElementById('ai-run-results');
+  const tasks = _aiLastExtractedTasks;
+  const checkedIdx = Array.from(results.querySelectorAll('.ai-task-cb:checked')).map(el => Number(el.dataset.idx));
+
+  let created = 0;
+  checkedIdx.forEach(i => {
+    const t = tasks[i];
+    if (!t || typeof createTaskFromSource !== 'function') return;
+    createTaskFromSource(
+      { title: t.description, date: t.deadline || todayISO(), personRefs: t.assignedTo ? [t.assignedTo] : [], notes: t.detail || '' },
+      'ai-document-extraction', { }
+    );
+    created++;
+  });
+
+  if (typeof UI !== 'undefined') UI.showToast('success', `${created} task(s) created.`);
+  e.target.disabled = true;
+  e.target.textContent = `${created} task(s) created ✓`;
 }
 
 DPC.AISupport = {
@@ -260,6 +374,34 @@ DPC.AISupport = {
     }).join('\n\n');
   },
 
+  // General-purpose file → Claude content-block conversion (Session 62,
+  // 11/08/26). Extracted out of analyzeIndustrySkillsAmendment() so the
+  // new general document workbench, and any future feature, use the
+  // exact same tested extraction logic rather than a third copy.
+  // Returns { ok:true, contentBlocks } or { ok:false, error }.
+  fileToContentBlocks: async function(file) {
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    try {
+      if (ext === 'docx') {
+        const text = await DPC.AISupport._extractDocxText(file);
+        return { ok: true, contentBlocks: [{ type: 'text', text: `Document (Word, extracted text):\n\n${text}` }] };
+      } else if (ext === 'xlsx' || ext === 'xls') {
+        const text = await DPC.AISupport._extractXlsxText(file);
+        return { ok: true, contentBlocks: [{ type: 'text', text: `Document (Excel, extracted as CSV per sheet):\n\n${text}` }] };
+      } else if (ext === 'pdf') {
+        const b64 = await DPC.AISupport._fileToBase64(file);
+        return { ok: true, contentBlocks: [{ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } }] };
+      } else if (['png','jpg','jpeg','webp'].includes(ext)) {
+        const b64 = await DPC.AISupport._fileToBase64(file);
+        const mediaType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+        return { ok: true, contentBlocks: [{ type: 'image', source: { type: 'base64', media_type: mediaType, data: b64 } }] };
+      }
+      return { ok: false, error: `Unsupported file type ".${ext}" — expected .docx, .xlsx, .xls, .pdf, .png, .jpg, .jpeg or .webp.` };
+    } catch (e) {
+      return { ok: false, error: `Could not read the file: ${e.message}` };
+    }
+  },
+
   // areaCode, file: the uploaded amendment. currentSkills: the area's
   // real industrySkills array right now (caller's responsibility to
   // pass the live data, not a stale copy).
@@ -270,29 +412,9 @@ DPC.AISupport = {
     const apiKey = await DPC.AISupport._promptForKey();
     if (!apiKey) return { ok: false, error: 'No API key provided — analysis cancelled.' };
 
-    const ext = (file.name.split('.').pop() || '').toLowerCase();
-    let contentBlocks;
-
-    try {
-      if (ext === 'docx') {
-        const text = await DPC.AISupport._extractDocxText(file);
-        contentBlocks = [{ type: 'text', text: `Amended document (Word, extracted text):\n\n${text}` }];
-      } else if (ext === 'xlsx' || ext === 'xls') {
-        const text = await DPC.AISupport._extractXlsxText(file);
-        contentBlocks = [{ type: 'text', text: `Amended document (Excel, extracted as CSV per sheet):\n\n${text}` }];
-      } else if (ext === 'pdf') {
-        const b64 = await DPC.AISupport._fileToBase64(file);
-        contentBlocks = [{ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } }];
-      } else if (['png','jpg','jpeg','webp'].includes(ext)) {
-        const b64 = await DPC.AISupport._fileToBase64(file);
-        const mediaType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
-        contentBlocks = [{ type: 'image', source: { type: 'base64', media_type: mediaType, data: b64 } }];
-      } else {
-        return { ok: false, error: `Unsupported file type ".${ext}" — expected .docx, .xlsx, .xls, .pdf, .png, .jpg, .jpeg or .webp.` };
-      }
-    } catch (e) {
-      return { ok: false, error: `Could not read the file: ${e.message}` };
-    }
+    const extraction = await DPC.AISupport.fileToContentBlocks(file);
+    if (!extraction.ok) return extraction;
+    const contentBlocks = extraction.contentBlocks;
 
     const systemPrompt = `You are comparing a CURRENT agreed list of digital skills for a college curriculum area against an AMENDED document someone has sent back with edits. Identify ONLY clear, unambiguous changes:
 - A skill's "Include?" column changed from Yes to No, or No to Yes
@@ -419,6 +541,95 @@ Respond ONLY with valid JSON, no other text, no markdown fences, in exactly this
       }
 
       return { ok: true, themes: Array.isArray(parsed.themes) ? parsed.themes : [] };
+    } catch (e) {
+      return { ok: false, error: `Network or fetch error: ${e.message}` };
+    }
+  },
+
+  // ── General document workbench (Session 62, 11/08/26) ──────────
+  // "It seems narrow to just Digital Skills... I upload the Health
+  // Check and there's a pre-generated prompt I can select... apply
+  // this across the Curriculum Areas." This is the general engine:
+  // upload anything, run a saved-or-custom prompt against it, tagged
+  // by which data type the result should land in. Each dataType gets
+  // its own extraction/shape below — 'tasks' is the first one built
+  // (the concrete near-term test case), the others (rag, health-
+  // checks, meeting-notes, qsr) follow the same shape once there's
+  // real data to prove them against, per the design conversation.
+  //
+  // file: the uploaded document. promptText: the saved-or-custom
+  // instruction (e.g. "Extract tasks assigned to me from this
+  // document"). dataType: which handler below processes the result.
+  // Returns a shape specific to dataType — see each handler's comment.
+  runDocumentPrompt: async function(file, promptText, dataType, context = {}) {
+    if (dataType === 'tasks') {
+      return DPC.AISupport._extractTasksFromDocument(file, promptText, context.myName);
+    }
+    return { ok: false, error: `Data type "${dataType}" isn't wired up yet — only "tasks" is built so far.` };
+  },
+
+  // Extracts task-like items from any uploaded document. Told
+  // explicitly never to guess whether an item belongs to "myName" —
+  // only mark isMine true on a genuine textual match in the document,
+  // not an inference. Everything comes back for review regardless;
+  // isMine is a filter hint for the UI, never a silent exclusion.
+  _extractTasksFromDocument: async function(file, promptText, myName) {
+    const apiKey = await DPC.AISupport._promptForKey();
+    if (!apiKey) return { ok: false, error: 'No API key provided — analysis cancelled.' };
+
+    const extraction = await DPC.AISupport.fileToContentBlocks(file);
+    if (!extraction.ok) return extraction;
+
+    const systemPrompt = `You are extracting real, actionable tasks from an uploaded document (meeting minutes, an action list, notes — could be anything). For each task-like item found, capture:
+- description: what actually needs doing, in enough detail to act on without re-reading the source document
+- assignedTo: the person's name exactly as written in the document, or "Unclear" if genuinely not stated
+- deadline: a date if one is explicitly given, otherwise null — never invent one
+- detail: any extra context from the document that matters (why it's needed, what it depends on)
+- isMine: true ONLY if assignedTo is a genuine textual match to "${myName || 'the user'}" as written in the document — never infer this from context, only from an actual name match. If uncertain, false.
+
+Extract every genuine task, not just the user's own — this is a review list, not a pre-filtered one. Do not invent tasks that aren't actually in the document.
+
+${promptText ? `Additional instruction from the user: ${promptText}` : ''}
+
+Respond ONLY with valid JSON, no other text, no markdown fences, in exactly this shape:
+{"tasks":[{"description":"...","assignedTo":"...","deadline":"YYYY-MM-DD or null","detail":"...","isMine":true|false}]}`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: DPC.AISupport.NARRATIVE_MODEL,
+          max_tokens: 3000,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: [{ type: 'text', text: 'Extract the tasks from this document.' }, ...extraction.contentBlocks] }],
+        }),
+      });
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        const msg = errBody.error?.message || `API error (HTTP ${response.status})`;
+        if (response.status === 401) DPC.AISupport._sessionKey = null;
+        return { ok: false, error: msg };
+      }
+
+      const data = await response.json();
+      const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+      const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+
+      let parsed;
+      try {
+        parsed = JSON.parse(cleaned);
+      } catch (e) {
+        return { ok: false, error: `Could not parse the AI's response as JSON: ${e.message}. Raw response: ${text.slice(0, 300)}` };
+      }
+
+      return { ok: true, tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [] };
     } catch (e) {
       return { ok: false, error: `Network or fetch error: ${e.message}` };
     }
