@@ -22,6 +22,7 @@ const REPORT_TYPES = Object.freeze({
   AP_HOA_AREA:      'ap-hoa-area',
   BEN_MONTHLY:      'ben-monthly',
   PERFORMANCE_REVIEW: 'performance-review',
+  COLLEGE_ACTION_PLAN: 'college-action-plan',
 });
 
 let _repCurrentType = null;
@@ -80,6 +81,7 @@ function initReports() {
             ${_repTypeBtn(REPORT_TYPES.AP_HOA_AREA,      'AP / HoA — Area Report', 'Area trajectory, staff CPD, suggested observation focus')}
             ${_repTypeBtn(REPORT_TYPES.BEN_MONTHLY,      'Ben Manning — Monthly Overview', 'College-wide RAG distribution, movers, strategic picture')}
             ${_repTypeBtn(REPORT_TYPES.PERFORMANCE_REVIEW, 'Performance Review', 'Full pilot evidence with AI-generated narrative (Sonnet)')}
+            ${_repTypeBtn(REPORT_TYPES.COLLEGE_ACTION_PLAN, 'College Action Plan Overview', 'Every open action item, grouped by common theme across all areas — for Ben/Neil')}
           </div>
         </div>
       </div>
@@ -219,6 +221,14 @@ function _repRenderOptions() {
       <div style="margin-bottom:var(--space-md);">
         <label class="form-label" for="rep-pr-narrative">Paste the narrative back here</label>
         <textarea class="form-input" id="rep-pr-narrative" rows="6" placeholder="Paste the 3-4 paragraph narrative from your Claude conversation here…"></textarea>
+      </div>`;
+  }
+  else if (type === REPORT_TYPES.COLLEGE_ACTION_PLAN) {
+    title.textContent = 'College Action Plan Overview Options';
+    html = `
+      <div style="background:var(--color-light);border:1px solid var(--color-border);border-radius:var(--radius-md);
+        padding:var(--space-md);margin-bottom:var(--space-md);font-size:var(--text-sm);">
+        Groups every open Action Plan item across every area by its tagged theme (e.g. "Accessibility & Inclusion," "Staff Capability") — real, existing data, no AI call, no cost. Answers "what are you doing about it" at a whole-college level, not just per-area.
       </div>`;
   }
 
@@ -363,7 +373,9 @@ function _repRenderPreview() {
   } else if (type === REPORT_TYPES.BEN_MONTHLY) {
     html = _repPreviewBen(_repCollegeData(opts), opts);
   } else if (type === REPORT_TYPES.PERFORMANCE_REVIEW) {
-    html = `<p style="color:var(--color-muted)">Performance review is generated directly to Word (AI narrative is not shown in this preview pane — it's included in the generated document).</p>`;
+    html = `<p style="color:var(--color-muted)">Performance review is generated directly to Word (the narrative is not shown in this preview pane — it's included in the generated document).</p>`;
+  } else if (type === REPORT_TYPES.COLLEGE_ACTION_PLAN) {
+    html = _repPreviewCollegeActionPlan();
   }
 
   body.innerHTML = html;
@@ -573,6 +585,8 @@ async function _repGenerate() {
       _repBuildBenDoc(docx, _repCollegeData(opts), opts);
     } else if (type === REPORT_TYPES.PERFORMANCE_REVIEW) {
       await _repBuildPerformanceReviewDoc(docx, opts);
+    } else if (type === REPORT_TYPES.COLLEGE_ACTION_PLAN) {
+      _repBuildCollegeActionPlanDoc(docx);
     }
     showStatus('✓ Document generated and downloaded.', 'success');
   } catch (e) {
@@ -692,6 +706,81 @@ function _repBuildAPHoADoc(docx, data, opts) {
     numbering: _repDocNumberingConfig(docx),
   });
   _repDownloadDoc(docx, doc, `ap-hoa-${data.area.areaCode}-${todayISO()}.docx`);
+}
+
+// ── College Action Plan Overview (Session 66, 11/08/26) ─────────
+// Real feedback: "I'd like to be able to download the action plan.
+// There's no overview action plan that I can download to send as a
+// whole organization view... where there is commonality, I need to
+// be able to say these are the things flagged... lots of places need
+// work on accessibility, or alt text, here's what I'm doing about
+// those things. It needs to give an overview of the whole college."
+//
+// Deliberately NOT run through a Claude conversation like the other
+// AI Support features — every action item already carries a
+// sourceDomain tag (from Health Check generation, RAG follow-ups,
+// etc.), so grouping by real, existing data is both more reliable
+// and genuinely free. Themes are sorted by how many distinct areas
+// they touch, so the most common threads across the college surface
+// first — directly answering "what are you doing about it" at
+// exactly the level Ben/Neil would ask the question.
+function _repGatherCollegeActionItems() {
+  const plans = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || []).filter(p => p.status !== 'complete');
+  const areas = _repGetAreas();
+  const areaName = (code) => areas.find(a => a.areaCode === code)?.areaName || code;
+
+  const byTheme = {};
+  plans.forEach(plan => {
+    (plan.actionItems || []).filter(i => !i.done).forEach(item => {
+      const theme = item.sourceDomain || 'Ungrouped';
+      if (!byTheme[theme]) byTheme[theme] = { theme, items: [], areaCodes: new Set() };
+      byTheme[theme].items.push({ description: item.description, areaCode: plan.areaCode, areaName: areaName(plan.areaCode), accountableName: item.accountableName || '' });
+      byTheme[theme].areaCodes.add(plan.areaCode);
+    });
+  });
+
+  return Object.values(byTheme)
+    .map(t => ({ theme: t.theme, items: t.items, areaCount: t.areaCodes.size, areaCodes: Array.from(t.areaCodes) }))
+    .sort((a, b) => b.areaCount - a.areaCount);
+}
+
+function _repPreviewCollegeActionPlan() {
+  const themes = _repGatherCollegeActionItems();
+  if (themes.length === 0) return '<p style="color:var(--color-muted)">No open action items across any area right now.</p>';
+  return themes.map(t => `
+    <div style="margin-bottom:var(--space-md);">
+      <p style="font-weight:bold;color:var(--color-navy);">${_repEsc(t.theme)} — ${t.areaCount} area(s), ${t.items.length} item(s)</p>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);">${t.areaCodes.map(_repEsc).join(', ')}</p>
+    </div>`).join('');
+}
+
+function _repBuildCollegeActionPlanDoc(docx) {
+  const themes = _repGatherCollegeActionItems();
+  const totalItems = themes.reduce((s, t) => s + t.items.length, 0);
+  const totalAreas = new Set(themes.flatMap(t => t.areaCodes)).size;
+
+  const children = [
+    _repDocTitle(docx, 'College Action Plan Overview'),
+    _repDocPara(docx, `Prepared: ${_repFmtDate(nowISO())} · ${totalItems} open action item(s) across ${totalAreas} area(s), grouped by theme`, { italics: true, spacing:{after:200} }),
+  ];
+
+  if (themes.length === 0) {
+    children.push(_repDocPara(docx, 'No open action items across any area at the time this was generated.'));
+  }
+
+  themes.forEach(t => {
+    children.push(_repDocSectionHeading(docx, `${t.theme} — ${t.areaCount} area(s)`));
+    children.push(_repDocPara(docx, `Affects: ${t.areaCodes.join(', ')}`, { italics: true, spacing:{after:100} }));
+    children.push(_repDocTable(docx, ['Area', 'Action', 'Accountable'],
+      t.items.map(i => [i.areaName, i.description, i.accountableName || '—']),
+      [2000, 5200, 1800]));
+  });
+
+  const doc = new (docx.Document)({
+    sections: [{ properties: { page: { margin: { top:1440,bottom:1440,left:1440,right:1440 } } }, children }],
+    numbering: _repDocNumberingConfig(docx),
+  });
+  _repDownloadDoc(docx, doc, `college-action-plan-overview-${todayISO()}.docx`);
 }
 
 function _repBuildBenDoc(docx, data, opts) {
