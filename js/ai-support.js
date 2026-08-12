@@ -101,6 +101,25 @@ function initAISupport() {
         <div id="ai-run-results" style="margin-top:var(--space-md);"></div>
 
         <hr style="border:none;border-top:1px solid var(--color-border);margin:var(--space-lg) 0;">
+
+        <p style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:4px;">Import outcomes (no API cost)</p>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:8px;">
+          If you've already had a document analysed in a Claude conversation or Project (using your Claude subscription, not this Hub's API key), paste the JSON result here instead of re-running it through the live workbench above — same review-before-apply screen, zero extra API cost.
+        </p>
+        <details style="margin-bottom:8px;">
+          <summary style="cursor:pointer;font-size:var(--text-xs);color:var(--color-teal);">What shape does the JSON need to be?</summary>
+          <pre style="background:var(--color-light);border-radius:var(--radius-sm);padding:8px;font-size:10px;overflow-x:auto;margin-top:4px;">{"tasks":[{"description":"...","assignedTo":"...","deadline":"YYYY-MM-DD or null","detail":"...","isMine":true|false}]}</pre>
+          <p style="font-size:10px;color:var(--color-muted);">Only "Tasks" can actually be applied right now — the same limit as the live workbench above. Give this exact shape to whatever Claude conversation or Project is doing the analysis.</p>
+        </details>
+        <select id="ai-import-type" class="form-select" style="margin-bottom:8px;max-width:280px;">
+          ${Object.values(AI_PROMPT_DATA_TYPES).map(dt => `<option value="${dt}" ${dt==='tasks'?'selected':''}>${_aiEsc(AI_PROMPT_DATA_TYPE_LABELS[dt])}</option>`).join('')}
+        </select>
+        <textarea id="ai-import-json" class="form-textarea" rows="4" placeholder='Paste the JSON result here…' style="width:100%;font-family:monospace;font-size:11px;margin-bottom:8px;"></textarea>
+        <button type="button" id="ai-import-preview-btn" class="btn btn--secondary btn--sm">Preview import</button>
+        <p id="ai-import-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:8px;"></p>
+        <div id="ai-import-results" style="margin-top:var(--space-md);"></div>
+
+        <hr style="border:none;border-top:1px solid var(--color-border);margin:var(--space-lg) 0;">
         <p style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:4px;">Recent activity</p>
         <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:8px;">Every run, whether it succeeded, found nothing, or failed — so a run that costs real money is never unaccounted for.</p>
         <div id="ai-recent-activity"></div>
@@ -129,7 +148,60 @@ function initAISupport() {
   });
 
   document.getElementById('ai-run-btn')?.addEventListener('click', _aiRunDocumentWorkbench);
+  document.getElementById('ai-import-preview-btn')?.addEventListener('click', _aiPreviewImport);
   _aiRenderRecentActivity();
+}
+
+// Session 64 (11/08/26): "reverse engineer it so I have a Claude
+// Project or set of rules... upload the documents there... you
+// produce the outcomes... I import that outcome... I don't need to
+// use lots of different credits." This is that import path — same
+// review-before-apply screen as a live run, zero API call, because
+// the analysis already happened in a Claude conversation/Project the
+// DPC pays for separately. Deliberately reuses
+// _aiRenderTaskExtractionResults/_aiCreateSelectedTasks unchanged
+// rather than a parallel apply path — a task from an import and a
+// task from a live run are the same shape, so they go through the
+// same code, not two versions that could drift.
+function _aiPreviewImport() {
+  const status = document.getElementById('ai-import-status');
+  const results = document.getElementById('ai-import-results');
+  const setStatus = (msg, kind) => {
+    if (!status) return;
+    status.textContent = msg;
+    const colours = { success: 'var(--color-green)', error: 'var(--color-red)' };
+    status.style.color = colours[kind] || 'var(--color-muted)';
+  };
+
+  const dataType = document.getElementById('ai-import-type').value;
+  const raw = document.getElementById('ai-import-json').value.trim();
+  if (!raw) { setStatus('Paste the JSON result first.', 'error'); return; }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    setStatus(`Not valid JSON: ${e.message}`, 'error');
+    logAIRun({ fileName: '(pasted import)', dataType, promptText: '', outcome: 'error', detail: `Invalid JSON: ${e.message}`, itemCount: 0, imported: true });
+    _aiRenderRecentActivity();
+    return;
+  }
+
+  if (dataType !== 'tasks') {
+    setStatus(`Importing "${AI_PROMPT_DATA_TYPE_LABELS[dataType]}" isn't wired up to apply yet — same limit as the live workbench.`, 'error');
+    return;
+  }
+
+  const tasks = Array.isArray(parsed.tasks) ? parsed.tasks : null;
+  if (!tasks) { setStatus('JSON doesn\u2019t match the expected shape — needs a top-level "tasks" array.', 'error'); return; }
+
+  setStatus(`✓ Parsed ${tasks.length} task(s) — review below before creating anything.`, 'success');
+  logAIRun({ fileName: '(pasted import)', dataType, promptText: '', outcome: 'success', detail: null, itemCount: tasks.length, imported: true });
+  _aiRenderRecentActivity();
+
+  _aiLastExtractedTasks = tasks;
+  results.innerHTML = _aiRenderTaskExtractionResults(tasks);
+  results.querySelectorAll('.ai-task-create-btn').forEach(btn => btn.addEventListener('click', _aiCreateSelectedTasks));
 }
 
 function _aiEsc(s) { return s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -209,6 +281,7 @@ function _aiRenderRecentActivity() {
         <p style="font-size:var(--text-xs);color:var(--color-navy);">
           <strong>${_aiEsc(r.fileName)}</strong> — ${_aiEsc(AI_PROMPT_DATA_TYPE_LABELS[r.dataType]||r.dataType)}
           ${r.outcome==='error' ? `<span style="color:var(--color-red);">failed</span>` : `${r.itemCount} item(s)`}
+          ${r.imported ? `<span style="font-size:10px;color:var(--color-teal);background:var(--color-light);padding:1px 6px;border-radius:999px;margin-left:4px;">imported — no API cost</span>` : ''}
         </p>
         <p style="font-size:10px;color:var(--color-muted);">${_aiFmtRunDate(r.timestamp)}${r.outcome==='error' && r.detail ? ` — ${_aiEsc(r.detail)}` : ''}</p>
       </div>
@@ -234,7 +307,16 @@ function _aiRenderTaskExtractionResults(tasks) {
 }
 
 function _aiCreateSelectedTasks(e) {
-  const results = document.getElementById('ai-run-results');
+  // Session 64 bug fix: this used to hardcode #ai-run-results, which
+  // is only correct when triggered from the live workbench. Called
+  // from the import flow, the checkboxes live in #ai-import-results
+  // instead -- found and confirmed via a real test (0 tasks created
+  // when it should have been 1), not just spotted by inspection.
+  // Finding the actual containing results div, whichever one it is,
+  // is correct for both call sites without needing two copies of
+  // this function.
+  const results = e.target.closest('[id^="ai-"][id$="-results"]');
+  if (!results) return;
   const tasks = _aiLastExtractedTasks;
   const checkedIdx = Array.from(results.querySelectorAll('.ai-task-cb:checked')).map(el => Number(el.dataset.idx));
 
