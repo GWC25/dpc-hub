@@ -536,7 +536,7 @@ function initIndustrySkillsForArea(areaCode) {
       stage3: d.stage3,
       selected: true,
       isCustom: false,
-      source: 'research-2026',
+      source: d.source || 'Research-derived default — no citation recorded',
     }));
     saveArea(area);
   }
