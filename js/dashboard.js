@@ -81,10 +81,17 @@ function _renderDashRAG() {
       <input type="search" id="dash-rag-search" class="form-input" placeholder="Search areas…" style="width:180px;min-height:40px;font-size:var(--text-sm);" aria-label="Search areas">
     </div>
     <div id="dash-rag-summary" style="display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-sm);margin-bottom:var(--space-lg);"></div>
+    <div style="margin-bottom:var(--space-md);">
+      <button type="button" id="dash-college-ap-link" class="btn btn--ghost btn--sm">Download College Action Plan Overview →</button>
+    </div>
     <div id="dash-rag-table" style="overflow-x:auto;"></div>
   `;
 
   _renderRAGTable();
+  document.getElementById('dash-college-ap-link')?.addEventListener('click', () => {
+    if (typeof openReportType === 'function') openReportType(REPORT_TYPES.COLLEGE_ACTION_PLAN);
+    else if (typeof navigateTo === 'function') navigateTo('reports');
+  });
   document.getElementById('dash-rag-dim')?.addEventListener('change',_renderRAGTable);
   document.getElementById('dash-rag-score')?.addEventListener('change',_renderRAGTable);
   document.getElementById('dash-rag-afi')?.addEventListener('change',_renderRAGTable);
