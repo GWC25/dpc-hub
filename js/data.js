@@ -1236,6 +1236,60 @@ function assignTemplateToActionPlan(planId, templateId, date) {
 }
 
 // ── Public: save a staff profile ─────────────────────────────
+// Session 61 (11/08/26): real gap found — a Digital Lead or HoA only
+// ever got a Staff profile as a side-effect of a Health Check,
+// Instructional Coaching session, or Learning Walk being logged
+// against them. Anyone in either role who hadn't had one of those
+// yet simply didn't exist in the Staff section at all — not
+// findable, no Action Plans reachable, nothing. Feedback: "I think
+// they need one, even if it is blank." This creates a minimal blank
+// profile for anyone missing one, never overwrites an existing
+// match, and links back (dl.staffId) so the connection is real going
+// forward, not just a one-off name match.
+function syncDLsAndHoAsToStaff() {
+  const allStaff = window.DPC_DATA.staff.staff;
+  let created = 0, alreadyLinked = 0;
+
+  const findExisting = (name, areaCode) => allStaff.find(s =>
+    s.name.toLowerCase() === (name||'').toLowerCase() && s.areaCode === areaCode);
+
+  const blankProfile = (name, areaCode, role) => ({
+    staffId: generateId(), name, areaCode, departmentCode: null,
+    additionalAreas: [], role, entryPathway: '', entryDate: todayISO(),
+    etfStage: null, developmentPriorities: ['','',''], confidenceRating: null,
+    touchHistory: [], reflectionRefs: [], afiRefs: [],
+    isAnonymousAtAreaLevel: true, notes: 'Created automatically — no Health Check, Coaching session, or Learning Walk logged yet.',
+  });
+
+  (window.DPC_DATA.digitalLeads.digitalLeads || []).forEach(dl => {
+    if (dl.staffId && allStaff.some(s => s.staffId === dl.staffId)) { alreadyLinked++; return; }
+    if (!dl.name) return;
+    const existing = findExisting(dl.name, dl.areaCode);
+    if (existing) {
+      dl.staffId = existing.staffId;
+      saveDigitalLead(dl);
+      alreadyLinked++;
+      return;
+    }
+    const profile = blankProfile(dl.name, dl.areaCode, 'Digital Lead');
+    saveStaff(profile);
+    dl.staffId = profile.staffId;
+    saveDigitalLead(dl);
+    created++;
+  });
+
+  (window.DPC_DATA.areas.areas || []).forEach(area => {
+    if (!area.hoaName || !area.hoaName.trim()) return;
+    const existing = findExisting(area.hoaName, area.areaCode);
+    if (existing) { alreadyLinked++; return; }
+    const profile = blankProfile(area.hoaName.trim(), area.areaCode, 'Head of Area');
+    saveStaff(profile);
+    created++;
+  });
+
+  return { created, alreadyLinked };
+}
+
 function saveStaff(staffData) {
   const staff = window.DPC_DATA.staff.staff;
   const idx = staff.findIndex(s => s.staffId === staffData.staffId);
