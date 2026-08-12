@@ -10,8 +10,10 @@
 //
 // Imports from: js/schema.js (RAG_DIMENSIONS, RAG_LABELS, AFI_STATUS,
 // AFI_SEVERITY, PYRAMID_LEVEL) and js/config.js only, per the
-// one-way import rule. Calls DPC.AISupport.generateNarrative()
-// for the performance review — that's the one cross-module call.
+// one-way import rule. No cross-module API calls (Session 65) — the
+// performance review narrative is built as a prompt from live data,
+// copied out, and the result pasted back in, same as every other AI
+// Support feature now.
 
 // ── Report type definitions ─────────────────────────────────────
 const REPORT_TYPES = Object.freeze({
@@ -199,21 +201,42 @@ function _repRenderOptions() {
   else if (type === REPORT_TYPES.PERFORMANCE_REVIEW) {
     title.textContent = 'Performance Review Options';
     html = `${dateRange(new Date(Date.now() - 180*24*60*60*1000).toISOString().split('T')[0])}
-      <div style="background:var(--color-amber-lt);border:1px solid var(--color-amber);border-radius:var(--radius-md);
+      <div style="background:var(--color-light);border:1px solid var(--color-border);border-radius:var(--radius-md);
         padding:var(--space-md);margin-bottom:var(--space-md);font-size:var(--text-sm);">
         This report uses <strong>currentActions/AFI status</strong> as the closure-rate measure and
-        <strong>reflections.reflections[]</strong> for staff voice — both live data sources. The AI narrative
-        calls the Anthropic API (Sonnet) via the key you provide for this session only.
+        <strong>reflections.reflections[]</strong> for staff voice — both live data sources. The narrative
+        section is written outside the Hub — copy the prompt below into a Claude conversation or Project,
+        then paste the result back in. No API key, no cost against the Hub.
       </div>
       <div style="margin-bottom:var(--space-md);">
         <label class="form-label" for="rep-pr-context">Additional context for the narrative <span style="font-weight:400;font-size:0.85em">(optional)</span></label>
-        <textarea class="form-input" id="rep-pr-context" rows="3" placeholder="Anything you want the AI narrative to weight or reference specifically…"></textarea>
+        <textarea class="form-input" id="rep-pr-context" rows="3" placeholder="Anything you want the narrative to weight or reference specifically…"></textarea>
+      </div>
+      <div style="margin-bottom:var(--space-md);">
+        <button type="button" id="rep-pr-copy-prompt-btn" class="btn btn--ghost btn--sm">Copy narrative prompt (built from live data)</button>
+        <p id="rep-pr-copy-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;"></p>
+      </div>
+      <div style="margin-bottom:var(--space-md);">
+        <label class="form-label" for="rep-pr-narrative">Paste the narrative back here</label>
+        <textarea class="form-input" id="rep-pr-narrative" rows="6" placeholder="Paste the 3-4 paragraph narrative from your Claude conversation here…"></textarea>
       </div>`;
   }
 
   body.innerHTML = html;
   panel.style.display = '';
   genPanel.style.display = '';
+
+  document.getElementById('rep-pr-copy-prompt-btn')?.addEventListener('click', () => {
+    const opts = _repGatherOptions();
+    const promptText = _repBuildNarrativePrompt(opts);
+    navigator.clipboard.writeText(promptText).then(() => {
+      const s = document.getElementById('rep-pr-copy-status');
+      if (s) { s.textContent = '✓ Copied — paste into a Claude conversation, then paste the reply back below.'; s.style.color = 'var(--color-green)'; }
+    }).catch(() => {
+      const s = document.getElementById('rep-pr-copy-status');
+      if (s) { s.textContent = 'Could not copy automatically — select and copy the prompt manually.'; s.style.color = 'var(--color-red)'; }
+    });
+  });
 
   const areaSel = document.getElementById('rep-area');
   if (areaSel) areaSel.addEventListener('change', _repRenderPreview);
@@ -239,6 +262,7 @@ function _repGatherOptions() {
     headline:   document.getElementById('rep-headline')?.value || '',
     risks:      document.getElementById('rep-risks')?.value || '',
     prContext:  document.getElementById('rep-pr-context')?.value || '',
+    prNarrative: document.getElementById('rep-pr-narrative')?.value || '',
   };
 }
 
@@ -548,7 +572,6 @@ async function _repGenerate() {
     } else if (type === REPORT_TYPES.BEN_MONTHLY) {
       _repBuildBenDoc(docx, _repCollegeData(opts), opts);
     } else if (type === REPORT_TYPES.PERFORMANCE_REVIEW) {
-      showStatus('Requesting AI narrative — you may be asked for your Anthropic API key…', null);
       await _repBuildPerformanceReviewDoc(docx, opts);
     }
     showStatus('✓ Document generated and downloaded.', 'success');
@@ -705,16 +728,20 @@ function _repBuildBenDoc(docx, data, opts) {
   _repDownloadDoc(docx, doc, `ben-manning-monthly-${todayISO()}.docx`);
 }
 
-// ── PERFORMANCE REVIEW — proxy-data version + AI narrative ──────
-async function _repBuildPerformanceReviewDoc(docx, opts) {
+// ── PERFORMANCE REVIEW — proxy-data version, narrative pasted in ────
+// Session 65 (11/08/26): removed the live Anthropic API call
+// entirely, per "we don't have any AI API call paths at all... we
+// just use it through this process [Import]." The prompt is still
+// built from real live Hub data (unchanged) -- only the destination
+// changed, from a direct API call to a "copy this, paste the result
+// back" round-trip through whatever Claude conversation/Project the
+// DPC is using, same as every other AI Support feature now.
+function _repBuildNarrativePrompt(opts) {
   const areas = _repGetAreas();
   const afis  = _repGetAFIs();
   const reflections = _repGetReflections().filter(r => _repInWindow(r.date || r.createdAt, opts.dateFrom, opts.dateTo));
-
   const closedAFIs = afis.filter(a => a.status === AFI_STATUS.CLOSED);
   const closureRate = afis.length ? Math.round((closedAFIs.length / afis.length) * 100) : 0;
-
-  // RAG snapshot history — aggregate across all areas/dimensions
   const historyPoints = [];
   areas.forEach(a => {
     const dims = a.ragDimensions || {};
@@ -722,15 +749,10 @@ async function _repBuildPerformanceReviewDoc(docx, opts) {
       (dims[d.id]?.history || []).forEach(h => historyPoints.push({ areaCode: a.areaCode, dimension: d.label, score: h.score, date: h.date }));
     });
   });
-
-  // Pyramid level breakdown (from AFI hyperThemeMatch / area.pyramidLevel — proxy,
-  // since activity-level pyramid tagging doesn't exist yet)
   const pyramidCounts = { foundations: 0, inclusion: 0, innovation: 0 };
   areas.forEach(a => { const p = a.pyramidLevel || 'foundations'; if (pyramidCounts[p] !== undefined) pyramidCounts[p]++; });
 
-  // Build the prompt for the narrative — kept here since it's report-specific content,
-  // the actual API call lives in ai-support.js
-  const promptText = `You are helping a Digital Pedagogy Coach at an FE college write the narrative
+  return `You are helping a Digital Pedagogy Coach at an FE college write the narrative
 section of their own performance review, covering a pilot programme.
 
 Write in plain, honest, evidence-based British English. No overclaiming. Use FE sector terms
@@ -747,9 +769,34 @@ Evidence to synthesise:
 ${opts.prContext ? `\nAdditional context from the DPC: ${opts.prContext}` : ''}
 
 Write 3-4 paragraphs. Distinguish activity from impact — what happened versus what changed
-as a result. Be precise about what the evidence does and doesn't show.`;
+as a result. Be precise about what the evidence does and doesn't show.
 
-  const result = await DPC.AISupport.generateNarrative(promptText);
+Respond with only the narrative paragraphs, no preamble, no headers, no markdown.`;
+}
+
+async function _repBuildPerformanceReviewDoc(docx, opts) {
+  const areas = _repGetAreas();
+  const afis  = _repGetAFIs();
+  const reflections = _repGetReflections().filter(r => _repInWindow(r.date || r.createdAt, opts.dateFrom, opts.dateTo));
+
+  const closedAFIs = afis.filter(a => a.status === AFI_STATUS.CLOSED);
+  const closureRate = afis.length ? Math.round((closedAFIs.length / afis.length) * 100) : 0;
+
+  const pyramidCounts = { foundations: 0, inclusion: 0, innovation: 0 };
+  areas.forEach(a => { const p = a.pyramidLevel || 'foundations'; if (pyramidCounts[p] !== undefined) pyramidCounts[p]++; });
+
+  // Session 65 bug: this was dropped when the narrative-prompt logic
+  // moved into its own function, but historyPoints is also used
+  // separately below for the RAG Snapshot History section — a real
+  // test (not just a read-through) caught the ReferenceError this
+  // caused before it ever reached a live document.
+  const historyPoints = [];
+  areas.forEach(a => {
+    const dims = a.ragDimensions || {};
+    RAG_DIMENSIONS.forEach(d => {
+      (dims[d.id]?.history || []).forEach(h => historyPoints.push({ areaCode: a.areaCode, dimension: d.label, score: h.score, date: h.date }));
+    });
+  });
 
   const closureCol = [3600, 2200, 2200];
   const children = [
@@ -758,10 +805,10 @@ as a result. Be precise about what the evidence does and doesn't show.`;
     _repDocSectionHeading(docx, 'Narrative Summary'),
   ];
 
-  if (result.ok) {
-    result.text.split('\n\n').filter(Boolean).forEach(para => children.push(_repDocPara(docx, para, {spacing:{after:120}})));
+  if (opts.prNarrative && opts.prNarrative.trim()) {
+    opts.prNarrative.trim().split('\n\n').filter(Boolean).forEach(para => children.push(_repDocPara(docx, para, {spacing:{after:120}})));
   } else {
-    children.push(_repDocPara(docx, `AI narrative unavailable: ${result.error}. Add narrative manually before sharing this document.`, { italics: true }));
+    children.push(_repDocPara(docx, `No narrative was pasted in before generating this document. Use "Copy narrative prompt," get a response from a Claude conversation, paste it into the box, then generate again.`, { italics: true }));
   }
 
   children.push(_repDocSectionHeading(docx, 'AFI Closure Rate'));
