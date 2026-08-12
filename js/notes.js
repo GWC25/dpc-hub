@@ -51,6 +51,8 @@ function initNotes() {
         <div class="card-body">
           <textarea id="n-detail-text" class="form-textarea" rows="5" style="width:100%;margin-bottom:8px;"></textarea>
 
+          <p style="font-size:var(--text-xs);font-weight:bold;color:var(--color-navy);margin-bottom:6px;">Attach this note to:</p>
+
           <div style="display:grid;grid-template-columns:2fr auto;gap:4px;align-items:center;margin-bottom:8px;">
             <select id="n-detail-area" class="form-select"><option value="">No area</option></select>
             <button type="button" id="n-open-area-btn" class="btn btn--ghost btn--sm" style="display:none;">Open →</button>
@@ -210,10 +212,20 @@ function _nWireEvents() {
   document.getElementById('n-quick-save')?.addEventListener('click', () => {
     const text = document.getElementById('n-quick-text').value.trim();
     if (!text) return;
-    saveNote({ noteId: generateId(), text, createdAt: nowISO(), areaCode: null, personRef: null, personStaffId: null, departmentId: null, projectRef: null, linkedMeetingId: null, linkedAfiId: null });
+    const note = { noteId: generateId(), text, createdAt: nowISO(), areaCode: null, personRef: null, personStaffId: null, departmentId: null, projectRef: null, linkedMeetingId: null, linkedAfiId: null };
+    saveNote(note);
     document.getElementById('n-quick-text').value = '';
     document.getElementById('n-quick-add').style.display = 'none';
     _nRenderList();
+    // Session 66: real gap -- "I can't actually attach it to anything...
+    // by actually opening note, I can't attach it to anything or
+    // anyone." The linking fields always existed, but only in the
+    // detail view, which nothing ever pointed you toward after a
+    // quick-add -- you'd have to already know to go click the note in
+    // the list afterward. Opening detail immediately after saving
+    // means the attach options are the very next thing you see, not
+    // a separate step you have to already know exists.
+    _nOpenDetail(note.noteId);
   });
 
   document.getElementById('n-search')?.addEventListener('input', _nRenderList);
