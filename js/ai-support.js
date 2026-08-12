@@ -419,13 +419,23 @@ DPC.AISupport = {
     return result.value;
   },
 
+  // Session 64 (11/08/26): no size cap at all before this — a large or
+  // busy spreadsheet (merged cells, many mostly-empty rows) could
+  // produce an enormous, noisy CSV dump. Suspected real contributor to
+  // an "Unexpected end of JSON input" failure on a real uploaded file
+  // (large/messy input plausibly confusing the model into an empty or
+  // malformed response). Capped with a clear truncation note rather
+  // than silently sending everything.
   _extractXlsxText: async function(file) {
     if (typeof XLSX === 'undefined') throw new Error('lib/xlsx.min.js has not loaded.');
     const arrayBuffer = await file.arrayBuffer();
     const wb = XLSX.read(arrayBuffer, { type: 'array' });
+    const MAX_CHARS_PER_SHEET = 8000;
     return wb.SheetNames.map(name => {
-      const csv = XLSX.utils.sheet_to_csv(wb.Sheets[name]);
-      return `--- Sheet: ${name} ---\n${csv}`;
+      let csv = XLSX.utils.sheet_to_csv(wb.Sheets[name]);
+      let truncated = false;
+      if (csv.length > MAX_CHARS_PER_SHEET) { csv = csv.slice(0, MAX_CHARS_PER_SHEET); truncated = true; }
+      return `--- Sheet: ${name}${truncated ? ' (truncated — sheet is larger than this excerpt)' : ''} ---\n${csv}`;
     }).join('\n\n');
   },
 
@@ -494,7 +504,7 @@ Respond ONLY with valid JSON, no other text, no markdown fences, in exactly this
         },
         body: JSON.stringify({
           model: DPC.AISupport.NARRATIVE_MODEL,
-          max_tokens: 3000,
+          max_tokens: 4096,
           system: systemPrompt,
           messages: [{ role: 'user', content: [{ type: 'text', text: userText }, ...contentBlocks] }],
         }),
@@ -515,7 +525,9 @@ Respond ONLY with valid JSON, no other text, no markdown fences, in exactly this
       try {
         parsed = JSON.parse(cleaned);
       } catch (e) {
-        return { ok: false, error: `Could not parse the AI's response as JSON: ${e.message}. Raw response: ${text.slice(0, 300)}` };
+        return { ok: false, error: text.trim() === ''
+          ? `The AI returned an empty response (stop reason: ${data.stop_reason || 'unknown'}). This can happen with a very large or unusually formatted spreadsheet -- try a smaller file, a specific sheet, or converting to PDF.`
+          : `Could not parse the AI's response as JSON: ${e.message}. Raw response: ${text.slice(0, 500)}` };
       }
 
       return {
@@ -571,7 +583,7 @@ Respond ONLY with valid JSON, no other text, no markdown fences, in exactly this
         },
         body: JSON.stringify({
           model: DPC.AISupport.NARRATIVE_MODEL,
-          max_tokens: 3000,
+          max_tokens: 4096,
           system: systemPrompt,
           messages: [{ role: 'user', content: userText }],
         }),
@@ -592,7 +604,9 @@ Respond ONLY with valid JSON, no other text, no markdown fences, in exactly this
       try {
         parsed = JSON.parse(cleaned);
       } catch (e) {
-        return { ok: false, error: `Could not parse the AI's response as JSON: ${e.message}. Raw response: ${text.slice(0, 300)}` };
+        return { ok: false, error: text.trim() === ''
+          ? `The AI returned an empty response (stop reason: ${data.stop_reason || 'unknown'}). This can happen with a very large or unusually formatted spreadsheet -- try a smaller file, a specific sheet, or converting to PDF.`
+          : `Could not parse the AI's response as JSON: ${e.message}. Raw response: ${text.slice(0, 500)}` };
       }
 
       return { ok: true, themes: Array.isArray(parsed.themes) ? parsed.themes : [] };
@@ -660,7 +674,7 @@ Respond ONLY with valid JSON, no other text, no markdown fences, in exactly this
         },
         body: JSON.stringify({
           model: DPC.AISupport.NARRATIVE_MODEL,
-          max_tokens: 3000,
+          max_tokens: 4096,
           system: systemPrompt,
           messages: [{ role: 'user', content: [{ type: 'text', text: 'Extract the tasks from this document.' }, ...extraction.contentBlocks] }],
         }),
@@ -681,7 +695,9 @@ Respond ONLY with valid JSON, no other text, no markdown fences, in exactly this
       try {
         parsed = JSON.parse(cleaned);
       } catch (e) {
-        return { ok: false, error: `Could not parse the AI's response as JSON: ${e.message}. Raw response: ${text.slice(0, 300)}` };
+        return { ok: false, error: text.trim() === ''
+          ? `The AI returned an empty response (stop reason: ${data.stop_reason || 'unknown'}). This can happen with a very large or unusually formatted spreadsheet -- try a smaller file, a specific sheet, or converting to PDF.`
+          : `Could not parse the AI's response as JSON: ${e.message}. Raw response: ${text.slice(0, 500)}` };
       }
 
       return { ok: true, tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [] };
