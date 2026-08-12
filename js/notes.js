@@ -293,7 +293,7 @@ function _nWireEvents() {
     const deptSelectVal = document.getElementById('n-detail-dept').value;
     if (deptSelectVal === '__other__') {
       const otherName = document.getElementById('n-detail-dept-other').value.trim();
-      const newDept = otherName ? saveDepartment(otherName) : null;
+      const newDept = otherName ? saveNoteDepartment(otherName) : null;
       n.departmentId = newDept ? newDept.id : null;
     } else {
       n.departmentId = deptSelectVal || null;

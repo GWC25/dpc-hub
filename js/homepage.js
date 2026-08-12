@@ -216,8 +216,8 @@ function _buildPostitCard(entry) {
     </div>
   `;
 
-  card.addEventListener('click', () => _openTaskModal(entry.entryId));
-  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _openTaskModal(entry.entryId); } });
+  card.addEventListener('click', () => _homeOpenTaskModal(entry.entryId));
+  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _homeOpenTaskModal(entry.entryId); } });
 
   return card;
 }
@@ -313,7 +313,7 @@ function _renderMeetings() {
 }
 
 // ── Task modal ────────────────────────────────────────────────
-function _openTaskModal(entryId) {
+function _homeOpenTaskModal(entryId) {
   const modal = document.getElementById('task-modal');
   const titleEl = document.getElementById('task-modal-title');
   const idEl    = document.getElementById('task-id');
@@ -405,7 +405,7 @@ function _wireHomepageEvents() {
   const cancelBtn = document.getElementById('task-cancel-btn');
   const modal     = document.getElementById('task-modal');
 
-  if (addBtn)    addBtn.addEventListener('click', () => _openTaskModal(null));
+  if (addBtn)    addBtn.addEventListener('click', () => _homeOpenTaskModal(null));
   if (closeBtn)  closeBtn.addEventListener('click', _closeTaskModal);
   if (cancelBtn) cancelBtn.addEventListener('click', _closeTaskModal);
   if (saveBtn)   saveBtn.addEventListener('click', _saveTask);
