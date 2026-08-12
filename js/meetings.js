@@ -141,9 +141,10 @@ function _mOpenMeeting(entryId) {
     </div>
     <input type="text" id="m-title" class="form-input" placeholder="Meeting title" value="${_mEsc(m.title||'')}" style="font-size:var(--text-lg);font-weight:bold;margin-bottom:8px;">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:var(--space-md);">
-      <input type="text" id="m-person" class="form-input" placeholder="Person(s), comma-separated" value="${_mEsc((m.personRefs||[]).join(', '))}">
+      <input type="text" id="m-person" class="form-input" list="m-staff-list" placeholder="Person(s), comma-separated — start typing to filter" value="${_mEsc((m.personRefs||[]).join(', '))}">
       <input type="text" id="m-location" class="form-input" placeholder="Location" value="${_mEsc(m.location||'')}">
     </div>
+    <datalist id="m-staff-list">${((window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || []).map(s => `<option value="${_mEsc(s.name)}">`).join('')}</datalist>
 
     <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:var(--space-md);">
       <input type="text" id="m-doc-label" class="form-input" placeholder="Linked doc label" value="${_mEsc(m.linkedDocumentLabel||'')}">
@@ -151,7 +152,16 @@ function _mOpenMeeting(entryId) {
     </div>
 
     <p style="font-size:var(--text-xs);font-weight:bold;color:var(--color-navy);margin-bottom:4px;">Before the meeting</p>
-    <textarea id="m-prep" class="form-textarea" rows="3" style="background:var(--color-amber-lt);width:100%;margin-bottom:var(--space-md);">${_mEsc(m.prepNotes||'')}</textarea>
+    <textarea id="m-prep" class="form-textarea" rows="3" style="background:var(--color-amber-lt);width:100%;margin-bottom:8px;">${_mEsc(m.prepNotes||'')}</textarea>
+
+    <details style="margin-bottom:var(--space-md);">
+      <summary style="cursor:pointer;font-size:var(--text-xs);color:var(--color-teal);">Import agenda from a Claude conversation (no API cost)</summary>
+      <p style="font-size:10px;color:var(--color-muted);margin:4px 0;">Paste an agenda document into a Claude conversation and ask for agenda items, questions to raise, and anything you specifically own — paste the JSON result below and it's added into "Before the meeting" for you to edit before saving.</p>
+      <pre style="background:var(--color-light);border-radius:var(--radius-sm);padding:8px;font-size:10px;overflow-x:auto;margin-bottom:4px;">{"agendaItems":["..."],"questionsToAsk":["..."],"myOwnership":["..."]}</pre>
+      <textarea id="m-agenda-json" class="form-textarea" rows="3" placeholder="Paste the JSON result here…" style="width:100%;font-family:monospace;font-size:11px;margin-bottom:4px;"></textarea>
+      <button type="button" id="m-agenda-import-btn" class="btn btn--ghost btn--sm">Add to prep notes</button>
+      <p id="m-agenda-import-status" style="font-size:10px;color:var(--color-muted);margin-top:4px;"></p>
+    </details>
 
     <p style="font-size:var(--text-xs);font-weight:bold;color:var(--color-navy);margin-bottom:4px;">Links</p>
     <div id="m-links-list">${(m.links||[]).map((l,i) => `
@@ -187,6 +197,7 @@ function _mOpenMeeting(entryId) {
 
     <div style="position:sticky;bottom:0;background:var(--color-white);padding:var(--space-sm) 0;border-top:1px solid var(--color-border);display:flex;align-items:center;gap:var(--space-md);">
       <button type="button" id="m-save-btn" class="btn btn--primary btn--sm">Save</button>
+      <button type="button" id="m-delete-btn" class="btn btn--ghost btn--sm" style="color:var(--color-red);border-color:var(--color-red);">Delete</button>
       <label style="font-size:var(--text-xs);"><input type="checkbox" id="m-notes-complete" ${m.notesComplete?'checked':''}> Notes complete</label>
       <span id="m-save-status" style="font-size:var(--text-xs);color:var(--color-muted);"></span>
     </div>
@@ -248,6 +259,39 @@ function _mWireDetailEvents() {
     }
     if (e.target.id === 'm-save-btn') {
       _mSaveMeeting(_mCurrentId);
+      return;
+    }
+    if (e.target.id === 'm-delete-btn') {
+      if (!confirm('Delete this meeting permanently? This cannot be undone.')) return;
+      deleteCalendarEntry(_mCurrentId);
+      if (typeof UI !== 'undefined') UI.showToast('success', 'Meeting deleted.');
+      _mCurrentId = null;
+      document.getElementById('m-detail').innerHTML = '<p style="color:var(--color-muted);font-size:var(--text-sm);">Select a meeting or create a new one.</p>';
+      _mRenderList();
+      return;
+    }
+    if (e.target.id === 'm-agenda-import-btn') {
+      const status = document.getElementById('m-agenda-import-status');
+      const raw = document.getElementById('m-agenda-json').value.trim();
+      if (!raw) { status.textContent = 'Paste the JSON result first.'; status.style.color = 'var(--color-red)'; return; }
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (err) {
+        status.textContent = `Not valid JSON: ${err.message}`;
+        status.style.color = 'var(--color-red)';
+        return;
+      }
+      const sections = [];
+      if (Array.isArray(parsed.agendaItems) && parsed.agendaItems.length) sections.push('Agenda:\n' + parsed.agendaItems.map(i => `- ${i}`).join('\n'));
+      if (Array.isArray(parsed.questionsToAsk) && parsed.questionsToAsk.length) sections.push('Questions to raise:\n' + parsed.questionsToAsk.map(i => `- ${i}`).join('\n'));
+      if (Array.isArray(parsed.myOwnership) && parsed.myOwnership.length) sections.push('Mine to update on:\n' + parsed.myOwnership.map(i => `- ${i}`).join('\n'));
+      if (sections.length === 0) { status.textContent = 'JSON parsed, but none of agendaItems/questionsToAsk/myOwnership had any content.'; status.style.color = 'var(--color-red)'; return; }
+      const prepField = document.getElementById('m-prep');
+      const existing = prepField.value.trim();
+      prepField.value = (existing ? existing + '\n\n' : '') + sections.join('\n\n');
+      status.textContent = '✓ Added to prep notes below — review, edit if needed, then Save.';
+      status.style.color = 'var(--color-green)';
       return;
     }
   });
