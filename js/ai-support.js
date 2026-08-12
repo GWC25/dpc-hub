@@ -97,8 +97,13 @@ function initAISupport() {
         </div>
 
         <button type="button" id="ai-run-btn" class="btn btn--primary btn--sm">Run</button>
-        <p id="ai-run-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;"></p>
+        <p id="ai-run-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:8px;"></p>
         <div id="ai-run-results" style="margin-top:var(--space-md);"></div>
+
+        <hr style="border:none;border-top:1px solid var(--color-border);margin:var(--space-lg) 0;">
+        <p style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:4px;">Recent activity</p>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:8px;">Every run, whether it succeeded, found nothing, or failed — so a run that costs real money is never unaccounted for.</p>
+        <div id="ai-recent-activity"></div>
       </div>
     </div>`;
 
@@ -124,6 +129,7 @@ function initAISupport() {
   });
 
   document.getElementById('ai-run-btn')?.addEventListener('click', _aiRunDocumentWorkbench);
+  _aiRenderRecentActivity();
 }
 
 function _aiEsc(s) { return s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -132,9 +138,24 @@ async function _aiRunDocumentWorkbench() {
   const fileInput = document.getElementById('ai-doc-file');
   const status = document.getElementById('ai-run-status');
   const results = document.getElementById('ai-run-results');
-  const setStatus = (msg, isError) => { if (status) { status.textContent = msg; status.style.color = isError ? 'var(--color-red)' : 'var(--color-muted)'; } };
+  const setStatus = (msg, kind) => {
+    if (!status) return;
+    status.textContent = msg;
+    // Session 63: a thin grey line was too easy to miss on something
+    // that costs real money the moment it runs. A visible banner —
+    // green for success, red for failure, amber while in flight —
+    // can't be mistaken for "nothing happened."
+    const colours = { success: 'var(--color-green)', error: 'var(--color-red)', running: 'var(--color-amber)' };
+    const bgColours = { success: '#e6f4ea', error: '#fdecea', running: '#fff4e5' };
+    status.style.color = colours[kind] || 'var(--color-muted)';
+    status.style.background = bgColours[kind] || 'transparent';
+    status.style.padding = kind ? '8px 12px' : '0';
+    status.style.borderRadius = 'var(--radius-sm)';
+    status.style.fontWeight = kind ? 'bold' : 'normal';
+  };
 
-  if (!fileInput.files || fileInput.files.length === 0) { setStatus('Choose a file first.', true); return; }
+  if (!fileInput.files || fileInput.files.length === 0) { setStatus('Choose a file first.', 'error'); return; }
+  const fileName = fileInput.files[0].name;
   const promptText = document.getElementById('ai-prompt-text').value.trim();
   const dataType = document.getElementById('ai-data-type').value;
   const saveIt = document.getElementById('ai-save-prompt-cb').checked;
@@ -144,20 +165,54 @@ async function _aiRunDocumentWorkbench() {
     saveAIPrompt(promptText, dataType, promptText.slice(0, 60), selectedPromptId);
   }
 
-  setStatus('Running — this calls Claude, may take a few seconds…');
+  setStatus('Running — this calls Claude, may take a few seconds…', 'running');
   results.innerHTML = '';
 
   const myName = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff.find(s => s.role === 'Digital Pedagogy Coach')?.name) || null;
   const result = await DPC.AISupport.runDocumentPrompt(fileInput.files[0], promptText, dataType, { myName });
 
-  if (!result.ok) { setStatus(`Failed: ${result.error}`, true); return; }
-  setStatus(`Found ${dataType === 'tasks' ? (result.tasks||[]).length : 0} item(s).`);
+  if (!result.ok) {
+    setStatus(`✗ Failed: ${result.error}`, 'error');
+    logAIRun({ fileName, dataType, promptText, outcome: 'error', detail: result.error, itemCount: 0 });
+    _aiRenderRecentActivity();
+    return;
+  }
+
+  const count = dataType === 'tasks' ? (result.tasks || []).length : 0;
+  setStatus(count > 0 ? `✓ Found ${count} item(s) — review below before creating anything.` : '✓ Ran successfully, but found 0 items in this document — nothing to create.', 'success');
+  logAIRun({ fileName, dataType, promptText, outcome: 'success', detail: null, itemCount: count });
+  _aiRenderRecentActivity();
 
   if (dataType === 'tasks') {
     _aiLastExtractedTasks = result.tasks;
     results.innerHTML = _aiRenderTaskExtractionResults(result.tasks);
     results.querySelectorAll('.ai-task-create-btn').forEach(btn => btn.addEventListener('click', _aiCreateSelectedTasks));
   }
+}
+
+function _aiFmtRunDate(iso) {
+  try { return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' ' + new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); } catch { return iso; }
+}
+
+function _aiRenderRecentActivity() {
+  const el = document.getElementById('ai-recent-activity');
+  if (!el) return;
+  const runs = (window.DPC_DATA.aiRuns && window.DPC_DATA.aiRuns.runs) || [];
+  if (runs.length === 0) {
+    el.innerHTML = '<p style="font-size:var(--text-xs);color:var(--color-muted);">No runs yet.</p>';
+    return;
+  }
+  el.innerHTML = runs.slice(0, 10).map(r => `
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--color-border);">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;background:${r.outcome==='error'?'var(--color-red)':r.itemCount>0?'var(--color-green)':'var(--color-muted)'};"></span>
+      <div style="flex:1;">
+        <p style="font-size:var(--text-xs);color:var(--color-navy);">
+          <strong>${_aiEsc(r.fileName)}</strong> — ${_aiEsc(AI_PROMPT_DATA_TYPE_LABELS[r.dataType]||r.dataType)}
+          ${r.outcome==='error' ? `<span style="color:var(--color-red);">failed</span>` : `${r.itemCount} item(s)`}
+        </p>
+        <p style="font-size:10px;color:var(--color-muted);">${_aiFmtRunDate(r.timestamp)}${r.outcome==='error' && r.detail ? ` — ${_aiEsc(r.detail)}` : ''}</p>
+      </div>
+    </div>`).join('');
 }
 
 let _aiLastExtractedTasks = [];
