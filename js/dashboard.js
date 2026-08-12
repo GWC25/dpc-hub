@@ -89,6 +89,19 @@ function _renderDashRAG() {
   document.getElementById('dash-rag-score')?.addEventListener('change',_renderRAGTable);
   document.getElementById('dash-rag-afi')?.addEventListener('change',_renderRAGTable);
   document.getElementById('dash-rag-search')?.addEventListener('input',_renderRAGTable);
+
+  // Delegated once on the persistent #dash-rag-table container, not
+  // inside _renderRAGTable() (which re-runs on every filter change and
+  // would otherwise stack duplicate listeners — same bug class as
+  // wireActionPlanCard()/_wireIndustrySkillsTab() earlier this session).
+  const table = document.getElementById('dash-rag-table');
+  if (table && !table._dashWired) {
+    table._dashWired = true;
+    table.addEventListener('click', (e) => {
+      const cell = e.target.closest('.dash-rag-cell');
+      if (cell && typeof openAreaProfile === 'function') openAreaProfile(cell.dataset.areaCode, 'actionplan');
+    });
+  }
 }
 
 function _renderRAGTable() {
@@ -176,7 +189,10 @@ function _renderRAGTable() {
               const bg=score?['','var(--rag-1-bg)','var(--rag-2-bg)','var(--rag-3-bg)','var(--rag-4-bg)','var(--rag-5-bg)'][score]:'transparent';
               const col=score?['','var(--rag-1-text)','var(--rag-2-text)','var(--rag-3-text)','var(--rag-4-text)','var(--rag-5-text)'][score]:'var(--color-border)';
               return `<td style="text-align:center;padding:var(--space-xs);">
-                <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-sm);background:${bg};color:${col};font-weight:bold;font-size:var(--text-base);" aria-label="${dim.label}: ${score?RAG_LABELS[score]:'Not scored'}">${score||'—'}</span>
+                <button type="button" class="dash-rag-cell" data-area-code="${_dEsc(area.areaCode)}" title="Open ${_dEsc(area.areaName)}'s Action Plan"
+                  style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-sm);
+                  background:${bg};color:${col};font-weight:bold;font-size:var(--text-base);border:none;cursor:pointer;"
+                  aria-label="${dim.label}: ${score?RAG_LABELS[score]:'Not scored'} — open ${_dEsc(area.areaName)}'s Action Plan">${score||'—'}</button>
               </td>`;
             }).join('')}
             <td style="text-align:center;padding:var(--space-xs);">
