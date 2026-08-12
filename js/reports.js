@@ -248,13 +248,25 @@ function _repRenderOptions() {
         Groups every open Action Plan item across every area by its tagged theme (e.g. "Accessibility & Inclusion," "Staff Capability") — real, existing data, no AI call, no cost. Answers "what are you doing about it" at a whole-college level, not just per-area.
       </div>
       <div style="margin-bottom:var(--space-md);">
-        <p class="form-label">Areas to include <span style="font-weight:400;font-size:0.85em">(all selected by default)</span></p>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <p class="form-label">Areas to include <span style="font-weight:400;font-size:0.85em">(all selected by default)</span></p>
+          <span>
+            <button type="button" class="rep-select-all-btn" data-target="rep-college-area-cb" style="background:none;border:none;color:var(--color-teal);cursor:pointer;font-size:var(--text-xs);text-decoration:underline;">Select all</button> ·
+            <button type="button" class="rep-deselect-all-btn" data-target="rep-college-area-cb" style="background:none;border:none;color:var(--color-teal);cursor:pointer;font-size:var(--text-xs);text-decoration:underline;">Deselect all</button>
+          </span>
+        </div>
         <div style="max-height:160px;overflow-y:auto;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">
           ${_repGetAreas().map(a => `<label style="display:block;font-size:var(--text-sm);margin-bottom:2px;"><input type="checkbox" class="rep-college-area-cb" value="${a.areaCode}" checked> ${_repEsc(a.areaName)} (${a.areaCode})</label>`).join('')}
         </div>
       </div>
       <div style="margin-bottom:var(--space-md);">
-        <p class="form-label">Themes to include <span style="font-weight:400;font-size:0.85em">(all selected by default)</span></p>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <p class="form-label">Themes to include <span style="font-weight:400;font-size:0.85em">(all selected by default)</span></p>
+          <span>
+            <button type="button" class="rep-select-all-btn" data-target="rep-college-theme-cb" style="background:none;border:none;color:var(--color-teal);cursor:pointer;font-size:var(--text-xs);text-decoration:underline;">Select all</button> ·
+            <button type="button" class="rep-deselect-all-btn" data-target="rep-college-theme-cb" style="background:none;border:none;color:var(--color-teal);cursor:pointer;font-size:var(--text-xs);text-decoration:underline;">Deselect all</button>
+          </span>
+        </div>
         <div style="border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">
           ${allThemes.length === 0 ? '<p style="font-size:var(--text-xs);color:var(--color-muted);">No open action items right now.</p>' :
             allThemes.map(t => `<label style="display:block;font-size:var(--text-sm);margin-bottom:2px;"><input type="checkbox" class="rep-college-theme-cb" value="${_repEsc(t)}" checked> ${_repEsc(t)}</label>`).join('')}
@@ -275,6 +287,21 @@ function _repRenderOptions() {
     }).catch(() => {
       const s = document.getElementById('rep-pr-copy-status');
       if (s) { s.textContent = 'Could not copy automatically — select and copy the prompt manually.'; s.style.color = 'var(--color-red)'; }
+    });
+  });
+
+  // College Action Plan Overview: select-all/deselect-all for the
+  // Areas and Themes checklists — same "fresh DOM node per render"
+  // reasoning as the copy-prompt button above, safe to bind directly
+  // each time rather than needing a persistent-container guard.
+  document.querySelectorAll('.rep-select-all-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll(`.${btn.dataset.target}`).forEach(cb => { cb.checked = true; });
+    });
+  });
+  document.querySelectorAll('.rep-deselect-all-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll(`.${btn.dataset.target}`).forEach(cb => { cb.checked = false; });
     });
   });
 
