@@ -114,6 +114,22 @@ function initReports() {
   });
 
   document.getElementById('rep-btn-generate').addEventListener('click', _repGenerate);
+
+  // Cross-module deep link (Session 67) — same window._pending*Open
+  // pattern as openAreaProfile()/openStaffProfile()/openMeeting(),
+  // so "jump to a specific report type" behaves consistently with
+  // every other deep link in the Hub rather than inventing a new one.
+  if (window._pendingReportType) {
+    const targetType = window._pendingReportType;
+    window._pendingReportType = null;
+    const btn = el.querySelector(`.rep-type-btn[data-type="${targetType}"]`);
+    if (btn) btn.click();
+  }
+}
+
+function openReportType(reportType) {
+  window._pendingReportType = reportType;
+  navigateTo('reports');
 }
 
 function _repTypeBtn(type, label, desc) {
@@ -225,10 +241,24 @@ function _repRenderOptions() {
   }
   else if (type === REPORT_TYPES.COLLEGE_ACTION_PLAN) {
     title.textContent = 'College Action Plan Overview Options';
+    const allThemes = _repGatherCollegeActionItems().map(t => t.theme);
     html = `
       <div style="background:var(--color-light);border:1px solid var(--color-border);border-radius:var(--radius-md);
         padding:var(--space-md);margin-bottom:var(--space-md);font-size:var(--text-sm);">
         Groups every open Action Plan item across every area by its tagged theme (e.g. "Accessibility & Inclusion," "Staff Capability") — real, existing data, no AI call, no cost. Answers "what are you doing about it" at a whole-college level, not just per-area.
+      </div>
+      <div style="margin-bottom:var(--space-md);">
+        <p class="form-label">Areas to include <span style="font-weight:400;font-size:0.85em">(all selected by default)</span></p>
+        <div style="max-height:160px;overflow-y:auto;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">
+          ${_repGetAreas().map(a => `<label style="display:block;font-size:var(--text-sm);margin-bottom:2px;"><input type="checkbox" class="rep-college-area-cb" value="${a.areaCode}" checked> ${_repEsc(a.areaName)} (${a.areaCode})</label>`).join('')}
+        </div>
+      </div>
+      <div style="margin-bottom:var(--space-md);">
+        <p class="form-label">Themes to include <span style="font-weight:400;font-size:0.85em">(all selected by default)</span></p>
+        <div style="border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">
+          ${allThemes.length === 0 ? '<p style="font-size:var(--text-xs);color:var(--color-muted);">No open action items right now.</p>' :
+            allThemes.map(t => `<label style="display:block;font-size:var(--text-sm);margin-bottom:2px;"><input type="checkbox" class="rep-college-theme-cb" value="${_repEsc(t)}" checked> ${_repEsc(t)}</label>`).join('')}
+        </div>
       </div>`;
   }
 
@@ -724,15 +754,17 @@ function _repBuildAPHoADoc(docx, data, opts) {
 // they touch, so the most common threads across the college surface
 // first — directly answering "what are you doing about it" at
 // exactly the level Ben/Neil would ask the question.
-function _repGatherCollegeActionItems() {
+function _repGatherCollegeActionItems(areaCodeFilter = null, themeFilter = null) {
   const plans = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || []).filter(p => p.status !== 'complete');
   const areas = _repGetAreas();
   const areaName = (code) => areas.find(a => a.areaCode === code)?.areaName || code;
 
   const byTheme = {};
   plans.forEach(plan => {
+    if (areaCodeFilter && !areaCodeFilter.includes(plan.areaCode)) return;
     (plan.actionItems || []).filter(i => !i.done).forEach(item => {
       const theme = item.sourceDomain || 'Ungrouped';
+      if (themeFilter && !themeFilter.includes(theme)) return;
       if (!byTheme[theme]) byTheme[theme] = { theme, items: [], areaCodes: new Set() };
       byTheme[theme].items.push({ description: item.description, areaCode: plan.areaCode, areaName: areaName(plan.areaCode), accountableName: item.accountableName || '' });
       byTheme[theme].areaCodes.add(plan.areaCode);
@@ -744,9 +776,22 @@ function _repGatherCollegeActionItems() {
     .sort((a, b) => b.areaCount - a.areaCount);
 }
 
+// Reads the current checkbox state from the options panel — null means
+// "not currently rendered" (e.g. called from Dashboard's preview before
+// the panel exists), which _repGatherCollegeActionItems treats as "no
+// filter, include everything," matching the pre-selection default.
+function _repGetCollegeActionPlanFilters() {
+  const areaCbs = document.querySelectorAll('.rep-college-area-cb');
+  const themeCbs = document.querySelectorAll('.rep-college-theme-cb');
+  const areaCodeFilter = areaCbs.length ? Array.from(areaCbs).filter(cb => cb.checked).map(cb => cb.value) : null;
+  const themeFilter = themeCbs.length ? Array.from(themeCbs).filter(cb => cb.checked).map(cb => cb.value) : null;
+  return { areaCodeFilter, themeFilter };
+}
+
 function _repPreviewCollegeActionPlan() {
-  const themes = _repGatherCollegeActionItems();
-  if (themes.length === 0) return '<p style="color:var(--color-muted)">No open action items across any area right now.</p>';
+  const { areaCodeFilter, themeFilter } = _repGetCollegeActionPlanFilters();
+  const themes = _repGatherCollegeActionItems(areaCodeFilter, themeFilter);
+  if (themes.length === 0) return '<p style="color:var(--color-muted)">No open action items match the current selection.</p>';
   return themes.map(t => `
     <div style="margin-bottom:var(--space-md);">
       <p style="font-weight:bold;color:var(--color-navy);">${_repEsc(t.theme)} — ${t.areaCount} area(s), ${t.items.length} item(s)</p>
@@ -755,13 +800,15 @@ function _repPreviewCollegeActionPlan() {
 }
 
 function _repBuildCollegeActionPlanDoc(docx) {
-  const themes = _repGatherCollegeActionItems();
+  const { areaCodeFilter, themeFilter } = _repGetCollegeActionPlanFilters();
+  const themes = _repGatherCollegeActionItems(areaCodeFilter, themeFilter);
   const totalItems = themes.reduce((s, t) => s + t.items.length, 0);
   const totalAreas = new Set(themes.flatMap(t => t.areaCodes)).size;
+  const isFiltered = (areaCodeFilter && areaCodeFilter.length < _repGetAreas().length) || (themeFilter && themeFilter.length < _repGatherCollegeActionItems().length);
 
   const children = [
     _repDocTitle(docx, 'College Action Plan Overview'),
-    _repDocPara(docx, `Prepared: ${_repFmtDate(nowISO())} · ${totalItems} open action item(s) across ${totalAreas} area(s), grouped by theme`, { italics: true, spacing:{after:200} }),
+    _repDocPara(docx, `Prepared: ${_repFmtDate(nowISO())} · ${totalItems} open action item(s) across ${totalAreas} area(s), grouped by theme${isFiltered ? ' · Filtered selection, not the full college' : ''}`, { italics: true, spacing:{after:200} }),
   ];
 
   if (themes.length === 0) {
