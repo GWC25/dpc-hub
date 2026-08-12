@@ -47,9 +47,15 @@ function initTasks() {
           <label class="form-label" for="task-title">Title</label>
           <input class="form-input" type="text" id="task-title" required>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="task-date">Due date</label>
-          <input class="form-input" type="date" id="task-date" required>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
+          <div class="form-group">
+            <label class="form-label" for="task-date">Due date</label>
+            <input class="form-input" type="date" id="task-date" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label form-label--optional" for="task-time">Time</label>
+            <input class="form-input" type="time" id="task-time">
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label form-label--optional" for="task-area">Area</label>
@@ -166,6 +172,7 @@ function _openTaskModal(taskId = null) {
   titleEl.textContent = task ? 'Edit task' : 'New task';
   document.getElementById('task-title').value = task ? task.title : '';
   document.getElementById('task-date').value = task ? task.date : todayISO();
+  document.getElementById('task-time').value = task ? (task.startTime || '') : '';
   document.getElementById('task-area').value = task ? (task.areaCode || '') : '';
   document.getElementById('task-person').value = task ? (task.personRefs || []).join(', ') : '';
   document.getElementById('task-notes').value = task ? (task.notes || '') : '';
@@ -190,7 +197,7 @@ function _saveTaskModal() {
     entryType: CALENDAR_TYPE.TASK,
     title,
     date,
-    startTime: null, endTime: null,
+    startTime: document.getElementById('task-time').value || null, endTime: null,
     personRefs: personStr ? personStr.split(',').map(p => p.trim()).filter(Boolean) : [],
     areaCode: document.getElementById('task-area').value || null,
     projectRef: null,

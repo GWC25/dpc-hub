@@ -137,6 +137,16 @@ function _updatePeriodLabel() {
 }
 
 // ── Week view ─────────────────────────────────────────────────
+// Session 66 (11/08/26): rebuilt as a real <table> instead of two
+// separate CSS Grid containers (one for the day-header row, one for
+// the entries row) stacked on top of each other. Real bug: a grid
+// item without an explicit min-width:0 won't shrink below its
+// content's natural width, so a long unbreakable entry title could
+// force one day's column wider than its neighbours in the entries
+// grid without the header grid above it moving to match -- exactly
+// "the lines don't match up with the day." A table guarantees column
+// alignment between header and body structurally; no CSS tuning can
+// get this wrong the way two independent grids can.
 function _renderWeekView() {
   const grid = document.getElementById('cal-grid');
   if (!grid) return;
@@ -150,35 +160,50 @@ function _renderWeekView() {
   }
 
   const todayStr = todayISO();
-  const colW = `${100/7}%`;
 
-  let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:2px solid var(--color-border);">`;
+  let html = `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+    <thead><tr>`;
   days.forEach(d => {
     const isToday = d.toISOString().split('T')[0] === todayStr;
-    html += `<div style="padding:var(--space-sm) var(--space-md);text-align:center;font-size:var(--text-xs);font-weight:var(--font-bold);color:${isToday ? 'var(--color-teal)' : 'var(--color-muted)'};border-right:1px solid var(--color-border);background:${isToday ? 'var(--color-teal-lt)' : 'var(--color-light)'};">
+    html += `<th style="width:${100/7}%;padding:var(--space-sm) var(--space-xs);text-align:center;font-size:var(--text-xs);font-weight:var(--font-bold);
+      color:${isToday ? 'var(--color-teal)' : 'var(--color-muted)'};border:1px solid var(--color-border);
+      background:${isToday ? 'var(--color-teal-lt)' : 'var(--color-light)'};">
       <div>${d.toLocaleDateString('en-GB',{weekday:'short'})}</div>
       <div style="font-size:var(--text-md);color:${isToday ? 'var(--color-teal)' : 'var(--color-slate)'};">${d.getDate()}</div>
-    </div>`;
+    </th>`;
   });
-  html += `</div>`;
+  html += `</tr></thead><tbody><tr>`;
 
-  // Day columns with entries
-  html += `<div style="display:grid;grid-template-columns:repeat(7,1fr);min-height:400px;">`;
   days.forEach(d => {
     const dateStr  = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const isToday  = dateStr === todayStr;
     const dayEntries = _getEntriesForDate(dateStr);
 
-    html += `<div style="border-right:1px solid var(--color-border);padding:var(--space-sm);min-height:200px;background:${isToday ? '#FAFFFE' : 'var(--color-white)'};vertical-align:top;" data-date="${dateStr}">`;
+    // overflow-wrap + min-width:0 equivalent for table cells: a <td>
+    // in a fixed-layout table already can't grow past its column's
+    // share, so this is the structural fix, not a patch on top of
+    // the same grid problem.
+    html += `<td style="border:1px solid var(--color-border);padding:var(--space-xs);min-height:200px;vertical-align:top;
+      background:${isToday ? '#FAFFFE' : 'var(--color-white)'};overflow:hidden;">`;
     dayEntries.forEach(e => {
       html += _buildEntryChip(e);
     });
-    html += `</div>`;
+    if (dayEntries.length === 0) {
+      html += `<button type="button" class="cal-empty-cell-add" data-date="${dateStr}" style="display:block;width:100%;height:100%;min-height:60px;background:none;border:none;cursor:pointer;"></button>`;
+    }
+    html += `</td>`;
   });
-  html += `</div>`;
+  html += `</tr></tbody></table>`;
 
   grid.innerHTML = html;
   _wireChipClicks(grid);
+
+  // Clicking empty space in a day now opens a new entry pre-filled
+  // with that date -- a real, previously-missing way to add
+  // something directly from the day you actually want it on.
+  grid.querySelectorAll('.cal-empty-cell-add').forEach(btn => {
+    btn.addEventListener('click', () => _openEntryModal(null, btn.dataset.date));
+  });
 }
 
 // ── Month view ────────────────────────────────────────────────
@@ -277,28 +302,36 @@ function _renderYearView() {
 }
 
 // ── Entry chip ────────────────────────────────────────────────
+// Session 66: text now wraps within the cell (table-layout:fixed
+// guarantees the column can't grow to fit it) instead of being
+// truncated with an ellipsis -- Graeme's screenshot showed him
+// wanting to read the full item text, not have it cut off. Added a
+// visible border and hover state so entries read as clickable
+// rather than plain coloured text, which several items being flat
+// text with no obvious affordance likely contributed to "I can't
+// click to them."
 function _buildEntryChip(entry, compact=false) {
   const colours = {
-    [CALENDAR_TYPE.MEETING]:    { bg:'var(--color-blue-lt)',   text:'var(--color-blue)' },
-    [CALENDAR_TYPE.TASK]:       { bg:'var(--color-amber-lt)',  text:'var(--color-amber)' },
-    [CALENDAR_TYPE.DEADLINE]:   { bg:'var(--color-red-lt)',    text:'var(--color-red)' },
-    [CALENDAR_TYPE.WORK_BLOCK]: { bg:'var(--color-teal-lt)',   text:'var(--color-teal)' },
+    [CALENDAR_TYPE.MEETING]:    { bg:'var(--color-blue-lt)',   text:'var(--color-blue)', border:'var(--color-blue)' },
+    [CALENDAR_TYPE.TASK]:       { bg:'var(--color-amber-lt)',  text:'var(--color-amber)', border:'var(--color-amber)' },
+    [CALENDAR_TYPE.DEADLINE]:   { bg:'var(--color-red-lt)',    text:'var(--color-red)', border:'var(--color-red)' },
+    [CALENDAR_TYPE.WORK_BLOCK]: { bg:'var(--color-teal-lt)',   text:'var(--color-teal)', border:'var(--color-teal)' },
   };
-  const c = colours[entry.entryType] || { bg:'var(--color-light)', text:'var(--color-muted)' };
-  const timeStr = entry.startTime ? `${entry.startTime} ` : '';
+  const c = colours[entry.entryType] || { bg:'var(--color-light)', text:'var(--color-muted)', border:'var(--color-muted)' };
+  const timeStr = entry.startTime ? `${entry.startTime} — ` : '';
   const label   = `${timeStr}${entry.title}`;
 
   return `<button type="button" data-entry-id="${entry.entryId}" style="
     display:block;width:100%;text-align:left;
     background:${c.bg};color:${c.text};
-    border:none;border-radius:3px;
-    padding:2px ${compact ? '4px' : '6px'};
+    border:1px solid ${c.border};border-left:3px solid ${c.border};border-radius:3px;
+    padding:4px ${compact ? '6px' : '8px'};
     font-size:${compact ? '10px' : 'var(--text-xs)'};
     font-weight:var(--font-bold);
-    cursor:pointer;margin-bottom:2px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    cursor:pointer;margin-bottom:4px;
+    white-space:normal;word-wrap:break-word;overflow-wrap:break-word;
     min-height:${compact ? '20px' : 'var(--touch-target)'};
-  " aria-label="Entry: ${_escHtml(label)}">${_escHtml(label)}</button>`;
+  " aria-label="Entry: ${_escHtml(label)}" onmouseover="this.style.filter='brightness(0.95)'" onmouseout="this.style.filter='none'">${_escHtml(label)}</button>`;
 }
 
 function _wireChipClicks(grid) {
