@@ -44,6 +44,7 @@ function initQuickCapture() {
               <option value="health-check-visit">Health Check Visit</option>
               <option value="referral">Referral</option>
               <option value="resource-created">Resource Created</option>
+              <option value="communication">Communication (email / Teams message)</option>
             </optgroup>
           </select>
         </div>

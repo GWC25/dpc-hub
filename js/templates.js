@@ -24,6 +24,7 @@ function initTemplates() {
           <button id="tmpl-new-tm" type="button" class="btn btn--primary btn--sm">+ Teach Meet</button>
           <button id="tmpl-new-cq" type="button" class="btn btn--ghost btn--sm">+ Coaching Qs</button>
           <button id="tmpl-new-ag" type="button" class="btn btn--ghost btn--sm">+ Agenda</button>
+          <button id="tmpl-new-msg" type="button" class="btn btn--ghost btn--sm">+ Email / Teams message</button>
         </div>
       </div>
     </div>
@@ -116,8 +117,8 @@ function _renderTemplateList() {
   if (tmpls.length===0) { if(empty) empty.style.display='block'; return; }
   if (empty) empty.style.display='none';
 
-  const typeIcons = {'teach-meet':'📋','coaching-questions':'💬','meeting-agenda':'📅','observation-framework':'🔍'};
-  const typeLabels= {'teach-meet':'Teach Meet','coaching-questions':'Coaching Qs','meeting-agenda':'Agenda','observation-framework':'Obs Framework'};
+  const typeIcons = {'teach-meet':'📋','coaching-questions':'💬','meeting-agenda':'📅','observation-framework':'🔍','message':'✉️'};
+  const typeLabels= {'teach-meet':'Teach Meet','coaching-questions':'Coaching Qs','meeting-agenda':'Agenda','observation-framework':'Obs Framework','message':'Message'};
 
   tmpls.forEach(t=>{
     const isActive = _tmplCurrentId===t.templateId;
@@ -158,7 +159,7 @@ function _openTemplateDetail(templateId) {
   const t = _getTemplate(templateId);
   if (!t) return;
 
-  const typeLabels={'teach-meet':'Teach Meet Plan','coaching-questions':'Coaching Question Set','meeting-agenda':'Meeting Agenda','observation-framework':'Observation Framework'};
+  const typeLabels={'teach-meet':'Teach Meet Plan','coaching-questions':'Coaching Question Set','meeting-agenda':'Meeting Agenda','observation-framework':'Observation Framework','message':'Email / Teams Message'};
   const lraThemes = (t.lraThemeIds||[]).map(id=>{ const th=getLRATheme(id); return th?th.label:id; }).join(', ');
 
   detail.innerHTML=`
@@ -198,6 +199,18 @@ function _openTemplateDetail(templateId) {
 
   document.getElementById('tmpl-edit-btn')?.addEventListener('click', ()=>_openTemplateBuilder(t.templateType, templateId));
   document.getElementById('tmpl-instance-btn')?.addEventListener('click', ()=>_openInstanceModal(templateId));
+
+  document.getElementById('tmpl-copy-msg-btn')?.addEventListener('click', () => {
+    const c = t.content || {};
+    const text = c.subject ? `Subject: ${c.subject}\n\n${c.body||''}` : (c.body||'');
+    navigator.clipboard.writeText(text).then(() => {
+      const s = document.getElementById('tmpl-copy-msg-status');
+      if (s) { s.textContent = '✓ Copied.'; s.style.color = 'var(--color-green)'; }
+    }).catch(() => {
+      const s = document.getElementById('tmpl-copy-msg-status');
+      if (s) { s.textContent = 'Could not copy automatically — select and copy manually.'; s.style.color = 'var(--color-red)'; }
+    });
+  });
 }
 
 function _renderTemplateContentPreview(t) {
@@ -246,6 +259,15 @@ function _renderTemplateContentPreview(t) {
       </div>`).join('') || '<p style="color:var(--color-muted);font-size:var(--text-sm);">No agenda items yet.</p>';
   }
 
+  if (t.templateType==='message') {
+    return `
+      <p style="font-size:var(--text-xs);font-weight:bold;color:var(--color-teal);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">${c.channel==='teams'?'Teams message':'Email'}</p>
+      ${c.subject ? `<p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:8px;">Subject: ${_tEsc(c.subject)}</p>` : ''}
+      <p style="font-size:var(--text-sm);color:var(--color-slate);white-space:pre-wrap;margin-bottom:var(--space-md);">${_tEsc(c.body||'')}</p>
+      <button type="button" id="tmpl-copy-msg-btn" class="btn btn--ghost btn--sm">Copy message</button>
+      <p id="tmpl-copy-msg-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;"></p>`;
+  }
+
   return `<pre style="font-size:var(--text-sm);color:var(--color-slate);white-space:pre-wrap;">${_tEsc(JSON.stringify(c,null,2))}</pre>`;
 }
 
@@ -259,7 +281,7 @@ function _openTemplateBuilder(type, existingId=null) {
   if (!modal) return;
 
   const existing = existingId ? _getTemplate(existingId) : null;
-  const labels   = {'teach-meet':'Teach Meet Plan','coaching-questions':'Coaching Question Set','meeting-agenda':'Meeting Agenda','observation-framework':'Observation Framework'};
+  const labels   = {'teach-meet':'Teach Meet Plan','coaching-questions':'Coaching Question Set','meeting-agenda':'Meeting Agenda','observation-framework':'Observation Framework','message':'Email / Teams Message'};
   titleEl.textContent = (existing?'Edit':'New') + ' ' + (labels[type]||type);
   typeEl.value = type;
   idEl.value   = existingId||'';
@@ -328,6 +350,14 @@ function _openTemplateBuilder(type, existingId=null) {
         <input type="number" name="ag-item-duration" placeholder="mins" min="1" max="120" style="width:70px;padding:var(--space-xs) var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);font:var(--text-sm) Arial,sans-serif;min-height:36px;">
         <button type="button" onclick="this.closest('div').remove()" style="background:none;border:none;cursor:pointer;color:var(--color-muted);font-size:20px;min-width:36px;min-height:36px;">×</button>`;
       container.appendChild(div);
+    });
+  }
+
+  // Message channel toggle — Subject only makes sense for Email
+  if (type==='message') {
+    document.getElementById('msg-channel')?.addEventListener('change', (e) => {
+      const subjectGroup = document.getElementById('msg-subject-group');
+      if (subjectGroup) subjectGroup.style.display = e.target.value === 'teams' ? 'none' : 'block';
     });
   }
 }
@@ -445,6 +475,25 @@ function _buildTemplateForm(type, existing) {
       </div>`;
   }
 
+  if (type==='message') {
+    return commonHeader + `
+      <div class="form-group">
+        <label class="form-label" for="msg-channel">Channel</label>
+        <select class="form-select" id="msg-channel">
+          <option value="email" ${c.channel!=='teams'?'selected':''}>Email</option>
+          <option value="teams" ${c.channel==='teams'?'selected':''}>Teams message</option>
+        </select>
+      </div>
+      <div class="form-group" id="msg-subject-group" style="display:${c.channel==='teams'?'none':'block'};">
+        <label class="form-label form-label--optional" for="msg-subject">Subject line</label>
+        <input class="form-input" type="text" id="msg-subject" value="${_tEsc(c.subject||'')}" placeholder="e.g. Digital Skills update — [Area]">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="msg-body">Message body</label>
+        <textarea class="form-textarea" id="msg-body" rows="8" placeholder="Write the reusable structure — greeting, main points, sign-off. Use square-bracket placeholders like [Area] or [HoA name] to fill in each time.">${_tEsc(c.body||'')}</textarea>
+      </div>`;
+  }
+
   return commonHeader;
 }
 
@@ -494,6 +543,12 @@ function _saveTemplate() {
     content = {
       agendaItems: titles.map((t,i)=>({title:t,duration:durations[i]||null})).filter(i=>i.title),
       notes: document.getElementById('ag-notes')?.value.trim()||'',
+    };
+  } else if (type==='message') {
+    content = {
+      channel: document.getElementById('msg-channel')?.value || 'email',
+      subject: document.getElementById('msg-subject')?.value.trim() || '',
+      body: document.getElementById('msg-body')?.value.trim() || '',
     };
   }
 
@@ -587,6 +642,7 @@ function _wireTemplateEvents() {
   document.getElementById('tmpl-new-tm')?.addEventListener('click',()=>_openTemplateBuilder('teach-meet'));
   document.getElementById('tmpl-new-cq')?.addEventListener('click',()=>_openTemplateBuilder('coaching-questions'));
   document.getElementById('tmpl-new-ag')?.addEventListener('click',()=>_openTemplateBuilder('meeting-agenda'));
+  document.getElementById('tmpl-new-msg')?.addEventListener('click',()=>_openTemplateBuilder('message'));
   document.getElementById('tmpl-modal-close')?.addEventListener('click',()=>{ document.getElementById('tmpl-modal').style.display='none'; });
   document.getElementById('tmpl-modal-cancel')?.addEventListener('click',()=>{ document.getElementById('tmpl-modal').style.display='none'; });
   document.getElementById('tmpl-modal-save')?.addEventListener('click',_saveTemplate);
