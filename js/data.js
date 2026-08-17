@@ -111,6 +111,16 @@ function getConnectionStatus() {
   return _folderHandle ? 'connected' : 'offline';
 }
 
+// Session 70 (11/08/26): real gap — Settings could say "Connected"
+// but never *which* folder, which is exactly what made an earlier
+// mixed-browser OneDrive confusion this session hard to diagnose
+// (was it connected to the right folder, a different one, or not at
+// all?). FileSystemDirectoryHandle exposes its own folder name
+// directly — no reason this wasn't already surfaced.
+function getConnectedFolderName() {
+  return _folderHandle ? _folderHandle.name : null;
+}
+
 // ── Public data store ─────────────────────────────────────────
 // All modules read from and write to window.DPC_DATA.
 // Never access OneDrive files directly from module files — always go through data.js.

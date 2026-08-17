@@ -161,9 +161,12 @@ function _dpcRenderConnectionStatus() {
   const label = document.getElementById('dpc-conn-label');
   if (!dot || !label) return;
   const status = typeof getConnectionStatus === 'function' ? getConnectionStatus() : 'offline';
+  const folderName = typeof getConnectedFolderName === 'function' ? getConnectedFolderName() : null;
   if (status === 'connected') {
     dot.style.background = 'var(--color-green)';
-    label.textContent = 'Connected — changes are saving to OneDrive.';
+    label.textContent = folderName
+      ? `Connected to "${folderName}" — changes are saving to OneDrive.`
+      : 'Connected — changes are saving to OneDrive.';
   } else {
     dot.style.background = 'var(--color-red)';
     label.textContent = 'Offline — changes will not be saved until you reconnect.';
