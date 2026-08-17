@@ -71,10 +71,10 @@ function initReports() {
   if (!el) return;
 
   el.innerHTML = `
-    <div class="report-builder">
+    <div>
       <div class="card" style="margin-bottom:var(--space-lg);">
-        <div class="card-header"><span class="card-title">Select report type</span></div>
-        <div class="card-body">
+        <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);padding-bottom:var(--space-sm);margin-bottom:var(--space-md);border-bottom:1px solid var(--color-border);">Select report type</h3>
+        <div>
           <div role="group" aria-label="Report type" style="display:flex;flex-direction:column;gap:8px;">
             ${_repTypeBtn(REPORT_TYPES.NEIL_FORTNIGHTLY, 'Neil Davies — Fortnightly', 'Cross-college: activity, open loops, RAG movers, coming up')}
             ${_repTypeBtn(REPORT_TYPES.DIGITAL_LEAD,     'Digital Lead — Area Report', 'Area RAG detail, current focus, CPD suggestions')}
@@ -87,8 +87,8 @@ function initReports() {
       </div>
 
       <div id="rep-options-panel" class="card" style="display:none;margin-bottom:var(--space-lg);">
-        <div class="card-header"><span class="card-title" id="rep-options-title">Options</span></div>
-        <div class="card-body" id="rep-options-body"></div>
+        <h3 id="rep-options-title" style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);padding-bottom:var(--space-sm);margin-bottom:var(--space-md);border-bottom:1px solid var(--color-border);">Options</h3>
+        <div id="rep-options-body"></div>
       </div>
 
       <div id="rep-generate-panel" style="display:none;margin-bottom:var(--space-lg);">
@@ -97,8 +97,8 @@ function initReports() {
       </div>
 
       <div id="rep-preview-panel" class="card" style="display:none;">
-        <div class="card-header"><span class="card-title">Preview</span></div>
-        <div class="card-body" id="rep-preview-body"></div>
+        <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);padding-bottom:var(--space-sm);margin-bottom:var(--space-md);border-bottom:1px solid var(--color-border);">Preview</h3>
+        <div id="rep-preview-body"></div>
       </div>
     </div>`;
 
