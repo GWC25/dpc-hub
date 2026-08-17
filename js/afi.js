@@ -288,6 +288,7 @@ function _openAFIDetail(afiId) {
           <option value="data-point">Data point</option>
           <option value="staff-voice">Staff voice</option>
           <option value="coaching-note">Coaching note</option>
+          <option value="communication">Communication (email / Teams message)</option>
         </select>
       </div>
       <div class="form-group">

@@ -268,6 +268,8 @@ const LIBRARY_TYPE = Object.freeze({
   LEARNING_STUDIO:  'learning-studio',
   LINKEDIN_PATHWAY: 'linkedin-pathway',
   DPC_CREATED:      'dpc-created',
+  EXTERNAL_RESOURCE:'external-resource',
+  READING_MATERIAL: 'reading-material',
 });
 
 // ── Action types (within an AFI) ──────────────────────────────
@@ -306,6 +308,7 @@ const TEMPLATE_TYPE = Object.freeze({
   COACHING_QUESTIONS:  'coaching-questions',
   MEETING_AGENDA:      'meeting-agenda',
   OBSERVATION_FRAMEWORK:'observation-framework',
+  MESSAGE:             'message',
 });
 
 // ── AI Support import data types (Session 62, updated Session 65) ─

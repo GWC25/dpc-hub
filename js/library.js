@@ -27,13 +27,17 @@ function initLibrary() {
           <option value="learning-studio">Learning Studio</option>
           <option value="linkedin-pathway">LinkedIn Pathway</option>
           <option value="dpc-created">DPC-created</option>
+          <option value="external-resource">External resource</option>
+          <option value="reading-material">Reading material</option>
         </select>
         <select id="lib-filter-tag" class="form-select" style="width:auto;min-height:40px;font-size:var(--text-sm);" aria-label="Filter by category">
           <option value="">All categories</option>
         </select>
-        <div style="display:flex;gap:var(--space-xs);">
+        <div style="display:flex;gap:var(--space-xs);flex-wrap:wrap;">
           <button id="lib-new-linkedin" type="button" class="btn btn--primary btn--sm">+ LinkedIn Pathway</button>
           <button id="lib-new-dpc" type="button" class="btn btn--ghost btn--sm">+ DPC-created</button>
+          <button id="lib-new-external" type="button" class="btn btn--ghost btn--sm">+ External resource</button>
+          <button id="lib-new-reading" type="button" class="btn btn--ghost btn--sm">+ Reading material</button>
         </div>
       </div>
     </div>
@@ -60,6 +64,10 @@ function initLibrary() {
         <div class="form-group">
           <label class="form-label" for="lib-title">Name</label>
           <input class="form-input" type="text" id="lib-title" required>
+        </div>
+        <div class="form-group" id="lib-author-group" style="display:none;">
+          <label class="form-label" for="lib-author">Author</label>
+          <input class="form-input" type="text" id="lib-author">
         </div>
         <div class="form-group">
           <label class="form-label form-label--optional" for="lib-description">Description</label>
@@ -166,9 +174,9 @@ async function _libLoadLearningStudioEntries() {
 // and filterable by category tag as well as type — the two together were
 // the actual ask: "organised and easily filterable by type or problem
 // categories."
-const TYPE_ICONS  = { 'learning-studio': '🧭', 'linkedin-pathway': '💼', 'dpc-created': '✍️' };
-const TYPE_LABELS = { 'learning-studio': 'Learning Studio', 'linkedin-pathway': 'LinkedIn Pathway', 'dpc-created': 'DPC-created' };
-const TYPE_ORDER  = ['linkedin-pathway', 'dpc-created', 'learning-studio']; // your own curated content first
+const TYPE_ICONS  = { 'learning-studio': '🧭', 'linkedin-pathway': '💼', 'dpc-created': '✍️', 'external-resource': '🔗', 'reading-material': '📖' };
+const TYPE_LABELS = { 'learning-studio': 'Learning Studio', 'linkedin-pathway': 'LinkedIn Pathway', 'dpc-created': 'DPC-created', 'external-resource': 'External resource', 'reading-material': 'Reading material' };
+const TYPE_ORDER  = ['linkedin-pathway', 'dpc-created', 'external-resource', 'reading-material', 'learning-studio']; // your own curated content first
 
 function _renderLibraryList() {
   const list  = document.getElementById('lib-list');
@@ -261,7 +269,7 @@ function _openLibraryDetail(resourceId) {
   const e = _libGetEntry(resourceId);
   if (!e) return;
 
-  const typeLabels = { 'learning-studio': 'Learning Studio', 'linkedin-pathway': 'LinkedIn Pathway', 'dpc-created': 'DPC-created' };
+  const typeLabels = { 'learning-studio': 'Learning Studio', 'linkedin-pathway': 'LinkedIn Pathway', 'dpc-created': 'DPC-created', 'external-resource': 'External resource', 'reading-material': 'Reading material' };
   const shares = _libGetSharesForResource(resourceId).slice().reverse();
   const isManual = e.type !== LIBRARY_TYPE.LEARNING_STUDIO;
 
@@ -270,6 +278,7 @@ function _openLibraryDetail(resourceId) {
       <div>
         <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:4px;">${typeLabels[e.type] || e.type}${e.source === 'auto' ? ' · read-only, synced from Learning Studio' : ''}</p>
         <h2 style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">${_libEsc(e.title)}</h2>
+        ${e.author ? `<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:2px;">by ${_libEsc(e.author)}</p>` : ''}
         ${e.description ? `<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:var(--space-xs);">${_libEsc(e.description)}</p>` : ''}
         <p style="font-size:var(--text-xs);margin-top:var(--space-xs);"><a href="${_libEsc(e.url)}" target="_blank" rel="noopener noreferrer" style="color:var(--color-teal);">${_libEsc(e.url)}</a></p>
         ${(e.tags || []).length > 0 ? `<div style="margin-top:var(--space-sm);display:flex;gap:4px;flex-wrap:wrap;">${e.tags.map(t => `<span style="font-size:10px;background:var(--color-light);color:var(--color-muted);padding:1px 8px;border-radius:999px;">${_libEsc(_libHumanizeTag(t))}</span>`).join('')}</div>` : ''}
@@ -309,16 +318,23 @@ function _openEntryModal(type, existingId = null) {
   if (!modal) return;
 
   const existing = existingId ? _libGetEntry(existingId) : null;
-  const labels   = { 'linkedin-pathway': 'LinkedIn Pathway', 'dpc-created': 'DPC-created resource' };
+  const labels   = { 'linkedin-pathway': 'LinkedIn Pathway', 'dpc-created': 'DPC-created resource', 'external-resource': 'External resource', 'reading-material': 'reading material' };
   titleEl.textContent = (existing ? 'Edit' : 'New') + ' ' + (labels[type] || type);
   typeEl.value = type;
   idEl.value   = existingId || '';
   document.getElementById('lib-entry-error').style.display = 'none';
 
   document.getElementById('lib-title').value       = existing?.title || '';
+  document.getElementById('lib-author').value      = existing?.author || '';
   document.getElementById('lib-description').value = existing?.description || '';
   document.getElementById('lib-url').value         = existing?.url || '';
   document.getElementById('lib-skills').value      = (existing?.tags || []).join(', ');
+
+  // Author only makes sense for Reading Material — matches the exact
+  // three fields asked for (Title, Author, Link), not bolted onto
+  // every type regardless of relevance.
+  const authorGroup = document.getElementById('lib-author-group');
+  if (authorGroup) authorGroup.style.display = type === LIBRARY_TYPE.READING_MATERIAL ? 'block' : 'none';
 
   modal.style.display = 'flex';
   document.getElementById('lib-title').focus();
@@ -341,6 +357,7 @@ function _saveEntry() {
     resourceId:  existId || generateId(),
     type,
     title,
+    author:      document.getElementById('lib-author').value.trim(),
     description: document.getElementById('lib-description').value.trim(),
     url,
     tags,
@@ -408,6 +425,8 @@ function _wireLibraryEvents() {
   document.getElementById('lib-filter-tag')?.addEventListener('change', e => { _libFilterTag = e.target.value; _renderLibraryList(); });
   document.getElementById('lib-new-linkedin')?.addEventListener('click', () => _openEntryModal(LIBRARY_TYPE.LINKEDIN_PATHWAY));
   document.getElementById('lib-new-dpc')?.addEventListener('click', () => _openEntryModal(LIBRARY_TYPE.DPC_CREATED));
+  document.getElementById('lib-new-external')?.addEventListener('click', () => _openEntryModal(LIBRARY_TYPE.EXTERNAL_RESOURCE));
+  document.getElementById('lib-new-reading')?.addEventListener('click', () => _openEntryModal(LIBRARY_TYPE.READING_MATERIAL));
 
   document.getElementById('lib-entry-modal-close')?.addEventListener('click', () => { document.getElementById('lib-entry-modal').style.display = 'none'; });
   document.getElementById('lib-entry-cancel')?.addEventListener('click', () => { document.getElementById('lib-entry-modal').style.display = 'none'; });
