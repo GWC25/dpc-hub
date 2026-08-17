@@ -35,8 +35,8 @@ function initAISupport() {
 
   el.innerHTML = `
     <div class="card" style="max-width:640px;">
-      <div class="card-header"><span class="card-title">AI Support</span></div>
-      <div class="card-body">
+      <h2 style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);padding-bottom:var(--space-md);margin-bottom:var(--space-md);border-bottom:1px solid var(--color-border);">AI Support</h2>
+      <div>
         <p style="color:var(--color-muted);margin-bottom:var(--space-md);">
           No live API calls happen from the Hub — analysis is done in a Claude conversation or Project you already have (see the Import Schema Reference for the exact shapes it needs), and the result is imported here. Nothing costs anything beyond what you already pay for Claude.
         </p>
