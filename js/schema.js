@@ -401,13 +401,18 @@ const RAG_LABELS = Object.freeze({
 });
 
 // ── Area codes (35 areas — join key across all systems) ──────
-const AREA_CODES = Object.freeze([
-  'ACA', 'AHC', 'ART', 'BEA', 'BUI', 'CAR', 'CHI', 'COG',
-  'CON', 'CRE', 'CRI', 'DIG', 'EAR', 'ELE', 'ENG', 'ENT',
-  'FLO', 'HAI', 'HBH', 'HOS', 'INC', 'LAW', 'MAT', 'MED',
-  'MUS', 'NUR', 'OUT', 'PER', 'PHO', 'PLA', 'PUB', 'SCH',
-  'SCI', 'SPO', 'TRA',
-]);
+// Session 70 (11/08/26): removed AREA_CODES here — confirmed zero
+// references anywhere in the codebase (definition site only, no call
+// sites, nothing consuming it). It was also a fictional placeholder
+// list (codes like 'ACA', 'BEA', 'CHI' that don't match any real
+// curriculum area), flagged repeatedly this session as a known
+// low-priority gap. Updating it with the real 32 codes instead of
+// removing it would have been the worse fix — a hardcoded, unused
+// duplicate of the real area list (window.DPC_DATA.areas.areas) is
+// misleading precisely because it looks like a source of truth, and
+// would only drift out of sync again the next time an area is
+// renamed or added. There's a single real source of truth for area
+// codes already; this was never it.
 
 // ── Default empty data structures ────────────────────────────
 // Used when optional files are missing — Hub starts with safe defaults.
