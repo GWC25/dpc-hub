@@ -23,6 +23,7 @@ const REPORT_TYPES = Object.freeze({
   BEN_MONTHLY:      'ben-monthly',
   PERFORMANCE_REVIEW: 'performance-review',
   COLLEGE_ACTION_PLAN: 'college-action-plan',
+  LOOPS_REPORT:     'loops-report',
 });
 
 let _repCurrentType = null;
@@ -82,6 +83,7 @@ function initReports() {
             ${_repTypeBtn(REPORT_TYPES.BEN_MONTHLY,      'Ben Manning — Monthly Overview', 'College-wide RAG distribution, movers, strategic picture')}
             ${_repTypeBtn(REPORT_TYPES.PERFORMANCE_REVIEW, 'Performance Review', 'Full pilot evidence with AI-generated narrative (Sonnet)')}
             ${_repTypeBtn(REPORT_TYPES.COLLEGE_ACTION_PLAN, 'College Action Plan Overview', 'Every open action item, grouped by common theme across all areas — for Ben/Neil')}
+            ${_repTypeBtn(REPORT_TYPES.LOOPS_REPORT, 'Loops Report', 'Every loop broken down by Area, then by Focus/Topic')}
           </div>
         </div>
       </div>
@@ -273,6 +275,33 @@ function _repRenderOptions() {
         </div>
       </div>`;
   }
+  else if (type === REPORT_TYPES.LOOPS_REPORT) {
+    title.textContent = 'Loops Report Options';
+    html = `
+      <div style="background:var(--color-light);border:1px solid var(--color-border);border-radius:var(--radius-md);
+        padding:var(--space-md);margin-bottom:var(--space-md);font-size:var(--text-sm);">
+        Every loop, grouped by Area, then by Focus/Topic (LRA theme) within each area.
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="rep-loops-status">Include</label>
+        <select class="form-select" id="rep-loops-status">
+          <option value="open" selected>Open loops only</option>
+          <option value="all">All loops (open and closed)</option>
+        </select>
+      </div>
+      <div style="margin-bottom:var(--space-md);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <p class="form-label">Areas to include <span style="font-weight:400;font-size:0.85em">(all selected by default)</span></p>
+          <span>
+            <button type="button" class="rep-select-all-btn" data-target="rep-loops-area-cb" style="background:none;border:none;color:var(--color-teal);cursor:pointer;font-size:var(--text-xs);text-decoration:underline;">Select all</button> ·
+            <button type="button" class="rep-deselect-all-btn" data-target="rep-loops-area-cb" style="background:none;border:none;color:var(--color-teal);cursor:pointer;font-size:var(--text-xs);text-decoration:underline;">Deselect all</button>
+          </span>
+        </div>
+        <div style="max-height:160px;overflow-y:auto;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:8px;">
+          ${_repGetAreas().map(a => `<label style="display:block;font-size:var(--text-sm);margin-bottom:2px;"><input type="checkbox" class="rep-loops-area-cb" value="${a.areaCode}" checked> ${_repEsc(a.areaName)} (${a.areaCode})</label>`).join('')}
+        </div>
+      </div>`;
+  }
 
   body.innerHTML = html;
   panel.style.display = '';
@@ -433,6 +462,8 @@ function _repRenderPreview() {
     html = `<p style="color:var(--color-muted)">Performance review is generated directly to Word (the narrative is not shown in this preview pane — it's included in the generated document).</p>`;
   } else if (type === REPORT_TYPES.COLLEGE_ACTION_PLAN) {
     html = _repPreviewCollegeActionPlan();
+  } else if (type === REPORT_TYPES.LOOPS_REPORT) {
+    html = _repPreviewLoopsReport();
   }
 
   body.innerHTML = html;
@@ -644,6 +675,8 @@ async function _repGenerate() {
       await _repBuildPerformanceReviewDoc(docx, opts);
     } else if (type === REPORT_TYPES.COLLEGE_ACTION_PLAN) {
       _repBuildCollegeActionPlanDoc(docx);
+    } else if (type === REPORT_TYPES.LOOPS_REPORT) {
+      _repBuildLoopsReportDoc(docx);
     }
     showStatus('✓ Document generated and downloaded.', 'success');
   } catch (e) {
@@ -855,6 +888,86 @@ function _repBuildCollegeActionPlanDoc(docx) {
     numbering: _repDocNumberingConfig(docx),
   });
   _repDownloadDoc(docx, doc, `college-action-plan-overview-${todayISO()}.docx`);
+}
+
+// ── Loops Report — by Area, then by Focus/Topic (Session 71) ─────
+// Real ask: "Reports should include Loops, broken down by Area and
+// Focus / Topic." Focus/Topic = each loop's LRA theme
+// (lraThemeLabel/lraThemeId), the same taxonomy already used
+// throughout the Hub (Coaching Question templates, etc.) — not a new
+// concept invented for this report.
+function _repGetLoopsReportFilters() {
+  const areaCbs = document.querySelectorAll('.rep-loops-area-cb');
+  const areaCodeFilter = areaCbs.length ? Array.from(areaCbs).filter(cb => cb.checked).map(cb => cb.value) : null;
+  const includeAll = document.getElementById('rep-loops-status')?.value === 'all';
+  return { areaCodeFilter, includeAll };
+}
+
+function _repGatherLoopsByArea(areaCodeFilter, includeAll) {
+  const afis = (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || [];
+  const areas = _repGetAreas();
+  const areaName = (code) => areas.find(a => a.areaCode === code)?.areaName || code;
+
+  const byArea = {};
+  afis.forEach(afi => {
+    if (!includeAll && afi.status === AFI_STATUS.CLOSED) return;
+    if (areaCodeFilter && !areaCodeFilter.includes(afi.areaCode)) return;
+    const area = afi.areaCode || 'Unassigned';
+    if (!byArea[area]) byArea[area] = { areaCode: area, areaName: areaName(area), byTopic: {} };
+    const topic = afi.lraThemeLabel || afi.lraThemeId || 'Ungrouped';
+    if (!byArea[area].byTopic[topic]) byArea[area].byTopic[topic] = [];
+    byArea[area].byTopic[topic].push({
+      description: afi.description || '',
+      status: afi.status || 'open',
+      severity: afi.severity || '',
+    });
+  });
+
+  return Object.values(byArea)
+    .map(a => ({ ...a, topics: Object.entries(a.byTopic).map(([topic, loops]) => ({ topic, loops })) }))
+    .sort((a, b) => a.areaName.localeCompare(b.areaName));
+}
+
+function _repPreviewLoopsReport() {
+  const { areaCodeFilter, includeAll } = _repGetLoopsReportFilters();
+  const areas = _repGatherLoopsByArea(areaCodeFilter, includeAll);
+  if (areas.length === 0) return '<p style="color:var(--color-muted)">No loops match the current selection.</p>';
+  return areas.map(a => `
+    <div style="margin-bottom:var(--space-md);">
+      <p style="font-weight:bold;color:var(--color-navy);">${_repEsc(a.areaName)}</p>
+      ${a.topics.map(t => `<p style="font-size:var(--text-xs);color:var(--color-muted);padding-left:12px;">${_repEsc(t.topic)} — ${t.loops.length} loop(s)</p>`).join('')}
+    </div>`).join('');
+}
+
+function _repBuildLoopsReportDoc(docx) {
+  const { areaCodeFilter, includeAll } = _repGetLoopsReportFilters();
+  const areas = _repGatherLoopsByArea(areaCodeFilter, includeAll);
+  const totalLoops = areas.reduce((s, a) => s + a.topics.reduce((s2, t) => s2 + t.loops.length, 0), 0);
+
+  const children = [
+    _repDocTitle(docx, 'Loops Report'),
+    _repDocPara(docx, `Prepared: ${_repFmtDate(nowISO())} · ${totalLoops} loop(s) across ${areas.length} area(s) · ${includeAll ? 'Open and closed' : 'Open only'}, grouped by Focus/Topic within each area`, { italics: true, spacing:{after:200} }),
+  ];
+
+  if (areas.length === 0) {
+    children.push(_repDocPara(docx, 'No loops match the current selection.'));
+  }
+
+  areas.forEach(a => {
+    children.push(_repDocSectionHeading(docx, a.areaName));
+    a.topics.forEach(t => {
+      children.push(new (docx.Paragraph)({ spacing: { before: 100, after: 60 }, children: [new (docx.TextRun)({ text: t.topic, bold: true })] }));
+      children.push(_repDocTable(docx, ['Loop', 'Status', 'Severity'],
+        t.loops.map(l => [l.description, l.status, l.severity || '—']),
+        [5400, 1800, 1800]));
+    });
+  });
+
+  const doc = new (docx.Document)({
+    sections: [{ properties: { page: { margin: { top:1440,bottom:1440,left:1440,right:1440 } } }, children }],
+    numbering: _repDocNumberingConfig(docx),
+  });
+  _repDownloadDoc(docx, doc, `loops-report-${todayISO()}.docx`);
 }
 
 function _repBuildBenDoc(docx, data, opts) {
