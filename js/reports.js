@@ -24,6 +24,7 @@ const REPORT_TYPES = Object.freeze({
   PERFORMANCE_REVIEW: 'performance-review',
   COLLEGE_ACTION_PLAN: 'college-action-plan',
   LOOPS_REPORT:     'loops-report',
+  AREA_DATA_EXPORT: 'area-data-export',
 });
 
 let _repCurrentType = null;
@@ -84,6 +85,7 @@ function initReports() {
             ${_repTypeBtn(REPORT_TYPES.PERFORMANCE_REVIEW, 'Performance Review', 'Full pilot evidence with AI-generated narrative (Sonnet)')}
             ${_repTypeBtn(REPORT_TYPES.COLLEGE_ACTION_PLAN, 'College Action Plan Overview', 'Every open action item, grouped by common theme across all areas — for Ben/Neil')}
             ${_repTypeBtn(REPORT_TYPES.LOOPS_REPORT, 'Loops Report', 'Every loop broken down by Area, then by Focus/Topic')}
+            ${_repTypeBtn(REPORT_TYPES.AREA_DATA_EXPORT, 'Area Full Data Export (Excel)', 'Every raw data point for one area, across every module — for Copilot analysis')}
           </div>
         </div>
       </div>
@@ -302,10 +304,20 @@ function _repRenderOptions() {
         </div>
       </div>`;
   }
+  else if (type === REPORT_TYPES.AREA_DATA_EXPORT) {
+    title.textContent = 'Area Full Data Export Options';
+    html = `${areaSelect}
+      <div style="background:var(--color-light);border:1px solid var(--color-border);border-radius:var(--radius-md);
+        padding:var(--space-md);font-size:var(--text-sm);">
+        Every raw data point currently held for the selected area, across every module — RAG (current + full history), Digital Skills, Action Plans, Loops, Health Checks, Meetings, Notes, Staff, Reflections, CPD. One sheet per category, real dates and numbers throughout so a tool like Copilot can genuinely analyse trends and gaps, not just read a summary. No interpretation applied — this is the raw data, not a report.
+      </div>`;
+  }
 
   body.innerHTML = html;
   panel.style.display = '';
   genPanel.style.display = '';
+  const genBtn = document.getElementById('rep-btn-generate');
+  if (genBtn) genBtn.textContent = type === REPORT_TYPES.AREA_DATA_EXPORT ? '⬇ Generate Excel workbook' : '⬇ Generate Word document';
 
   document.getElementById('rep-pr-copy-prompt-btn')?.addEventListener('click', () => {
     const opts = _repGatherOptions();
@@ -464,6 +476,8 @@ function _repRenderPreview() {
     html = _repPreviewCollegeActionPlan();
   } else if (type === REPORT_TYPES.LOOPS_REPORT) {
     html = _repPreviewLoopsReport();
+  } else if (type === REPORT_TYPES.AREA_DATA_EXPORT) {
+    html = `<p style="color:var(--color-muted)">This generates an Excel workbook directly — one sheet per data category, all raw data for the selected area. Not shown in this preview pane; select an area above and click Generate.</p>`;
   }
 
   body.innerHTML = html;
@@ -649,14 +663,35 @@ async function _repGenerate() {
     status.style.color = kind === 'error' ? 'var(--color-red)' : (kind === 'success' ? 'var(--color-green)' : 'var(--color-muted)');
   };
 
+  const opts = _repGatherOptions();
+  const type = _repCurrentType;
+  if (!type) { showStatus('Select a report type first.', 'error'); return; }
+
+  // Excel export doesn't touch docx.min.js at all — branches out
+  // before the docx-specific guard below, so it never depends on a
+  // library it doesn't use.
+  if (type === REPORT_TYPES.AREA_DATA_EXPORT) {
+    if (typeof window.XLSX === 'undefined') {
+      showStatus('lib/xlsx.min.js has not loaded. Check the script tag in hub.html.', 'error');
+      return;
+    }
+    if (!opts.areaCode) { showStatus('Select an area first.', 'error'); return; }
+    showStatus('Building spreadsheet…', null);
+    try {
+      _repBuildAreaDataExportXlsx(opts.areaCode);
+      showStatus('✓ Spreadsheet generated and downloaded.', 'success');
+    } catch (e) {
+      console.error(e);
+      showStatus(`Error generating spreadsheet: ${e.message}`, 'error');
+    }
+    return;
+  }
+
   if (typeof window.docx === 'undefined') {
     showStatus('lib/docx.min.js has not loaded. Check the script tag in hub.html.', 'error');
     return;
   }
   const docx = window.docx;
-  const opts = _repGatherOptions();
-  const type = _repCurrentType;
-  if (!type) { showStatus('Select a report type first.', 'error'); return; }
 
   showStatus('Building document…', null);
 
@@ -968,6 +1003,111 @@ function _repBuildLoopsReportDoc(docx) {
     numbering: _repDocNumberingConfig(docx),
   });
   _repDownloadDoc(docx, doc, `loops-report-${todayISO()}.docx`);
+}
+
+// ── Area Full Data Export — Excel, for Copilot analysis ──────────
+// Real ask: "export as an excel document all... raw data about an
+// Area, bringing everything together... a way the raw data can be
+// analysed by copilot." Deliberately raw, not interpreted — every
+// sheet is real values straight from the underlying record, no
+// narrative, no pre-computed conclusions. One sheet per data
+// category so Copilot can cross-reference between them, and every
+// date/number kept as a genuine date/number cell (not a formatted
+// string) so it can actually do trend analysis, not just read text.
+function _repBuildAreaDataExportXlsx(areaCode) {
+  const XLSX = window.XLSX;
+  const area = _repGetAreas().find(a => a.areaCode === areaCode);
+  if (!area) throw new Error('Area not found.');
+  const staffAll = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  const dlAll = (window.DPC_DATA.digitalLeads && window.DPC_DATA.digitalLeads.digitalLeads) || [];
+  const dl = area.digitalLeadId ? dlAll.find(d => d.dlId === area.digitalLeadId) : null;
+
+  const wb = XLSX.utils.book_new();
+  const addSheet = (rows, name) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), name.slice(0, 31)); // Excel's 31-char sheet-name limit
+
+  // 1. Area Overview
+  addSheet([
+    ['Field', 'Value'],
+    ['Area Code', area.areaCode],
+    ['Area Name', area.areaName],
+    ['HoA Name', area.hoaName || ''],
+    ['Digital Lead', dl ? dl.name : ''],
+    ['Pyramid Level', area.pyramidLevel || ''],
+  ], 'Area Overview');
+
+  // 2. RAG Current
+  const ragRows = [['Dimension', 'Score', 'Rationale', 'Last Updated']];
+  (typeof RAG_DIMENSIONS !== 'undefined' ? RAG_DIMENSIONS : []).forEach(dim => {
+    const d = (area.ragDimensions || {})[dim.id];
+    ragRows.push([dim.label, d && d.score != null ? d.score : '', (d && d.rationale) || '', (d && d.lastUpdated) || '']);
+  });
+  addSheet(ragRows, 'RAG Current');
+
+  // 3. RAG History — every snapshot, real dates, for trend analysis
+  const historyRows = [['Dimension', 'Date', 'Score']];
+  (typeof RAG_DIMENSIONS !== 'undefined' ? RAG_DIMENSIONS : []).forEach(dim => {
+    const d = (area.ragDimensions || {})[dim.id];
+    (d && d.history || []).forEach(h => historyRows.push([dim.label, h.date || '', h.score != null ? h.score : '']));
+  });
+  addSheet(historyRows, 'RAG History');
+
+  // 4. Digital Skills
+  const skillRows = [['Skill', 'Selected', 'Stage 1', 'Stage 2', 'Stage 3', 'Source', 'Custom']];
+  (area.industrySkills || []).forEach(s => skillRows.push([s.name || '', s.selected ? 'Yes' : 'No', s.stage1 || '', s.stage2 || '', s.stage3 || '', s.source || '', s.isCustom ? 'Yes' : 'No']));
+  addSheet(skillRows, 'Digital Skills');
+
+  // 5. Action Items — one row per item, not per plan
+  const plans = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || []).filter(p => p.areaCode === areaCode);
+  const apRows = [['Plan Status', 'Item Description', 'Accountable', 'Done', 'Source Domain']];
+  plans.forEach(p => (p.actionItems || []).forEach(i => apRows.push([p.status || '', i.description || '', i.accountableName || '', i.done ? 'Yes' : 'No', i.sourceDomain || ''])));
+  addSheet(apRows, 'Action Items');
+
+  // 6. Loops
+  const afis = ((window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []).filter(a => a.areaCode === areaCode);
+  const loopRows = [['Description', 'Status', 'Severity', 'Focus/Topic', 'Created']];
+  afis.forEach(a => loopRows.push([a.description || '', a.status || '', a.severity || '', a.lraThemeLabel || a.lraThemeId || '', a.createdAt || '']));
+  addSheet(loopRows, 'Loops');
+
+  // 7. Health Checks — one row per review×domain
+  const reviews = ((window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.reviews) || []).filter(r => r.areaCode === areaCode);
+  const hcRows = [['Review Date', 'Domain', 'Avg Score', 'Action Identified', 'Action Description']];
+  reviews.forEach(r => Object.entries(r.domains || {}).forEach(([domainId, d]) => {
+    const fa = (typeof HC_FOCUS_AREAS !== 'undefined' ? HC_FOCUS_AREAS : []).find(f => f.id === domainId);
+    hcRows.push([r.date || '', fa ? fa.label : domainId, d.avgScore != null ? d.avgScore : '', d.actionIdentified ? 'Yes' : 'No', d.actionDescription || '']);
+  }));
+  addSheet(hcRows, 'Health Checks');
+
+  // 8. Meetings
+  const meetings = ((window.DPC_DATA.calendar && window.DPC_DATA.calendar.entries) || []).filter(e => e.entryType === CALENDAR_TYPE.MEETING && e.areaCode === areaCode);
+  const meetRows = [['Date', 'Type', 'Title', 'Person(s)', 'Notes Complete']];
+  meetings.forEach(m => meetRows.push([m.date || '', (typeof MEETING_TYPE_LABELS !== 'undefined' && MEETING_TYPE_LABELS[m.meetingType]) || m.meetingType || '', m.title || '', (m.personRefs || []).join(', '), m.notesComplete ? 'Yes' : 'No']));
+  addSheet(meetRows, 'Meetings');
+
+  // 9. Notes
+  const notes = ((window.DPC_DATA.notes && window.DPC_DATA.notes.notes) || []).filter(n => n.areaCode === areaCode);
+  const noteRows = [['Date', 'Text', 'Person', 'Project']];
+  notes.forEach(n => noteRows.push([n.createdAt || '', n.text || '', n.personRef || '', n.projectRef || '']));
+  addSheet(noteRows, 'Notes');
+
+  // 10. Staff
+  const staff = staffAll.filter(s => s.areaCode === areaCode);
+  const staffRows = [['Name', 'Role', 'ETF Stage', 'Confidence Rating', 'Entry Pathway', 'Entry Date']];
+  staff.forEach(s => staffRows.push([s.name || '', s.role || '', s.etfStage != null ? s.etfStage : '', s.confidenceRating != null ? s.confidenceRating : '', s.entryPathway || '', s.entryDate || '']));
+  addSheet(staffRows, 'Staff');
+
+  // 11. Reflections
+  const reflections = ((window.DPC_DATA.reflections && window.DPC_DATA.reflections.reflections) || []).filter(r => r.areaCode === areaCode);
+  const reflRows = [['Date', 'Stage', 'Confidence Rating', 'Practice Change Reported', 'Response Text']];
+  reflections.forEach(r => reflRows.push([r.submittedAt || '', r.stage || '', r.confidenceRating != null ? r.confidenceRating : '', r.practiceChangeReported ? 'Yes' : 'No', r.responseText || '']));
+  addSheet(reflRows, 'Reflections');
+
+  // 12. CPD — only deliveredCPD carries an areaCode; plannedTraining is not area-linked
+  const cpdEntries = ((window.DPC_DATA.cpd && window.DPC_DATA.cpd.deliveredCPD) || []).filter(c => c.areaCode === areaCode);
+  const cpdRows = [['Date', 'Title', 'Attendees', 'Notes']];
+  cpdEntries.forEach(c => cpdRows.push([c.date || '', c.title || '', c.attendees != null ? c.attendees : '', c.notes || '']));
+  addSheet(cpdRows, 'CPD');
+
+  XLSX.writeFile(wb, `area-data-export-${areaCode}-${todayISO()}.xlsx`);
 }
 
 function _repBuildBenDoc(docx, data, opts) {
