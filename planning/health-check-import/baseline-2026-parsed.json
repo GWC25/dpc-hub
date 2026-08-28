@@ -94,7 +94,6 @@
       }
     },
     "overallReflection": "Liam is a new member of staff and has not made any content for learners yet",
-    "keyStrengths": "n/a",
     "areasForImprovement": "Training support",
     "priorityNextSteps": "Training support"
   },
@@ -260,7 +259,6 @@
     },
     "overallReflection": "Nothing was identify by the accessibility checker.",
     "keyStrengths": "Good fonts, colours, alt text",
-    "areasForImprovement": "N/A",
     "priorityNextSteps": "Group training session"
   },
   {
@@ -293,8 +291,7 @@
     },
     "overallReflection": "Great following of accessibility standards",
     "keyStrengths": "Great choice of fonts, colour contrast, alt description tags",
-    "areasForImprovement": "No areas for improvement",
-    "priorityNextSteps": null
+    "areasForImprovement": "No areas for improvement"
   },
   {
     "sourceRowId": 1011,
@@ -359,7 +356,6 @@
     },
     "overallReflection": "PowerPoint was well designed and incorporated accessibility mindfully. Everything was easily readable on the slide and content was appropriately contrasted for readability",
     "keyStrengths": "Layout of slides\nNo accessibility notes from PowerPoint - the one that was on there was debunked when the video played as Closed Captions was available that the accessibility checker did not pick up initially\nContent had appropriate contrasting",
-    "areasForImprovement": "N/A",
     "priorityNextSteps": "Continued use of accessibility checker"
   },
   {
@@ -1287,8 +1283,7 @@
     },
     "overallReflection": "There are some key areas that needs to be addressed ",
     "keyStrengths": "Assignment brief was clear",
-    "areasForImprovement": "Assignment brief should be readable in immersive reader, teams files must be clear, learner work not accessible. Use of class materials folder",
-    "priorityNextSteps": null
+    "areasForImprovement": "Assignment brief should be readable in immersive reader, teams files must be clear, learner work not accessible. Use of class materials folder"
   },
   {
     "sourceRowId": 2030,
@@ -1320,8 +1315,7 @@
     },
     "overallReflection": "In need of slight tweaks but nothing too major.",
     "keyStrengths": "Well laid out document, clear font ",
-    "areasForImprovement": "Headings, alt text and colour contrast",
-    "priorityNextSteps": null
+    "areasForImprovement": "Headings, alt text and colour contrast"
   },
   {
     "sourceRowId": 2031,
@@ -1351,10 +1345,7 @@
         "actionDescription": "Include images, run checker."
       }
     },
-    "overallReflection": "Good material, just need to run checker when creating new.",
-    "keyStrengths": null,
-    "areasForImprovement": null,
-    "priorityNextSteps": null
+    "overallReflection": "Good material, just need to run checker when creating new."
   },
   {
     "sourceRowId": 2032,
@@ -1384,10 +1375,7 @@
         "actionDescription": "Run checker on every document, include headings and images. "
       }
     },
-    "overallReflection": "Very basic document, but clear information. Just requires some headings and carry out checker.",
-    "keyStrengths": null,
-    "areasForImprovement": null,
-    "priorityNextSteps": null
+    "overallReflection": "Very basic document, but clear information. Just requires some headings and carry out checker."
   },
   {
     "sourceRowId": 2033,
@@ -1564,10 +1552,7 @@
         "actionDescription": null
       }
     },
-    "overallReflection": "Good piece of work, just need to carry out checker to pick up on few missed parts.",
-    "keyStrengths": null,
-    "areasForImprovement": null,
-    "priorityNextSteps": null
+    "overallReflection": "Good piece of work, just need to carry out checker to pick up on few missed parts."
   },
   {
     "sourceRowId": 2038,
@@ -1748,5 +1733,235 @@
     "keyStrengths": "Good visuals on ppt and display materials on screen. ",
     "areasForImprovement": "Alt text, ppt template, sharing files on teams for learners. ",
     "priorityNextSteps": "Use template in development with M.Filer and the apply to lessons. Start by making ppt accessible fully and then sharing in teams for learners. They need somewhere to navigate and find resources."
+  },
+  {
+    "sourceRowId": 2042,
+    "assessorName": "Ethan Shi",
+    "date": "2026-08-13",
+    "areaName": "6th Form",
+    "areaCode": null,
+    "headOfArea": "Maria Miles",
+    "staffMemberName": "Di Dourley",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Learner assessibility of resources. Learners don't like using Teams and ignores messages and tasks",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 4,
+          "altTextOnImages": 4,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 4,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 4.0,
+        "lowestScore": 4,
+        "whatWasSeen": null,
+        "actionIdentified": true,
+        "actionLevel": "Training or development",
+        "actionDescription": null
+      }
+    },
+    "overallReflection": "Di's Teams is organised, she knows how to apply different designs and layouts on Teams.",
+    "keyStrengths": "She's organised on Teams.",
+    "areasForImprovement": "Having Channels on Teams to indentify key areas for learners to access with specific resources."
+  },
+  {
+    "sourceRowId": 2043,
+    "assessorName": "Katherine Jones",
+    "date": "2026-08-19",
+    "areaName": "Health",
+    "areaCode": "HAC200",
+    "headOfArea": "Dale Bond",
+    "staffMemberName": "Katherine Jones",
+    "provision": "Further Education",
+    "levelOfLearning": "Access ",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "At this time of creating the resource, I had no Access HE or FE teaching experience. ",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 1,
+          "altTextOnImages": 1,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 4,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 2.8,
+        "lowestScore": 1,
+        "whatWasSeen": "Powerpoint resource for Access to HE teaching- 1.5 hours",
+        "actionIdentified": true,
+        "actionLevel": "Training or development",
+        "actionDescription": "Uses Accessibility Checker - Attended training on Digital Accessibility and implemented use for 26/27 resources\nAlt text on images - For 26/27 use the accessibility checker to highlight the images that need alt text, and consider if the image is essential\nColour contrast checked - For 26/27 using black on white for majority of text"
+      }
+    },
+    "overallReflection": "Needed training on few areas to meet urgent requirement needs.",
+    "keyStrengths": "Colour contrast. captions, headings are clear",
+    "areasForImprovement": "Alt text needs adding. Accessibility checker needs running.",
+    "priorityNextSteps": "Training completed with Graeme in July 2026. I will become the digital lead for Health and will be reading resources and accessing self-directed training when required to complete the role. For example, understanding the WCAG 2.2 AA recommendations. "
+  },
+  {
+    "sourceRowId": 2044,
+    "assessorName": "Katherine Jones",
+    "date": "2026-08-19",
+    "areaName": "Health ",
+    "areaCode": "HAC 200",
+    "headOfArea": "Dale Bond",
+    "staffMemberName": "Tammima Aziz",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Resources completed under time constraints (1 week warning). Completed induction training on accessibility. ",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 1,
+          "altTextOnImages": 1,
+          "colourContrastChecked": 3,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 2.8,
+        "lowestScore": 1,
+        "whatWasSeen": "A powerpoint resource on T-level year 2 lesson\nAlt text on images — adds meaningful alt text to images in shared documents and slides",
+        "actionIdentified": true,
+        "actionLevel": "Support / coaching",
+        "actionDescription": "Uses Accessibility Checker — runs Accessibility Checker before sharing resources in Teams: Coaching received from Katherine on location and use of the checker.\nAlt text on images — adds meaningful alt text to images in shared documents and slides: Coaching received from Katherine on alt text and how to add this, when to add this.\n"
+      }
+    },
+    "overallReflection": "Self rating 6.5/10, developing knowledge in alt text and accessibility checker. There were time constraints that made resource development challenging.",
+    "keyStrengths": "Captions used, good text contrast, clear headings and illustrations. Visual examples applied (multisensory input), less writing on the slides and concise slides. Background of handouts are in pale colours for reducing eye strain.",
+    "areasForImprovement": "Adding alt text, using the accessibility checker, awareness of contrast.",
+    "priorityNextSteps": "Katherine already given coaching on alt text and accessibility checker. To continue good practices. "
+  },
+  {
+    "sourceRowId": 2045,
+    "assessorName": "Silvia Bertie",
+    "date": "2026-08-20",
+    "areaName": "CHIL",
+    "areaCode": "SPO",
+    "headOfArea": "Dan Pratlett",
+    "staffMemberName": "Travis Druce",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "overall historically the document used were fairly accessible, only thing missing were hyperlinks and alt text. There is an issues at times on presentations about the reading order which appear on the accessibility checker but does not allow any modifications or on a table created on words (SoL for example) where it suggest to use split cells but the nature of the document required merged cells.  ",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 4,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 3,
+          "accessibleAssignmentBriefs": 3
+        },
+        "avgScore": 3.4,
+        "lowestScore": 3,
+        "whatWasSeen": "Assignment briefs and teams page",
+        "actionIdentified": false,
+        "actionLevel": "Support / coaching;Inform only",
+        "actionDescription": null
+      }
+    },
+    "overallReflection": "The assignment briefs and the teams page was accessible and looked accessible. There were a couple of alt text missing but only on logos rather than pictures that learners needed to understand. ",
+    "keyStrengths": "The accessibility checker used for any new documents.",
+    "areasForImprovement": "See the importance of being accessible by design.",
+    "priorityNextSteps": "To reinforce the use of the checker on a daily base to ensure that it becomes an habit rather than a tick box exercise."
+  },
+  {
+    "sourceRowId": 2046,
+    "assessorName": "Katherine Jones",
+    "date": "2026-08-21",
+    "areaName": "Health",
+    "areaCode": "HAC200",
+    "headOfArea": "Dale Bond",
+    "staffMemberName": "Amanda McLaurin",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Level 3 Education and Training completed. Not much exposure to accessibility training. Completed induction tasks. No specific training on digital tools except 1 hour of training with Graeme.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 1,
+          "altTextOnImages": 2,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 3.2,
+        "lowestScore": 1,
+        "whatWasSeen": "NOTE: No assignment brief assessed (no N/A button)\nA teaching powerpoint.",
+        "actionIdentified": true,
+        "actionLevel": "Support / coaching",
+        "actionDescription": "Uses Accessibility Checker - coaching given by Katherine on how to use\nAlt text on images - coaching given by Katherine"
+      }
+    },
+    "overallReflection": "Amanda is generally aware of most concepts to do with accessible design. Action points taken during assessment as documented.",
+    "keyStrengths": "Awareness of contrast and caption use. ",
+    "areasForImprovement": "As per the coaching described",
+    "priorityNextSteps": "Coaching taken during the questionnaire "
+  },
+  {
+    "sourceRowId": 2047,
+    "assessorName": "Katherine Jones",
+    "date": "2026-08-21",
+    "areaName": "Health",
+    "areaCode": "HAC200",
+    "headOfArea": "Dale Bond",
+    "staffMemberName": "Jess Dane",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "New to teaching with no formal previous training. Induction completed that included accessibility. No specific training on digital tools except 1 hour of training with Graeme.",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 1,
+          "altTextOnImages": 1,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 5,
+          "accessibleAssignmentBriefs": 4
+        },
+        "avgScore": 3.0,
+        "lowestScore": 1,
+        "whatWasSeen": "Powerpoint teaching resource",
+        "actionIdentified": true,
+        "actionLevel": "Support / coaching",
+        "actionDescription": "Uses Accessibility Checker - Coaching provided by Katherine during questionnaire completion\nAlt text on images - Coaching provided by Katherine during questionnaire completion"
+      }
+    },
+    "overallReflection": "Jess is aware of most accessibility concepts around design. Coaching was given to highlight the accessibility checker and the alt text function.",
+    "keyStrengths": "Captions on videos, clear text, simple slide structure",
+    "areasForImprovement": "Coaching was given to highlight the accessibility checker and the alt text function.",
+    "priorityNextSteps": "Continue to use strengths identified and to use accessibility checker, including adding alt text in future. For some design functions of powerpoint, to check whether the text can be read aloud, as it appears to reformat as a picture."
+  },
+  {
+    "sourceRowId": 2048,
+    "assessorName": "Katherine Jones",
+    "date": "2026-08-26",
+    "areaName": "Health",
+    "areaCode": "HAC200",
+    "headOfArea": "Dale Bond",
+    "staffMemberName": "Caitlin Honeywell",
+    "provision": "Further Education",
+    "levelOfLearning": "Level 3",
+    "domains": {
+      "accessibilityByDesign": {
+        "context": "Training given on accessibility and digital, minimal feedback given on accessibility of resources. L4 Diploma in teaching and observations obtained. ",
+        "indicatorScores": {
+          "usesAccessibilityChecker": 1,
+          "altTextOnImages": 3,
+          "colourContrastChecked": 4,
+          "captionsTranscripts": 4,
+          "accessibleAssignmentBriefs": 5
+        },
+        "avgScore": 3.4,
+        "lowestScore": 1,
+        "whatWasSeen": "Powerpoint lesson HSC Level 3\nAssignment Brief",
+        "actionIdentified": true,
+        "actionLevel": "Support / coaching",
+        "actionDescription": "Accessibility checker- to be coached on how to use\nAlt text- to gain awareness and know how to add\nCaptions- To understand how to turn on/off on Youtube\n"
+      }
+    },
+    "overallReflection": "Overall, when accessibility checker used, the resource required no alterations. However, awareness needed on using the checker, alt text and captions.",
+    "keyStrengths": "Clear headings, clear contrast and good slide structure, not overloaded slides. ",
+    "areasForImprovement": "Accessibility checker- to be coached on how to use\nAlt text- to gain awareness and know how to add\nCaptions- To understand how to turn on/off on Youtube",
+    "priorityNextSteps": "Coaching completed during assessment on the above."
   }
 ]
