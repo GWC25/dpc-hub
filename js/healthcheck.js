@@ -1,4 +1,4 @@
-// DPC Hub · js/healthcheck.js · v2.1 · 01/09/26 · Session 63
+// DPC Hub · js/healthcheck.js · v2.2 · 02/09/26 · Session 66 — New review button explains why it is blocked
 // v2.1: shareable per-staff Word report (see "Shareable Word report" at
 // the foot of this file), plus history items rebuilt as real buttons.
 // Digital Health Check module — REBUILT to match the real instrument.
@@ -73,7 +73,8 @@ function initHealthChecks() {
             <option value="">— Select area first —</option>
           </select>
         </div>
-        <button id="hc-new-review-btn" type="button" class="btn btn--primary btn--sm" style="width:100%;margin-bottom:var(--space-lg);" disabled>+ New review</button>
+        <button id="hc-new-review-btn" type="button" class="btn btn--primary btn--sm" style="width:100%;margin-bottom:var(--space-xs);" aria-disabled="true" aria-describedby="hc-new-review-hint">+ New review</button>
+        <p id="hc-new-review-hint" role="status" style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-lg);"></p>
         <div id="hc-staff-history"></div>
       </div>
 
@@ -109,16 +110,37 @@ function _hcPopulateStaffSelector(areaCode) {
   if (!sel) return;
   sel.innerHTML = '<option value="">— Select staff member —</option>';
   sel.disabled = !areaCode;
-  newBtn.disabled = true;
-  if (!areaCode) return;
+  if (!areaCode) { _hcSetNewReviewState('Select an area to begin.'); return; }
 
   const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
-  allStaff.filter(s => s.areaCode === areaCode).sort((a, b) => (a.name || '').localeCompare(b.name || '')).forEach(s => {
+  const areaStaff = allStaff.filter(s => s.areaCode === areaCode).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  areaStaff.forEach(s => {
     const opt = document.createElement('option');
     opt.value = s.staffId;
     opt.textContent = s.name + (s.role ? ` (${s.role})` : '');
     sel.appendChild(opt);
   });
+
+  const area = typeof _getArea === 'function' ? _getArea(areaCode) : null;
+  _hcSetNewReviewState(areaStaff.length === 0
+    ? `${area ? area.areaCode : areaCode} has no staff profiles yet. Add them on the Staff page first — a Health Check is recorded against a named person.`
+    : 'Select a staff member to start a review.');
+}
+
+// The button used to carry a plain `disabled` attribute, and nothing in
+// the stylesheet styled that state — so it looked fully active, did
+// nothing when clicked, and said nothing about why. A `disabled` button
+// is also removed from the tab order and announces nothing, so a
+// keyboard or screen reader user got even less. It now stays focusable
+// with aria-disabled, and the reason is always visible next to it.
+function _hcSetNewReviewState(reason) {
+  const btn  = document.getElementById('hc-new-review-btn');
+  const hint = document.getElementById('hc-new-review-hint');
+  if (btn) {
+    btn.setAttribute('aria-disabled', reason ? 'true' : 'false');
+    btn.removeAttribute('disabled');
+  }
+  if (hint) hint.textContent = reason || '';
 }
 
 // ── Staff review history (left panel) ────────────────────────────
@@ -164,7 +186,14 @@ function _hcRenderStaffHistory(staffId) {
 function _hcStartNewReview() {
   const areaCode = document.getElementById('hc-area-sel').value;
   const staffId  = document.getElementById('hc-staff-sel').value;
-  if (!areaCode || !staffId) return;
+  if (!areaCode || !staffId) {
+    const target = document.getElementById(areaCode ? 'hc-staff-sel' : 'hc-area-sel');
+    const msg = document.getElementById('hc-new-review-hint')?.textContent
+      || (areaCode ? 'Select a staff member first.' : 'Select an area first.');
+    if (typeof UI !== 'undefined') UI.showToast('warning', msg);
+    if (target) target.focus();
+    return;
+  }
 
   _hcDraftReview = {
     reviewId: generateId(),
@@ -449,6 +478,7 @@ function _wireHCEvents() {
   document.getElementById('hc-staff-sel')?.addEventListener('change', e => {
     _hcSelectedStaffId = e.target.value;
     _hcRenderStaffHistory(_hcSelectedStaffId);
+    _hcSetNewReviewState(_hcSelectedStaffId ? '' : 'Select a staff member to start a review.');
     document.getElementById('hc-placeholder').style.display = 'block';
     document.getElementById('hc-review-form').style.display = 'none';
   });
