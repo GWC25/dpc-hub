@@ -1,4 +1,4 @@
-// DPC Hub · js/areas.js · v1.0 · July 2026
+// DPC Hub · js/areas.js · v1.2 · 02/09/26 · Session 65 — Action Plan JSON import (paste, preview, untick, apply)
 // Areas module. 35-area overview grid, area detail view with tabs.
 // Reads from window.DPC_DATA.areas via data.js globals.
 
@@ -765,7 +765,7 @@ function _renderActionPlanTab(panel, areaCode) {
       <button id="ap-new-btn" type="button" class="btn btn--primary btn--sm">+ New action plan</button>
     </div>
     <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);">
-      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:4px;">Area overview (no API cost)</p>
+      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:4px;">1. Area overview — group existing action items into themes</p>
       <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:8px;">Groups open action items into themes, and suggests individual support vs a whole-team session. Copy the action items into a Claude conversation, paste the result back here.</p>
       <button id="ap-ai-copy-btn" type="button" class="btn btn--ghost btn--sm">Copy action items for Claude</button>
       <p id="ap-ai-copy-status" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;"></p>
@@ -777,12 +777,30 @@ function _renderActionPlanTab(panel, areaCode) {
       <button id="ap-ai-overview-btn" type="button" class="btn btn--secondary btn--sm">Preview</button>
       <div id="ap-ai-overview-results" style="margin-top:var(--space-sm);"></div>
     </div>
+    <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);">
+      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:4px;">2. Import a new action plan from JSON</p>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:8px;">For plans built outside the Hub — a local survey, a team session, a Claude conversation. Paste the JSON, check the preview, untick anything you don't want, then apply. Nothing is written until you press Apply.</p>
+      <details style="margin:8px 0;">
+        <summary style="cursor:pointer;font-size:var(--text-xs);color:var(--color-teal);">What shape does the JSON need to be?</summary>
+        <pre style="background:var(--color-light);border-radius:var(--radius-sm);padding:8px;font-size:10px;overflow-x:auto;margin-top:4px;">{"type":"Training|Coaching|Resource sharing|Whole team",
+ "focus":"...","aim":"...","successCriteria":"...","targetDate":"YYYY-MM-DD",
+ "actionItems":[{"description":"...","role":"dpc|digital-lead|hoa|staff",
+                 "accountableName":"...","timeframe":"YYYY-MM-DD","sourceDomain":"..."}]}</pre>
+      </details>
+      <label class="sr-only" for="ap-import-json">Action plan JSON</label>
+      <textarea id="ap-import-json" class="form-textarea" rows="4" placeholder="Paste the action plan JSON here…" style="width:100%;font-family:monospace;font-size:11px;margin-bottom:8px;"></textarea>
+      <button id="ap-import-preview-btn" type="button" class="btn btn--secondary btn--sm">Preview</button>
+      <p id="ap-import-status" role="status" style="font-size:var(--text-xs);margin-top:4px;"></p>
+      <div id="ap-import-preview"></div>
+    </div>
+
     <div id="ap-new-form" style="display:none;"></div>
     <div id="ap-list"></div>
   `;
 
   _renderAPList(areaCode);
   document.getElementById('ap-new-btn')?.addEventListener('click', () => _renderAPNewForm(areaCode));
+  document.getElementById('ap-import-preview-btn')?.addEventListener('click', () => _apPreviewImport(areaCode));
   document.getElementById('ap-ai-copy-btn')?.addEventListener('click', () => {
     const items = _gatherAreaActionItems(areaCode);
     const text = `Group these action items into themes, classify each as "individual" (1-2 people) or "whole-team" (common thread), and suggest a next step for each. Respond only with JSON: {"themes":[{"description":"...","staffInvolved":["..."],"classification":"individual|whole-team","recommendation":"..."}]}\n\nAction items for area ${areaCode}:\n${JSON.stringify(items, null, 2)}`;
@@ -1008,4 +1026,104 @@ function _formatDateShort(isoStr) {
 function _escHtml(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+
+// ── Action Plan JSON import (Session 65) ──────────────────────────
+// Same contract as the Industry Skills importer: paste, preview,
+// untick, apply. Nothing is written to OneDrive until Apply is pressed,
+// so a malformed or over-eager plan costs a glance rather than a
+// cleanup. Exists because plans that originate outside a Health Check —
+// a local survey, a team session — otherwise mean typing every action
+// item by hand into a separate form each.
+let _apLastImport = null;
+
+function _apPreviewImport(areaCode) {
+  const status = document.getElementById('ap-import-status');
+  const preview = document.getElementById('ap-import-preview');
+  const setStatus = (msg, isError) => {
+    if (!status) return;
+    status.textContent = msg;
+    status.style.color = isError ? 'var(--color-red)' : 'var(--color-green)';
+  };
+  if (preview) preview.innerHTML = '';
+  _apLastImport = null;
+
+  const raw = (document.getElementById('ap-import-json') || {}).value;
+  const problem = typeof describePastedContent === 'function' ? describePastedContent(raw, 'plan') : null;
+  if (problem) { setStatus(problem, true); return; }
+  const parsed = JSON.parse(String(raw).trim());
+
+  if (!parsed.focus || !String(parsed.focus).trim()) {
+    setStatus('The JSON needs a "focus" — that is the plan title.', true); return;
+  }
+  const validTypes = ['Training', 'Coaching', 'Resource sharing', 'Whole team'];
+  if (parsed.type && !validTypes.includes(parsed.type)) {
+    setStatus(`"type" must be one of: ${validTypes.join(', ')}.`, true); return;
+  }
+  const items = Array.isArray(parsed.actionItems) ? parsed.actionItems.filter(i => i && i.description) : [];
+
+  _apLastImport = { areaCode, plan: parsed, items };
+  setStatus(`Ready: 1 plan and ${items.length} action item${items.length === 1 ? '' : 's'}. Nothing saved yet.`);
+
+  const esc = typeof _escHtml === 'function' ? _escHtml : (x => String(x == null ? '' : x));
+  const roleLabel = (r) => (typeof ACTION_ITEM_ROLE_LABELS !== 'undefined' && ACTION_ITEM_ROLE_LABELS[r]) || r || '—';
+
+  preview.innerHTML = `
+    <div style="border:1px solid var(--color-teal);border-radius:var(--radius-md);padding:var(--space-md);margin-top:var(--space-md);">
+      <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${esc(parsed.focus)}</p>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:8px;">
+        ${esc(parsed.type || 'Training')}${parsed.targetDate ? ` · target ${esc(parsed.targetDate)}` : ''}
+      </p>
+      ${parsed.aim ? `<p style="font-size:var(--text-xs);color:var(--color-slate);"><strong>Aim:</strong> ${esc(parsed.aim)}</p>` : ''}
+      ${parsed.successCriteria ? `<p style="font-size:var(--text-xs);color:var(--color-slate);margin-bottom:8px;"><strong>Success criteria:</strong> ${esc(parsed.successCriteria)}</p>` : ''}
+      ${items.length ? `
+        <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin:12px 0 8px;">Action items — untick any you don\u2019t want added</p>
+        ${items.map((it, i) => `
+          <label style="display:block;font-size:var(--text-xs);margin-bottom:6px;">
+            <input type="checkbox" class="ap-import-item" data-idx="${i}" checked>
+            ${esc(it.description)}
+            <span style="color:var(--color-muted);"> — ${esc(roleLabel(it.role))}${it.accountableName ? `, ${esc(it.accountableName)}` : ''}${it.timeframe ? `, by ${esc(it.timeframe)}` : ''}</span>
+          </label>`).join('')}
+      ` : '<p style="font-size:var(--text-xs);color:var(--color-amber);">No action items in this JSON — the plan will be created empty.</p>'}
+      <button type="button" id="ap-import-apply-btn" class="btn btn--primary btn--sm" style="margin-top:8px;">Create this action plan</button>
+    </div>`;
+
+  document.getElementById('ap-import-apply-btn')?.addEventListener('click', () => _apApplyImport());
+}
+
+function _apApplyImport() {
+  if (!_apLastImport) return;
+  const { areaCode, plan, items } = _apLastImport;
+  const keep = Array.from(document.querySelectorAll('.ap-import-item:checked')).map(cb => items[Number(cb.dataset.idx)]);
+
+  const planId = generateId();
+  saveActionPlan({
+    planId, areaCode,
+    type: plan.type || 'Training',
+    focus: String(plan.focus).trim(),
+    staffIds: Array.isArray(plan.staffIds) ? plan.staffIds : [],
+    aim: plan.aim || '',
+    successCriteria: plan.successCriteria || '',
+    targetDate: plan.targetDate || null,
+    status: 'active',
+    actionItems: [],
+    linkedInstances: [],
+    linkedAFIIds: [],
+  });
+  keep.forEach(it => addActionItem(planId, {
+    description: it.description,
+    role: it.role || undefined,
+    accountableName: it.accountableName || '',
+    timeframe: it.timeframe || null,
+    sourceDomain: it.sourceDomain || null,
+  }));
+
+  const box = document.getElementById('ap-import-json'); if (box) box.value = '';
+  const prev = document.getElementById('ap-import-preview'); if (prev) prev.innerHTML = '';
+  const status = document.getElementById('ap-import-status');
+  if (status) { status.textContent = `Created "${plan.focus}" with ${keep.length} action item(s).`; status.style.color = 'var(--color-green)'; }
+  _apLastImport = null;
+  _renderAPList(areaCode);
+  if (typeof UI !== 'undefined') UI.showToast('success', `Action plan created: ${plan.focus}`);
 }
