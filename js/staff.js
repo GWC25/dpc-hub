@@ -1,4 +1,4 @@
-// DPC Hub · js/staff.js · v1.0 · 7th July 2026
+// DPC Hub · js/staff.js · v1.1 · 01/09/26 · Session 63 — Health Check tab: per-review Word report download
 // Staff Profile module. Dynamic creation via Instructional Coaching/LW/referral.
 // Touch history, development priorities (3), ETF stage, reflection timeline.
 // Reads from window.DPC_DATA.staff via data.js globals.
@@ -291,9 +291,22 @@ function _renderStaffTab(tab, staffId) {
                 ${d.actionIdentified && d.actionDescription ? `<p style="font-size:10px;color:var(--color-amber);padding-left:var(--space-md);margin-top:2px;"><strong>Action required:</strong> ${_sEsc(d.actionDescription)}</p>` : ''}
               </details>`;
             }).join('')}
-            ${anyActions ? `<button type="button" class="btn btn--ghost btn--sm s-generate-ap-btn" data-review-id="${r.reviewId}" style="margin-top:var(--space-sm);font-size:10px;">Generate Action Plan from this Health Check</button>` : ''}
+            <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-sm);">
+              ${anyActions ? `<button type="button" class="btn btn--ghost btn--sm s-generate-ap-btn" data-review-id="${r.reviewId}" style="font-size:10px;">Generate Action Plan from this Health Check</button>` : ''}
+              <button type="button" class="btn btn--ghost btn--sm s-hc-download-btn" data-review-id="${r.reviewId}" style="font-size:10px;">Download report (Word)<span class="sr-only"> for ${_sEsc(s.name || '')}, ${_sFmtDate(r.date)}</span></button>
+            </div>
           </div>`;
         }).join('');
+
+    panel.querySelectorAll('.s-hc-download-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (typeof _hcDownloadReportWord !== 'function') {
+          if (typeof UI !== 'undefined') UI.showToast('error', 'Health Check export is unavailable.');
+          return;
+        }
+        _hcDownloadReportWord(btn.dataset.reviewId);
+      });
+    });
 
     panel.querySelectorAll('.s-generate-ap-btn').forEach(btn => {
       // Real dedup (Session 61) — was previously disabled-on-click only,

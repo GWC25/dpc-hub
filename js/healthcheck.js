@@ -1,4 +1,6 @@
-// DPC Hub · js/healthcheck.js · v2.0 · 31/07/26 · Session 36 rebuild
+// DPC Hub · js/healthcheck.js · v2.1 · 01/09/26 · Session 63
+// v2.1: shareable per-staff Word report (see "Shareable Word report" at
+// the foot of this file), plus history items rebuilt as real buttons.
 // Digital Health Check module — REBUILT to match the real instrument.
 //
 // The v1.0 module (area-level, 5 broad AI-extracted dimensions, written to
@@ -132,16 +134,29 @@ function _hcRenderStaffHistory(staffId) {
     container.innerHTML = '<p style="font-size:var(--text-xs);color:var(--color-muted);">No Health Checks recorded yet.</p>';
     return;
   }
+  const staffName = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff || []).find(s => s.staffId === staffId)?.name || 'this staff member';
+
   container.innerHTML = `
     <h3 style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-sm);">Previous reviews</h3>
-    ${reviews.map(r => `
-      <div class="hc-history-item" data-review-id="${r.reviewId}" style="padding:var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:var(--space-xs);cursor:pointer;">
-        <p style="font-size:var(--text-xs);font-weight:bold;color:var(--color-slate);">${_hcFmtDate(r.date)} · ${_hcCycleLabel(r.cycleId)}</p>
-        <p style="font-size:10px;color:var(--color-muted);">${Object.keys(r.domains || {}).length} area(s) · Priority ${r.supportPriorityScore != null ? r.supportPriorityScore.toFixed(1) : '—'}</p>
-      </div>`).join('')}
+    ${reviews.map(r => {
+      const label = `${_hcFmtDate(r.date)}, ${_hcCycleLabel(r.cycleId)} cycle`;
+      return `
+      <div style="border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:var(--space-xs);">
+        <button type="button" class="hc-history-item" data-review-id="${r.reviewId}" style="display:block;width:100%;text-align:left;padding:var(--space-sm);background:none;border:0;cursor:pointer;font:inherit;">
+          <span style="display:block;font-size:var(--text-xs);font-weight:bold;color:var(--color-slate);">${_hcFmtDate(r.date)} · ${_hcCycleLabel(r.cycleId)}</span>
+          <span style="display:block;font-size:10px;color:var(--color-muted);">${Object.keys(r.domains || {}).length} area(s) · Priority ${r.supportPriorityScore != null ? r.supportPriorityScore.toFixed(1) : '—'}</span>
+        </button>
+        <div style="padding:0 var(--space-sm) var(--space-sm);">
+          <button type="button" class="hc-history-download btn btn--ghost btn--sm" data-review-id="${r.reviewId}" style="width:100%;font-size:10px;">Download report (Word)<span class="sr-only"> for ${_hcEsc(staffName)}, ${_hcEsc(label)}</span></button>
+        </div>
+      </div>`;
+    }).join('')}
   `;
   container.querySelectorAll('.hc-history-item').forEach(el => {
     el.addEventListener('click', () => _hcOpenReview(el.dataset.reviewId));
+  });
+  container.querySelectorAll('.hc-history-download').forEach(el => {
+    el.addEventListener('click', () => _hcDownloadReportWord(el.dataset.reviewId));
   });
 }
 
@@ -183,6 +198,10 @@ function _hcRenderReviewForm() {
   const area = _getArea(r.areaCode);
 
   const doneDomainIds = Object.keys(r.domains || {});
+  // Only offer the download once the review actually exists in the data —
+  // exporting an unsaved draft would produce a document with no record
+  // behind it, and no action plan to resolve against.
+  const isSaved = !!_hcGetReview(r.reviewId);
 
   form.innerHTML = `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-lg);">
@@ -254,11 +273,14 @@ function _hcRenderReviewForm() {
     <p id="hc-save-error" role="alert" style="font-size:var(--text-sm);color:var(--color-red);display:none;margin-bottom:var(--space-md);"></p>
     <div class="btn-row">
       <button id="hc-save-btn" type="button" class="btn btn--primary">Save review</button>
+      ${isSaved ? `<button id="hc-download-btn" type="button" class="btn btn--ghost" data-review-id="${r.reviewId}">Download report (Word)</button>` : ''}
     </div>
+    ${isSaved ? '<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-xs);">Includes the action plan — shareable with the Digital Lead. Save first if you have just made changes.</p>' : ''}
   `;
 
   _hcWireDomainSections();
   document.getElementById('hc-save-btn')?.addEventListener('click', _hcSaveReview);
+  document.getElementById('hc-download-btn')?.addEventListener('click', e => _hcDownloadReportWord(e.currentTarget.dataset.reviewId));
 }
 
 function _hcRenderDomainSection(focusArea, existing) {
@@ -701,3 +723,270 @@ function _hcCycleLabel(cycleId) {
 }
 function _hcFmtDate(iso) { if (!iso) return ''; try { return new Date(iso.split('T')[0] + 'T12:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }); } catch { return iso; } }
 function _hcEsc(str) { if (!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Shareable Word report (Session 63) ───────────────────────────
+// Digital Leads carry out and act on Health Checks but do not have Hub
+// access, so the record has to leave the Hub as a document. This exports
+// one staff member's review as a Word file, including the action plan.
+//
+// The action plan section resolves in two ways, in priority order:
+//   1. A real generated Action Plan (matched on sourceHealthCheckReviewId)
+//      — used if one exists, so the document shows the *actual* plan of
+//      record, including any edits made to it since generation.
+//   2. Otherwise the actions flagged on the review itself, presented as
+//      suggested actions and labelled as such — so a Lead is never sent a
+//      report with an empty action section just because nobody has
+//      pressed "Generate Action Plan" yet.
+//
+// Accessibility (the document is being sent to someone else, so this
+// matters as much as the Hub UI does): real Heading 1/2/3 styles rather
+// than bold-and-shaded paragraphs, so the doc is navigable by screen
+// reader and the Navigation Pane; header rows marked tableHeader so they
+// repeat and are announced as headers; document title/description set in
+// core properties; and every score written as "3 · Developing", never a
+// bare colour-coded number — the meaning must not depend on colour
+// (WCAG 2.2 AA, 1.4.1 Use of Colour).
+
+function _hcActionLevelLabel(level) {
+  return {
+    [HC_ACTION_LEVEL.INFORM_ONLY]:     'Inform only',
+    [HC_ACTION_LEVEL.SUPPORT]:         'Support / coaching',
+    [HC_ACTION_LEVEL.TRAINING]:        'Training or development',
+    [HC_ACTION_LEVEL.FORMAL_FOLLOWUP]: 'Formal follow-up',
+  }[level] || '';
+}
+
+// Returns { source: 'plan'|'derived'|'none', plan, items[] }
+function _hcResolveActionPlan(review) {
+  const staff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff || []).find(s => s.staffId === review.staffId);
+  const plan = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [])
+    .find(p => p.sourceHealthCheckReviewId === review.reviewId) || null;
+
+  if (plan && (plan.actionItems || []).length > 0) {
+    return { source: 'plan', plan, items: plan.actionItems };
+  }
+
+  const items = [];
+  HC_FOCUS_AREAS.forEach(fa => {
+    const d = (review.domains || {})[fa.id];
+    if (!d || !d.actionIdentified || !d.actionDescription) return;
+    items.push({
+      description: d.actionDescription,
+      sourceDomain: fa.label,
+      accountableName: staff ? staff.name : '',
+      timeframe: null,
+      done: false,
+      actionLevel: d.actionLevel || '',
+    });
+  });
+  return { source: items.length ? 'derived' : 'none', plan: null, items };
+}
+
+function _hcDownloadReportWord(reviewId) {
+  const review = _hcGetReview(reviewId);
+  if (!review) {
+    if (typeof UI !== 'undefined') UI.showToast('error', 'Health Check record not found.');
+    return;
+  }
+  if (typeof window.docx === 'undefined') {
+    if (typeof UI !== 'undefined') UI.showToast('error', 'Word library not loaded — cannot generate document.');
+    return;
+  }
+  const docx = window.docx;
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+          WidthType, HeadingLevel, ShadingType, AlignmentType } = docx;
+
+  const staff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff || []).find(s => s.staffId === review.staffId);
+  const area  = typeof _getArea === 'function' ? _getArea(review.areaCode) : null;
+  const staffName = staff ? staff.name : 'Unnamed staff member';
+  const areaLabel = area ? `${area.areaName} (${area.areaCode})` : (review.areaCode || '');
+
+  // ── Building blocks ──
+  const P = (text, opts = {}) => new Paragraph({
+    children: [new TextRun({ text: text == null ? '' : String(text), size: 22, bold: !!opts.bold, italics: !!opts.italics })],
+    spacing: { after: opts.after != null ? opts.after : 120 },
+  });
+  const h1 = (text) => new Paragraph({
+    heading: HeadingLevel.HEADING_1,
+    children: [new TextRun({ text, bold: true, color: 'FFFFFF', size: 26 })],
+    shading: { type: ShadingType.CLEAR, fill: '1D3557' },
+    spacing: { before: 280, after: 160 },
+  });
+  const h2 = (text) => new Paragraph({
+    heading: HeadingLevel.HEADING_2,
+    children: [new TextRun({ text, bold: true, color: '1D3557', size: 24 })],
+    spacing: { before: 220, after: 100 },
+  });
+  const cell = (text, bold, widthPct) => new TableCell({
+    width: { size: widthPct, type: WidthType.PERCENTAGE },
+    children: [new Paragraph({ children: [new TextRun({ text: text == null ? '' : String(text), size: 22, bold: !!bold })] })],
+  });
+  const kvTable = (pairs) => new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: pairs.map(([k, v]) => new TableRow({ children: [cell(k, true, 34), cell(v || '—', false, 66)] })),
+  });
+  // Score always carries its word label — never colour or number alone.
+  const scoreText = (n) => (n == null ? '—' : `${n} · ${HC_SCORE_LABELS[n] || ''}`.trim());
+  const paras = (text) => {
+    const out = String(text || '').split(/\n+/).map(t => t.trim()).filter(Boolean).map(t => P(t));
+    return out.length ? out : [P('—')];
+  };
+
+  // ── Review details ──
+  const detailPairs = [
+    ['Staff member', staffName],
+    ['Role', staff && staff.role ? staff.role : ''],
+    ['Curriculum area', areaLabel],
+    ['Provision', review.provision],
+    ['Level of learning', review.levelOfLearning],
+    ['Health Check cycle', _hcCycleLabel(review.cycleId)],
+    ['Date of review', _hcFmtDate(review.date)],
+    ['Assessor', review.assessorName],
+    ['Focus areas reviewed', `${Object.keys(review.domains || {}).length} of ${HC_FOCUS_AREAS.length}`],
+    ['Support priority score', review.supportPriorityScore != null ? review.supportPriorityScore.toFixed(1) : '—'],
+  ];
+
+  // ── Focus area sections, in schema order ──
+  const focusChildren = [];
+  const reviewed = HC_FOCUS_AREAS.filter(fa => (review.domains || {})[fa.id]);
+
+  if (reviewed.length === 0) {
+    focusChildren.push(P('No focus areas were scored in this review.'));
+  } else {
+    reviewed.forEach(fa => {
+      const d = review.domains[fa.id];
+      focusChildren.push(h2(fa.label));
+      focusChildren.push(P(`Average score for this focus area: ${d.avgScore != null ? d.avgScore.toFixed(1) : '—'} out of 5`, { bold: true }));
+
+      const scoredIndicators = fa.indicators.filter(ind => d.indicatorScores && d.indicatorScores[ind.id] != null);
+      if (scoredIndicators.length) {
+        focusChildren.push(new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [
+            new TableRow({ tableHeader: true, children: [cell('Indicator', true, 42), cell('What this means', true, 36), cell('Score', true, 22)] }),
+            ...scoredIndicators.map(ind => new TableRow({
+              children: [
+                cell(ind.label, false, 42),
+                cell(ind.desc, false, 36),
+                cell(scoreText(d.indicatorScores[ind.id]), false, 22),
+              ],
+            })),
+          ],
+        }));
+      }
+
+      if (d.context) { focusChildren.push(P('Context for this area:', { bold: true, after: 60 })); focusChildren.push(...paras(d.context)); }
+      focusChildren.push(P('What was seen:', { bold: true, after: 60 }));
+      focusChildren.push(...paras(d.whatWasSeen));
+
+      if (d.actionIdentified) {
+        const lvl = _hcActionLevelLabel(d.actionLevel);
+        focusChildren.push(P(`Action point identified: Yes${lvl ? ` — ${lvl}` : ''}`, { bold: true, after: 60 }));
+        focusChildren.push(...paras(d.actionDescription));
+      } else if (d.actionIdentified === false) {
+        focusChildren.push(P('Action point identified: No'));
+      }
+    });
+  }
+
+  // ── Action plan ──
+  const resolved = _hcResolveActionPlan(review);
+  const planChildren = [];
+
+  if (resolved.source === 'plan') {
+    planChildren.push(P(`Taken from the Action Plan generated from this Health Check${resolved.plan.focus ? `: ${resolved.plan.focus}` : ''}.`, { italics: true }));
+    if (resolved.plan.aim) { planChildren.push(P('Aim:', { bold: true, after: 60 })); planChildren.push(P(resolved.plan.aim)); }
+    if (resolved.plan.successCriteria) { planChildren.push(P('Success criteria:', { bold: true, after: 60 })); planChildren.push(P(resolved.plan.successCriteria)); }
+  } else if (resolved.source === 'derived') {
+    planChildren.push(P('Suggested actions, drawn from the action points flagged against each focus area during this review. These have not yet been formalised into an Action Plan in the Hub.', { italics: true }));
+  }
+
+  if (resolved.items.length === 0) {
+    planChildren.push(P('No action points were flagged during this review.'));
+  } else {
+    // A real Action Plan tracks progress; a derived list has no progress to
+    // track but does carry the escalation level recorded on the review. One
+    // column, two different meanings — so label it for whichever it is,
+    // rather than leaving a header that is wrong half the time.
+    const isPlan = resolved.source === 'plan';
+    const thirdHeader = isPlan ? 'Status' : 'Level of action';
+    const thirdValue = (it) => isPlan
+      ? (it.done ? 'Complete' : 'Outstanding')
+      : (_hcActionLevelLabel(it.actionLevel) || '—');
+
+    planChildren.push(new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({ tableHeader: true, children: [
+          cell('Focus area', true, 24), cell('Action', true, 38), cell(thirdHeader, true, 18), cell('Responsible', true, 20),
+        ] }),
+        ...resolved.items.map(it => new TableRow({
+          children: [
+            cell(it.sourceDomain || '—', false, 24),
+            cell(it.description || '', false, 38),
+            cell(thirdValue(it), false, 18),
+            cell(it.accountableName || staffName, false, 20),
+          ],
+        })),
+      ],
+    }));
+    planChildren.push(P('Agreed review date: ______________________          Signed: ______________________', { after: 240 }));
+  }
+
+  // ── Document ──
+  const doc = new Document({
+    title: `Digital Health Check Report — ${staffName}`,
+    description: `Accessibility and Inclusion Practice Review for ${staffName}, ${areaLabel}, ${_hcCycleLabel(review.cycleId)} cycle.`,
+    creator: review.assessorName || 'Weston College — Digital Pedagogy Coach',
+    sections: [{
+      children: [
+        new Paragraph({
+          heading: HeadingLevel.TITLE,
+          children: [new TextRun({ text: 'Digital Health Check Report', bold: true, size: 34, color: '1D3557' })],
+          spacing: { after: 80 },
+          alignment: AlignmentType.LEFT,
+        }),
+        P('Accessibility and Inclusion Practice Review', { bold: true, after: 240 }),
+
+        h1('Review details'),
+        kvTable(detailPairs),
+
+        h1('Focus areas'),
+        P('Each indicator is scored 1 to 5: 1 Urgent, 2 Challenged, 3 Developing, 4 On Track, 5 Confident.', { italics: true }),
+        ...focusChildren,
+
+        h1('Overall review'),
+        h2('Overall observed reflection'),
+        ...paras(review.overallReflection),
+        h2('Key strengths observed'),
+        ...paras(review.keyStrengths),
+        h2('Areas for improvement'),
+        ...paras(review.areasForImprovement),
+        h2('Priority next steps and recommendations'),
+        ...paras(review.priorityNextSteps),
+
+        h1(resolved.source === 'plan' ? 'Action plan' : 'Suggested action plan'),
+        ...planChildren,
+
+        P(`Generated from the DPC Hub on ${_hcFmtDate(todayISO())}. This report contains a named individual's practice review — share it only with those who need it for support and development purposes.`, { italics: true }),
+      ],
+    }],
+  });
+
+  const safeName = staffName.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'Staff';
+  // Strip first, then fall back — otherwise "undated" strips to an empty
+  // string and the filename ends in a stray underscore.
+  const safeDate = (review.date || '').replace(/[^0-9-]/g, '') || 'undated';
+  Packer.toBlob(doc).then(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Digital_Health_Check_${safeName}_${safeDate}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    if (typeof UI !== 'undefined') UI.showToast('success', `Report downloaded for ${staffName}.`);
+  }).catch(err => {
+    console.error('Health Check Word export failed:', err);
+    if (typeof UI !== 'undefined') UI.showToast('error', 'Word export failed — see console for details.');
+  });
+}
