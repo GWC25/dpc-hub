@@ -1,4 +1,4 @@
-// DPC Hub · js/data.js · v1.0 · July 2026
+// DPC Hub · js/data.js · v1.3 · 02/09/26 · Session 65 — describePastedContent() diagnostics for the two JSON paste boxes
 // Data layer. All read/write operations to OneDrive JSON files.
 // File System Access API logic. Manifest loading. Auto-save scheduler.
 // Session snapshot to localStorage. No UI logic in this file.
@@ -1247,6 +1247,30 @@ function renderAreaOverviewPanel(result) {
 // Leads use different ids for their surrounding layout, but both
 // call the exact same function, so there's still only one place this
 // logic lives, not two that could drift.
+// ── "What did you actually paste?" (Session 65) ──────────────────
+// The Action Plan tab now has two paste boxes that take different JSON
+// shapes, and a raw parser error ("Unexpected token '/'") tells you
+// nothing about which mistake you made. This looks at what was actually
+// pasted and names it, so the fix is obvious without reading the spec.
+function describePastedContent(raw, expecting) {
+  const t = String(raw || '').trim();
+  if (!t) return 'Paste the JSON first.';
+  if (/^(\/\/|\/\*|<!--|<script|<\?)/.test(t) || /^(function|const|let|var|import|export)\s/.test(t)) {
+    return 'That looks like a code or text file rather than JSON. If it came from a chat as a downloadable file, it belongs in the repo, not in this box.';
+  }
+  if (/^</.test(t)) return 'That looks like HTML or XML, not JSON.';
+  let parsed;
+  try { parsed = JSON.parse(t); }
+  catch (e) { return `Not valid JSON: ${e.message}`; }
+  if (expecting === 'plan' && parsed && Array.isArray(parsed.themes)) {
+    return 'That is the themes JSON for the "Area overview" box above, not an action plan.';
+  }
+  if (expecting === 'themes' && parsed && parsed.focus && !parsed.themes) {
+    return 'That is an action plan — use the "Import a plan from JSON" box below.';
+  }
+  return null; // nothing wrong
+}
+
 function wireAreaOverviewButton(btnId, resultsId, textareaId, areaCode) {
   const btn = document.getElementById(btnId);
   const results = document.getElementById(resultsId);
@@ -1255,14 +1279,9 @@ function wireAreaOverviewButton(btnId, resultsId, textareaId, areaCode) {
   btn._wired = true;
   btn.addEventListener('click', () => {
     const raw = textarea.value.trim();
-    if (!raw) { results.innerHTML = '<p style="color:var(--color-red);font-size:var(--text-sm);">Paste the JSON result first.</p>'; return; }
-    let parsed;
-    try {
-      parsed = JSON.parse(raw);
-    } catch (e) {
-      results.innerHTML = `<p style="color:var(--color-red);font-size:var(--text-sm);">Not valid JSON: ${e.message}</p>`;
-      return;
-    }
+    const problem = describePastedContent(raw, 'themes');
+    if (problem) { results.innerHTML = `<p style="color:var(--color-red);font-size:var(--text-sm);">${problem}</p>`; return; }
+    const parsed = JSON.parse(raw);
     const result = { ok: true, themes: Array.isArray(parsed.themes) ? parsed.themes : [] };
     results.innerHTML = renderAreaOverviewPanel(result);
   });
