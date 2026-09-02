@@ -547,6 +547,16 @@ ul, ol { list-style: none; }
 .btn--full      { width: 100%; }
 .btn--sm        { padding: var(--space-xs) var(--space-md); font-size: var(--text-sm); min-height: 36px; }
 
+/* Nothing in this stylesheet styled the disabled state, so every
+   disabled button in the Hub looked fully active and simply did
+   nothing when pressed. Dimming alone would carry the meaning in
+   appearance only, so anywhere this is used the reason is also given
+   in adjacent text (WCAG 2.2 AA, 1.4.1). */
+.btn:disabled,
+.btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+.btn:disabled:hover,
+.btn[aria-disabled="true"]:hover { filter: none; }
+
 .btn-row {
   display: flex;
   gap: var(--space-sm);
