@@ -1,4 +1,4 @@
-// DPC Hub · js/rag.js · v1.0 · July 2026
+// DPC Hub · js/rag.js · v1.1 · 02/09/26 · Session 64 — captures unrounded Health Check basis on snapshot save
 // RAG Matrix module. 8-dimension scoring 1-5 with rationale and snapshot history.
 // Called from areas.js initRAGTab(areaCode). Writes to area.ragDimensions via saveArea().
 
@@ -213,6 +213,10 @@ function _wireRAGEvents(areaCode) {
     });
 
     area.ragDimensions = newDims;
+    // Capture the unrounded Health Check basis at this moment, so the
+    // next drift check compares like with like rather than against a
+    // rounded integer.
+    if (typeof recordRAGBasis === 'function') recordRAGBasis(area);
     saveArea(area);
 
     document.getElementById('rag-modal').style.display = 'none';
