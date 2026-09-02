@@ -1,4 +1,4 @@
-// DPC Hub · js/homepage.js · v1.0 · July 2026
+// DPC Hub · js/homepage.js · v1.1 · 02/09/26 · Session 64 — Needs your attention card
 // Homepage module. Jobs Board (post-its), upcoming deadlines, upcoming meetings.
 // Reads from window.DPC_DATA.calendar.entries
 // Imports nothing — uses globals from schema.js, data.js, config.js
@@ -19,6 +19,9 @@ function initHomepage() {
         <span id="metric-closed-afis" style="font-size:var(--text-3xl);font-weight:var(--font-bold);color:var(--color-green);" aria-label="Loops closed this month">0</span>
       </div>
     </div>
+
+    <!-- Needs your attention (Session 64) -->
+    <section id="attention-card" aria-labelledby="attention-heading" style="display:none;margin-bottom:var(--space-lg);"></section>
 
     <!-- Main two-column layout -->
     <div style="display:grid;grid-template-columns:62% 38%;gap:var(--space-xl);align-items:start;">
@@ -116,6 +119,7 @@ function initHomepage() {
 
   _populateAreaDropdown('task-area');
   _renderMetrics();
+  _renderAttentionCard();
   _renderJobsBoard();
   _renderDeadlines();
   _renderMeetings();
@@ -453,4 +457,99 @@ function _formatDate(isoDate) {
 function _escHtml(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+
+// ── Needs your attention (Session 64) ─────────────────────────────
+// A prompt, not an automation. Two things drift quietly: Health Checks
+// that flagged actions but never got an Action Plan, and areas where the
+// Health Check basis behind the Accessibility & Inclusion RAG score has
+// moved since the RAG was last saved.
+//
+// Generating Action Plans is safe to do automatically (deduped, derived
+// entirely from what was already recorded) so it gets a one-click
+// button. Writing a RAG score is not — snapshots carry rationale and
+// build a history, and a silently-written score with a blank rationale
+// is exactly the number that cannot be defended later. So RAG drift
+// links you to the area and leaves the judgement with you.
+function _renderAttentionCard() {
+  const card = document.getElementById('attention-card');
+  if (!card || typeof getAttentionItems !== 'function') return;
+
+  const { unplannedCount, drifts } = getAttentionItems();
+  if (unplannedCount === 0 && drifts.length === 0) { card.style.display = 'none'; return; }
+
+  const driftRow = (d) => {
+    const area = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas || []).find(a => a.areaCode === d.areaCode);
+    const name = area ? `${area.areaCode} — ${area.areaName}` : d.areaCode;
+    const act = d.tier === 'act';
+    const arrow = d.delta > 0 ? '▲' : '▼';
+    const why = typeof describeRAGDrift === 'function' ? describeRAGDrift(d) : '';
+    return `
+      <li style="padding:var(--space-sm) 0;border-top:1px solid var(--color-border);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-sm);flex-wrap:wrap;">
+          <div style="flex:1;min-width:220px;">
+            <p style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);">
+              ${_hpEsc(name)}
+              <span style="font-weight:normal;color:${act ? 'var(--color-amber)' : 'var(--color-muted)'};">
+                ${arrow} ${d.delta > 0 ? '+' : '−'}${Math.abs(d.delta).toFixed(2)} · ${act ? 'worth acting on' : 'worth knowing'}
+              </span>
+            </p>
+            <p style="font-size:var(--text-xs);color:var(--color-muted);">
+              Basis ${d.previousRaw.toFixed(2)} → ${d.currentRaw.toFixed(2)}.
+              Stored score ${d.storedScore != null ? d.storedScore : 'not set'}, now suggests ${d.suggestedScore}.
+            </p>
+            <p style="font-size:var(--text-xs);color:var(--color-slate);margin-top:2px;">${_hpEsc(why)}</p>
+          </div>
+          <button type="button" class="btn btn--ghost btn--sm attention-rag-btn" data-area="${_hpEsc(d.areaCode)}" style="font-size:10px;">
+            Review RAG<span class="sr-only"> for ${_hpEsc(name)}</span>
+          </button>
+        </div>
+      </li>`;
+  };
+
+  card.innerHTML = `
+    <div style="border:1px solid var(--color-amber);background:var(--color-amber-lt);border-radius:var(--radius-md);padding:var(--space-lg);">
+      <h2 id="attention-heading" style="font-size:var(--text-md);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-sm);">Needs your attention</h2>
+
+      ${unplannedCount > 0 ? `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-sm);flex-wrap:wrap;padding-bottom:var(--space-sm);">
+          <p style="font-size:var(--text-sm);color:var(--color-slate);flex:1;min-width:220px;">
+            <strong>${unplannedCount}</strong> Health Check${unplannedCount === 1 ? '' : 's'} flagged actions but ${unplannedCount === 1 ? 'has' : 'have'} no Action Plan.
+          </p>
+          <button id="attention-generate-btn" type="button" class="btn btn--secondary btn--sm">Generate ${unplannedCount} Action Plan${unplannedCount === 1 ? '' : 's'}</button>
+        </div>
+        <p id="attention-generate-status" role="status" style="font-size:var(--text-xs);color:var(--color-muted);"></p>
+      ` : ''}
+
+      ${drifts.length > 0 ? `
+        <p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:var(--space-sm);">
+          Accessibility &amp; Inclusion basis has moved in ${drifts.length} area${drifts.length === 1 ? '' : 's'} since the RAG was last saved.
+        </p>
+        <ul style="list-style:none;padding:0;margin:0;">${drifts.map(driftRow).join('')}</ul>
+      ` : ''}
+    </div>
+  `;
+  card.style.display = 'block';
+
+  document.getElementById('attention-generate-btn')?.addEventListener('click', (e) => {
+    const btn = e.currentTarget;
+    const status = document.getElementById('attention-generate-status');
+    btn.disabled = true;
+    const result = bulkGenerateActionPlansFromHealthChecks();
+    if (status) status.textContent = `${result.created} created. ${result.skippedExisting} already had one. ${result.skippedNoActions} had no flagged actions.`;
+    if (typeof UI !== 'undefined') UI.showToast('success', `${result.created} Action Plan(s) created.`);
+    _renderAttentionCard();
+  });
+
+  card.querySelectorAll('.attention-rag-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (typeof openAreaProfile === 'function') openAreaProfile(btn.dataset.area, 'rag');
+    });
+  });
+}
+
+function _hpEsc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }

@@ -789,19 +789,55 @@ function archiveDepartment(areaCode, deptCode, archived = true) {
 // overall figure from the pre-Hub tracker, explicitly labelled as a
 // coarse, non-dimension-specific, lower-confidence guide per Graeme's
 // own framing ("historical is less solid ground, it can guide").
+// ── Health Check basis for RAG (Session 64) ──────────────────────
+// The Accessibility & Inclusion RAG dimension is derived from Health
+// Check data: latest review per staff member in the area, averaged
+// across their scored focus areas. That average is a continuous number,
+// but the stored RAG score is an integer 1-5, so rounding it on the way
+// out used to destroy the only figure precise enough to detect drift.
+//
+// This returns the UNROUNDED basis plus the per-staff contributions it
+// was built from, so two things become possible: a real 0.25/0.5
+// threshold, and an explanation of *why* it moved — because who is in
+// the set changed, or because the same people scored differently. Those
+// are very different findings and must not be reported as one number.
+function getHCBasisForArea(areaCode) {
+  const reviews = typeof _hcGetReviewsForArea === 'function' ? _hcGetReviewsForArea(areaCode) : [];
+  const byStaff = {};
+  reviews.forEach(r => {
+    if (!byStaff[r.staffId] || (r.date || '') > (byStaff[r.staffId].date || '')) byStaff[r.staffId] = r;
+  });
+
+  const staffAvgs = {}, reviewIds = {};
+  Object.entries(byStaff).forEach(([staffId, r]) => {
+    const vals = Object.values(r.domains || {}).map(d => d.avgScore).filter(v => v != null);
+    if (!vals.length) return;
+    staffAvgs[staffId] = vals.reduce((a, b) => a + b, 0) / vals.length;
+    reviewIds[staffId] = r.reviewId;
+  });
+
+  const contributions = Object.values(staffAvgs);
+  if (!contributions.length) return null;
+
+  return {
+    raw: contributions.reduce((a, b) => a + b, 0) / contributions.length,
+    staffAvgs, reviewIds,
+    staffCount: contributions.length,
+    computedAt: nowISO(),
+  };
+}
+
 function getSuggestedRAGScore(areaCode, dimensionId) {
   if (dimensionId === 'accessibilityInclusion') {
-    const reviews = typeof _hcGetReviewsForArea === 'function' ? _hcGetReviewsForArea(areaCode) : [];
-    const byStaff = {};
-    reviews.forEach(r => {
-      if (!byStaff[r.staffId] || (r.date || '') > (byStaff[r.staffId].date || '')) byStaff[r.staffId] = r;
-    });
-    const allScores = Object.values(byStaff).flatMap(r =>
-      Object.values(r.domains || {}).map(d => d.avgScore).filter(v => v != null)
-    );
-    if (allScores.length > 0) {
-      const avg = allScores.reduce((a, b) => a + b, 0) / allScores.length;
-      return { value: Math.round(avg), source: 'health-check', confidence: 'high', staffCount: Object.keys(byStaff).length };
+    const basis = getHCBasisForArea(areaCode);
+    if (basis) {
+      return {
+        value: Math.round(basis.raw),
+        raw: basis.raw,
+        source: 'health-check',
+        confidence: 'high',
+        staffCount: basis.staffCount,
+      };
     }
   }
 
@@ -811,6 +847,118 @@ function getSuggestedRAGScore(areaCode, dimensionId) {
   }
 
   return null;
+}
+
+// Stamps the basis onto the area at the moment a RAG snapshot is saved,
+// so the next drift check has something honest to measure against.
+// Called from rag.js on save.
+function recordRAGBasis(area) {
+  if (!area) return null;
+  const basis = getHCBasisForArea(area.areaCode);
+  if (!basis) return null;
+  if (!area.ragBasis) area.ragBasis = {};
+  area.ragBasis.accessibilityInclusion = basis;
+  return basis;
+}
+
+// Drift between the basis captured at the last RAG save and the basis
+// as it stands now. Returns null when there is nothing meaningful to
+// compare — no Health Check data, or no basis captured yet (which is
+// the case for every area until the next time its RAG is saved; that is
+// deliberate, a fabricated baseline would produce fictional drift).
+//
+// Tiers: under 0.25 is noise on a 1-5 scale and stays silent; 0.25 to
+// 0.5 is worth knowing; 0.5 and over is worth acting on.
+function getRAGDrift(areaCode) {
+  const area = (window.DPC_DATA.areas.areas || []).find(a => a.areaCode === areaCode);
+  if (!area) return null;
+  const prev = area.ragBasis && area.ragBasis.accessibilityInclusion;
+  const now  = getHCBasisForArea(areaCode);
+  if (!now) return null;
+  if (!prev) return { areaCode, state: 'no-baseline', currentRaw: now.raw, staffCount: now.staffCount };
+
+  const delta = now.raw - prev.raw;
+  const abs = Math.abs(delta);
+  const tier = abs >= 0.5 ? 'act' : abs >= 0.25 ? 'watch' : 'quiet';
+
+  // Decompose the movement. Staff present in both sets tell you whether
+  // practice changed; staff entering or leaving tell you the basis
+  // changed underneath you. Reporting only the headline number would
+  // let "I happened to review four confident people" read as improvement.
+  const prevIds = Object.keys(prev.staffAvgs || {});
+  const nowIds  = Object.keys(now.staffAvgs || {});
+  const shared  = nowIds.filter(id => prevIds.includes(id));
+  const added   = nowIds.filter(id => !prevIds.includes(id));
+  const removed = prevIds.filter(id => !nowIds.includes(id));
+
+  let practiceDelta = 0;
+  const moved = [];
+  if (shared.length) {
+    const then = shared.reduce((s, id) => s + prev.staffAvgs[id], 0) / shared.length;
+    const nowS = shared.reduce((s, id) => s + now.staffAvgs[id], 0) / shared.length;
+    practiceDelta = nowS - then;
+    shared.forEach(id => {
+      const d = now.staffAvgs[id] - prev.staffAvgs[id];
+      if (Math.abs(d) >= 0.25) moved.push({ staffId: id, delta: d });
+    });
+  }
+  const compositionDelta = delta - practiceDelta;
+
+  return {
+    areaCode, state: 'ok',
+    previousRaw: prev.raw, currentRaw: now.raw, delta, tier,
+    storedScore: (area.ragDimensions && area.ragDimensions.accessibilityInclusion && area.ragDimensions.accessibilityInclusion.score) || null,
+    suggestedScore: Math.round(now.raw),
+    staffCount: now.staffCount,
+    practiceDelta, compositionDelta,
+    added, removed, moved,
+    since: prev.computedAt,
+  };
+}
+
+// One-line plain-English cause, dominant factor first.
+function describeRAGDrift(drift) {
+  if (!drift || drift.state !== 'ok') return '';
+  const nm = (id) => {
+    const s = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff || []).find(x => x.staffId === id);
+    return s ? s.name : 'a staff member';
+  };
+  const dir = drift.delta > 0 ? 'up' : 'down';
+  const parts = [];
+
+  if (Math.abs(drift.compositionDelta) >= Math.abs(drift.practiceDelta)) {
+    if (drift.added.length) parts.push(`${drift.added.length} newly reviewed staff entered the average (${drift.added.slice(0, 3).map(nm).join(', ')}${drift.added.length > 3 ? ', …' : ''})`);
+    if (drift.removed.length) parts.push(`${drift.removed.length} no longer counted`);
+    if (parts.length) parts.push('so who is in the set changed, not necessarily practice');
+  } else {
+    const up = drift.moved.filter(m => m.delta > 0).length;
+    const dn = drift.moved.filter(m => m.delta < 0).length;
+    if (up || dn) parts.push(`re-reviewed staff moved: ${up} up, ${dn} down`);
+    parts.push('same people, different scores');
+  }
+  if (!parts.length) parts.push('small shifts across the set, no single cause');
+  return `${dir} ${Math.abs(drift.delta).toFixed(2)} across ${drift.staffCount} staff — ${parts.join('; ')}.`;
+}
+
+// Everything the homepage prompt needs, in one pass.
+function getAttentionItems() {
+  const reviews = (window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.reviews) || [];
+  const plans   = (window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || [];
+  const planned = new Set(plans.map(p => p.sourceHealthCheckReviewId).filter(Boolean));
+
+  const unplanned = reviews.filter(r =>
+    !planned.has(r.reviewId) &&
+    Object.values(r.domains || {}).some(d => d.actionIdentified && d.actionDescription)
+  );
+
+  const drifts = [];
+  (window.DPC_DATA.areas && window.DPC_DATA.areas.areas || []).forEach(a => {
+    const d = getRAGDrift(a.areaCode);
+    if (d && d.state === 'ok' && d.tier !== 'quiet') drifts.push(d);
+  });
+  drifts.sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
+
+  return { unplanned, unplannedCount: unplanned.length, drifts };
 }
 
 function saveHistoricalRAG(areaCode, overallValue) {
