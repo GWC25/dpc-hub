@@ -940,3 +940,66 @@ body.underline-links a {
    ========================================================================== */
 .dl-campus-group summary::-webkit-details-marker { display: none; }
 .dl-campus-group summary:focus-visible { outline: 2px solid var(--color-teal); outline-offset: 2px; }
+
+/* ══ Job A1 · Source-of-truth provenance ═════════════════════════
+   Header badge + Settings panel. State is never carried by colour
+   alone — the text always names it. WCAG 2.2 AA.
+   ============================================================== */
+.prov-badge{display:inline-flex;align-items:center;gap:.4rem;min-height:24px;
+  padding:.15rem .6rem;border-radius:999px;font-size:.75rem;font-weight:600;
+  border:1px solid transparent;white-space:nowrap}
+.prov-badge[hidden]{display:none}
+.prov-badge__icon{font-size:.7em;line-height:1}
+.prov-badge--ok{background:#f0fdf4;color:#14532d;border-color:#15803d}
+.prov-badge--warn{background:#fffbeb;color:#92400e;border-color:#b45309}
+.prov-badge--bad{background:#fef2f2;color:#991b1b;border-color:#dc2626}
+
+.prov-panel{border:1px solid #e2e0d8;border-left-width:4px;border-radius:6px;
+  padding:.9rem 1rem;margin-bottom:1rem}
+.prov-panel--ok{border-left-color:#15803d;background:#f0fdf4}
+.prov-panel--warn{border-left-color:#b45309;background:#fffbeb}
+.prov-panel--bad{border-left-color:#dc2626;background:#fef2f2}
+.prov-panel__h{font-size:1rem;font-weight:700;margin:0 0 .35rem}
+.prov-panel__state{font-size:.875rem;margin:0}
+.prov-panel__folder{font-size:.8125rem;margin:.45rem 0 0}
+.prov-panel__folder code{font-family:'DM Mono',ui-monospace,monospace;font-size:.9em}
+
+.prov-table-wrap{overflow-x:auto;border:1px solid #e2e0d8;border-radius:6px}
+.prov-table{border-collapse:collapse;width:100%;min-width:520px;font-size:.8125rem}
+.prov-table caption{text-align:left;padding:.7rem .85rem;color:#3d3b36;
+  border-bottom:1px solid #e2e0d8}
+.prov-table th,.prov-table td{text-align:left;padding:.5rem .85rem;
+  border-bottom:1px solid #e2e0d8;vertical-align:top}
+.prov-table thead th{background:#f8f7f3;font-size:.75rem;font-weight:700}
+.prov-table tbody tr:last-child td,
+.prov-table tbody tr:last-child th{border-bottom:0}
+.prov-num{font-family:'DM Mono',ui-monospace,monospace;text-align:right}
+.prov-req{font-size:.6875rem;font-weight:600;color:#6b6860}
+.prov-tag{display:inline-block;font-size:.6875rem;font-weight:700;
+  padding:.1rem .45rem;border-radius:3px;border:1px solid}
+.prov-tag--ok{background:#f0fdf4;color:#14532d;border-color:#15803d}
+.prov-tag--warn{background:#fffbeb;color:#92400e;border-color:#b45309}
+.prov-tag--bad{background:#fef2f2;color:#991b1b;border-color:#dc2626}
+
+/* Report Builder blocking notice */
+.prov-guard{border:1px solid #dc2626;border-left-width:4px;background:#fef2f2;
+  color:#991b1b;border-radius:6px;padding:.9rem 1rem;margin-bottom:1rem}
+.prov-guard--warn{border-color:#b45309;background:#fffbeb;color:#92400e}
+.prov-guard__h{font-size:.9375rem;font-weight:700;margin:0 0 .3rem}
+.prov-guard p{font-size:.875rem;margin:0}
+.prov-guard ul{margin:.5rem 0 0 1.1rem;font-size:.8125rem}
+
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .prov-badge--ok{background:#12281a;color:#86efac;border-color:#4ade80}
+  :root:not([data-theme="light"]) .prov-badge--warn{background:#2b2410;color:#fcd34d;border-color:#fbbf24}
+  :root:not([data-theme="light"]) .prov-badge--bad{background:#2b1616;color:#fca5a5;border-color:#f87171}
+  :root:not([data-theme="light"]) .prov-panel{border-color:#333129}
+  :root:not([data-theme="light"]) .prov-panel--ok{background:#12281a}
+  :root:not([data-theme="light"]) .prov-panel--warn{background:#2b2410}
+  :root:not([data-theme="light"]) .prov-panel--bad{background:#2b1616}
+  :root:not([data-theme="light"]) .prov-table-wrap{border-color:#333129}
+  :root:not([data-theme="light"]) .prov-table th,
+  :root:not([data-theme="light"]) .prov-table td{border-bottom-color:#333129}
+  :root:not([data-theme="light"]) .prov-table thead th{background:#252320}
+  :root:not([data-theme="light"]) .prov-guard{background:#2b1616;color:#fca5a5;border-color:#f87171}
+}
