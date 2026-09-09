@@ -315,6 +315,8 @@ function _saveQC() {
       activity.afiIdsGenerated.push(draft.afiId);
     });
     window.DPC_DATA.afi.afis = allAFIs;
+    // Job A5: attribute to the instrument that produced it.
+    afiDrafts.forEach(a => { if (!a.source) a.source = AFI_SOURCE.QUICK_CAPTURE; });
     saveAFI(afiDrafts[0]);
   }
 
