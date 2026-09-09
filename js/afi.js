@@ -1,4 +1,4 @@
-// DPC Hub · js/afi.js · v1.0 · July 2026
+// DPC Hub · js/afi.js · v1.1 · 09/09/26 · Job A5 — strengths separated from gaps; source shown on each record
 // AFI (Loop) lifecycle module. List view, status transitions, evidence chain,
 // action selection panel. Reads from window.DPC_DATA.afi via data.js globals.
 
@@ -91,11 +91,17 @@ function openLoop(afiId) {
 
 // ── Metrics ───────────────────────────────────────────────────
 function _afiRenderMetrics() {
-  const afis = _getAFIs();
+  // Job A5: the status counters describe loops — improvement work in
+  // flight. A strength is not a loop, so it is excluded here. Previously
+  // every counter on this page silently included positive findings.
+  const afis = _getAFIs().filter(isGapAFI);
   ['open','actioned','impact-checked','closed','re-opened'].forEach(status => {
     const el = document.getElementById(`afi-count-${status}`);
     if (el) el.textContent = afis.filter(a => a.status === status).length;
   });
+  const strengths = _getAFIs().filter(isStrengthAFI).length;
+  const sEl = document.getElementById('afi-count-strengths');
+  if (sEl) sEl.textContent = strengths;
 }
 
 // ── AFI list ──────────────────────────────────────────────────
@@ -104,7 +110,9 @@ function _afiRenderList() {
   const empty = document.getElementById('afi-empty');
   if (!list) return;
 
-  let afis = _getAFIs();
+  // Job A5: gaps by default. Strengths appear only when explicitly
+  // selected in the severity filter, so the list is never a mixed count.
+  let afis = _afiFilterSev === AFI_SEVERITY.STRENGTH ? _getAFIs() : _getAFIs().filter(isGapAFI);
   if (_afiFilterStatus) afis = afis.filter(a => a.status === _afiFilterStatus);
   if (_afiFilterArea)   afis = afis.filter(a => a.areaCode === _afiFilterArea);
   if (_afiFilterSev)    afis = afis.filter(a => a.severity === _afiFilterSev);
