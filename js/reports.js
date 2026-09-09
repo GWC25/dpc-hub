@@ -1,4 +1,4 @@
-// DPC Hub · js/reports.js · v1.0 · July 2026
+// DPC Hub · js/reports.js · v1.1 · 09/09/26 · Job A1 provenance guard + Job A2 archived-area exclusion
 // Report Builder module. Five audience templates.
 // Word doc generation via lib/docx.min.js (loaded locally, no CDN).
 // AI narrative for the performance review calls js/ai-support.js —
@@ -45,7 +45,14 @@ function _repRagLabel(score) {
 }
 
 // ── Data access (mirrors the pattern in areas.js / afi.js etc) ──
-function _repGetAreas()       { return (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || []; }
+function _repGetAreas() {
+  // Job A2: every other module reads areas through _getAreas(), which drops
+  // archived areas. Reports read the raw store, so an area archived in
+  // Settings still appeared in every report and every denominator. Match
+  // the rest of the Hub.
+  const all = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
+  return all.filter(a => !a.archived);
+}
 function _repGetArea(code)    { return _repGetAreas().find(a => a.areaCode === code) || null; }
 function _repGetAFIs()        { return (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []; }
 function _repGetReflections() { return (window.DPC_DATA.reflections && window.DPC_DATA.reflections.reflections) || []; }
@@ -480,8 +487,26 @@ function _repRenderPreview() {
     html = `<p style="color:var(--color-muted)">This generates an Excel workbook directly — one sheet per data category, all raw data for the selected area. Not shown in this preview pane; select an area above and click Generate.</p>`;
   }
 
-  body.innerHTML = html;
+  body.innerHTML = _repProvenanceGuard() + html;
   panel.style.display = '';
+}
+
+// ── Job A1: source-of-truth guard ─────────────────────────────
+// A report is a statement of fact to someone else. If the figures did not
+// come from OneDrive, say so on the preview rather than letting a wrong
+// number leave the building.
+function _repProvenanceGuard() {
+  if (!window.DPCProvenance) return '';
+  const g = window.DPCProvenance.reportGuard();
+  if (!g) return '';
+  const cls  = g.block ? 'prov-guard' : 'prov-guard prov-guard--warn';
+  const list = g.missing.length
+    ? '<ul>' + g.missing.map(m => '<li>' + _repEsc(m) + ' — not loaded from OneDrive</li>').join('') + '</ul>'
+    : '';
+  return '<div class="' + cls + '" role="alert">' +
+           '<p class="prov-guard__h">' + _repEsc(g.title) + '</p>' +
+           '<p>' + _repEsc(g.message) + '</p>' + list +
+         '</div>';
 }
 
 function _repPreviewNeil(data, opts) {
