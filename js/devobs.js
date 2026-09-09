@@ -416,6 +416,8 @@ function _commitDevObs(confirmedAFIs) {
   window.DPC_DATA.afi.afis = allAFIs;
   area.lastUpdated = nowISO();
   saveArea(area);
+  // Job A5: attribute to the instrument that produced it.
+  confirmedAFIs.forEach(a => { if (!a.source) a.source = AFI_SOURCE.DEVOBS; });
   if (confirmedAFIs.length > 0) saveAFI(confirmedAFIs[0]); // triggers write
 
   // Cleanup
