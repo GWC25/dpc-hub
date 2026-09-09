@@ -1,3 +1,4 @@
+// Job A5 (09/09/26): AFIs generated here are stamped with their source.
 // DPC Hub · js/learningwalk.js · v2.0 · 28/08/2026
 // Learning Walk module — mirrors the MyWeston "Learning Review Activity" (LRA) form
 // so records can be exported to Word and transcribed into MyWeston/Hyper later.
@@ -769,6 +770,7 @@ function _lwSave(mode) {
     actions.filter(a => a.themeId).forEach(a => {
       const draft = _lwBuildAFI(a.themeId, AFI_SEVERITY.STRENGTHEN, areaCode);
       if (!draft) return;
+      draft.source = AFI_SOURCE.LEARNING_WALK;   // Job A5
       draft.description = a.comments || draft.description || `Action agreed: ${_lwThemeLabel(a.themeId)}`;
       draft.targetDate = a.when || null;
       draft.parentObservationId = activity.activityId;
@@ -779,6 +781,9 @@ function _lwSave(mode) {
     _lwState.positive.forEach(id => {
       const draft = _lwBuildAFI(id, AFI_SEVERITY.STRENGTH, areaCode);
       if (!draft) return;
+      // Job A5 / A4: this is a positive finding, not an area for improvement.
+      // It stays in the store as evidence but must never be read as a gap.
+      draft.source = AFI_SOURCE.LEARNING_WALK;
       if (!draft.description) draft.description = `Strength observed: ${_lwThemeLabel(id)}`;
       draft.parentObservationId = activity.activityId;
       saveAFI(draft);
