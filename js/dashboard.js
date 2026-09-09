@@ -1,3 +1,4 @@
+// Job A5 (09/09/26): AFI counts here exclude strengths — see isGapAFI().
 // DPC Hub · js/dashboard.js · v1.0 · July 2026
 // Dashboards module. Area RAG filterable dashboard. Health Check collegiate view.
 // Reads from window.DPC_DATA across areas, AFIs, health checks.
@@ -141,7 +142,7 @@ function _renderRAGTable() {
   if (summary) {
     const all = _getAreas()||[];
     const scoredCount = all.filter(a=>a.ragDimensions&&Object.keys(a.ragDimensions).length>0).length;
-    const openAFIs = (window.DPC_DATA.afi&&window.DPC_DATA.afi.afis||[]).filter(a=>a.status!=='closed').length;
+    const openAFIs = (window.DPC_DATA.afi&&window.DPC_DATA.afi.afis||[]).filter(a=>isGapAFI(a)&&a.status!=='closed').length;
     const avgScores = RAG_DIMENSIONS.map(dim=>{
       const scores=all.map(a=>a.ragDimensions&&a.ragDimensions[dim.id]?.score).filter(Boolean);
       return scores.length>0?(scores.reduce((s,x)=>s+x,0)/scores.length).toFixed(1):'—';
@@ -160,7 +161,7 @@ function _renderRAGTable() {
         <div style="font-size:var(--text-xs);color:var(--color-muted);">Open loops</div>
       </div>
       <div style="padding:var(--space-md);background:var(--color-green-lt);border-radius:var(--radius-md);text-align:center;">
-        <div style="font-size:var(--text-xl);font-weight:bold;color:var(--color-green);">${(window.DPC_DATA.afi&&window.DPC_DATA.afi.afis||[]).filter(a=>a.status==='closed').length}</div>
+        <div style="font-size:var(--text-xl);font-weight:bold;color:var(--color-green);">${(window.DPC_DATA.afi&&window.DPC_DATA.afi.afis||[]).filter(a=>isGapAFI(a)&&a.status==='closed').length}</div>
         <div style="font-size:var(--text-xs);color:var(--color-muted);">Loops closed</div>
       </div>
       <div style="padding:var(--space-md);background:var(--color-blue-lt);border-radius:var(--radius-md);text-align:center;">
@@ -638,6 +639,8 @@ function _renderDashLoops() {
   });
   const topAreas=Object.entries(byArea).sort((a,b)=>b[1]-a[1]).slice(0,10);
 
+  // Job A5: strengths are reported alongside gaps here deliberately — this
+  // is the severity breakdown, the one place the split is the point.
   const bySeverity={[AFI_SEVERITY.IMMEDIATE]:0,[AFI_SEVERITY.STRENGTHEN]:0,[AFI_SEVERITY.STRENGTH]:0};
   afis.filter(a=>a.status!=='closed').forEach(a=>{ if(bySeverity.hasOwnProperty(a.severity)) bySeverity[a.severity]++; });
 
