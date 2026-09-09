@@ -56,6 +56,13 @@ function initSettings() {
       <button id="dpc-reconnect-btn" type="button" class="btn btn--primary btn--sm">Reconnect to OneDrive folder</button>
     </section>
 
+    <!-- Job A1: where this data came from -->
+    <section style="margin-bottom:var(--space-2xl);padding:var(--space-lg);border:1px solid var(--color-border);border-radius:var(--radius-lg);">
+      <h2 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-md);">Data source</h2>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-md);">Connection status above tells you whether the Hub can reach OneDrive. This tells you where each figure on screen actually came from. A domain reading &quot;Empty default&quot; will show as zero everywhere it is counted.</p>
+      <div id="dpc-provenance-panel"></div>
+    </section>
+
     <!-- Area Management -->
     <section style="margin-bottom:var(--space-2xl);padding:var(--space-lg);border:1px solid var(--color-border);border-radius:var(--radius-lg);">
       <h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-xs);">Area management</h2>
@@ -156,7 +163,18 @@ function initSettings() {
   });
 }
 
+function _dpcRenderProvenancePanel() {
+  const host = document.getElementById('dpc-provenance-panel');
+  if (!host) return;
+  if (!window.DPCProvenance) {
+    host.innerHTML = '<p style="font-size:var(--text-sm);color:var(--color-muted);">Provenance tracking unavailable.</p>';
+    return;
+  }
+  host.innerHTML = window.DPCProvenance.renderPanel();
+}
+
 function _dpcRenderConnectionStatus() {
+  _dpcRenderProvenancePanel();
   const dot   = document.getElementById('dpc-conn-dot');
   const label = document.getElementById('dpc-conn-label');
   if (!dot || !label) return;
