@@ -1,4 +1,4 @@
-// DPC Hub · js/data.js · v1.5 · 09/09/26 · Job A1 fix — snapshot restore records as an overlay, not a source
+// DPC Hub · js/data.js · v1.6 · 09/09/26 · Job A5 — AFI source stamping, gap/strength separation, one-time backfill
 // Data layer. All read/write operations to OneDrive JSON files.
 // File System Access API logic. Manifest loading. Auto-save scheduler.
 // Session snapshot to localStorage. No UI logic in this file.
@@ -260,7 +260,7 @@ async function reconnectFolder(ui) {
 function buildLastWeekSummary() {
   // Pull basic counts from current DPC_DATA for the weekly summary panel
   try {
-    const afiCount  = (window.DPC_DATA.afi.afis || []).filter(a => a.status !== AFI_STATUS.CLOSED).length;
+    const afiCount  = getOpenGapAFIs().length;   // Job A5: gaps only — strengths are not loops
     const actCount  = (window.DPC_DATA.areas.areas || []).reduce((n, a) => n + (a.activityLog || []).length, 0);
     const refCount  = (window.DPC_DATA.reflections.reflections || []).length;
     return `Open loops: ${afiCount} · Activities logged: ${actCount} · Reflections received: ${refCount}`;
@@ -544,6 +544,9 @@ async function loadHub(ui) {
   await checkSessionSnapshot(ui);
   initAutoSave(ui);
 
+  // Job A5: stamp a source onto any record that predates the field.
+  try { migrateAFISource(); } catch (e) { console.warn('DPC Hub: AFI source backfill skipped:', e); }
+
   // Job A1: settle the provenance record and paint the header badge before
   // any module renders a figure.
   if (window.DPCProvenance) {
@@ -561,7 +564,7 @@ async function loadHub(ui) {
     ui.showMondayBanner(buildLastWeekSummary());
   }
 
-  console.log(`DPC Hub loaded — ${nowISO()} — ${(window.DPC_DATA.areas.areas || []).length} areas, ${(window.DPC_DATA.staff.staff || []).length} staff, ${(window.DPC_DATA.afi.afis || []).filter(a => a.status !== 'closed').length} open AFIs.`);
+  console.log(`DPC Hub loaded — ${nowISO()} — ${(window.DPC_DATA.areas.areas || []).length} areas, ${(window.DPC_DATA.staff.staff || []).length} staff, ${getOpenGapAFIs().length} open AFIs (${getStrengthAFIs().length} strengths held separately).`);
   return true;
 }
 
@@ -1670,13 +1673,68 @@ function addTrainingEvent(dlId, event) {
 function saveAFI(afiData) {
   const afis = window.DPC_DATA.afi.afis;
   const idx = afis.findIndex(a => a.afiId === afiData.afiId);
+  // Job A5: never let a record enter the store without a source. Callers
+  // that know their instrument set it explicitly; anything else lands as
+  // 'manual' rather than silently unattributable.
+  const stamped = { ...afiData, source: afiData.source || AFI_SOURCE.MANUAL };
   if (idx >= 0) {
-    afis[idx] = { ...afiData, lastUpdated: nowISO() };
+    afis[idx] = { ...stamped, lastUpdated: nowISO() };
   } else {
-    afis.push({ ...afiData, createdAt: nowISO(), lastUpdated: nowISO() });
+    afis.push({ ...stamped, createdAt: nowISO(), lastUpdated: nowISO() });
   }
   _dirty.add('data-afi.json');
   _writeLocalSnapshot();
+}
+
+// ── Job A5: canonical AFI accessors ───────────────────────────
+// Strengths and gaps live in the same array, separated only by severity.
+// Read through these rather than touching window.DPC_DATA.afi.afis, so a
+// positive finding can never be counted as a training need again.
+function getAllAFIRecords() { return (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []; }
+function getGapAFIs()       { return getAllAFIRecords().filter(isGapAFI); }
+function getStrengthAFIs()  { return getAllAFIRecords().filter(isStrengthAFI); }
+function getOpenGapAFIs()   { return getGapAFIs().filter(a => a.status !== AFI_STATUS.CLOSED); }
+
+// ── Job A5: one-time source backfill ──────────────────────────
+// Existing records predate the source field. Infer it from the parent
+// activity where one is linked, otherwise mark it unknown. Inferred values
+// carry sourceInferred:true so a backfilled guess is never mistaken for
+// something captured at the time.
+function migrateAFISource() {
+  const afis = getAllAFIRecords();
+  if (!afis.length) return 0;
+
+  // activityId → activity type, across every area's log
+  const actType = {};
+  for (const area of (window.DPC_DATA.areas.areas || [])) {
+    for (const act of (area.activityLog || [])) {
+      if (act.activityId) actType[act.activityId] = act.type;
+      else if (act.id)    actType[act.id]         = act.type;
+    }
+  }
+  const TYPE_TO_SOURCE = {
+    'learning-walk':          AFI_SOURCE.LEARNING_WALK,
+    'devobs':                 AFI_SOURCE.DEVOBS,
+    'instructional-coaching': AFI_SOURCE.INSTRUCTIONAL,
+    'health-check-visit':     AFI_SOURCE.HEALTH_CHECK,
+    'meeting':                AFI_SOURCE.MEETING,
+    'hoa-meeting':            AFI_SOURCE.MEETING,
+    'quick-capture':          AFI_SOURCE.QUICK_CAPTURE,
+  };
+
+  let changed = 0;
+  for (const afi of afis) {
+    if (afi.source) continue;
+    const t = afi.parentObservationId ? actType[afi.parentObservationId] : null;
+    afi.source         = (t && TYPE_TO_SOURCE[t]) || AFI_SOURCE.UNKNOWN;
+    afi.sourceInferred = true;
+    changed++;
+  }
+  if (changed > 0) {
+    _dirty.add('data-afi.json');
+    console.log(`DPC Hub: Job A5 backfilled source on ${changed} AFI record(s).`);
+  }
+  return changed;
 }
 
 // ── Public: save a calendar entry ─────────────────────────────
