@@ -115,6 +115,7 @@
   <header class="hub-nav" role="banner">
     <a href="hub.html" class="hub-nav__brand" aria-label="DPC Hub home">DPC Hub</a>
     <div class="hub-nav__right">
+      <span id="provenance-badge" class="prov-badge" role="status" aria-live="polite" hidden></span>
       <span id="save-indicator" class="hub-nav__save-indicator" role="status" aria-live="polite" aria-atomic="true">Saved ✓</span>
       <button id="notification-btn" class="hub-nav__notification" type="button" aria-label="Notifications — 0 pending">
         🔔<span id="notification-badge" class="hub-nav__badge hub-nav__badge--hidden" aria-hidden="true">0</span>
@@ -180,6 +181,7 @@
 
 <!-- Scripts -->
 <script src="js/schema.js"></script>
+<script src="js/provenance.js"></script>
 <script src="js/data.js"></script>
 <script src="js/supabase-sync.js"></script>
 <script src="js/homepage.js"></script>
