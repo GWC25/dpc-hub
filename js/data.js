@@ -1,4 +1,4 @@
-// DPC Hub · js/data.js · v1.4 · 09/09/26 · Job A1 — source-of-truth provenance recording on every load path
+// DPC Hub · js/data.js · v1.5 · 09/09/26 · Job A1 fix — snapshot restore records as an overlay, not a source
 // Data layer. All read/write operations to OneDrive JSON files.
 // File System Access API logic. Manifest loading. Auto-save scheduler.
 // Session snapshot to localStorage. No UI logic in this file.
@@ -477,18 +477,20 @@ async function checkSessionSnapshot(ui) {
       const parsed = JSON.parse(snapshot);
       Object.assign(window.DPC_DATA, parsed);
       markAllDirty();
-      // Job A1: a restored snapshot is a third source. Mark every domain it
-      // touched so the badge and the Report Builder both know the data on
-      // screen did not come straight from OneDrive.
+      // Job A1 (fixed 09/09/26): a restored snapshot is unsaved local work
+      // layered on top of what already loaded — not a replacement source.
+      // v1.0 recorded it as a source, which overwrote the real OneDrive
+      // provenance and file timestamps for every domain and pushed a
+      // perfectly healthy session to "Partial data". Mark it as an overlay
+      // and refresh the counts instead.
       if (window.DPCProvenance) {
-        for (const [filename, meta] of Object.entries(window.DPCProvenance.DOMAINS)) {
+        for (const meta of Object.values(window.DPCProvenance.DOMAINS)) {
           if (Object.prototype.hasOwnProperty.call(parsed, meta.key)) {
-            window.DPCProvenance.record(
-              filename, window.DPCProvenance.SOURCE.SNAPSHOT, parsed[meta.key], snapAt
-            );
+            window.DPCProvenance.markRestored(meta.key, snapAt);
+            window.DPCProvenance.recount(meta.key, parsed[meta.key]);
           }
         }
-        window.DPCProvenance.init(getConnectionStatus() === 'connected', getConnectedFolderName());
+        window.DPCProvenance.renderBadge();
       }
       ui.showToast('success', 'Session restored successfully.');
       ui.hideRestoreBanner();
