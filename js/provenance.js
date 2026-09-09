@@ -1,4 +1,4 @@
-// DPC Hub · js/provenance.js · v1.0 · 09/09/26 · Job A1 — single source of truth
+// DPC Hub · js/provenance.js · v1.1 · 09/09/26 · Job A1 fix — a restored snapshot no longer overwrites load-time provenance
 // Records where every data domain was actually loaded from, and makes that
 // visible. Solves the failure this was built for: when the OneDrive folder
 // handle does not reconnect, data.js proceeds with empty defaults and every
@@ -51,10 +51,12 @@
   });
 
   // ── Module state ────────────────────────────────────────────
-  let _records   = {};     // key → { key, label, required, source, filename, fileModified, count, at }
-  let _connected = false;
-  let _folder    = null;
-  let _loadedAt  = null;
+let _records    = {};     // key → { key, label, required, source, filename, fileModified, count, at }
+  let _restored   = {};     // key → ISO time the session snapshot was taken (overlay, not a source)
+  let _restoredAt = null;
+  let _connected  = false;
+  let _folder     = null;
+  let _loadedAt   = null;
 
   function nowISO() { return new Date().toISOString(); }
 
@@ -78,6 +80,8 @@
 
     reset() {
       _records = {};
+      _restored = {};
+      _restoredAt = null;
       _connected = false;
       _folder = null;
       _loadedAt = null;
@@ -92,7 +96,7 @@
     record(filename, source, data, fileModified) {
       const meta = DOMAINS[filename];
       if (!meta) return;
-      _records[meta.key] = {
+      const rec = {
         key:          meta.key,
         label:        meta.label,
         required:     meta.required,
@@ -100,8 +104,15 @@
         source:       source || SOURCE.UNKNOWN,
         fileModified: fileModified || null,
         count:        countRecords(data),
+        activeCount:  null,
         at:           nowISO(),
       };
+      // Areas carry an archived flag (Job A2). Every denominator in the Hub
+      // should be the active count, so surface both.
+      if (meta.key === 'areas' && data && Array.isArray(data.areas)) {
+        rec.activeCount = data.areas.filter(a => !a.archived).length;
+      }
+      _records[meta.key] = rec;
       _loadedAt = nowISO();
     },
 
@@ -115,6 +126,30 @@
       }
       _loadedAt = _loadedAt || nowISO();
     },
+
+    // A restored session snapshot is unsaved local work sitting on top of
+    // whatever loaded. It is NOT a replacement source: the domain still came
+    // from OneDrive, and overwriting that record was the v1.0 bug — it wiped
+    // the real file timestamps and pushed every session to "Partial data".
+    markRestored(key, snapshotTakenAt) {
+      if (!_records[key]) return;
+      _restored[key] = snapshotTakenAt || nowISO();
+      _restoredAt    = snapshotTakenAt || nowISO();
+    },
+
+    // Refresh the record count after a restore without touching the source.
+    recount(key, data) {
+      const r = _records[key];
+      if (!r) return;
+      r.count = countRecords(data);
+      if (key === 'areas' && data && Array.isArray(data.areas)) {
+        r.activeCount = data.areas.filter(a => !a.archived).length;
+      }
+    },
+
+    isRestored(key) { return !!_restored[key]; },
+    restoredKeys()  { return Object.keys(_restored); },
+    restoredAt()    { return _restoredAt; },
 
     get(key) { return _records[key] || null; },
     all()    { return Object.values(_records); },
@@ -130,7 +165,6 @@
       if (rows.some(r => r.source === SOURCE.SEED)) return 'seed';
       const req = rows.filter(r => r.required);
       if (req.some(r => r.source !== SOURCE.ONEDRIVE)) return 'partial';
-      if (rows.some(r => r.source === SOURCE.SNAPSHOT)) return 'partial';
       return 'live';
     },
 
@@ -140,13 +174,19 @@
     summary() {
       const st = P.state();
       switch (st) {
-        case 'live':
+        case 'live': {
+          const n = Object.keys(_restored).length;
+          const when = _restoredAt
+            ? new Date(_restoredAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+            : '';
           return {
             state: st,
             short: 'Live data',
-            detail: `Read from ${_folder || 'the connected OneDrive folder'}.`,
+            detail: `Read from ${_folder || 'the connected OneDrive folder'}.` +
+              (n ? ` A session snapshot from ${when} was restored on top — that work is in the store but is not written to OneDrive until the next save.` : ''),
             tone: 'ok',
           };
+        }
         case 'partial':
           return {
             state: st,
@@ -215,10 +255,16 @@
         const mod = r.fileModified
           ? new Date(r.fileModified).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
           : '—';
+        const restored = _restored[r.key]
+          ? ' <span class="prov-tag prov-tag--warn">restored</span>'
+          : '';
+        const count = (r.activeCount !== null && r.activeCount !== r.count)
+          ? r.count + ' <span class="prov-req">(' + r.activeCount + ' active)</span>'
+          : String(r.count);
         return '<tr>' +
           '<th scope="row">' + r.label + (r.required ? ' <span class="prov-req">required</span>' : '') + '</th>' +
-          '<td><span class="prov-tag prov-tag--' + cls + '">' + SOURCE_LABEL[r.source] + '</span></td>' +
-          '<td class="prov-num">' + r.count + '</td>' +
+          '<td><span class="prov-tag prov-tag--' + cls + '">' + SOURCE_LABEL[r.source] + '</span>' + restored + '</td>' +
+          '<td class="prov-num">' + count + '</td>' +
           '<td>' + mod + '</td>' +
           '</tr>';
       }).join('');
