@@ -99,6 +99,63 @@ const AFI_SEVERITY = Object.freeze({
   IMMEDIATE:  'Areas for Immediate Improvement',
 });
 
+// ── AFI source (Job A5) ───────────────────────────────────────
+// Which instrument produced this record. Controlled list — never write a
+// value that is not in here. Without this, an AFI cannot be attributed to
+// the activity that found it, and cross-instrument clustering (Health
+// Checks + Learning Walks + Meetings + Action Plans) is guesswork.
+const AFI_SOURCE = Object.freeze({
+  LEARNING_WALK:  'learning-walk',
+  DEVOBS:         'devobs',
+  INSTRUCTIONAL:  'instructional-coaching',
+  HEALTH_CHECK:   'health-check',
+  MEETING:        'meeting',
+  ACTION_PLAN:    'action-plan',
+  QUICK_CAPTURE:  'quick-capture',
+  MANUAL:         'manual',
+  UNKNOWN:        'unknown',
+});
+
+const AFI_SOURCE_LABEL = Object.freeze({
+  'learning-walk':          'Learning Walk',
+  'devobs':                 'Developmental Observation',
+  'instructional-coaching': 'Instructional Coaching',
+  'health-check':           'Health Check',
+  'meeting':                'Meeting',
+  'action-plan':            'Action Plan',
+  'quick-capture':          'Quick Capture',
+  'manual':                 'Added by hand',
+  'unknown':                'Unknown',
+});
+
+// ── Gap vs strength (Job A5 / A4) ─────────────────────────────
+// Strengths and AFIs share one array and are told apart only by severity.
+// Nothing in the Hub filtered on it, so every "AFI" count — dashboard,
+// notification badge, load log — silently included positive findings, and
+// any clustering of training need would have read a strength as a gap.
+// Route everything through these two helpers instead of testing severity
+// inline, so the two can never be conflated again.
+function isGapAFI(afi) {
+  return !!afi && afi.severity !== AFI_SEVERITY.STRENGTH;
+}
+function isStrengthAFI(afi) {
+  return !!afi && afi.severity === AFI_SEVERITY.STRENGTH;
+}
+
+// Flat theme lookup for clustering: themeId → { id, label, categoryId, categoryLabel }
+const LRA_THEME_INDEX = Object.freeze((() => {
+  const idx = {};
+  for (const cat of LRA_TAXONOMY) {
+    for (const t of cat.themes) {
+      idx[t.id] = Object.freeze({
+        id: t.id, label: t.label, desc: t.desc,
+        categoryId: cat.id, categoryLabel: cat.label,
+      });
+    }
+  }
+  return idx;
+})());
+
 // ── AFI status lifecycle ──────────────────────────────────────
 const AFI_STATUS = Object.freeze({
   OPEN:           'open',
