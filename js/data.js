@@ -1,4 +1,4 @@
-// DPC Hub · js/data.js · v1.3 · 02/09/26 · Session 65 — describePastedContent() diagnostics for the two JSON paste boxes
+// DPC Hub · js/data.js · v1.4 · 09/09/26 · Job A1 — source-of-truth provenance recording on every load path
 // Data layer. All read/write operations to OneDrive JSON files.
 // File System Access API logic. Manifest loading. Auto-save scheduler.
 // Session snapshot to localStorage. No UI logic in this file.
@@ -9,6 +9,7 @@ let _folderHandle   = null;   // FileSystemDirectoryHandle
 let _autoSaveTimer  = null;   // setInterval reference
 let _lastSavedSnap  = null;   // JSON string of last saved state (for dirty-check)
 let _pendingBanners = [];     // Banners to show after load (collected during loading)
+let _fileMeta       = {};     // filename -> ISO string of the file's lastModified (Job A1)
 
 // ── IndexedDB handle persistence (Session 34) ───────────────────
 // A FileSystemDirectoryHandle cannot be stored in localStorage — it's a
@@ -323,7 +324,18 @@ function _buildBlankManifest() {
 
 // ── Step 5: Load required files ───────────────────────────────
 async function loadRequiredFiles(ui) {
-  if (!_folderHandle) return true; // Offline — proceed with defaults
+  if (!_folderHandle) {
+    // Job A1: offline is not a quiet state. Previously the Hub proceeded
+    // with empty defaults and every module rendered zeros with nothing on
+    // screen to say why. Record it and raise a blocking-tone banner.
+    if (window.DPCProvenance) window.DPCProvenance.fillGaps();
+    _pendingBanners.push({
+      type:        'red',
+      message:     'Not connected to OneDrive. The Hub is showing empty defaults — nothing on screen is your data. Reconnect the folder in Settings before reading any figure or generating a report.',
+      dismissible: false,
+    });
+    return true;
+  }
 
   const results = await Promise.allSettled(
     DPC_CONFIG.REQUIRED_FILES.map(filename => _readFile(filename))
@@ -338,13 +350,29 @@ async function loadRequiredFiles(ui) {
         const seedData = await _buildDefaultAreas();
         await _writeFile(filename, seedData);
         window.DPC_DATA.areas = seedData;
+        if (window.DPCProvenance) {
+          window.DPCProvenance.record(filename, window.DPCProvenance.SOURCE.SEED, seedData, null);
+        }
+        _pendingBanners.push({
+          type:        'red',
+          message:     'Curriculum areas were built from the repository seed file, not your OneDrive records. Health Check, AFI and activity counts will read low. Do not report from this state.',
+          dismissible: false,
+        });
       } else if (filename === 'data-calendar.json') {
         const def = { entries: [] };
         await _writeFile(filename, def);
         window.DPC_DATA.calendar = def;
+        if (window.DPCProvenance) {
+          window.DPCProvenance.record(filename, window.DPCProvenance.SOURCE.EMPTY, def, null);
+        }
       }
     } else {
       _assignToStore(filename, result.value);
+      if (window.DPCProvenance) {
+        window.DPCProvenance.record(
+          filename, window.DPCProvenance.SOURCE.ONEDRIVE, result.value, _fileMeta[filename]
+        );
+      }
     }
   }
   return true;
@@ -365,13 +393,21 @@ async function loadOptionalFiles() {
       // File missing — use default, queue a non-blocking banner
       const defaultVal = DEFAULT_DATA[filename];
       if (defaultVal) _assignToStore(filename, defaultVal);
+      if (window.DPCProvenance) {
+        window.DPCProvenance.record(filename, window.DPCProvenance.SOURCE.EMPTY, defaultVal, null);
+      }
       _pendingBanners.push({
         type:      'amber',
-        message:   `${filename} not found — this module will start empty.`,
+        message:   `${filename} not found — this module will start empty. Any figure drawn from it will read zero.`,
         dismissible: true,
       });
     } else {
       _assignToStore(filename, result.value);
+      if (window.DPCProvenance) {
+        window.DPCProvenance.record(
+          filename, window.DPCProvenance.SOURCE.ONEDRIVE, result.value, _fileMeta[filename]
+        );
+      }
     }
   }
 }
@@ -441,6 +477,19 @@ async function checkSessionSnapshot(ui) {
       const parsed = JSON.parse(snapshot);
       Object.assign(window.DPC_DATA, parsed);
       markAllDirty();
+      // Job A1: a restored snapshot is a third source. Mark every domain it
+      // touched so the badge and the Report Builder both know the data on
+      // screen did not come straight from OneDrive.
+      if (window.DPCProvenance) {
+        for (const [filename, meta] of Object.entries(window.DPCProvenance.DOMAINS)) {
+          if (Object.prototype.hasOwnProperty.call(parsed, meta.key)) {
+            window.DPCProvenance.record(
+              filename, window.DPCProvenance.SOURCE.SNAPSHOT, parsed[meta.key], snapAt
+            );
+          }
+        }
+        window.DPCProvenance.init(getConnectionStatus() === 'connected', getConnectedFolderName());
+      }
       ui.showToast('success', 'Session restored successfully.');
       ui.hideRestoreBanner();
     } catch {
@@ -492,6 +541,12 @@ async function loadHub(ui) {
   checkSupabaseCaptures();  // non-blocking
   await checkSessionSnapshot(ui);
   initAutoSave(ui);
+
+  // Job A1: settle the provenance record and paint the header badge before
+  // any module renders a figure.
+  if (window.DPCProvenance) {
+    window.DPCProvenance.init(getConnectionStatus() === 'connected', getConnectedFolderName());
+  }
 
   // Show any queued banners
   for (const banner of _pendingBanners) {
@@ -1867,6 +1922,9 @@ async function _readFile(filename) {
     const fileHandle = await _folderHandle.getFileHandle(filename, { create: false });
     const file       = await fileHandle.getFile();
     const text       = await file.text();
+    // Job A1: remember when the file itself was last written, so the Hub
+    // can show how old the data on screen actually is.
+    _fileMeta[filename] = file.lastModified ? new Date(file.lastModified).toISOString() : null;
     return JSON.parse(text);
   } catch (err) {
     if (err.name === 'NotFoundError') return null;
