@@ -1,4 +1,4 @@
-// DPC Hub · js/inclusion.js · v1.1 · 09/09/26 · clickable themes, areas and hyper-focus cards open a detail dialog
+// DPC Hub · js/inclusion.js · v2.0 · 09/09/26 · issue-level clustering across all five stores (see incl-issues.js)
 // Accessibility & Inclusive Learning Environments — college-wide view.
 //
 // Answers one question for a senior audience: across the Group, where is
@@ -31,12 +31,14 @@ const INCL_HYPER_IDS = Object.freeze(['ARD', 'LED', 'AT']);
 
 // ── Entry point ───────────────────────────────────────────────
 let _inclData = null;
+let _inclIssues = null;
 let _inclLastTrigger = null;
 
 function initInclusion() {
   const main = document.getElementById('main-content');
   const d = _inclCompute();
   _inclData = d;
+  _inclIssues = inclBuildIssues();
 
   main.innerHTML = `
     <div id="banner-container" aria-live="polite"></div>
@@ -55,7 +57,8 @@ function initInclusion() {
     ${_inclProvenanceLine()}
     ${_inclKPIs(d)}
     ${_inclHyperFocus(d)}
-    ${_inclThemeTable(d)}
+    ${_inclIssueTable()}
+    ${_inclCoverage()}
     ${_inclAreaSpread(d)}
     ${_inclStrengths(d)}
     ${_inclSourceMix(d)}
@@ -73,6 +76,7 @@ function _inclDelegate(ev) {
   ev.preventDefault();
   _inclLastTrigger = btn;
   const [kind, id] = btn.getAttribute('data-incl-open').split(':');
+  if (kind === 'issue') { _inclOpenIssueDetail(id); return; }
   _inclOpenDetail(kind, id);
 }
 
@@ -179,13 +183,15 @@ function _inclKPI(value, label, sub, colour) {
 }
 
 function _inclKPIs(d) {
-  const pct = d.activeAreas ? Math.round((d.areasWithData / d.activeAreas) * 100) : 0;
+  const q = _inclIssues || { rows: [], totalSignals: 0, areasTouched: 0, activeAreas: d.activeAreas };
+  const groupWide = q.rows.filter(r => r.areaCount >= 4).length;
+  const pct = q.activeAreas ? Math.round((q.areasTouched / q.activeAreas) * 100) : 0;
   return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
       gap:var(--space-md);margin-bottom:var(--space-xl);">
-    ${_inclKPI(d.openGaps, 'Open inclusion gaps', 'Accessibility and inclusive environment themes', 'var(--color-amber)')}
-    ${_inclKPI(d.immediate, 'For immediate improvement', 'Highest severity, shortest close window', 'var(--color-rose)')}
-    ${_inclKPI(d.themes.length, 'Distinct themes in play', 'Each one is a candidate training session', 'var(--color-blue)')}
-    ${_inclKPI(`${d.areasWithData}/${d.activeAreas}`, 'Areas with a record', `${pct}% of active areas`, 'var(--color-purple)')}
+    ${_inclKPI(q.rows.length, 'Distinct issues identified', 'Specific, trainable issues — not categories', 'var(--color-blue)')}
+    ${_inclKPI(groupWide, 'Warrant a Group-wide session', 'Shared by four or more areas', 'var(--color-rose)')}
+    ${_inclKPI(q.totalSignals, 'Pieces of evidence', 'Across Health Checks, Loops, Action Plans, Learning Walks', 'var(--color-amber)')}
+    ${_inclKPI(`${q.areasTouched}/${q.activeAreas}`, 'Areas with evidence', `${pct}% of active areas`, 'var(--color-purple)')}
   </div>`;
 }
 
@@ -520,4 +526,204 @@ function _inclRecordCard(r) {
       ${(r.evidenceChain && r.evidenceChain.length) ? `<span><strong>Evidence items:</strong> ${r.evidenceChain.length}</span>` : ''}
     </div>
   </article>`;
+}
+
+// ── Cross-source issue table (v2.0) ───────────────────────────
+function _inclIssueTable() {
+  const q = _inclIssues;
+  if (!q || !q.rows.length) {
+    return _inclEmpty('No accessibility or inclusion issues identified yet',
+      'This table builds from Health Check indicator scores, Loops, Action Plan items and Learning Walks. Once any of those hold records against accessibility or inclusion, the issues appear here automatically.');
+  }
+
+  const rows = q.rows.map(r => {
+    const rec = r.areaCount >= 4
+      ? { text: 'Group-wide session', col: 'var(--color-rose)' }
+      : r.areaCount >= 2
+        ? { text: 'Combined session', col: 'var(--color-amber)' }
+        : { text: 'One-to-one coaching', col: 'var(--color-blue)' };
+
+    const srcChips = Object.entries(r.bySource)
+      .sort((a, b) => b[1] - a[1])
+      .map(([s, n]) => `<span class="incl-badge" style="background:var(--color-light);
+        color:var(--color-slate);border-color:var(--color-border);margin:0 4px 4px 0;">
+        ${_inclEsc(INCL_SOURCE_LABEL[s] || s)} ${n}</span>`).join('');
+
+    const hc = r.hcCount
+      ? `<strong style="color:${r.hcAvg <= 3 ? 'var(--color-rose)' : 'var(--color-green)'};">
+          ${r.hcAvg.toFixed(1)}</strong>
+         <span style="font-size:var(--text-xs);color:var(--color-muted);">
+          of 5 · ${r.hcBelow}/${r.hcCount} staff at 3 or below</span>`
+      : `<span style="font-size:var(--text-xs);color:var(--color-muted);">not scored</span>`;
+
+    return `<tr style="border-bottom:1px solid var(--color-border);">
+      <th scope="row" style="text-align:left;padding:0;font-weight:600;">
+        <button type="button" class="incl-trigger" data-incl-open="issue:${_inclEsc(r.id)}">
+          ${_inclEsc(r.label)}
+          <span style="display:block;font-size:var(--text-xs);color:var(--color-muted);font-weight:400;">
+            ${_inclEsc(r.focus)}
+          </span>
+          <span class="incl-trigger__more">${r.signalCount} piece${r.signalCount === 1 ? '' : 's'} of evidence${r.inferredCount ? ` · ${r.inferredCount} inferred` : ''} →</span>
+        </button>
+      </th>
+      <td style="padding:var(--space-sm);">
+        <strong style="font-size:var(--text-md);">${r.areaCount}</strong>
+        <span style="display:block;font-size:var(--text-xs);color:var(--color-muted);
+          font-family:var(--font-mono,monospace);">${_inclEsc(r.areaList.join(' ')) || '—'}</span>
+      </td>
+      <td style="padding:var(--space-sm);">${hc}</td>
+      <td style="padding:var(--space-sm);">${srcChips || '—'}</td>
+      <td style="padding:var(--space-sm);">
+        <span style="font-size:var(--text-xs);font-weight:bold;color:${rec.col};">${rec.text}</span>
+      </td>
+    </tr>`;
+  }).join('');
+
+  return `<h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-xs);">
+      Specific issues across the Group
+    </h2>
+    <p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-md);max-width:78ch;">
+      Each row is one trainable issue, assembled from every store that holds evidence of it —
+      Health Check scores, Loops, Action Plan items and Learning Walks. Ranked by how many areas
+      share it. Click any issue to see the evidence behind the number. Records whose wording names
+      the issue count as exact; records grouped only by their theme are marked inferred, and are
+      worth reading before quoting.
+    </p>
+    <div style="overflow-x:auto;border:1px solid var(--color-border);border-radius:var(--radius-md);
+      margin-bottom:var(--space-xl);background:var(--color-surface);">
+      <table style="border-collapse:collapse;width:100%;min-width:820px;font-size:var(--text-sm);">
+        <caption class="sr-only">Accessibility and inclusion issues ranked by number of areas affected</caption>
+        <thead><tr style="background:var(--color-light);">
+          <th scope="col" style="text-align:left;padding:var(--space-sm);font-size:var(--text-xs);">Issue</th>
+          <th scope="col" style="text-align:left;padding:var(--space-sm);font-size:var(--text-xs);">Areas</th>
+          <th scope="col" style="text-align:left;padding:var(--space-sm);font-size:var(--text-xs);">Health Check average</th>
+          <th scope="col" style="text-align:left;padding:var(--space-sm);font-size:var(--text-xs);">Evidence from</th>
+          <th scope="col" style="text-align:left;padding:var(--space-sm);font-size:var(--text-xs);">Suggested response</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── What the picture is built from ────────────────────────────
+function _inclCoverage() {
+  const q = _inclIssues;
+  if (!q) return '';
+  const cards = Object.entries(q.coverage).map(([src, n]) => {
+    const live = n > 0;
+    return `<div style="padding:var(--space-md);background:var(--color-surface);
+        border:1px solid ${live ? 'var(--color-border)' : 'var(--color-amber)'};
+        border-radius:var(--radius-md);">
+      <div style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">
+        ${_inclEsc(INCL_SOURCE_LABEL[src] || src)}
+      </div>
+      <div style="font-size:var(--text-xl);font-weight:bold;color:${live ? 'var(--color-teal)' : 'var(--color-amber)'};">
+        ${n}
+      </div>
+      <div style="font-size:var(--text-xs);color:var(--color-muted);">
+        ${live ? 'records searched' : 'no records — this source is not contributing'}
+      </div>
+    </div>`;
+  }).join('');
+
+  const rag = q.ragWeak.length
+    ? `<div style="padding:var(--space-md);background:var(--color-rose-lt);border:1px solid var(--color-rose);
+        border-radius:var(--radius-md);margin-top:var(--space-md);font-size:var(--text-sm);color:var(--color-rose);">
+        <strong>${q.ragWeak.length} area${q.ragWeak.length === 1 ? '' : 's'} rated Challenged or Urgent on accessibility health:</strong>
+        ${_inclEsc(q.ragWeak.map(r => `${r.areaCode} (${r.score})`).join(', '))}.
+        These carry a RAG position but may have little or no issue-level evidence yet.
+      </div>`
+    : '';
+
+  return `<h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-xs);">
+      What this picture is built from
+    </h2>
+    <p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-md);max-width:78ch;">
+      How many records in each store were searched. A source showing zero is not contributing to
+      any issue above, so the picture is narrower than it looks.
+    </p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:var(--space-md);margin-bottom:var(--space-md);">${cards}</div>
+    ${rag}
+    <div style="height:var(--space-xl);"></div>`;
+}
+
+// ── Issue detail (extends the existing dialog) ────────────────
+function _inclOpenIssueDetail(issueId) {
+  const q = _inclIssues;
+  const r = q && q.rows.find(x => x.id === issueId);
+  const host = document.getElementById('incl-dialog-host');
+  if (!r || !host) return;
+
+  const bySource = {};
+  for (const s of r.signals) (bySource[s.source] = bySource[s.source] || []).push(s);
+
+  const blocks = Object.entries(bySource).map(([src, list]) => {
+    const items = list
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
+      .map(s => `<article class="incl-rec">
+        <div style="display:flex;flex-wrap:wrap;gap:var(--space-sm);align-items:center;">
+          ${s.areaCode ? `<span style="font-family:var(--font-mono,monospace);font-weight:600;
+            font-size:var(--text-sm);">${_inclEsc(s.areaCode)}</span>` : ''}
+          ${s.score != null ? `<span class="incl-badge" style="background:var(--color-rose-lt);
+            color:var(--color-rose);border-color:var(--color-rose);">${s.score} of 5</span>` : ''}
+        </div>
+        <p style="font-size:var(--text-sm);margin-top:6px;">${_inclEsc(s.title)}</p>
+        <div class="incl-rec__meta">
+          <span>${_inclEsc(s.detail || '')}</span>
+          ${s.date ? `<span>${_inclEsc(_inclFmtDate(s.date))}</span>` : ''}
+          ${s.match === 'theme' ? `<span style="color:var(--color-amber);"><strong>Inferred</strong> — grouped by theme, the wording does not name this issue</span>` : ''}
+        </div>
+      </article>`).join('');
+
+    return `<section style="margin-bottom:var(--space-lg);">
+      <h3 style="font-size:var(--text-md);font-weight:bold;color:var(--color-navy);
+        margin-bottom:var(--space-sm);">
+        ${_inclEsc(INCL_SOURCE_LABEL[src] || src)}
+        <span style="font-size:var(--text-xs);color:var(--color-muted);font-weight:400;">
+          — ${list.length} record${list.length === 1 ? '' : 's'}</span>
+      </h3>
+      ${items}
+    </section>`;
+  }).join('');
+
+  const hcLine = r.hcCount
+    ? `<p style="font-size:var(--text-sm);margin-bottom:var(--space-lg);">
+        Health Check average <strong>${r.hcAvg.toFixed(1)} of 5</strong> across ${r.hcCount}
+        scored response${r.hcCount === 1 ? '' : 's'}. ${r.hcBelow} at 3 or below.</p>`
+    : `<p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-lg);">
+        Not yet scored in any Health Check, so there is no staff-level measure for this issue.</p>`;
+
+  host.innerHTML = `
+    <div class="modal-overlay" id="incl-overlay">
+      <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="incl-dlg-title">
+        <div class="modal__header">
+          <div>
+            <h2 class="modal__title" id="incl-dlg-title" tabindex="-1">${_inclEsc(r.label)}</h2>
+            <p style="font-size:var(--text-sm);color:var(--color-muted);margin-top:4px;">
+              ${_inclEsc(r.focus)} · ${r.areaCount} area${r.areaCount === 1 ? '' : 's'} ·
+              ${r.signalCount} piece${r.signalCount === 1 ? '' : 's'} of evidence
+            </p>
+          </div>
+          <button type="button" class="modal__close" id="incl-dlg-close" aria-label="Close details">×</button>
+        </div>
+        ${hcLine}
+        <p style="font-size:var(--text-sm);margin-bottom:var(--space-lg);">
+          <strong>Areas:</strong>
+          <span style="font-family:var(--font-mono,monospace);">${_inclEsc(r.areaList.join(' ')) || '—'}</span>
+        </p>
+        ${blocks || '<p style="font-size:var(--text-sm);color:var(--color-muted);">No individual records — this issue is visible only in Health Check scores.</p>'}
+      </div>
+    </div>`;
+
+  document.getElementById('incl-dlg-close').addEventListener('click', _inclCloseDetail);
+  const overlay = document.getElementById('incl-overlay');
+  overlay.addEventListener('click', e => { if (e.target === overlay) _inclCloseDetail(); });
+  document.getElementById('incl-dlg-title').focus();
+  document.addEventListener('keydown', _inclDialogKeys);
+}
+
+function _inclFmtDate(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? String(iso) : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
