@@ -1,4 +1,4 @@
-// DPC Hub · js/inclusion.js · v1.0 · 09/09/26
+// DPC Hub · js/inclusion.js · v1.1 · 09/09/26 · clickable themes, areas and hyper-focus cards open a detail dialog
 // Accessibility & Inclusive Learning Environments — college-wide view.
 //
 // Answers one question for a senior audience: across the Group, where is
@@ -30,9 +30,13 @@ const INCL_THEME_IDS = Object.freeze([
 const INCL_HYPER_IDS = Object.freeze(['ARD', 'LED', 'AT']);
 
 // ── Entry point ───────────────────────────────────────────────
+let _inclData = null;
+let _inclLastTrigger = null;
+
 function initInclusion() {
   const main = document.getElementById('main-content');
   const d = _inclCompute();
+  _inclData = d;
 
   main.innerHTML = `
     <div id="banner-container" aria-live="polite"></div>
@@ -56,7 +60,20 @@ function initInclusion() {
     ${_inclStrengths(d)}
     ${_inclSourceMix(d)}
     ${_inclCaveat(d)}
+    <div id="incl-dialog-host"></div>
   `;
+
+  main.addEventListener('click', _inclDelegate);
+}
+
+// ── Click delegation ──────────────────────────────────────────
+function _inclDelegate(ev) {
+  const btn = ev.target.closest('[data-incl-open]');
+  if (!btn) return;
+  ev.preventDefault();
+  _inclLastTrigger = btn;
+  const [kind, id] = btn.getAttribute('data-incl-open').split(':');
+  _inclOpenDetail(kind, id);
 }
 
 // ── Data ──────────────────────────────────────────────────────
@@ -79,10 +96,11 @@ function _inclCompute() {
     if (!byTheme[t.id]) {
       byTheme[t.id] = {
         id: t.id, label: t.label, category: t.categoryLabel, desc: t.desc,
-        areas: new Set(), open: 0, immediate: 0, total: 0,
+        areas: new Set(), open: 0, immediate: 0, total: 0, records: [],
       };
     }
     const row = byTheme[t.id];
+    row.records.push(a);
     row.total++;
     if (a.areaCode) row.areas.add(a.areaCode);
     if (a.status !== 'closed') row.open++;
@@ -127,7 +145,7 @@ function _inclCompute() {
     .filter(a => !a.archived).length;
 
   return {
-    themes, areaRows, hyper, bySource,
+    themes, areaRows, hyper, bySource, inScope,
     strengths: inScopeSt,
     totalGaps: inScope.length,
     openGaps: inScope.filter(a => a.status !== 'closed').length,
@@ -174,8 +192,7 @@ function _inclKPIs(d) {
 function _inclHyperFocus(d) {
   const cards = d.hyper.map(h => {
     const none = h.areaCount === 0;
-    return `<div style="padding:var(--space-md);background:var(--color-surface);
-        border:1px solid var(--color-border);border-radius:var(--radius-md);">
+    return `<button type="button" class="incl-card-btn" data-incl-open="theme:${_inclEsc(h.id)}">
       <div style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_inclEsc(h.label)}</div>
       <div style="font-size:var(--text-2xl);font-weight:bold;color:${none ? 'var(--color-muted)' : 'var(--color-amber)'};margin-top:4px;">
         ${h.areaCount}
@@ -183,7 +200,8 @@ function _inclHyperFocus(d) {
       <div style="font-size:var(--text-xs);color:var(--color-muted);">
         ${none ? 'no records yet' : `area${h.areaCount === 1 ? '' : 's'} · ${h.open} open${h.immediate ? ` · ${h.immediate} immediate` : ''}`}
       </div>
-    </div>`;
+      <div class="incl-trigger__more" style="margin-top:6px;">View records →</div>
+    </button>`;
   }).join('');
 
   return `<h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-xs);">
@@ -210,11 +228,14 @@ function _inclThemeTable(d) {
         ? { text: 'Combined session', col: 'var(--color-amber)' }
         : { text: 'One-to-one coaching', col: 'var(--color-blue)' };
     return `<tr style="border-bottom:1px solid var(--color-border);">
-      <th scope="row" style="text-align:left;padding:var(--space-sm);font-weight:600;">
-        ${_inclEsc(t.label)}
-        <span style="display:block;font-size:var(--text-xs);color:var(--color-muted);font-weight:400;">
-          ${_inclEsc(t.category)}
-        </span>
+      <th scope="row" style="text-align:left;padding:0;font-weight:600;">
+        <button type="button" class="incl-trigger" data-incl-open="theme:${_inclEsc(t.id)}">
+          ${_inclEsc(t.label)}
+          <span style="display:block;font-size:var(--text-xs);color:var(--color-muted);font-weight:400;">
+            ${_inclEsc(t.category)}
+          </span>
+          <span class="incl-trigger__more">${t.total} record${t.total === 1 ? '' : 's'} →</span>
+        </button>
       </th>
       <td style="padding:var(--space-sm);">
         <strong>${t.areaCount}</strong>
@@ -261,15 +282,16 @@ function _inclAreaSpread(d) {
   const max = d.areaRows[0].n || 1;
   const rows = d.areaRows.slice(0, 15).map(r => {
     const pc = Math.round((r.n / max) * 100);
-    return `<div style="display:grid;grid-template-columns:76px 1fr 42px;gap:var(--space-sm);
-        align-items:center;font-size:var(--text-sm);margin-bottom:6px;">
+    return `<button type="button" class="incl-trigger" data-incl-open="area:${_inclEsc(r.code)}"
+        style="display:grid;grid-template-columns:76px 1fr 42px;gap:var(--space-sm);
+        align-items:center;font-size:var(--text-sm);margin-bottom:4px;">
       <span style="font-family:var(--font-mono,monospace);font-weight:600;">${_inclEsc(r.code)}</span>
       <span style="background:var(--color-light);border:1px solid var(--color-border);
         border-radius:3px;height:14px;overflow:hidden;">
         <span style="display:block;height:100%;width:${pc}%;background:var(--color-amber);"></span>
       </span>
       <span style="text-align:right;font-family:var(--font-mono,monospace);font-size:var(--text-xs);">${r.n}</span>
-    </div>`;
+    </button>`;
   }).join('');
 
   return `<h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-xs);">
@@ -360,4 +382,142 @@ function _inclEsc(str) {
   return String(str == null ? '' : str)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ── Detail dialog ─────────────────────────────────────────────
+// Opens on a theme, an area or a hyper-focus card and lists the actual
+// records behind the number, so a figure on the dashboard can always be
+// traced to the evidence that produced it.
+
+function _inclOpenDetail(kind, id) {
+  if (!_inclData) return;
+  const host = document.getElementById('incl-dialog-host');
+  if (!host) return;
+
+  let title, subtitle, records;
+
+  if (kind === 'theme') {
+    const t = _inclData.themes.find(x => x.id === id);
+    const meta = (typeof LRA_THEME_INDEX !== 'undefined') ? LRA_THEME_INDEX[id] : null;
+    title    = meta ? meta.label : id;
+    subtitle = meta ? `${meta.categoryLabel} — ${meta.desc}` : '';
+    records  = t ? t.records.slice() : [];
+  } else {
+    title    = `Area ${id}`;
+    subtitle = 'Open and closed inclusion records recorded against this area.';
+    records  = _inclData.inScope.filter(a => a.areaCode === id);
+  }
+
+  // Open first, then most severe, then newest
+  const sevRank = { 'Areas for Immediate Improvement': 0, 'Areas to Strengthen': 1 };
+  records.sort((a, b) => {
+    const oa = a.status === 'closed' ? 1 : 0, ob = b.status === 'closed' ? 1 : 0;
+    if (oa !== ob) return oa - ob;
+    const sa = sevRank[a.severity] ?? 2, sb = sevRank[b.severity] ?? 2;
+    if (sa !== sb) return sa - sb;
+    return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+  });
+
+  host.innerHTML = `
+    <div class="modal-overlay" id="incl-overlay">
+      <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="incl-dlg-title">
+        <div class="modal__header">
+          <div>
+            <h2 class="modal__title" id="incl-dlg-title" tabindex="-1">${_inclEsc(title)}</h2>
+            ${subtitle ? `<p style="font-size:var(--text-sm);color:var(--color-muted);margin-top:4px;max-width:62ch;">${_inclEsc(subtitle)}</p>` : ''}
+          </div>
+          <button type="button" class="modal__close" id="incl-dlg-close" aria-label="Close details">×</button>
+        </div>
+        ${_inclDetailSummary(records)}
+        ${records.length
+          ? records.map(_inclRecordCard).join('')
+          : `<p style="font-size:var(--text-sm);color:var(--color-muted);">No records held against this yet.</p>`}
+      </div>
+    </div>`;
+
+  const overlay = document.getElementById('incl-overlay');
+  const closeBtn = document.getElementById('incl-dlg-close');
+  document.getElementById('incl-dlg-title').focus();
+
+  closeBtn.addEventListener('click', _inclCloseDetail);
+  overlay.addEventListener('click', e => { if (e.target === overlay) _inclCloseDetail(); });
+  document.addEventListener('keydown', _inclDialogKeys);
+}
+
+function _inclDialogKeys(ev) {
+  if (ev.key === 'Escape') { _inclCloseDetail(); return; }
+  if (ev.key !== 'Tab') return;
+  // Keep focus inside the dialog while it is open.
+  const dlg = document.querySelector('#incl-overlay .modal');
+  if (!dlg) return;
+  const f = dlg.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+  else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+}
+
+function _inclCloseDetail() {
+  const host = document.getElementById('incl-dialog-host');
+  if (host) host.innerHTML = '';
+  document.removeEventListener('keydown', _inclDialogKeys);
+  if (_inclLastTrigger && document.body.contains(_inclLastTrigger)) _inclLastTrigger.focus();
+  _inclLastTrigger = null;
+}
+
+function _inclDetailSummary(records) {
+  if (!records.length) return '';
+  const open      = records.filter(r => r.status !== 'closed').length;
+  const immediate = records.filter(r => r.severity === 'Areas for Immediate Improvement').length;
+  const areas     = new Set(records.map(r => r.areaCode).filter(Boolean)).size;
+  const cell = (v, l) => `<div style="text-align:center;padding:var(--space-sm);">
+      <div style="font-size:var(--text-xl);font-weight:bold;color:var(--color-navy);">${v}</div>
+      <div style="font-size:var(--text-xs);color:var(--color-muted);">${_inclEsc(l)}</div>
+    </div>`;
+  return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-sm);
+      background:var(--color-light);border-radius:var(--radius-md);margin-bottom:var(--space-lg);">
+    ${cell(records.length, 'records')}${cell(open, 'open')}
+    ${cell(immediate, 'immediate')}${cell(areas, areas === 1 ? 'area' : 'areas')}
+  </div>`;
+}
+
+function _inclRecordCard(r) {
+  const sevCols = {
+    'Areas for Immediate Improvement': ['var(--color-rose-lt)', 'var(--color-rose)'],
+    'Areas to Strengthen':             ['var(--color-amber-lt)', 'var(--color-amber)'],
+  };
+  const [bg, fg] = sevCols[r.severity] || ['var(--color-light)', 'var(--color-muted)'];
+  const closed = r.status === 'closed';
+  const srcLabel = (typeof AFI_SOURCE_LABEL !== 'undefined' && AFI_SOURCE_LABEL[r.source]) || r.source || 'Unknown source';
+  const inferred = r.sourceInferred ? ' (inferred)' : '';
+  const fmt = iso => {
+    if (!iso) return null;
+    const d = new Date(iso);
+    return isNaN(d) ? null : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  return `<article class="incl-rec" style="${closed ? 'opacity:.72;' : ''}">
+    <div style="display:flex;flex-wrap:wrap;gap:var(--space-sm);align-items:center;">
+      <span class="incl-badge" style="background:${bg};color:${fg};border-color:${fg};">
+        ${_inclEsc(r.severity || 'Unrated')}
+      </span>
+      <span class="incl-badge" style="background:var(--color-light);color:var(--color-slate);border-color:var(--color-border);">
+        ${_inclEsc(closed ? 'Closed' : (r.status || 'open'))}
+      </span>
+      ${r.areaCode ? `<span style="font-family:var(--font-mono,monospace);font-weight:600;font-size:var(--text-sm);">${_inclEsc(r.areaCode)}</span>` : ''}
+    </div>
+    <p style="font-size:var(--text-sm);margin-top:var(--space-sm);">
+      ${_inclEsc(r.description || r.lraThemeLabel || 'No description recorded.')}
+    </p>
+    ${r.digitalOpportunity ? `<p style="font-size:var(--text-sm);color:var(--color-teal);margin-top:6px;">
+      <strong>Digital opportunity:</strong> ${_inclEsc(r.digitalOpportunity)}</p>` : ''}
+    <div class="incl-rec__meta">
+      <span><strong>Source:</strong> ${_inclEsc(srcLabel)}${inferred}</span>
+      ${r.lraThemeLabel ? `<span><strong>Theme:</strong> ${_inclEsc(r.lraThemeLabel)}</span>` : ''}
+      ${fmt(r.createdAt) ? `<span><strong>Raised:</strong> ${fmt(r.createdAt)}</span>` : ''}
+      ${fmt(r.targetDate) ? `<span><strong>Target:</strong> ${fmt(r.targetDate)}</span>` : ''}
+      ${(r.linkedActions && r.linkedActions.length) ? `<span><strong>Actions:</strong> ${r.linkedActions.length}</span>` : ''}
+      ${(r.evidenceChain && r.evidenceChain.length) ? `<span><strong>Evidence items:</strong> ${r.evidenceChain.length}</span>` : ''}
+    </div>
+  </article>`;
 }
