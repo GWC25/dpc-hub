@@ -167,6 +167,7 @@ const MODULES = {
   notes:          { label: 'Notes',          icon: '✏',  init: () => initNotes() },
   staff:          { label: 'Staff',          icon: '👤', init: () => initStaff() },
   afis:           { label: 'Loops',          icon: '🔁', init: () => initAFIs() },
+  inclusion:      { label: 'Accessibility & Inclusion', icon: '♿', init: () => initInclusion() },
   devobs:         { label: 'Instructional Coaching', icon: '🔍', init: () => initDevObs() },
   learningwalk:   { label: 'Learning Walk',  icon: '🚶', init: () => initLearningWalk() },
   reflections:    { label: 'Reflections',    icon: '💭', init: () => initReflections() },
