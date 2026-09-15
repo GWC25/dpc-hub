@@ -1,8 +1,9 @@
 // Job A5 (09/09/26): AFIs generated here are stamped with their source.
-// DPC Hub · js/learningwalk.js · v2.0 · 28/08/2026
+// Session (15/09/26): overall digital RAG rating (1-5) + rationale added to the record.
+// DPC Hub · js/learningwalk.js · v2.1 · 15/09/2026
 // Learning Walk module — mirrors the MyWeston "Learning Review Activity" (LRA) form
 // so records can be exported to Word and transcribed into MyWeston/Hyper later.
-// Sections: LRA Details · Findings · Themes · Actions Moving Forwards · Sign Off.
+// Sections: LRA Details · Findings · Themes · Actions Moving Forwards · Digital RAG Rating · Sign Off.
 // "Refer for Instructional Coaching?" triggers the devobs escalation (sharedId link).
 // Actions Moving Forwards rows → AFI drafts (Areas to Strengthen); Positive Findings
 // tags → Strength AFIs. AFIs generated once, on first Submit and Complete.
@@ -48,6 +49,23 @@ const _LW_GUIDANCE = Object.freeze([
   'The use of technology to enhance learning',
   'Employability skill development',
 ]);
+
+// ── Digital RAG rating (Hub concept — not a MyWeston LRA field) ──
+// Scored 1-5 against RAG_LABELS in schema.js. Always optional: a walk saves and
+// completes without one. Score and word label are rendered together everywhere so
+// meaning never depends on colour alone (WCAG 2.2 AA § 1.4.1).
+function _lwRagOptions(selected) {
+  const opt = (value, text, checked) => `
+      <label style="display:flex;align-items:center;gap:var(--space-sm);font-size:var(--text-sm);color:var(--color-slate);cursor:pointer;min-height:44px;padding:0 var(--space-xs);">
+        <input type="radio" name="lw-rag" value="${value}" ${checked ? 'checked' : ''} style="width:18px;height:18px;flex:none;">
+        <span>${text}</span>
+      </label>`;
+  return [
+    opt('', 'Not rated', !selected),
+    ...[1, 2, 3, 4, 5].map(score =>
+      opt(score, `<strong>${score}</strong> — ${_lwEsc(RAG_LABELS[score])}`, selected === score)),
+  ].join('');
+}
 
 // ── Module state (reset on each modal open) ───────────────────
 let _lwState = null;
@@ -129,6 +147,7 @@ function _renderRecentLWs() {
           ${isDraft ? '<span class="badge badge--amber">Draft</span>' : '<span class="badge badge--green">Complete</span>'}
           ${afiCount > 0 ? `<span class="badge badge--teal">${afiCount} AFI${afiCount !== 1 ? 's' : ''}</span>` : ''}
           ${afdCount > 0 && afiCount === 0 ? `<span class="badge badge--muted">${afdCount} theme${afdCount !== 1 ? 's' : ''}</span>` : ''}
+          ${lw.ragRating ? `<span class="rag-badge" data-score="${lw.ragRating}">RAG ${lw.ragRating} — ${_lwEsc(RAG_LABELS[lw.ragRating])}</span>` : ''}
         </div>
         ${lw.summary ? `<p style="font-size:var(--text-xs);color:var(--color-muted);">${_lwEsc(lw.summary)}</p>` : ''}
       </div>
@@ -304,6 +323,18 @@ function openLearningWalkModal(record) {
           <button type="button" id="lw-action-add" class="btn btn--primary btn--sm" aria-label="Add action row">+</button>
         </div>
 
+        ${sectionBar('Digital RAG Rating')}
+        <fieldset style="border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-md);margin:0 0 var(--space-md);">
+          <legend style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);padding:0 var(--space-xs);">Overall rating for the digital practice seen in this walk (optional)</legend>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:var(--space-xs);">
+            ${_lwRagOptions(null)}
+          </div>
+        </fieldset>
+        <div class="form-group">
+          <label class="form-label" for="lw-rag-rationale">Rationale for this rating</label>
+          <textarea class="form-input" id="lw-rag-rationale" rows="3" style="resize:vertical;" placeholder="What did you see that led you to this rating?"></textarea>
+        </div>
+
         ${sectionBar('Sign Off')}
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md);">
           <label style="display:flex;align-items:center;gap:var(--space-sm);font-size:var(--text-sm);color:var(--color-slate);cursor:pointer;min-height:44px;">
@@ -381,6 +412,11 @@ function _lwPrefill(record) {
   set('lw-attendance', l.attendancePct);
   document.getElementById('lw-observations').value = l.observations || record.summary || '';
   document.getElementById('lw-refer').checked = !!l.referForCoaching;
+  if (record.ragRating) {
+    const ragEl = document.querySelector(`input[name="lw-rag"][value="${record.ragRating}"]`);
+    if (ragEl) ragEl.checked = true;
+  }
+  document.getElementById('lw-rag-rationale').value = record.ragRationale || '';
   if (record.areaCode) {
     const area = (window.DPC_DATA.areas.areas || []).find(a => a.areaCode === record.areaCode);
     if (area) document.getElementById('lw-dept').value = `${area.areaCode} — ${area.areaName}`;
@@ -695,6 +731,9 @@ function _lwSave(mode) {
   const refer = document.getElementById('lw-refer').checked;
   const observations = document.getElementById('lw-observations').value.trim();
   const date = val('lw-date') || new Date().toISOString().slice(0, 10);
+  const ragEl = document.querySelector('input[name="lw-rag"]:checked');
+  const ragRating = ragEl && ragEl.value ? Number(ragEl.value) : null;
+  const ragRationale = val('lw-rag-rationale');
 
   const lra = {
     academicYear: val('lw-acadyear'),
@@ -754,6 +793,8 @@ function _lwSave(mode) {
   activity.date = date;
   activity.areaCode = areaCode;
   activity.status = mode === 'complete' ? 'complete' : 'draft';
+  activity.ragRating = ragRating;
+  activity.ragRationale = ragRationale;
   activity.lra = lra;
   activity.lraThemeIds = allThemeIds;
   activity.hyperThemes = hyperThemes;
@@ -921,6 +962,9 @@ function _lwDownloadWord(areaCode, activityId) {
         P(themeList(l.areasForDevelopment)),
         heading('Actions Moving Forwards'),
         ...actionsTable,
+        heading('Digital RAG Rating'),
+        P(record.ragRating ? `${record.ragRating} — ${RAG_LABELS[record.ragRating]}` : 'Not rated'),
+        ...(record.ragRationale ? [P('Rationale:', { bold: true, after: 60 }), P(record.ragRationale)] : []),
         heading('Sign Off'),
         P(`Refer for Instructional Coaching? ${l.referForCoaching ? 'Yes' : 'No'}`),
       ],
