@@ -1,7 +1,24 @@
-// DPC Hub · js/devobs.js · v1.0 · July 2026
+// DPC Hub · js/devobs.js · v1.1 · 15/09/2026
+// Session (15/09/26): overall digital RAG rating (1-5) + rationale added to the record.
 // Instructional Coaching modal (internal name: devobs). Full LRA theme selection with heuristic
 // follow-up questions. Hyper themes prominent. AFI auto-draft review panel.
 // Dual-write to area activityLog[] and data-afi.json via saveArea() / saveAFI().
+
+// ── Digital RAG rating ──────────────────────────────
+// Scored 1-5 against RAG_LABELS in schema.js. Always optional. Score and word label
+// render together so meaning never depends on colour alone (WCAG 2.2 AA § 1.4.1).
+function _doRagOptions(selected) {
+  const opt = (value, text, checked) => `
+        <label style="display:flex;align-items:center;gap:var(--space-sm);font-size:var(--text-sm);color:var(--color-slate);cursor:pointer;min-height:44px;padding:0 var(--space-xs);">
+          <input type="radio" name="do-rag" value="${value}" ${checked ? 'checked' : ''} style="width:18px;height:18px;flex:none;">
+          <span>${text}</span>
+        </label>`;
+  return [
+    opt('', 'Not rated', !selected),
+    ...[1, 2, 3, 4, 5].map(score =>
+      opt(score, `<strong>${score}</strong> — ${_doEsc(RAG_LABELS[score])}`, selected === score)),
+  ].join('');
+}
 
 function initDevObs() {
   const main = document.getElementById('main-content');
@@ -117,6 +134,18 @@ function openDevObsModal(prefillData={}) {
             <option value="inclusion">Inclusion</option>
             <option value="innovation">Innovation</option>
           </select>
+        </div>
+
+        <!-- Digital RAG rating -->
+        <fieldset style="border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-md);margin:0 0 var(--space-md);">
+          <legend style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);padding:0 var(--space-xs);">Overall rating for digital practice in this session (optional)</legend>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:var(--space-xs);">
+            ${_doRagOptions(null)}
+          </div>
+        </fieldset>
+        <div class="form-group">
+          <label class="form-label form-label--optional" for="do-rag-rationale">Rationale for this rating</label>
+          <textarea class="form-textarea" id="do-rag-rationale" rows="3" placeholder="What did you see that led you to this rating?"></textarea>
         </div>
 
         <!-- Copy for Hyper -->
@@ -297,9 +326,13 @@ function _saveDevObs() {
   });
 
   // Store pending save data on window for AFI review panel
+  const ragEl = document.querySelector('input[name="do-rag"]:checked');
+
   window._devObsPending = { areaCode, staffName, date, hyperThemes, selectedThemes, sharedId, afiDrafts,
     notes: document.getElementById('do-notes').value.trim(),
-    pyramid: document.getElementById('do-pyramid').value || 'foundations' };
+    pyramid: document.getElementById('do-pyramid').value || 'foundations',
+    ragRating: ragEl && ragEl.value ? Number(ragEl.value) : null,
+    ragRationale: document.getElementById('do-rag-rationale')?.value.trim() || '' };
 
   // Show AFI review panel
   _showAFIReviewPanel(afiDrafts);
@@ -395,6 +428,8 @@ function _commitDevObs(confirmedAFIs) {
     lraThemeIds:     p.selectedThemes.map(t => t.id),
     hyperThemes:     p.hyperThemes,
     pyramidLevel:    p.pyramid,
+    ragRating:       p.ragRating || null,
+    ragRationale:    p.ragRationale || '',
     summary:         p.notes || `Instructional Coaching — ${p.areaCode}${p.staffName ? ' — ' + p.staffName : ''}`,
     afiIdsGenerated: confirmedAFIs.map(a => a.afiId),
     sharedId:        p.sharedId,
@@ -456,6 +491,7 @@ function _renderRecentDevObs() {
           <span style="font-size:var(--text-sm);font-weight:bold;color:var(--color-slate);">${_doEsc(d.areaCode)} — ${_doEsc(d.areaName||'')}</span>
           ${(d.hyperThemes||[]).map(h=>`<span style="font-size:10px;background:var(--color-teal-lt);color:var(--color-teal);padding:1px 8px;border-radius:999px;font-weight:bold;">${h}</span>`).join('')}
           ${d.afiIdsGenerated&&d.afiIdsGenerated.length>0?`<span style="font-size:10px;background:var(--color-amber-lt);color:var(--color-amber);padding:1px 8px;border-radius:999px;font-weight:bold;">${d.afiIdsGenerated.length} AFI${d.afiIdsGenerated.length!==1?'s':''}</span>`:''}
+          ${d.ragRating?`<span class="rag-badge" data-score="${d.ragRating}">RAG ${d.ragRating} — ${_doEsc(RAG_LABELS[d.ragRating])}</span>`:''}
         </div>
         <p style="font-size:var(--text-xs);color:var(--color-muted);">${_doEsc(d.summary||'')}</p>
       </div>
