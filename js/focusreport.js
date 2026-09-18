@@ -1,4 +1,8 @@
-// DPC Hub · js/focusreport.js · v1.0 · September 2026
+// DPC Hub · js/focusreport.js · v1.1 · September 2026
+// v1.1 — combined report across every active focus, which is what a
+// review conversation actually asks for. One focus at a time answers
+// "how is the task force going"; the combined report answers "what have
+// you done this term".
 // Builds the downloadable Current Focus report.
 //
 // Two rules shape everything here.
@@ -334,6 +338,214 @@ function buildFocusReportXlsx(model, sections) {
 
   return buildXlsx([
     { name: 'Summary',    rows: summary },
+    { name: 'Activity',   rows: activity },
+    { name: 'Milestones', rows: milestones },
+    { name: 'Report text', rows: prose },
+  ]);
+}
+
+
+// ── Combined report ─────────────────────────────────────────────
+// Across every focus rather than one at a time. Records linked to more
+// than one focus are counted once in the totals and shown against each
+// focus in its own section, so the headline figure is never inflated by
+// double counting.
+
+function buildCombinedReportModel(focuses, scope) {
+  const list = (focuses || []).filter(f => (f.status || 'active') !== 'complete' || (f.milestones || []).length);
+  const models = list.map(f => buildFocusReportModel(f, scope));
+
+  const seen = new Set();
+  const unique = [];
+  models.forEach(m => m.acts.forEach(a => {
+    if (seen.has(a.activityId)) return;
+    seen.add(a.activityId);
+    unique.push(a);
+  }));
+  unique.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+
+  const byType = {};
+  unique.forEach(a => {
+    const k = a.activityType || 'unknown';
+    if (!byType[k]) byType[k] = { type: k, label: typeof activityTypeLabel === 'function' ? activityTypeLabel(k) : k, count: 0, areas: new Set() };
+    byType[k].count++;
+    if (a.areaCode) byType[k].areas.add(a.areaCode);
+  });
+  const instruments = Object.values(byType).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+
+  const areasReached = Array.from(new Set(unique.map(a => a.areaCode).filter(Boolean))).sort();
+  const areaTotal = ((window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || []).length;
+  const denomAreas = scope && scope.areaCodes && scope.areaCodes.length ? scope.areaCodes.length : areaTotal;
+
+  const dates = unique.map(a => a.date).filter(Boolean).sort();
+  const period = { from: dates[0] || null, to: dates[dates.length - 1] || null };
+
+  const progress = models.reduce((acc, m) => {
+    ['total','complete','inProgress','atRisk','notStarted'].forEach(k => { acc[k] = (acc[k] || 0) + (m.progress[k] || 0); });
+    return acc;
+  }, {});
+
+  // Records linked to more than one focus. Worth naming in the report:
+  // the section totals will not sum to the headline, and a reader who
+  // notices that without explanation will assume an error.
+  const counts = {};
+  models.forEach(m => m.acts.forEach(a => { counts[a.activityId] = (counts[a.activityId] || 0) + 1; }));
+  const shared = Object.values(counts).filter(c => c > 1).length;
+
+  const figures = new Set();
+  models.forEach(m => m.figures.forEach(v => figures.add(v)));
+  [unique.length, areasReached.length, denomAreas, areaTotal, instruments.length, list.length, shared,
+   progress.total, progress.complete, progress.inProgress, progress.atRisk, progress.notStarted]
+    .forEach(n => { if (typeof n === 'number' && isFinite(n)) figures.add(String(n)); });
+  instruments.forEach(i => { figures.add(String(i.count)); figures.add(String(i.areas.size)); });
+
+  return {
+    models, focuses: list, acts: unique, instruments, areasReached, areaTotal, denomAreas,
+    period, progress, shared, figures,
+    scope, scopeLabel: models.length ? models[0].scopeLabel : 'all areas',
+    isScoped: models.some(m => m.isScoped),
+  };
+}
+
+function frCombinedDraftSections(model) {
+  const m = model;
+  const periodText = !m.period.from
+    ? 'the period to date'
+    : (m.period.from === m.period.to
+        ? _frFmt(m.period.from)
+        : `${_frFmt(m.period.from)} and ${_frFmt(m.period.to)}`);
+
+  let overview;
+  if (m.acts.length === 0) {
+    overview = `No activity has been linked to any of the ${m.focuses.length} ${_frPlural(m.focuses.length, 'focus', 'focuses')} yet.`;
+  } else {
+    overview = `${m.acts.length} ${_frPlural(m.acts.length, 'record was', 'records were')} logged across ${m.focuses.length} ${_frPlural(m.focuses.length, 'focus', 'focuses')} between ${periodText}, `
+      + `covering ${m.areasReached.length} of ${m.denomAreas} ${_frPlural(m.denomAreas, 'area')}`
+      + (m.isScoped ? ` in ${m.scopeLabel}` : '')
+      + `, through ${m.instruments.length} ${_frPlural(m.instruments.length, 'instrument')}.`;
+    if (m.shared > 0) {
+      overview += ` ${m.shared} ${_frPlural(m.shared, 'record serves', 'records serve')} more than one focus and ${m.shared === 1 ? 'is' : 'are'} counted once in this total, so the sections below sum to more than ${m.acts.length}.`;
+    }
+  }
+
+  const progress = m.progress.total === 0
+    ? 'No milestones have been set across these focuses.'
+    : `${m.progress.complete} of ${m.progress.total} milestones are complete`
+      + (m.progress.inProgress ? `, ${m.progress.inProgress} in progress` : '')
+      + (m.progress.atRisk ? `, ${m.progress.atRisk} at risk` : '')
+      + (m.progress.notStarted ? `, ${m.progress.notStarted} not started` : '') + '.';
+
+  return {
+    overview,
+    progress,
+    impact: 'Record what changed across these focuses, with the figure it changed from and the figure it changed to.',
+    next: 'Set out what happens next, with dates.',
+  };
+}
+
+function buildCombinedReportDocx(model, sections) {
+  const m = model;
+  const blocks = [];
+
+  blocks.push({ type: 'heading', level: 2, text: 'Overview' });
+  blocks.push({ type: 'para', text: sections.overview });
+
+  if (m.instruments.length) {
+    blocks.push({
+      type: 'table', caption: 'Activity by instrument, all focuses',
+      head: ['Instrument', 'Count', 'Areas', 'Quality Calendar window'],
+      rows: m.instruments.map(i => {
+        const stream = typeof ACTIVITY_TYPE_CALENDAR_STREAM !== 'undefined' ? ACTIVITY_TYPE_CALENDAR_STREAM[i.type] : null;
+        const win = stream && typeof getCalendarWindow === 'function' ? getCalendarWindow(stream) : null;
+        return [i.label, String(i.count), Array.from(i.areas).sort().join(', ') || 'Cross-college',
+                win ? describeCalendarWindow(win) : 'Not calendared'];
+      }),
+    });
+  }
+
+  blocks.push({ type: 'heading', level: 2, text: 'Progress' });
+  blocks.push({ type: 'para', text: sections.progress });
+  if (m.focuses.length) {
+    blocks.push({
+      type: 'table', caption: 'Focuses',
+      head: ['Focus', 'Records', 'Areas', 'Milestones complete', 'At risk'],
+      rows: m.models.map(x => [
+        x.focus.title, String(x.acts.length), String(x.areasReached.length),
+        `${x.progress.complete} of ${x.progress.total}`, String(x.progress.atRisk || 0),
+      ]),
+    });
+  }
+
+  m.models.forEach(x => {
+    const s = (x.focus.reportDraft && x.focus.reportDraft.sections) || {};
+    const d = frDraftSections(x);
+    blocks.push({ type: 'heading', level: 2, text: x.focus.title });
+    blocks.push({ type: 'para', text: s.activity || d.activity });
+    blocks.push({ type: 'para', text: s.progress || d.progress });
+    if ((s.impact || x.focus.impact)) blocks.push({ type: 'para', text: s.impact || x.focus.impact });
+  });
+
+  blocks.push({ type: 'heading', level: 2, text: 'Impact' });
+  blocks.push({ type: 'para', text: sections.impact });
+  blocks.push({ type: 'heading', level: 2, text: 'Next period' });
+  blocks.push({ type: 'para', text: sections.next });
+
+  const periodText = m.period.from ? `${_frFmt(m.period.from)} to ${_frFmt(m.period.to)}` : 'to date';
+  return buildDocx({
+    title: 'Digital Pedagogy Coach: Current Focus report',
+    subtitle: `Quality Team. Period ${periodText}. Scope ${m.scopeLabel}. Produced ${_frFmt(todayISO())}. `
+            + `Source: DPC Hub, ${m.acts.length} logged ${_frPlural(m.acts.length, 'record')} across ${m.focuses.length} ${_frPlural(m.focuses.length, 'focus', 'focuses')}.`,
+    blocks,
+  });
+}
+
+function buildCombinedReportXlsx(model, sections) {
+  const m = model;
+  const focusTitles = (activityId) => m.models
+    .filter(x => x.acts.some(a => a.activityId === activityId))
+    .map(x => x.focus.title).join('; ');
+
+  const summary = [['Measure', 'Value', 'Denominator', 'Source']];
+  summary.push(['Focuses', m.focuses.length, '', 'Current Focus']);
+  summary.push(['Linked records, deduplicated', m.acts.length, '', 'DPC Hub activity log']);
+  summary.push(['Records serving more than one focus', m.shared, m.acts.length, 'DPC Hub activity log']);
+  summary.push(['Areas reached', m.areasReached.length, m.denomAreas, 'Distinct areas in linked records']);
+  summary.push(['Instruments used', m.instruments.length, '', 'Distinct activity types']);
+  summary.push(['Milestones complete', m.progress.complete, m.progress.total, 'Action plans']);
+  summary.push(['Scope', m.scopeLabel, '', m.isScoped ? 'Caseload or single area' : 'All areas']);
+  summary.push(['Period from', m.period.from || '', '', 'Earliest linked record']);
+  summary.push(['Period to', m.period.to || '', '', 'Latest linked record']);
+  summary.push(['Produced', todayISO(), '', 'DPC Hub']);
+
+  const focuses = [['Focus', 'Status', 'Started', 'Records', 'Areas', 'Milestones', 'Complete', 'At risk']];
+  m.models.forEach(x => focuses.push([
+    x.focus.title, x.focus.status || 'active', x.focus.startDate || '',
+    x.acts.length, x.areasReached.length, x.progress.total, x.progress.complete, x.progress.atRisk || 0,
+  ]));
+
+  const activity = [['Date', 'Area', 'Instrument', 'Summary', 'Focuses']];
+  m.acts.forEach(a => activity.push([
+    a.date || '', a.areaCode || 'Cross-college',
+    typeof activityTypeLabel === 'function' ? activityTypeLabel(a.activityType) : a.activityType,
+    a.summary || '', focusTitles(a.activityId),
+  ]));
+
+  const milestones = [['Focus', 'Milestone', 'Due', 'State', 'Criteria met', 'Criteria total', 'Tasks done', 'Tasks total']];
+  m.models.forEach(x => (x.milestones || []).forEach(ms => milestones.push([
+    x.focus.title, ms.title, ms.dueDate || '',
+    (typeof _CF_STATE_LABEL !== 'undefined' && _CF_STATE_LABEL[ms.state]) || ms.state,
+    (ms.successCriteria || []).filter(c => c.done).length, (ms.successCriteria || []).length,
+    (ms.tasks || []).filter(t => t.done).length, (ms.tasks || []).length,
+  ])));
+
+  const prose = [['Section', 'Text']];
+  ['overview', 'progress', 'impact', 'next'].forEach(k => {
+    prose.push([k.charAt(0).toUpperCase() + k.slice(1), sections[k] || '']);
+  });
+
+  return buildXlsx([
+    { name: 'Summary',    rows: summary },
+    { name: 'Focuses',    rows: focuses },
     { name: 'Activity',   rows: activity },
     { name: 'Milestones', rows: milestones },
     { name: 'Report text', rows: prose },
