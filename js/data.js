@@ -1968,6 +1968,38 @@ function activityTypeLabel(type) {
   return ACTIVITY_TYPE_LABELS[type] || type || 'Activity';
 }
 
+// Written out rather than derived: a naive plural rule produces
+// "CPD Delivereds", and this text goes into documents other people read.
+const ACTIVITY_TYPE_LABELS_PLURAL = Object.freeze({
+  'learning-walk':        'Learning Walks',
+  'devobs':               'Instructional Coaching sessions',
+  'work-review':          'Work Reviews',
+  'coaching':             '1:1 Coaching sessions',
+  'teach-meet':           'Teach Meets',
+  'cpd-delivered':        'CPD sessions delivered',
+  'hoa-meeting':          'HoA meetings',
+  'digital-lead-meeting': 'Digital Lead meetings',
+  'tlam-meeting':         'TLAM meetings',
+  'meeting':              'other meetings',
+  'health-check-visit':   'Health Check visits',
+  'referral':             'referrals',
+  'resource-created':     'resources created',
+  'communication':        'communications',
+  'ppr':                  'Programme Performance Reviews',
+  'cqrp':                 'Curriculum Quality Review Panels',
+  'qra':                  'Quality Review Activities',
+  'peer-review':          'Peer Reviews',
+  'self-review':          'Self-Reviews',
+  'qip-review':           'Quality Improvement Plan Reviews',
+  'sar-contribution':     'Self-Assessment Report contributions',
+  'securing-improvement': 'Securing Improvement activities',
+});
+
+function activityTypeLabelPlural(type, n) {
+  if (n === 1) return activityTypeLabel(type);
+  return ACTIVITY_TYPE_LABELS_PLURAL[type] || activityTypeLabel(type);
+}
+
 // Every activity the Hub holds, from both stores, each a shallow copy
 // with areaName attached so callers can render without a second lookup.
 // Cross-college entries carry areaCode '' and areaName 'Cross-college'.
