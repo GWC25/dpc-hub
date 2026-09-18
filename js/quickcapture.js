@@ -1,4 +1,8 @@
-// DPC Hub · js/quickcapture.js · v1.0 · July 2026
+// DPC Hub · js/quickcapture.js · v1.1 · September 2026
+// v1.1 — "Link to" panel: an activity can be linked to one or more
+// Current Focus records, a Digital Lead, and a Health Check review.
+// Links are stored on the activity only (activity.links[]); the reverse
+// view is derived on read via getLinkedActivities() in data.js.
 // Quick Capture module. Floating FAB opens a modal for fast activity logging.
 // Logs to area activityLog[] via saveArea(). Called from app.js initQuickCapture().
 
@@ -135,6 +139,40 @@ function initQuickCapture() {
           <input class="form-input" type="text" id="qc-qip" name="qc-qip" placeholder="e.g. Q3.2">
         </div>
 
+        <!-- Link to (v1.1) -->
+        <div class="form-group">
+          <button type="button" id="qc-link-toggle" style="background:none;border:none;cursor:pointer;color:var(--color-teal);font-size:var(--text-sm);font-weight:var(--font-bold);padding:0;display:flex;align-items:center;gap:var(--space-xs);min-height:44px;" aria-expanded="false" aria-controls="qc-link-panel">
+            <span id="qc-link-arrow" aria-hidden="true">&#9654;</span> Link to (optional)
+          </button>
+          <p id="qc-link-summary" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:2px;"></p>
+          <p id="qc-link-status" role="status" aria-live="polite" class="sr-only"></p>
+
+          <div id="qc-link-panel" style="display:none;margin-top:var(--space-md);">
+
+            <fieldset style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+              <legend style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);padding:0 var(--space-xs);">Current Focus</legend>
+              <div id="qc-link-focus-list" style="display:flex;flex-direction:column;gap:var(--space-xs);margin-top:var(--space-xs);"></div>
+            </fieldset>
+
+            <div class="form-group">
+              <label class="form-label form-label--optional" for="qc-link-dl">Digital Lead</label>
+              <select class="form-select" id="qc-link-dl" aria-describedby="qc-link-dl-hint">
+                <option value="">&mdash; None &mdash;</option>
+              </select>
+              <p id="qc-link-dl-hint" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;">Selected automatically for a Digital Lead Meeting once an area is chosen.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label form-label--optional" for="qc-link-hc">Health Check review</label>
+              <select class="form-select" id="qc-link-hc" aria-describedby="qc-link-hc-hint">
+                <option value="">&mdash; None &mdash;</option>
+              </select>
+              <p id="qc-link-hc-hint" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;">Reviews are held against a named staff member. Linking one will show that name in this activity record.</p>
+            </div>
+
+          </div>
+        </div>
+
         <p id="qc-error" role="alert" style="font-size:var(--text-sm);color:var(--color-red);display:none;margin-bottom:var(--space-md);"></p>
 
         <div class="btn-row">
@@ -190,6 +228,18 @@ function openQuickCapture() {
   document.getElementById('qc-lra-toggle').setAttribute('aria-expanded','false');
   document.getElementById('qc-lra-arrow').textContent = '▶';
 
+  // Reset + repopulate the Link to panel. Clearing the two selects first
+  // matters: repopulating restores a still-valid previous value, which
+  // would silently carry a link over from the last capture.
+  const dlSel = document.getElementById('qc-link-dl');
+  const hcSel = document.getElementById('qc-link-hc');
+  if (dlSel) dlSel.value = '';
+  if (hcSel) hcSel.value = '';
+  const linkStatus = document.getElementById('qc-link-status');
+  if (linkStatus) linkStatus.textContent = '';
+  _qcSetLinkPanel(false);
+  _qcPopulateLinkPickers();
+
   modal.style.display = 'flex';
   document.getElementById('qc-type').focus();
 }
@@ -236,6 +286,21 @@ function _wireQCEvents() {
       }
     });
   });
+
+  // Link to toggle
+  document.getElementById('qc-link-toggle')?.addEventListener('click', () => {
+    const panel = document.getElementById('qc-link-panel');
+    _qcSetLinkPanel(panel.style.display === 'none');
+  });
+
+  // Repopulate the area-dependent pickers whenever the area changes
+  document.getElementById('qc-area')?.addEventListener('change', () => {
+    _qcPopulateLinkPickers();
+    _qcApplyTypeDefaults();
+  });
+
+  // Activity type drives sensible link defaults
+  document.getElementById('qc-type')?.addEventListener('change', _qcApplyTypeDefaults);
 
   // ESC
   document.addEventListener('keydown', function qcEsc(e) {
@@ -293,6 +358,7 @@ function _saveQC() {
     summary:      summary || `${type} — ${areaCode}`,
     afiIdsGenerated: [],
     sharedId:     null,
+    links:        _qcGatherLinks(),
     qipRef:       document.getElementById('qc-qip').value.trim() || null,
     createdAt:    nowISO(),
   };
@@ -327,7 +393,10 @@ function _saveQC() {
 
   // Show confirmation toast
   if (typeof UI !== 'undefined' && UI.showToast) {
-    UI.showToast('success', 'Activity logged: ' + type + ' — ' + areaCode + (afiDrafts.length > 0 ? '. ' + afiDrafts.length + ' AFI' + (afiDrafts.length !== 1 ? 's' : '') + ' created.' : ''));
+    const linkCount = (activity.links || []).length;
+    UI.showToast('success', 'Activity logged: ' + type + ' — ' + areaCode
+      + (afiDrafts.length > 0 ? '. ' + afiDrafts.length + ' AFI' + (afiDrafts.length !== 1 ? 's' : '') + ' created.' : '')
+      + (linkCount > 0 ? ' ' + linkCount + ' link' + (linkCount !== 1 ? 's' : '') + ' added.' : ''));
   }
 
   // Refresh current view if we're on areas
@@ -353,6 +422,160 @@ function _populateQCAreaDropdown() {
     opt.textContent = `${area.areaCode} — ${area.areaName}`;
     sel.appendChild(opt);
   });
+}
+
+// ── Link to panel (v1.1) ─────────────────────────────────────────
+
+function _qcSetLinkPanel(open) {
+  const panel = document.getElementById('qc-link-panel');
+  const btn   = document.getElementById('qc-link-toggle');
+  const arrow = document.getElementById('qc-link-arrow');
+  if (!panel || !btn) return;
+  panel.style.display = open ? 'block' : 'none';
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (arrow) arrow.textContent = open ? '\u25bc' : '\u25b6';
+}
+
+// Populates the three pickers. Current Focus is cross-college so it is
+// never filtered by area; Digital Lead and Health Check are both
+// area-scoped, so both are rebuilt whenever the area changes.
+function _qcPopulateLinkPickers() {
+  const areaCode = document.getElementById('qc-area')?.value || '';
+  _qcPopulateFocusList();
+  _qcPopulateDLSelect(areaCode);
+  _qcPopulateHCSelect(areaCode);
+  _qcUpdateLinkSummary();
+}
+
+function _qcPopulateFocusList() {
+  const wrap = document.getElementById('qc-link-focus-list');
+  if (!wrap) return;
+  const focuses = ((window.DPC_DATA.currentFocus && window.DPC_DATA.currentFocus.focuses) || [])
+    .filter(f => (f.status || 'active') === 'active')
+    .sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+
+  if (focuses.length === 0) {
+    wrap.innerHTML = '<p style="font-size:var(--text-xs);color:var(--color-muted);">No active focus areas. Create one in Current Focus.</p>';
+    return;
+  }
+
+  wrap.innerHTML = focuses.map(f => `
+    <label style="display:flex;align-items:center;gap:var(--space-xs);cursor:pointer;margin-bottom:0;min-height:32px;">
+      <input type="checkbox" name="qc-link-focus" value="${_escHtml(f.focusId)}" id="qc-link-focus-${_escHtml(f.focusId)}" style="width:16px;height:16px;accent-color:var(--color-teal);flex-shrink:0;">
+      <span style="font-size:var(--text-sm);color:var(--color-navy);">${_escHtml(f.title)}</span>
+    </label>`).join('');
+
+  wrap.querySelectorAll('input[name="qc-link-focus"]').forEach(cb => {
+    cb.addEventListener('change', _qcUpdateLinkSummary);
+  });
+}
+
+function _qcPopulateDLSelect(areaCode) {
+  const sel = document.getElementById('qc-link-dl');
+  if (!sel) return;
+  const previous = sel.value;
+  const all = (window.DPC_DATA.digitalLeads && window.DPC_DATA.digitalLeads.digitalLeads) || [];
+  const forArea = all.filter(d => d.areaCode === areaCode);
+  const others  = all.filter(d => d.areaCode !== areaCode)
+                     .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+  let html = '<option value="">&mdash; None &mdash;</option>';
+  if (forArea.length > 0) {
+    html += `<optgroup label="${_escHtml(areaCode)}">`
+         + forArea.map(d => `<option value="${_escHtml(d.dlId)}">${_escHtml(d.name)}</option>`).join('')
+         + '</optgroup>';
+  }
+  if (others.length > 0) {
+    html += '<optgroup label="Other areas">'
+         + others.map(d => `<option value="${_escHtml(d.dlId)}">${_escHtml(d.name)} (${_escHtml(d.areaCode || '')})</option>`).join('')
+         + '</optgroup>';
+  }
+  sel.innerHTML = html;
+  if (previous && sel.querySelector(`option[value="${CSS.escape(previous)}"]`)) sel.value = previous;
+  sel.removeEventListener('change', _qcUpdateLinkSummary);
+  sel.addEventListener('change', _qcUpdateLinkSummary);
+}
+
+function _qcPopulateHCSelect(areaCode) {
+  const sel = document.getElementById('qc-link-hc');
+  if (!sel) return;
+  const previous = sel.value;
+  const reviews = ((window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.reviews) || [])
+    .filter(r => r.areaCode === areaCode)
+    .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+
+  const staffList = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  const cycleLabel = (id) => (typeof _hcCycleLabel === 'function' ? _hcCycleLabel(id) : (id || ''));
+
+  let html = '<option value="">&mdash; None &mdash;</option>';
+  html += reviews.map(r => {
+    const staff = staffList.find(s => s.staffId === r.staffId);
+    const bits = [staff ? staff.name : 'Unnamed staff member', cycleLabel(r.cycleId), r.date || ''].filter(Boolean);
+    return `<option value="${_escHtml(r.reviewId)}">${_escHtml(bits.join(' \u2014 '))}</option>`;
+  }).join('');
+
+  sel.innerHTML = html;
+  if (previous && sel.querySelector(`option[value="${CSS.escape(previous)}"]`)) sel.value = previous;
+  sel.removeEventListener('change', _qcUpdateLinkSummary);
+  sel.addEventListener('change', _qcUpdateLinkSummary);
+
+  const status = document.getElementById('qc-link-status');
+  if (status && areaCode) {
+    status.textContent = reviews.length === 0
+      ? `No Health Check reviews recorded for ${areaCode}.`
+      : `${reviews.length} Health Check review${reviews.length !== 1 ? 's' : ''} available for ${areaCode}.`;
+  }
+}
+
+// Type-driven defaults: a Digital Lead Meeting should already point at
+// that area's Digital Lead, and a Health Check Visit should open the
+// panel so the review is not missed.
+function _qcApplyTypeDefaults() {
+  const type     = document.getElementById('qc-type')?.value || '';
+  const areaCode = document.getElementById('qc-area')?.value || '';
+  const dlSel    = document.getElementById('qc-link-dl');
+
+  if (type === 'digital-lead-meeting' && dlSel && !dlSel.value && areaCode) {
+    const all = (window.DPC_DATA.digitalLeads && window.DPC_DATA.digitalLeads.digitalLeads) || [];
+    const dl  = all.find(d => d.areaCode === areaCode);
+    if (dl) dlSel.value = dl.dlId;
+  }
+
+  if (type === 'digital-lead-meeting' || type === 'health-check-visit') _qcSetLinkPanel(true);
+  _qcUpdateLinkSummary();
+}
+
+function _qcUpdateLinkSummary() {
+  const el = document.getElementById('qc-link-summary');
+  if (!el) return;
+  const links = _qcGatherLinks();
+  if (links.length === 0) { el.textContent = ''; return; }
+  const counts = {
+    focus: links.filter(l => l.type === 'focus').length,
+    dl:    links.filter(l => l.type === 'digital-lead').length,
+    hc:    links.filter(l => l.type === 'healthcheck').length,
+  };
+  const parts = [];
+  if (counts.focus) parts.push(`${counts.focus} focus area${counts.focus !== 1 ? 's' : ''}`);
+  if (counts.dl)    parts.push('1 Digital Lead');
+  if (counts.hc)    parts.push('1 Health Check review');
+  el.textContent = 'Linked to: ' + parts.join(', ');
+}
+
+function _qcGatherLinks() {
+  const links = [];
+
+  document.querySelectorAll('input[name="qc-link-focus"]:checked').forEach(cb => {
+    links.push({ type: 'focus', id: cb.value });
+  });
+
+  const dlId = document.getElementById('qc-link-dl')?.value;
+  if (dlId) links.push({ type: 'digital-lead', id: dlId });
+
+  const hcId = document.getElementById('qc-link-hc')?.value;
+  if (hcId) links.push({ type: 'healthcheck', id: hcId });
+
+  return links;
 }
 
 function _escHtml(str) {
