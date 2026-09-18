@@ -1,4 +1,8 @@
-// DPC Hub · js/quickcapture.js · v1.1 · September 2026
+// DPC Hub · js/quickcapture.js · v1.2 · September 2026
+// v1.2 — Area is no longer required. An activity can be logged against a
+// Current Focus, Digital Lead or Health Check review instead, and is then
+// held in the cross-college store rather than an area log. The rule is
+// "an area or at least one link", so nothing can be saved into nowhere.
 // v1.1 — "Link to" panel: an activity can be linked to one or more
 // Current Focus records, a Digital Lead, and a Health Check review.
 // Links are stored on the activity only (activity.links[]); the reverse
@@ -55,10 +59,11 @@ function initQuickCapture() {
 
         <!-- Area -->
         <div class="form-group">
-          <label class="form-label" for="qc-area">Area</label>
-          <select class="form-select" id="qc-area" name="qc-area" aria-required="true">
-            <option value="">— Select area —</option>
+          <label class="form-label form-label--optional" for="qc-area">Area</label>
+          <select class="form-select" id="qc-area" name="qc-area" aria-describedby="qc-area-hint">
+            <option value="">Cross-college / no specific area</option>
           </select>
+          <p id="qc-area-hint" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;">Leave this as cross-college for work belonging to a focus, a Digital Lead or a Health Check review rather than one curriculum area. Link it below instead.</p>
         </div>
 
         <!-- Date -->
@@ -94,6 +99,7 @@ function initQuickCapture() {
                   </div>
                 </div>`).join('')}
             </div>
+            <p id="qc-hyper-noarea" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-sm);display:none;">Themes will be recorded on this activity, but AFIs are held against a curriculum area, so none will be raised while this is cross-college.</p>
           </fieldset>
         </div>
 
@@ -324,8 +330,18 @@ function _saveQC() {
   const summary  = document.getElementById('qc-summary').value.trim();
   const errEl    = document.getElementById('qc-error');
 
-  if (!areaCode) { _showQCError('Please select an area.'); document.getElementById('qc-area').focus(); return; }
-  if (!date)     { _showQCError('Please enter a date.'); document.getElementById('qc-date').focus(); return; }
+  if (!date) { _showQCError('Please enter a date.'); document.getElementById('qc-date').focus(); return; }
+
+  // An activity needs somewhere to live. With no area it must be linked to
+  // a focus, a Digital Lead or a Health Check review, or it would save into
+  // nowhere and never appear again.
+  const links = _qcGatherLinks();
+  if (!areaCode && links.length === 0) {
+    _showQCError('Choose an area, or link this to a Current Focus, Digital Lead or Health Check review. Without one of those it would not show up anywhere in the Hub.');
+    _qcSetLinkPanel(true);
+    document.getElementById('qc-link-toggle').focus();
+    return;
+  }
 
   // Collect Hyper themes + severity + generate AFI drafts
   var hyperThemes = [];
@@ -335,7 +351,9 @@ function _saveQC() {
     if (cb && cb.checked) {
       hyperThemes.push(f.id);
       var sevEl = document.querySelector('input[name="qc-sev-' + f.id + '"]:checked');
-      if (sevEl && typeof draftAFI === 'function') {
+      // AFIs are held against a curriculum area, so a cross-college
+      // capture records the theme but raises no AFI.
+      if (areaCode && sevEl && typeof draftAFI === 'function') {
         var draft = draftAFI(f.id, sevEl.value, areaCode);
         if (draft) afiDrafts.push(draft);
       }
@@ -355,24 +373,30 @@ function _saveQC() {
     lraThemeIds,
     hyperThemes,
     pyramidLevel: document.getElementById('qc-pyramid').value || 'foundations',
-    summary:      summary || `${type} — ${areaCode}`,
+    summary:      summary || `${type} — ${areaCode || 'Cross-college'}`,
     afiIdsGenerated: [],
     sharedId:     null,
-    links:        _qcGatherLinks(),
+    links,
     qipRef:       document.getElementById('qc-qip').value.trim() || null,
     createdAt:    nowISO(),
   };
 
-  // Write to area record
-  const area = _getArea(areaCode);
-  if (!area) { _showQCError('Area not found — please try again.'); return; }
+  // Write. saveActivity() routes to the area log when there is an area,
+  // and to the cross-college store when there is not.
+  const area = areaCode ? _getArea(areaCode) : null;
+  if (areaCode && !area) { _showQCError('Area not found — please try again.'); return; }
 
-  if (!area.activityLog) area.activityLog = [];
-  area.activityLog.push(activity);
-  if (!area.afiRefs) area.afiRefs = [];
+  if (typeof saveActivity === 'function') {
+    saveActivity(activity);
+  } else {
+    if (!area) { _showQCError('Could not save — activity store unavailable.'); return; }
+    if (!area.activityLog) area.activityLog = [];
+    area.activityLog.push(activity);
+  }
 
   // Save any AFI drafts generated from Hyper severity selections
-  if (afiDrafts.length > 0 && typeof saveAFI === 'function') {
+  if (afiDrafts.length > 0 && area && typeof saveAFI === 'function') {
+    if (!area.afiRefs) area.afiRefs = [];
     var allAFIs = window.DPC_DATA.afi.afis || [];
     afiDrafts.forEach(function(draft) {
       draft.parentObservationId = activity.activityId;
@@ -386,15 +410,14 @@ function _saveQC() {
     saveAFI(afiDrafts[0]);
   }
 
-  area.lastUpdated = nowISO();
-  saveArea(area);
+  if (area) { area.lastUpdated = nowISO(); saveArea(area); }
 
   _closeQC();
 
   // Show confirmation toast
   if (typeof UI !== 'undefined' && UI.showToast) {
     const linkCount = (activity.links || []).length;
-    UI.showToast('success', 'Activity logged: ' + type + ' — ' + areaCode
+    UI.showToast('success', 'Activity logged: ' + type + ' — ' + (areaCode || 'cross-college')
       + (afiDrafts.length > 0 ? '. ' + afiDrafts.length + ' AFI' + (afiDrafts.length !== 1 ? 's' : '') + ' created.' : '')
       + (linkCount > 0 ? ' ' + linkCount + ' link' + (linkCount !== 1 ? 's' : '') + ' added.' : ''));
   }
@@ -413,7 +436,7 @@ function _showQCError(msg) {
 function _populateQCAreaDropdown() {
   const sel = document.getElementById('qc-area');
   if (!sel) return;
-  // Clear existing options beyond first
+  // Clear existing options beyond the cross-college choice
   while (sel.options.length > 1) sel.remove(1);
   const areas = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
   areas.sort((a,b) => a.areaName.localeCompare(b.areaName)).forEach(area => {
@@ -441,6 +464,8 @@ function _qcSetLinkPanel(open) {
 // area-scoped, so both are rebuilt whenever the area changes.
 function _qcPopulateLinkPickers() {
   const areaCode = document.getElementById('qc-area')?.value || '';
+  const noAreaNote = document.getElementById('qc-hyper-noarea');
+  if (noAreaNote) noAreaNote.style.display = areaCode ? 'none' : 'block';
   _qcPopulateFocusList();
   _qcPopulateDLSelect(areaCode);
   _qcPopulateHCSelect(areaCode);
@@ -500,8 +525,10 @@ function _qcPopulateHCSelect(areaCode) {
   const sel = document.getElementById('qc-link-hc');
   if (!sel) return;
   const previous = sel.value;
+  // With no area chosen the picker is not narrowed — all reviews are
+  // offered, each labelled with its area code.
   const reviews = ((window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.reviews) || [])
-    .filter(r => r.areaCode === areaCode)
+    .filter(r => !areaCode || r.areaCode === areaCode)
     .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
 
   const staffList = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
@@ -510,7 +537,12 @@ function _qcPopulateHCSelect(areaCode) {
   let html = '<option value="">&mdash; None &mdash;</option>';
   html += reviews.map(r => {
     const staff = staffList.find(s => s.staffId === r.staffId);
-    const bits = [staff ? staff.name : 'Unnamed staff member', cycleLabel(r.cycleId), r.date || ''].filter(Boolean);
+    const bits = [
+      staff ? staff.name : 'Unnamed staff member',
+      areaCode ? '' : (r.areaCode || ''),
+      cycleLabel(r.cycleId),
+      r.date || '',
+    ].filter(Boolean);
     return `<option value="${_escHtml(r.reviewId)}">${_escHtml(bits.join(' \u2014 '))}</option>`;
   }).join('');
 
@@ -520,10 +552,11 @@ function _qcPopulateHCSelect(areaCode) {
   sel.addEventListener('change', _qcUpdateLinkSummary);
 
   const status = document.getElementById('qc-link-status');
-  if (status && areaCode) {
+  if (status) {
+    const scope = areaCode ? ` for ${areaCode}` : ' across the college';
     status.textContent = reviews.length === 0
-      ? `No Health Check reviews recorded for ${areaCode}.`
-      : `${reviews.length} Health Check review${reviews.length !== 1 ? 's' : ''} available for ${areaCode}.`;
+      ? `No Health Check reviews recorded${scope}.`
+      : `${reviews.length} Health Check review${reviews.length !== 1 ? 's' : ''} available${scope}.`;
   }
 }
 
