@@ -488,6 +488,7 @@ const DEFAULT_DATA = Object.freeze({
   'data-resource-library.json': { entries: [], shares: [] },
   'data-health-checks.json': { reviews: [] },
   'data-action-plans.json': { plans: [] },
+  'data-activities.json':   { activities: [] },
 });
 
 // ── Helper: get LRA theme by ID ───────────────────────────────

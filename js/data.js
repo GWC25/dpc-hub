@@ -154,6 +154,11 @@ window.DPC_DATA = {
     { id: 'student-services', name: 'Student Services' },
   ] },
   aiRuns:        { runs: [] },
+  // Cross-college activities (Session 66): Quick Capture entries that
+  // belong to a focus, a Digital Lead or a Health Check review rather
+  // than to one curriculum area. Area-bound activities stay in
+  // area.activityLog[] exactly as before.
+  activities:    { activities: [] },
 };
 
 // Dirty tracking: which files have unsaved changes
@@ -396,6 +401,11 @@ async function loadOptionalFiles() {
       if (window.DPCProvenance) {
         window.DPCProvenance.record(filename, window.DPCProvenance.SOURCE.EMPTY, defaultVal, null);
       }
+      // data-activities.json is created by the first cross-college Quick
+      // Capture, so "missing" is the normal starting state rather than a
+      // data-integrity problem. Mark it dirty so the next auto-save
+      // writes it, and do not raise a banner for it.
+      if (filename === 'data-activities.json') { _dirty.add(filename); continue; }
       _pendingBanners.push({
         type:      'amber',
         message:   `${filename} not found — this module will start empty. Any figure drawn from it will read zero.`,
@@ -1940,21 +1950,57 @@ function activityTypeLabel(type) {
   return ACTIVITY_TYPE_LABELS[type] || type || 'Activity';
 }
 
-// Every logged activity carrying a link of this type and id, newest
-// first. Each entry is a shallow copy with areaName attached so callers
-// can render without a second lookup.
-function getLinkedActivities(type, id) {
-  if (!type || !id) return [];
-  const areas = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
+// Every activity the Hub holds, from both stores, each a shallow copy
+// with areaName attached so callers can render without a second lookup.
+// Cross-college entries carry areaCode '' and areaName 'Cross-college'.
+function getAllActivities() {
   const out = [];
+  const areas = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
   areas.forEach(area => {
     (area.activityLog || []).forEach(a => {
-      if (Array.isArray(a.links) && a.links.some(l => l && l.type === type && l.id === id)) {
-        out.push({ ...a, areaCode: a.areaCode || area.areaCode, areaName: area.areaName || '' });
-      }
+      out.push({ ...a, areaCode: a.areaCode || area.areaCode, areaName: area.areaName || '' });
     });
   });
-  return out.sort((x, y) => String(y.date || '').localeCompare(String(x.date || '')));
+  const cross = (window.DPC_DATA.activities && window.DPC_DATA.activities.activities) || [];
+  cross.forEach(a => {
+    out.push({ ...a, areaCode: a.areaCode || '', areaName: 'Cross-college' });
+  });
+  return out;
+}
+
+// Every logged activity carrying a link of this type and id, newest
+// first. Scans area logs and the cross-college store, so an activity
+// logged with no area still surfaces on whatever it was linked to.
+function getLinkedActivities(type, id) {
+  if (!type || !id) return [];
+  return getAllActivities()
+    .filter(a => Array.isArray(a.links) && a.links.some(l => l && l.type === type && l.id === id))
+    .sort((x, y) => String(y.date || '').localeCompare(String(x.date || '')));
+}
+
+// Single write path for a Quick Capture entry. An activity with an area
+// goes into that area's log as before; one without goes to the
+// cross-college store. Returns the store it was written to.
+function saveActivity(activity) {
+  if (activity.areaCode) {
+    const areas = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
+    const area  = areas.find(a => a.areaCode === activity.areaCode);
+    if (area) {
+      if (!area.activityLog) area.activityLog = [];
+      area.activityLog.push(activity);
+      area.lastUpdated = nowISO();
+      _dirty.add('data-areas.json');
+      _writeLocalSnapshot();
+      return 'area';
+    }
+    // Area code with no matching area record: fall through rather than
+    // drop the entry on the floor.
+  }
+  if (!window.DPC_DATA.activities) window.DPC_DATA.activities = { activities: [] };
+  window.DPC_DATA.activities.activities.push(activity);
+  _dirty.add('data-activities.json');
+  _writeLocalSnapshot();
+  return 'cross-college';
 }
 
 // Shared renderer so Current Focus, Digital Leads and Health Checks all
@@ -2078,6 +2124,7 @@ function markAllDirty() {
   _dirty.add('data-digital-leads.json');
   _dirty.add('data-current-focus.json');
   _dirty.add('data-notes.json');
+  _dirty.add('data-activities.json');
 }
 
 // ── Public: force save now (called on user action) ────────────
@@ -2129,6 +2176,7 @@ function _assignToStore(filename, data) {
     'data-action-plans.json': 'actionPlans',
     'data-departments.json':  'departments',
     'data-ai-runs.json':      'aiRuns',
+    'data-activities.json':   'activities',
   };
   const key = keyMap[filename];
   if (key && data) window.DPC_DATA[key] = data;
@@ -2152,6 +2200,7 @@ function _getDataForFile(filename) {
     'data-action-plans.json': window.DPC_DATA.actionPlans,
     'data-departments.json':  window.DPC_DATA.departments,
     'data-ai-runs.json':      window.DPC_DATA.aiRuns,
+    'data-activities.json':   window.DPC_DATA.activities,
     [DPC_CONFIG.MANIFEST_FILENAME]: window.DPC_DATA.manifest,
   };
   return keyMap[filename] || null;
