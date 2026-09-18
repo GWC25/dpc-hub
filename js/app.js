@@ -260,6 +260,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   UI.hideLoading();
   updateBadgeCount();
+  // Quality Calendar 26/27. Reference data shipped with the app, not user
+  // data, so it is fetched rather than loaded from the OneDrive folder.
+  // Not awaited: nothing blocks on it, and callers fall back to no window.
+  if (typeof loadQualityCalendar === 'function') loadQualityCalendar();
+
   // Quick capture is initialised by quickcapture.js — called via initQuickCapture()
   if (typeof initQuickCapture === 'function') initQuickCapture();
 
