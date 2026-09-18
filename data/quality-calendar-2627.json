@@ -1,0 +1,1960 @@
+{
+ "academicYear": "2026/27",
+ "source": "Quality Calendar 26-27.xlsx, sheet \"College Calendar 26.27\"",
+ "windowSource": "Weston College Quality Assurance & Improvement Manual 26/27",
+ "storedVerbatim": true,
+ "verbatimPolicy": "Cell text is stored exactly as written. Entries that look like slips, or that disagree with the Manual, carry a sourceNote instead of being corrected.",
+ "generated": "2026-09-18",
+ "weeks": [
+  {
+   "weekCommencing": "2026-08-17",
+   "label": "17th Aug 26"
+  },
+  {
+   "weekCommencing": "2026-08-24",
+   "label": "24th Aug 26"
+  },
+  {
+   "weekCommencing": "2026-08-31",
+   "label": "31st Aug 26"
+  },
+  {
+   "weekCommencing": "2026-09-07",
+   "label": "7th Sep 26"
+  },
+  {
+   "weekCommencing": "2026-09-14",
+   "label": "14th Sep 26"
+  },
+  {
+   "weekCommencing": "2026-09-21",
+   "label": "21st Sep 26"
+  },
+  {
+   "weekCommencing": "2026-09-28",
+   "label": "28th Sep 26"
+  },
+  {
+   "weekCommencing": "2026-10-05",
+   "label": "5th Oct 26"
+  },
+  {
+   "weekCommencing": "2026-10-12",
+   "label": "12th Oct 26"
+  },
+  {
+   "weekCommencing": "2026-10-19",
+   "label": "19th Oct 26"
+  },
+  {
+   "weekCommencing": "2026-10-26",
+   "label": "26th Oct 26"
+  },
+  {
+   "weekCommencing": "2026-11-02",
+   "label": "2nd Nov 26"
+  },
+  {
+   "weekCommencing": "2026-11-09",
+   "label": "9th Nov 26"
+  },
+  {
+   "weekCommencing": "2026-11-16",
+   "label": "16th Nov 26"
+  },
+  {
+   "weekCommencing": "2026-11-23",
+   "label": "23rd Nov 26"
+  },
+  {
+   "weekCommencing": "2026-11-30",
+   "label": "30th Nov 26"
+  },
+  {
+   "weekCommencing": "2026-12-07",
+   "label": "7th Dec 26"
+  },
+  {
+   "weekCommencing": "2026-12-14",
+   "label": "14th Dec 26"
+  },
+  {
+   "weekCommencing": "2026-12-21",
+   "label": "21st Dec 26"
+  },
+  {
+   "weekCommencing": "2026-12-28",
+   "label": "28th Dec 26"
+  },
+  {
+   "weekCommencing": "2027-01-04",
+   "label": "4th Jan 27"
+  },
+  {
+   "weekCommencing": "2027-01-11",
+   "label": "11th Jan 27"
+  },
+  {
+   "weekCommencing": "2027-01-18",
+   "label": "18th Jan 27"
+  },
+  {
+   "weekCommencing": "2027-01-25",
+   "label": "25th Jan 27"
+  },
+  {
+   "weekCommencing": "2027-02-01",
+   "label": "1st Feb 27"
+  },
+  {
+   "weekCommencing": "2027-02-08",
+   "label": "8th Feb 27"
+  },
+  {
+   "weekCommencing": "2027-02-15",
+   "label": "15th Feb 27"
+  },
+  {
+   "weekCommencing": "2027-02-22",
+   "label": "22nd Feb 27"
+  },
+  {
+   "weekCommencing": "2027-03-01",
+   "label": "1st Mar 27"
+  },
+  {
+   "weekCommencing": "2027-03-08",
+   "label": "8th Mar 27"
+  },
+  {
+   "weekCommencing": "2027-03-15",
+   "label": "15th Mar 27"
+  },
+  {
+   "weekCommencing": "2027-03-22",
+   "label": "22nd Mar 27"
+  },
+  {
+   "weekCommencing": "2027-03-29",
+   "label": "29th Mar 27"
+  },
+  {
+   "weekCommencing": "2027-04-05",
+   "label": "5th Apr 27"
+  },
+  {
+   "weekCommencing": "2027-04-12",
+   "label": "12th Apr 27"
+  },
+  {
+   "weekCommencing": "2027-04-19",
+   "label": "19th April 27"
+  },
+  {
+   "weekCommencing": "2027-04-26",
+   "label": "26th Apr 27"
+  },
+  {
+   "weekCommencing": "2027-05-03",
+   "label": "3rd May 27"
+  },
+  {
+   "weekCommencing": "2027-05-10",
+   "label": "10th May 27"
+  },
+  {
+   "weekCommencing": "2027-05-17",
+   "label": "17th May 27"
+  },
+  {
+   "weekCommencing": "2027-05-24",
+   "label": "24th May 27"
+  },
+  {
+   "weekCommencing": "2027-05-31",
+   "label": "31st May 27"
+  },
+  {
+   "weekCommencing": "2027-06-07",
+   "label": "7th Jun 27"
+  },
+  {
+   "weekCommencing": "2027-06-14",
+   "label": "14th Jun 27"
+  },
+  {
+   "weekCommencing": "2027-06-21",
+   "label": "21st Jun 27"
+  },
+  {
+   "weekCommencing": "2027-06-28",
+   "label": "28th Jun 27"
+  },
+  {
+   "weekCommencing": "2027-07-05",
+   "label": "5th Jul 27"
+  },
+  {
+   "weekCommencing": "2027-07-12",
+   "label": "12th Jul 27"
+  },
+  {
+   "weekCommencing": "2027-07-19",
+   "label": "19th Jul 27"
+  },
+  {
+   "weekCommencing": "2027-07-26",
+   "label": "26th Jul 27"
+  },
+  {
+   "weekCommencing": "2027-08-02",
+   "label": "2nd Aug 27"
+  },
+  {
+   "weekCommencing": "2027-08-09",
+   "label": "9th Aug 27"
+  },
+  {
+   "weekCommencing": "2027-08-16",
+   "label": "16th Aug 27"
+  }
+ ],
+ "streams": [
+  {
+   "key": "key-term-dates",
+   "name": "Key Term Dates",
+   "group": "College Dates",
+   "column": 1
+  },
+  {
+   "key": "key-ilr-returns",
+   "name": "Key ILR Returns",
+   "group": "MIS",
+   "column": 2
+  },
+  {
+   "key": "cpd-dates",
+   "name": "CPD Dates",
+   "group": "Quality",
+   "column": 3
+  },
+  {
+   "key": "new-staff-induction",
+   "name": "New Staff Induction",
+   "group": "Quality",
+   "column": 4
+  },
+  {
+   "key": "work-review-panels",
+   "name": "Work Review Panels (WRP)",
+   "group": "Quality",
+   "column": 5
+  },
+  {
+   "key": "programme-performance-reviews",
+   "name": "Programme Performance Reviews (PPR)",
+   "group": "Quality",
+   "column": 6
+  },
+  {
+   "key": "curriculum-quality-review-panels",
+   "name": "Curriculum Quality Review Panels (CQRP)",
+   "group": "Quality",
+   "column": 7
+  },
+  {
+   "key": "learning-walks-and-instructional-coaching",
+   "name": "Learning Walks and Instructional Coaching (LW&IC)",
+   "group": "Quality",
+   "column": 8
+  },
+  {
+   "key": "peer-self-reviews",
+   "name": "Peer & Self Reviews (P&SR)",
+   "group": "Quality",
+   "column": 9
+  },
+  {
+   "key": "destinations-progressions",
+   "name": "Destinations & Progressions",
+   "group": "Quality",
+   "column": 10
+  },
+  {
+   "key": "self-assessment-reports",
+   "name": "Self Assessment Reports (SARs)",
+   "group": "Quality",
+   "column": 11
+  },
+  {
+   "key": "quality-improvement-plans",
+   "name": "Quality Improvement Plans (QIPS)",
+   "group": "Quality",
+   "column": 12
+  },
+  {
+   "key": "end-of-year-procedures",
+   "name": "End of Year Procedures (EOYP)",
+   "group": "Quality",
+   "column": 13
+  },
+  {
+   "key": "apprenticeship-performance-meetings",
+   "name": "Apprenticeship Performance Meetings (APM)",
+   "group": "Apprenticeships & WBL",
+   "column": 14
+  },
+  {
+   "key": "apprenticehsip-progress-review-audits",
+   "name": "Apprenticehsip Progress Review (APR) Audits",
+   "group": "Apprenticeships & WBL",
+   "column": 15,
+   "sourceNote": "Column heading is spelled \"Apprenticehsip\" in the source. Stored verbatim."
+  },
+  {
+   "key": "apprentice-employer-survey-forums",
+   "name": "Apprentice & Employer Survey / Forums",
+   "group": "Apprenticeships & WBL",
+   "column": 16,
+   "sourceNote": "Cells read \"Apprentice Ambassador Fourm\" in the source. Stored verbatim."
+  },
+  {
+   "key": "career-development-plan-audits",
+   "name": "Career Development Plan (CPD) Audits",
+   "group": "Apprenticeships & WBL",
+   "column": 17,
+   "sourceNote": "Column heading reads \"(CPD)\" but the cells read \"CDP Audit\". The Manual calls this the Career Development Plan (CDP). CPD means continuing professional development elsewhere in the Manual. Raised with Quality."
+  },
+  {
+   "key": "english-maths-quality-meetings",
+   "name": "English & Maths Quality Meetings",
+   "group": "English & Maths",
+   "column": 18
+  },
+  {
+   "key": "english-maths-strategic-group-meetings",
+   "name": "English & Maths Strategic Group Meetings",
+   "group": "English & Maths",
+   "column": 19
+  },
+  {
+   "key": "safeguarding-committee-meetings",
+   "name": "Safeguarding Committee Meetings (SGCMs)",
+   "group": "Safeguarding",
+   "column": 20
+  },
+  {
+   "key": "send-review-boards",
+   "name": "SEND Review Boards (SRBs)",
+   "group": "SEND",
+   "column": 21,
+   "sourceNote": "SRB Window 3 appears at week commencing 26 April 2027 and Window 2 at 7 June 2027, so the windows run out of order in the source. Raised with Quality, not corrected."
+  },
+  {
+   "key": "subcontracting-monitoring-committee",
+   "name": "Subcontracting Monitoring Committee",
+   "group": "Subcontracting",
+   "column": 22
+  },
+  {
+   "key": "compassionate-college-key-dates",
+   "name": "Compassionate College Key dates",
+   "group": "Compassionate College (CW)",
+   "column": 23
+  },
+  {
+   "key": "learner-voice",
+   "name": "Learner Voice",
+   "group": "Student Experience",
+   "column": 24
+  },
+  {
+   "key": "celebration-profile-activities",
+   "name": "Celebration / Profile Activities",
+   "group": "Student Experience",
+   "column": 25
+  },
+  {
+   "key": "key-college-awareness-dates",
+   "name": "Key College Awareness Dates",
+   "group": "Student Experience",
+   "column": 26
+  },
+  {
+   "key": "careers-and-employability-activities",
+   "name": "Careers and Employability Activities",
+   "group": "Student Experience",
+   "column": 27
+  },
+  {
+   "key": "tutorials",
+   "name": "Tutorials",
+   "group": "Student Experience",
+   "column": 28
+  },
+  {
+   "key": "career-excellence-hub-employer-advisary-boards",
+   "name": "Career Excellence Hub (CEH) & Employer Advisary Boards (EABs)",
+   "group": "Employers & Commercial",
+   "column": 29,
+   "sourceNote": "Column heading is spelled \"Advisary\" in the source. Stored verbatim."
+  },
+  {
+   "key": "curriculum-employer-forums",
+   "name": "Curriculum Employer Forums",
+   "group": "Employers & Commercial",
+   "column": 30
+  },
+  {
+   "key": "employer-surveys",
+   "name": "Employer Surveys",
+   "group": "Employers & Commercial",
+   "column": 31
+  },
+  {
+   "key": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "name": "FE Recruitment Activity & Enrolment and Attrition Reviews",
+   "group": "Recruitment",
+   "column": 32
+  },
+  {
+   "key": "college-newsletters",
+   "name": "College Newsletters",
+   "group": "Marketing",
+   "column": 33
+  },
+  {
+   "key": "campus-staff-meetings",
+   "name": "Campus staff meetings",
+   "group": "Principal updates",
+   "column": 34
+  }
+ ],
+ "windows": [
+  {
+   "streamKey": "learning-walks-and-instructional-coaching",
+   "number": 1,
+   "from": "2026-08-31",
+   "to": "2026-11-06",
+   "source": "Weston College Quality Assurance & Improvement Manual 26/27"
+  },
+  {
+   "streamKey": "learning-walks-and-instructional-coaching",
+   "number": 2,
+   "from": "2027-01-04",
+   "to": "2027-03-05",
+   "source": "Weston College Quality Assurance & Improvement Manual 26/27"
+  },
+  {
+   "streamKey": "learning-walks-and-instructional-coaching",
+   "number": 3,
+   "from": "2027-04-19",
+   "to": "2027-06-25",
+   "source": "Weston College Quality Assurance & Improvement Manual 26/27"
+  },
+  {
+   "streamKey": "peer-self-reviews",
+   "number": 1,
+   "from": "2026-08-31",
+   "to": "2026-11-06",
+   "source": "Weston College Quality Assurance & Improvement Manual 26/27",
+   "note": "The Manual notes that windows 2 and 3 are for new staff or follow-up reviews. Existing staff and staff joining in September must complete a self-review in window 1. Self-review deadline 6 November 2026; peer review deadline 5 March 2027."
+  },
+  {
+   "streamKey": "peer-self-reviews",
+   "number": 2,
+   "from": "2027-01-04",
+   "to": "2027-03-05",
+   "source": "Weston College Quality Assurance & Improvement Manual 26/27",
+   "note": "The Manual notes that windows 2 and 3 are for new staff or follow-up reviews. Existing staff and staff joining in September must complete a self-review in window 1. Self-review deadline 6 November 2026; peer review deadline 5 March 2027."
+  },
+  {
+   "streamKey": "peer-self-reviews",
+   "number": 3,
+   "from": "2027-04-19",
+   "to": "2027-06-25",
+   "source": "Weston College Quality Assurance & Improvement Manual 26/27",
+   "note": "The Manual notes that windows 2 and 3 are for new staff or follow-up reviews. Existing staff and staff joining in September must complete a self-review in window 1. Self-review deadline 6 November 2026; peer review deadline 5 March 2027."
+  }
+ ],
+ "entries": [
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2026-08-17",
+   "text": "Staff Return / Core admin Days / Academic Conference"
+  },
+  {
+   "streamKey": "cpd-dates",
+   "weekCommencing": "2026-08-17",
+   "text": "18/08 - Academic Conference",
+   "dates": [
+    "2026-08-18"
+   ]
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2026-08-17",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "apprenticeship-performance-meetings",
+   "weekCommencing": "2026-08-17",
+   "text": "APMs"
+  },
+  {
+   "streamKey": "curriculum-employer-forums",
+   "weekCommencing": "2026-08-17",
+   "text": "Curriculum Employer Forum 1"
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2026-08-24",
+   "text": "Enrolment Week"
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2026-08-24",
+   "text": "Enrolments (28 - 30/08)",
+   "dates": [
+    "2026-08-30"
+   ]
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2026-08-31",
+   "text": "English & Maths induction & Welcome Festival"
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2026-08-31",
+   "text": "R01 04 Sep 26/27"
+  },
+  {
+   "streamKey": "learning-walks-and-instructional-coaching",
+   "weekCommencing": "2026-08-31",
+   "text": "LW&IC Window 1"
+  },
+  {
+   "streamKey": "peer-self-reviews",
+   "weekCommencing": "2026-08-31",
+   "text": "P&SR Window 1"
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2026-08-31",
+   "text": "Welcome Festivals (04/08) E&A Review",
+   "dates": [
+    "2026-08-04"
+   ]
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2026-09-07",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "quality-improvement-plans",
+   "weekCommencing": "2026-09-07",
+   "text": "25/26 QIP Sign off 05/10",
+   "dates": [
+    "2026-10-05"
+   ],
+   "sourceNote": "Calendar places this in the week commencing 7 September 2026. The Manual SAR timeline gives 5 September 2026 for 25/26 QIP development and sign off. Raised with Quality, not corrected."
+  },
+  {
+   "streamKey": "compassionate-college-key-dates",
+   "weekCommencing": "2026-09-07",
+   "text": "Connecting with College"
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2026-09-07",
+   "text": "E&A Review"
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2026-09-07",
+   "text": "Newsletter 09/09",
+   "dates": [
+    "2026-09-09"
+   ]
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2026-09-14",
+   "text": "R13 - 14th Sept (achievements only for 25/26)"
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2026-09-14",
+   "text": "E&A Review"
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2026-09-21",
+   "text": "Freshers Fair 22/09",
+   "dates": [
+    "2026-09-22"
+   ]
+  },
+  {
+   "streamKey": "english-maths-quality-meetings",
+   "weekCommencing": "2026-09-21",
+   "text": "Window 1"
+  },
+  {
+   "streamKey": "english-maths-strategic-group-meetings",
+   "weekCommencing": "2026-09-21",
+   "text": "SGM 1 21st Sept 26"
+  },
+  {
+   "streamKey": "send-review-boards",
+   "weekCommencing": "2026-09-21",
+   "text": "SRB Window 1"
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2026-09-21",
+   "text": "Freshers Fair 22/09",
+   "dates": [
+    "2026-09-22"
+   ]
+  },
+  {
+   "streamKey": "careers-and-employability-activities",
+   "weekCommencing": "2026-09-21",
+   "text": "UCAS Internal Early application deadline 24/09",
+   "dates": [
+    "2026-09-24"
+   ]
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2026-09-21",
+   "text": "What Next Careers Showcase (24/09) E&A Review",
+   "dates": [
+    "2026-09-24"
+   ]
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2026-09-21",
+   "text": "Newsletter 23/09",
+   "dates": [
+    "2026-09-23"
+   ]
+  },
+  {
+   "streamKey": "tutorials",
+   "weekCommencing": "2026-09-28",
+   "text": "Tutorial 1 Deadline 02/10",
+   "dates": [
+    "2026-10-02"
+   ]
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2026-09-28",
+   "text": "E&A Review"
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2026-10-05",
+   "text": "R02 06 Oct 26/27"
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2026-10-05",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "programme-performance-reviews",
+   "weekCommencing": "2026-10-05",
+   "text": "PPR Window 1"
+  },
+  {
+   "streamKey": "destinations-progressions",
+   "weekCommencing": "2026-10-05",
+   "text": "Actual Destination Capture 25/26"
+  },
+  {
+   "streamKey": "subcontracting-monitoring-committee",
+   "weekCommencing": "2026-10-05",
+   "text": "Term 1 SMC 5th Oct"
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2026-10-05",
+   "text": "Black History Month Oct 2026"
+  },
+  {
+   "streamKey": "career-excellence-hub-employer-advisary-boards",
+   "weekCommencing": "2026-10-05",
+   "text": "EAB 1"
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2026-10-05",
+   "text": "Newsletter 07/10",
+   "dates": [
+    "2026-10-07"
+   ]
+  },
+  {
+   "streamKey": "cpd-dates",
+   "weekCommencing": "2026-10-12",
+   "text": "16/10 CPD Sign-up Deadline",
+   "dates": [
+    "2026-10-16"
+   ]
+  },
+  {
+   "streamKey": "careers-and-employability-activities",
+   "weekCommencing": "2026-10-12",
+   "text": "UCAS Actual Early application deadline 15/10",
+   "dates": [
+    "2026-10-15"
+   ]
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2026-10-12",
+   "text": "College Open Evening (14/10)",
+   "dates": [
+    "2026-10-14"
+   ]
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2026-10-19",
+   "text": "Admin Days 22-23/10",
+   "dates": [
+    "2026-10-23"
+   ]
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2026-10-19",
+   "text": "R14 - 22nd Oct (final data for 25-26 submitted)"
+  },
+  {
+   "streamKey": "safeguarding-committee-meetings",
+   "weekCommencing": "2026-10-19",
+   "text": "SGCM 12th Oct 26"
+  },
+  {
+   "streamKey": "careers-and-employability-activities",
+   "weekCommencing": "2026-10-19",
+   "text": "UCAS Internal deadline for Personal Statement 23/10",
+   "dates": [
+    "2026-10-23"
+   ]
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2026-10-19",
+   "text": "Y11 Taster Day (21/10)",
+   "dates": [
+    "2026-10-21"
+   ]
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2026-10-19",
+   "text": "Newsletter 21/10",
+   "dates": [
+    "2026-10-21"
+   ]
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2026-10-26",
+   "text": "Half Term"
+  },
+  {
+   "streamKey": "english-maths-strategic-group-meetings",
+   "weekCommencing": "2026-10-26",
+   "text": "SGM 2 26th Oct 26"
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2026-11-02",
+   "text": "R03 05 Nov 26/27"
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2026-11-02",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "learning-walks-and-instructional-coaching",
+   "weekCommencing": "2026-11-02",
+   "text": "LW&IC Window 1"
+  },
+  {
+   "streamKey": "peer-self-reviews",
+   "weekCommencing": "2026-11-02",
+   "text": "P&SR Window 1"
+  },
+  {
+   "streamKey": "destinations-progressions",
+   "weekCommencing": "2026-11-02",
+   "text": "Actual Destination Capture 25/26"
+  },
+  {
+   "streamKey": "self-assessment-reports",
+   "weekCommencing": "2026-11-02",
+   "text": "SAR Training and Development"
+  },
+  {
+   "streamKey": "apprenticeship-performance-meetings",
+   "weekCommencing": "2026-11-02",
+   "text": "APMs"
+  },
+  {
+   "streamKey": "compassionate-college-key-dates",
+   "weekCommencing": "2026-11-02",
+   "text": "Care and Kindness"
+  },
+  {
+   "streamKey": "learner-voice",
+   "weekCommencing": "2026-11-02",
+   "text": "\"How are you doing?\" Survey"
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2026-11-02",
+   "text": "Weston College Wellbeing Week 2/11",
+   "dates": [
+    "2026-11-02"
+   ]
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2026-11-02",
+   "text": "Diwali 08/11",
+   "dates": [
+    "2026-11-08"
+   ]
+  },
+  {
+   "streamKey": "tutorials",
+   "weekCommencing": "2026-11-02",
+   "text": "Tutorial 2"
+  },
+  {
+   "streamKey": "curriculum-employer-forums",
+   "weekCommencing": "2026-11-02",
+   "text": "Curriculum Employer Forum 2"
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2026-11-02",
+   "text": "Newsletter 04/11",
+   "dates": [
+    "2026-11-04"
+   ]
+  },
+  {
+   "streamKey": "curriculum-quality-review-panels",
+   "weekCommencing": "2026-11-09",
+   "text": "CQRP Window 1"
+  },
+  {
+   "streamKey": "apprenticehsip-progress-review-audits",
+   "weekCommencing": "2026-11-09",
+   "text": "APR Audit Window 1"
+  },
+  {
+   "streamKey": "career-development-plan-audits",
+   "weekCommencing": "2026-11-09",
+   "text": "CDP Audit Window 1"
+  },
+  {
+   "streamKey": "english-maths-quality-meetings",
+   "weekCommencing": "2026-11-09",
+   "text": "Window 1"
+  },
+  {
+   "streamKey": "send-review-boards",
+   "weekCommencing": "2026-11-09",
+   "text": "SRB Window 1"
+  },
+  {
+   "streamKey": "learner-voice",
+   "weekCommencing": "2026-11-09",
+   "text": "First Impressions survey & Learner Voice Course Reviews"
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2026-11-09",
+   "text": "College Open Evening (12/11)",
+   "dates": [
+    "2026-11-12"
+   ]
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2026-11-16",
+   "text": "Weston College AI Week 16/11",
+   "dates": [
+    "2026-11-16"
+   ]
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2026-11-16",
+   "text": "Anti-Bullying week & International Men's Day 19/11",
+   "dates": [
+    "2026-11-19"
+   ]
+  },
+  {
+   "streamKey": "careers-and-employability-activities",
+   "weekCommencing": "2026-11-16",
+   "text": "UCAS Internal Final Submission 20/11",
+   "dates": [
+    "2026-11-20"
+   ]
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2026-11-16",
+   "text": "Newsletter 18/11",
+   "dates": [
+    "2026-11-18"
+   ]
+  },
+  {
+   "streamKey": "work-review-panels",
+   "weekCommencing": "2026-11-23",
+   "text": "Work Review Panels (WRP)"
+  },
+  {
+   "streamKey": "curriculum-quality-review-panels",
+   "weekCommencing": "2026-11-23",
+   "text": "CQRP Window 1 and Follow-ups"
+  },
+  {
+   "streamKey": "english-maths-strategic-group-meetings",
+   "weekCommencing": "2026-11-23",
+   "text": "SGM 3 23rd Nov 26"
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2026-11-23",
+   "text": "White Ribbon Day 25/11",
+   "dates": [
+    "2026-11-25"
+   ]
+  },
+  {
+   "streamKey": "careers-and-employability-activities",
+   "weekCommencing": "2026-11-23",
+   "text": "CareersFest 24/11",
+   "dates": [
+    "2026-11-24"
+   ]
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2026-11-30",
+   "text": "R04 - 4th Dec 26/27 (QAR Data Collection)"
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2026-11-30",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2026-11-30",
+   "text": "International Day of Persons with Disabilities 03/12",
+   "dates": [
+    "2026-12-03"
+   ]
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2026-11-30",
+   "text": "Luke Weaton Legacy Trust Apprenticeship Open Evening (03/10)",
+   "dates": [
+    "2026-10-03"
+   ],
+   "sourceNote": "Dated 03/10 but placed in the week commencing 30 November 2026. Raised with Quality, not corrected."
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2026-11-30",
+   "text": "Newsletter 02/12",
+   "dates": [
+    "2026-12-02"
+   ]
+  },
+  {
+   "streamKey": "curriculum-quality-review-panels",
+   "weekCommencing": "2026-12-07",
+   "text": "CQRP Follow up meeting"
+  },
+  {
+   "streamKey": "safeguarding-committee-meetings",
+   "weekCommencing": "2026-12-07",
+   "text": "SGCM 1 0th Dec 26",
+   "sourceNote": "Calendar reads \"1 0th Dec 26\". Likely 10 December 2026. Raised with Quality, not corrected."
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2026-12-07",
+   "text": "Christmas Jumper Day 10/12",
+   "dates": [
+    "2026-12-10"
+   ]
+  },
+  {
+   "streamKey": "work-review-panels",
+   "weekCommencing": "2026-12-14",
+   "text": "Work Review Panels (WRP)"
+  },
+  {
+   "streamKey": "quality-improvement-plans",
+   "weekCommencing": "2026-12-14",
+   "text": "QIP Review Stage 1"
+  },
+  {
+   "streamKey": "english-maths-strategic-group-meetings",
+   "weekCommencing": "2026-12-14",
+   "text": "SGM 4 14th Dec 26"
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2026-12-14",
+   "text": "LOX Future Ready Day 17/12",
+   "dates": [
+    "2026-12-17"
+   ]
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2026-12-14",
+   "text": "Newsletter 16/12",
+   "dates": [
+    "2026-12-16"
+   ]
+  },
+  {
+   "streamKey": "campus-staff-meetings",
+   "weekCommencing": "2026-12-14",
+   "text": "Campus meeting 18/12",
+   "dates": [
+    "2026-12-18"
+   ]
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2026-12-21",
+   "text": "Christmas break"
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2026-12-28",
+   "text": "Christmas break"
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-01-04",
+   "text": "INSET Day 04/01",
+   "dates": [
+    "2027-01-04"
+   ]
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2027-01-04",
+   "text": "R05 7th Jan 26/27"
+  },
+  {
+   "streamKey": "cpd-dates",
+   "weekCommencing": "2027-01-04",
+   "text": "Staff Conference 04/01",
+   "dates": [
+    "2027-01-04"
+   ]
+  },
+  {
+   "streamKey": "learning-walks-and-instructional-coaching",
+   "weekCommencing": "2027-01-04",
+   "text": "LW&IC Window 2"
+  },
+  {
+   "streamKey": "peer-self-reviews",
+   "weekCommencing": "2027-01-04",
+   "text": "P&SR Window 2"
+  },
+  {
+   "streamKey": "destinations-progressions",
+   "weekCommencing": "2027-01-04",
+   "text": "26/27 Intended Destination Capture (Mid-Year)"
+  },
+  {
+   "streamKey": "quality-improvement-plans",
+   "weekCommencing": "2027-01-04",
+   "text": "QIP Review Stage 1"
+  },
+  {
+   "streamKey": "apprenticeship-performance-meetings",
+   "weekCommencing": "2027-01-04",
+   "text": "APMs"
+  },
+  {
+   "streamKey": "compassionate-college-key-dates",
+   "weekCommencing": "2027-01-04",
+   "text": "Resetting Consistency"
+  },
+  {
+   "streamKey": "tutorials",
+   "weekCommencing": "2027-01-04",
+   "text": "Tutorial 3"
+  },
+  {
+   "streamKey": "curriculum-employer-forums",
+   "weekCommencing": "2027-01-04",
+   "text": "Curriculum Employer Forum 3"
+  },
+  {
+   "streamKey": "campus-staff-meetings",
+   "weekCommencing": "2027-01-04",
+   "text": "Campus meeting 04/01",
+   "dates": [
+    "2027-01-04"
+   ]
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2027-01-11",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "apprentice-employer-survey-forums",
+   "weekCommencing": "2027-01-11",
+   "text": "Apprentice Survey opens 11/01",
+   "dates": [
+    "2027-01-11"
+   ]
+  },
+  {
+   "streamKey": "learner-voice",
+   "weekCommencing": "2027-01-11",
+   "text": "Campus Forum 1"
+  },
+  {
+   "streamKey": "careers-and-employability-activities",
+   "weekCommencing": "2027-01-11",
+   "text": "UCAS National Equal Consideration deadline 13/01",
+   "dates": [
+    "2027-01-13"
+   ]
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2027-01-11",
+   "text": "College Open Evening (15/01)",
+   "dates": [
+    "2027-01-15"
+   ]
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-01-11",
+   "text": "Newsletter 13/01",
+   "dates": [
+    "2027-01-13"
+   ]
+  },
+  {
+   "streamKey": "english-maths-quality-meetings",
+   "weekCommencing": "2027-01-18",
+   "text": "Window 2"
+  },
+  {
+   "streamKey": "send-review-boards",
+   "weekCommencing": "2027-01-18",
+   "text": "SRB Window 2"
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2027-01-18",
+   "text": "Weston College PREVENT Week 18/01 & SWS Future Ready Day 20/01",
+   "dates": [
+    "2027-01-18",
+    "2027-01-20"
+   ]
+  },
+  {
+   "streamKey": "work-review-panels",
+   "weekCommencing": "2027-01-25",
+   "text": "Work Review Panels (WRP)"
+  },
+  {
+   "streamKey": "english-maths-strategic-group-meetings",
+   "weekCommencing": "2027-01-25",
+   "text": "SGM 5 26th Jan 27"
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2027-01-25",
+   "text": "KN Future Ready Day 28/01",
+   "dates": [
+    "2027-01-28"
+   ]
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-01-25",
+   "text": "Newsletter 27/01",
+   "dates": [
+    "2027-01-27"
+   ]
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2027-02-01",
+   "text": "R06 - 4th Feb 26/27 (Mid-Year funding claims)"
+  },
+  {
+   "streamKey": "apprentice-employer-survey-forums",
+   "weekCommencing": "2027-02-01",
+   "text": "Apprentice Ambassador Fourm 1"
+  },
+  {
+   "streamKey": "safeguarding-committee-meetings",
+   "weekCommencing": "2027-02-01",
+   "text": "SGCM 14th Feb 27"
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2027-02-01",
+   "text": "Attendance week 01/02",
+   "dates": [
+    "2027-02-01"
+   ]
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2027-02-01",
+   "text": "FEBRUARY LGBT+ History Month"
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2027-02-01",
+   "text": "Apprenticeships Open Evening (05/02)",
+   "dates": [
+    "2027-02-05"
+   ]
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2027-02-08",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "programme-performance-reviews",
+   "weekCommencing": "2027-02-08",
+   "text": "PPR Window 2"
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2027-02-08",
+   "text": "LOX Future Ready Day 12/02",
+   "dates": [
+    "2027-02-12"
+   ]
+  },
+  {
+   "streamKey": "employer-surveys",
+   "weekCommencing": "2027-02-08",
+   "text": "Employer Survey 1"
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-02-08",
+   "text": "Newsletter 10/02",
+   "dates": [
+    "2027-02-10"
+   ]
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-02-15",
+   "text": "Half Term"
+  },
+  {
+   "streamKey": "work-review-panels",
+   "weekCommencing": "2027-02-22",
+   "text": "Work Review Panels (WRP)"
+  },
+  {
+   "streamKey": "learning-walks-and-instructional-coaching",
+   "weekCommencing": "2027-02-22",
+   "text": "LW&IC Window 2"
+  },
+  {
+   "streamKey": "peer-self-reviews",
+   "weekCommencing": "2027-02-22",
+   "text": "P&SR Window 2"
+  },
+  {
+   "streamKey": "apprenticeship-performance-meetings",
+   "weekCommencing": "2027-02-22",
+   "text": "APMs"
+  },
+  {
+   "streamKey": "apprenticehsip-progress-review-audits",
+   "weekCommencing": "2027-02-22",
+   "text": "APR Audit Window 2"
+  },
+  {
+   "streamKey": "career-development-plan-audits",
+   "weekCommencing": "2027-02-22",
+   "text": "CDP Audit Window 2"
+  },
+  {
+   "streamKey": "english-maths-strategic-group-meetings",
+   "weekCommencing": "2027-02-22",
+   "text": "SGM 6 22nd Feb 27"
+  },
+  {
+   "streamKey": "compassionate-college-key-dates",
+   "weekCommencing": "2027-02-22",
+   "text": "Reaching your potential"
+  },
+  {
+   "streamKey": "learner-voice",
+   "weekCommencing": "2027-02-22",
+   "text": "\"How are you doing?\" Survey"
+  },
+  {
+   "streamKey": "tutorials",
+   "weekCommencing": "2027-02-22",
+   "text": "Tutorial 4"
+  },
+  {
+   "streamKey": "curriculum-employer-forums",
+   "weekCommencing": "2027-02-22",
+   "text": "Curriculum Employer Forum 4"
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-02-22",
+   "text": "Newsletter 24/02",
+   "dates": [
+    "2027-02-24"
+   ]
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2027-03-01",
+   "text": "R07 4th March 26/27"
+  },
+  {
+   "streamKey": "english-maths-quality-meetings",
+   "weekCommencing": "2027-03-01",
+   "text": "Window 2"
+  },
+  {
+   "streamKey": "send-review-boards",
+   "weekCommencing": "2027-03-01",
+   "text": "SRB Window 2"
+  },
+  {
+   "streamKey": "subcontracting-monitoring-committee",
+   "weekCommencing": "2027-03-01",
+   "text": "Term 2 SMC 4th March"
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2027-03-01",
+   "text": "Student Conference March 2027"
+  },
+  {
+   "streamKey": "careers-and-employability-activities",
+   "weekCommencing": "2027-03-01",
+   "text": "National Careers Week"
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2027-03-08",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "quality-improvement-plans",
+   "weekCommencing": "2027-03-08",
+   "text": "QIP Review Stage 2"
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2027-03-08",
+   "text": "Raising and Giving Week 08/03",
+   "dates": [
+    "2027-03-08"
+   ]
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2027-03-08",
+   "text": "International Women's Day & Eid-al-Fitr 08/03 Safer Internet Day 09/03",
+   "dates": [
+    "2027-03-08",
+    "2027-03-09"
+   ]
+  },
+  {
+   "streamKey": "careers-and-employability-activities",
+   "weekCommencing": "2027-03-08",
+   "text": "National Apprenticeship Day 08/03",
+   "dates": [
+    "2027-03-08"
+   ]
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-03-08",
+   "text": "Newsletter 10/03",
+   "dates": [
+    "2027-03-10"
+   ]
+  },
+  {
+   "streamKey": "curriculum-quality-review-panels",
+   "weekCommencing": "2027-03-15",
+   "text": "CQRP Window 2"
+  },
+  {
+   "streamKey": "self-assessment-reports",
+   "weekCommencing": "2027-03-15",
+   "text": "SAR Training and Development"
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2027-03-15",
+   "text": "Neurodiversity Celebration Week"
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-03-22",
+   "text": "INSET Day 25/03 Public Holiday 26/03",
+   "dates": [
+    "2027-03-25",
+    "2027-03-26"
+   ]
+  },
+  {
+   "streamKey": "cpd-dates",
+   "weekCommencing": "2027-03-22",
+   "text": "INSET 25/03",
+   "dates": [
+    "2027-03-25"
+   ]
+  },
+  {
+   "streamKey": "apprentice-employer-survey-forums",
+   "weekCommencing": "2027-03-22",
+   "text": "Apprentice Survey closes 24/03",
+   "dates": [
+    "2027-03-24"
+   ]
+  },
+  {
+   "streamKey": "english-maths-strategic-group-meetings",
+   "weekCommencing": "2027-03-22",
+   "text": "SGM 7 22nd March 25",
+   "sourceNote": "Calendar says 2025 in a 2026/27 calendar. Likely 22 March 2027. Raised with Quality, not corrected."
+  },
+  {
+   "streamKey": "safeguarding-committee-meetings",
+   "weekCommencing": "2027-03-22",
+   "text": "SGCM 23rd March 27"
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2027-03-22",
+   "text": "College Open Evening (25/03)",
+   "dates": [
+    "2027-03-25"
+   ]
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-03-22",
+   "text": "Newsletter 24/03",
+   "dates": [
+    "2027-03-24"
+   ]
+  },
+  {
+   "streamKey": "campus-staff-meetings",
+   "weekCommencing": "2027-03-22",
+   "text": "Campus meeting 24/03",
+   "dates": [
+    "2027-03-24"
+   ]
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-03-29",
+   "text": "Easter Break"
+  },
+  {
+   "streamKey": "work-review-panels",
+   "weekCommencing": "2027-03-29",
+   "text": "Work Review Panels (WRP)"
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2027-03-29",
+   "text": "International Transgender Day of Visibility 31/03",
+   "dates": [
+    "2027-03-31"
+   ]
+  },
+  {
+   "streamKey": "career-excellence-hub-employer-advisary-boards",
+   "weekCommencing": "2027-03-29",
+   "text": "EAB 2"
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-04-05",
+   "text": "Easter Break"
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2027-04-05",
+   "text": "R08 6th April 26/27"
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-04-05",
+   "text": "Newsletter 07/04",
+   "dates": [
+    "2027-04-07"
+   ]
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2027-04-12",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "curriculum-quality-review-panels",
+   "weekCommencing": "2027-04-12",
+   "text": "CQRP Window 2 and Follow-ups"
+  },
+  {
+   "streamKey": "destinations-progressions",
+   "weekCommencing": "2027-04-12",
+   "text": "26/27 End of Year Destination Capture Early Enrolments (L2 - L3)"
+  },
+  {
+   "streamKey": "apprenticeship-performance-meetings",
+   "weekCommencing": "2027-04-12",
+   "text": "APMs"
+  },
+  {
+   "streamKey": "compassionate-college-key-dates",
+   "weekCommencing": "2027-04-12",
+   "text": "Reaching your potential"
+  },
+  {
+   "streamKey": "learner-voice",
+   "weekCommencing": "2027-04-12",
+   "text": "End of Year survey & Learner Voice Course Reviews"
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2027-04-12",
+   "text": "KN Future Ready Day 14/04",
+   "dates": [
+    "2027-04-14"
+   ]
+  },
+  {
+   "streamKey": "tutorials",
+   "weekCommencing": "2027-04-12",
+   "text": "Tutorial 5"
+  },
+  {
+   "streamKey": "learning-walks-and-instructional-coaching",
+   "weekCommencing": "2027-04-19",
+   "text": "LW&IC Window 3"
+  },
+  {
+   "streamKey": "peer-self-reviews",
+   "weekCommencing": "2027-04-19",
+   "text": "P&SR Window 3"
+  },
+  {
+   "streamKey": "curriculum-employer-forums",
+   "weekCommencing": "2027-04-19",
+   "text": "Curriculum Employer Forum 5"
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-04-19",
+   "text": "Newsletter 21/04",
+   "dates": [
+    "2027-04-21"
+   ]
+  },
+  {
+   "streamKey": "work-review-panels",
+   "weekCommencing": "2027-04-26",
+   "text": "Work Review Panels (WRP)"
+  },
+  {
+   "streamKey": "curriculum-quality-review-panels",
+   "weekCommencing": "2027-04-26",
+   "text": "CQRP Follow-up meeting"
+  },
+  {
+   "streamKey": "english-maths-quality-meetings",
+   "weekCommencing": "2027-04-26",
+   "text": "Window 3"
+  },
+  {
+   "streamKey": "english-maths-strategic-group-meetings",
+   "weekCommencing": "2027-04-26",
+   "text": "SGM 8 26th April 27"
+  },
+  {
+   "streamKey": "send-review-boards",
+   "weekCommencing": "2027-04-26",
+   "text": "SRB Window 3"
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-05-03",
+   "text": "BH 03/05",
+   "dates": [
+    "2027-05-03"
+   ]
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2027-05-03",
+   "text": "R09 7th May 26/27"
+  },
+  {
+   "streamKey": "apprenticehsip-progress-review-audits",
+   "weekCommencing": "2027-05-03",
+   "text": "APR Audit Window 3"
+  },
+  {
+   "streamKey": "career-development-plan-audits",
+   "weekCommencing": "2027-05-03",
+   "text": "CDP Audit Window 3"
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-05-03",
+   "text": "Newsletter 05/05",
+   "dates": [
+    "2027-05-05"
+   ]
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2027-05-10",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "programme-performance-reviews",
+   "weekCommencing": "2027-05-10",
+   "text": "PPR Window 3"
+  },
+  {
+   "streamKey": "safeguarding-committee-meetings",
+   "weekCommencing": "2027-05-10",
+   "text": "SGCM 1 3th May 27",
+   "sourceNote": "Calendar reads \"1 3th May 27\". Likely 13 May 2027. Raised with Quality, not corrected."
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2027-05-10",
+   "text": "Mental Health Awareness Week & Eid-al-Adha 16/05",
+   "dates": [
+    "2027-05-16"
+   ]
+  },
+  {
+   "streamKey": "work-review-panels",
+   "weekCommencing": "2027-05-17",
+   "text": "Work Review Panels (WRP)"
+  },
+  {
+   "streamKey": "end-of-year-procedures",
+   "weekCommencing": "2027-05-17",
+   "text": "EOYP Released"
+  },
+  {
+   "streamKey": "english-maths-strategic-group-meetings",
+   "weekCommencing": "2027-05-17",
+   "text": "SGM 9 17th May 27"
+  },
+  {
+   "streamKey": "subcontracting-monitoring-committee",
+   "weekCommencing": "2027-05-17",
+   "text": "Term 3 SMC 20th May"
+  },
+  {
+   "streamKey": "learner-voice",
+   "weekCommencing": "2027-05-17",
+   "text": "Campus Forum 2"
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2027-05-17",
+   "text": "Crime Awareness Week & World Culture Day 21/05",
+   "dates": [
+    "2027-05-21"
+   ]
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-05-17",
+   "text": "Newsletter 19/05",
+   "dates": [
+    "2027-05-19"
+   ]
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-05-31",
+   "text": "Half Term"
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2027-05-31",
+   "text": "R10 4th June 26/27"
+  },
+  {
+   "streamKey": "quality-improvement-plans",
+   "weekCommencing": "2027-05-31",
+   "text": "QIP Review Stage 3"
+  },
+  {
+   "streamKey": "curriculum-employer-forums",
+   "weekCommencing": "2027-05-31",
+   "text": "Curriculum Employer Forum 6"
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-05-31",
+   "text": "Newsletter 02/06",
+   "dates": [
+    "2027-06-02"
+   ]
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2027-06-07",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "learning-walks-and-instructional-coaching",
+   "weekCommencing": "2027-06-07",
+   "text": "LW&IC Window 3"
+  },
+  {
+   "streamKey": "peer-self-reviews",
+   "weekCommencing": "2027-06-07",
+   "text": "P&SR Window 3"
+  },
+  {
+   "streamKey": "apprenticeship-performance-meetings",
+   "weekCommencing": "2027-06-07",
+   "text": "APMs"
+  },
+  {
+   "streamKey": "apprentice-employer-survey-forums",
+   "weekCommencing": "2027-06-07",
+   "text": "Apprentice Ambassador Fourm 2"
+  },
+  {
+   "streamKey": "english-maths-quality-meetings",
+   "weekCommencing": "2027-06-07",
+   "text": "Window 3"
+  },
+  {
+   "streamKey": "send-review-boards",
+   "weekCommencing": "2027-06-07",
+   "text": "SRB Window 2"
+  },
+  {
+   "streamKey": "compassionate-college-key-dates",
+   "weekCommencing": "2027-06-07",
+   "text": "Celebrating achievement"
+  },
+  {
+   "streamKey": "learner-voice",
+   "weekCommencing": "2027-06-07",
+   "text": "\"How are you doing?\" Survey"
+  },
+  {
+   "streamKey": "celebration-profile-activities",
+   "weekCommencing": "2027-06-07",
+   "text": "SWS Future Ready Day June (Date TBC)"
+  },
+  {
+   "streamKey": "key-college-awareness-dates",
+   "weekCommencing": "2027-06-07",
+   "text": "LGBTQ+ Pride Month JUNE"
+  },
+  {
+   "streamKey": "tutorials",
+   "weekCommencing": "2027-06-07",
+   "text": "Tutorial 6"
+  },
+  {
+   "streamKey": "college-newsletters",
+   "weekCommencing": "2027-06-14",
+   "text": "Newsletter 16/06",
+   "dates": [
+    "2027-06-16"
+   ]
+  },
+  {
+   "streamKey": "safeguarding-committee-meetings",
+   "weekCommencing": "2027-06-21",
+   "text": "SGCM 24th June 27"
+  },
+  {
+   "streamKey": "campus-staff-meetings",
+   "weekCommencing": "2027-06-21",
+   "text": "Campus meeting 25/06",
+   "dates": [
+    "2027-06-25"
+   ]
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-06-28",
+   "text": "Admin week"
+  },
+  {
+   "streamKey": "work-review-panels",
+   "weekCommencing": "2027-06-28",
+   "text": "Work Review Panels (WRP)"
+  },
+  {
+   "streamKey": "english-maths-strategic-group-meetings",
+   "weekCommencing": "2027-06-28",
+   "text": "SGM 10 28th June 27"
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-07-05",
+   "text": "Admin week & INSET 09/07",
+   "dates": [
+    "2027-07-09"
+   ]
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2027-07-05",
+   "text": "R11 6th July 26/27"
+  },
+  {
+   "streamKey": "cpd-dates",
+   "weekCommencing": "2027-07-05",
+   "text": "INSET 09/07",
+   "dates": [
+    "2027-07-09"
+   ]
+  },
+  {
+   "streamKey": "new-staff-induction",
+   "weekCommencing": "2027-07-05",
+   "text": "Induction"
+  },
+  {
+   "streamKey": "self-assessment-reports",
+   "weekCommencing": "2027-07-05",
+   "text": "Draft SAR Submission 09/07",
+   "dates": [
+    "2027-07-09"
+   ],
+   "sourceNote": "The Manual narrative says 11 July 2027 and the Manual timeline table says 9 July 2027. Calendar says 09/07. Raised with Quality, not corrected."
+  },
+  {
+   "streamKey": "employer-surveys",
+   "weekCommencing": "2027-07-05",
+   "text": "Employer Survey 2"
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2027-07-05",
+   "text": "Y10 Taster Days (26&27/06)",
+   "dates": [
+    "2027-06-27"
+   ]
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-07-12",
+   "text": "Learner & Staff Holiday"
+  },
+  {
+   "streamKey": "end-of-year-procedures",
+   "weekCommencing": "2027-07-12",
+   "text": "EOYP Deadline 16th July"
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2027-07-12",
+   "text": "Y10 Taster Days (02&03/07)",
+   "dates": [
+    "2027-07-03"
+   ]
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-07-19",
+   "text": "Learner & Staff Holiday"
+  },
+  {
+   "streamKey": "fe-recruitment-activity-enrolment-and-attrition-reviews",
+   "weekCommencing": "2027-07-19",
+   "text": "Welcome Day (09/07) Y10 Taster Day (10/07)",
+   "dates": [
+    "2027-07-09",
+    "2027-07-10"
+   ]
+  },
+  {
+   "streamKey": "key-term-dates",
+   "weekCommencing": "2027-07-26",
+   "text": "Learner & Staff Holiday"
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2027-08-02",
+   "text": "R12 5th August 26/27"
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2027-08-09",
+   "text": "R13 14th Sept 27 (achievements only 25/26)"
+  },
+  {
+   "streamKey": "self-assessment-reports",
+   "weekCommencing": "2027-08-09",
+   "text": "FINAL SAR Submission 25th Sept 2026",
+   "sourceNote": "Calendar says 25 September 2026 but sits in the week commencing 9 August 2027. The Manual gives 24 September 2027. Raised with Quality, not corrected."
+  },
+  {
+   "streamKey": "key-ilr-returns",
+   "weekCommencing": "2027-08-16",
+   "text": "R14 21st Oct 27 (QAR Data Collection & Final funding claims)"
+  }
+ ]
+}

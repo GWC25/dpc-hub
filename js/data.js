@@ -154,6 +154,11 @@ window.DPC_DATA = {
     { id: 'student-services', name: 'Student Services' },
   ] },
   aiRuns:        { runs: [] },
+  // Named, dated groups of areas and staff the DPC is actively working
+  // with (Session 68). Scoping the board and the report to a caseload is
+  // what makes a count defensible; the dated history of who was in it is
+  // itself evidence.
+  caseloads:     { caseloads: [] },
   // Cross-college activities (Session 66): Quick Capture entries that
   // belong to a focus, a Digital Lead or a Health Check review rather
   // than to one curriculum area. Area-bound activities stay in
@@ -405,7 +410,7 @@ async function loadOptionalFiles() {
       // Capture, so "missing" is the normal starting state rather than a
       // data-integrity problem. Mark it dirty so the next auto-save
       // writes it, and do not raise a banner for it.
-      if (filename === 'data-activities.json') { _dirty.add(filename); continue; }
+      if (filename === 'data-activities.json' || filename === 'data-caseloads.json') { _dirty.add(filename); continue; }
       _pendingBanners.push({
         type:      'amber',
         message:   `${filename} not found — this module will start empty. Any figure drawn from it will read zero.`,
@@ -1928,6 +1933,7 @@ const ACTIVITY_LINK_TYPES = Object.freeze({
   DIGITAL_LEAD: 'digital-lead',
   HEALTH_CHECK: 'healthcheck',
   RESOURCE:     'resource',
+  MILESTONE:    'milestone',
 });
 
 const ACTIVITY_TYPE_LABELS = Object.freeze({
@@ -1942,6 +1948,17 @@ const ACTIVITY_TYPE_LABELS = Object.freeze({
   'tlam-meeting':         'TLAM Meeting',
   'meeting':              'Other Meeting',
   'health-check-visit':   'Health Check Visit',
+  // Quality Assurance & Improvement Manual 26/27 instruments. Labels use
+  // the Manual's own wording so a report reads as Quality colleagues
+  // expect rather than in Hub vocabulary.
+  'ppr':                  'Programme Performance Review',
+  'cqrp':                 'Curriculum Quality Review Panel',
+  'qra':                  'Quality Review Activity',
+  'peer-review':          'Peer Review',
+  'self-review':          'Self-Review',
+  'qip-review':           'Quality Improvement Plan Review',
+  'sar-contribution':     'Self-Assessment Report Contribution',
+  'securing-improvement': 'Securing Improvement',
   'referral':             'Referral',
   'resource-created':     'Resource Created',
   'communication':        'Communication',
@@ -2046,6 +2063,276 @@ function renderLinkedActivityList(activities, opts = {}) {
       </h3>
       ${body}
     </section>`;
+}
+
+// ── Action plans and milestones (Session 68) ────────────────────
+// Everything here is optional. A focus needs no action plan; an action
+// plan needs no success criteria, tasks or resources. What is not
+// optional is the id: a milestone gets one the moment it exists, so
+// anything can link to it later without a retrofit.
+function makeMilestone(opts = {}) {
+  return {
+    milestoneId:     opts.milestoneId || (typeof generateId === 'function' ? generateId() : String(Date.now())),
+    title:           (opts.title || '').trim(),
+    dueDate:         opts.dueDate || null,
+    completedDate:   opts.completedDate || null,
+    state:           opts.state || MILESTONE_STATE.NOT_STARTED,
+    successCriteria: Array.isArray(opts.successCriteria) ? opts.successCriteria : [],
+    tasks:           Array.isArray(opts.tasks) ? opts.tasks : [],
+    resources:       Array.isArray(opts.resources) ? opts.resources : [],
+    notes:           opts.notes || '',
+    createdAt:       nowISO(),
+    lastUpdated:     nowISO(),
+  };
+}
+
+// A criterion or task is { id, text, done }. Same shape for both so one
+// renderer and one toggle handler cover them.
+function makeCheckItem(text) {
+  return {
+    id:   typeof generateId === 'function' ? generateId() : String(Date.now()),
+    text: (text || '').trim(),
+    done: false,
+  };
+}
+
+function getMilestones(focus) {
+  return ((focus && focus.milestones) || []).slice()
+    .sort((a, b) => String(a.dueDate || '9999').localeCompare(String(b.dueDate || '9999')));
+}
+
+function getMilestone(focus, milestoneId) {
+  return ((focus && focus.milestones) || []).find(m => m.milestoneId === milestoneId) || null;
+}
+
+function saveMilestone(focus, milestone) {
+  if (!focus) return null;
+  if (!focus.milestones) focus.milestones = [];
+  const idx = focus.milestones.findIndex(m => m.milestoneId === milestone.milestoneId);
+  const rec = { ...milestone, lastUpdated: nowISO() };
+  if (idx >= 0) focus.milestones[idx] = rec; else focus.milestones.push(rec);
+  saveCurrentFocus(focus);
+  return rec;
+}
+
+// Removes the milestone. Activities linked to it keep their focus link
+// and lose only the milestone link, so evidence is never orphaned by
+// tidying up a plan.
+function deleteMilestone(focus, milestoneId) {
+  if (!focus || !milestoneId) return;
+  focus.milestones = (focus.milestones || []).filter(m => m.milestoneId !== milestoneId);
+  getAllActivities().forEach(a => {
+    if (!Array.isArray(a.links)) return;
+    if (!a.links.some(l => l && l.type === ACTIVITY_LINK_TYPES.MILESTONE && l.id === milestoneId)) return;
+    const real = _findActivityRecord(a.activityId);
+    if (real) real.links = real.links.filter(l => !(l.type === ACTIVITY_LINK_TYPES.MILESTONE && l.id === milestoneId));
+  });
+  _dirty.add('data-areas.json');
+  _dirty.add('data-activities.json');
+  saveCurrentFocus(focus);
+}
+
+// getAllActivities() returns copies, so anything that mutates an activity
+// needs the record itself.
+function _findActivityRecord(activityId) {
+  if (!activityId) return null;
+  const areas = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
+  for (const area of areas) {
+    const hit = (area.activityLog || []).find(a => a.activityId === activityId);
+    if (hit) return hit;
+  }
+  return ((window.DPC_DATA.activities && window.DPC_DATA.activities.activities) || [])
+    .find(a => a.activityId === activityId) || null;
+}
+
+// Adds or removes links on an activity that has already been logged.
+// This is what makes retrospective linking possible: without it, only
+// work logged after the board shipped could ever appear on a focus.
+function setActivityLinks(activityId, links) {
+  const rec = _findActivityRecord(activityId);
+  if (!rec) return false;
+  rec.links = Array.isArray(links) ? links : [];
+  rec.lastUpdated = nowISO();
+  _dirty.add('data-areas.json');
+  _dirty.add('data-activities.json');
+  _writeLocalSnapshot();
+  return true;
+}
+
+function getFocusProgress(focus) {
+  const ms = getMilestones(focus);
+  const count = (st) => ms.filter(m => m.state === st).length;
+  return {
+    total:      ms.length,
+    complete:   count(MILESTONE_STATE.COMPLETE),
+    inProgress: count(MILESTONE_STATE.IN_PROGRESS),
+    atRisk:     count(MILESTONE_STATE.AT_RISK),
+    notStarted: count(MILESTONE_STATE.NOT_STARTED),
+    dropped:    count(MILESTONE_STATE.DROPPED),
+  };
+}
+
+// ── Caseloads (Session 68) ──────────────────────────────────────
+// A caseload is a named, dated set of areas and staff. Dated, because
+// the caseload changes across the year by risk and need, and the record
+// of what it held in Term 1 is evidence in its own right.
+function makeCaseload(opts = {}) {
+  return {
+    caseloadId: opts.caseloadId || (typeof generateId === 'function' ? generateId() : String(Date.now())),
+    name:       (opts.name || '').trim(),
+    areaCodes:  Array.isArray(opts.areaCodes) ? opts.areaCodes.slice() : [],
+    staffIds:   Array.isArray(opts.staffIds) ? opts.staffIds.slice() : [],
+    from:       opts.from || todayISO(),
+    to:         opts.to || null,
+    rationale:  opts.rationale || '',
+    createdAt:  nowISO(),
+    lastUpdated: nowISO(),
+  };
+}
+
+function getCaseloads() {
+  return ((window.DPC_DATA.caseloads && window.DPC_DATA.caseloads.caseloads) || []).slice()
+    .sort((a, b) => String(b.from || '').localeCompare(String(a.from || '')));
+}
+
+function getCaseload(caseloadId) {
+  return getCaseloads().find(c => c.caseloadId === caseloadId) || null;
+}
+
+// Open-ended caseloads (no 'to') stay current indefinitely.
+function getCurrentCaseloads(onDate) {
+  const d = onDate || todayISO();
+  return getCaseloads().filter(c => (!c.from || c.from <= d) && (!c.to || c.to >= d));
+}
+
+function saveCaseload(caseload) {
+  if (!window.DPC_DATA.caseloads) window.DPC_DATA.caseloads = { caseloads: [] };
+  const list = window.DPC_DATA.caseloads.caseloads;
+  const idx = list.findIndex(c => c.caseloadId === caseload.caseloadId);
+  const rec = { ...caseload, lastUpdated: nowISO() };
+  if (idx >= 0) list[idx] = rec; else list.push(rec);
+  _dirty.add('data-caseloads.json');
+  _writeLocalSnapshot();
+  return rec;
+}
+
+// Scope is { areaCodes } or null for everything. Returned alongside the
+// filtered list so a caller can state the denominator, without which a
+// scoped count reads as cherry-picking.
+function applyScope(activities, scope) {
+  const codes = scope && Array.isArray(scope.areaCodes) ? scope.areaCodes : null;
+  const total = (activities || []).length;
+  if (!codes || codes.length === 0) {
+    return { items: activities || [], total, scoped: total, scopeLabel: 'all areas', areaCount: null };
+  }
+  const items = (activities || []).filter(a => codes.includes(a.areaCode));
+  return {
+    items, total, scoped: items.length,
+    scopeLabel: scope.name || `${codes.length} areas`,
+    areaCount: codes.length,
+  };
+}
+
+// ── Quality Calendar 26/27 (Session 68) ─────────────────────────
+// Parsed from the college workbook by tools/parse-quality-calendar.py.
+// Cell text is verbatim; anything that looks like a slip carries a
+// sourceNote rather than being corrected, so the Hub never quietly
+// rewrites someone else's document.
+let _qcalCache = null;
+
+async function loadQualityCalendar() {
+  if (_qcalCache) return _qcalCache;
+  try {
+    const res = await fetch('./data/quality-calendar-2627.json');
+    _qcalCache = res.ok ? await res.json() : { weeks: [], streams: [], windows: [], entries: [] };
+  } catch {
+    _qcalCache = { weeks: [], streams: [], windows: [], entries: [] };
+  }
+  return _qcalCache;
+}
+
+function getQualityCalendar() {
+  return _qcalCache || { weeks: [], streams: [], windows: [], entries: [] };
+}
+
+// Which calendar stream an activity type belongs to. Types with no
+// calendared window are absent on purpose.
+const ACTIVITY_TYPE_CALENDAR_STREAM = Object.freeze({
+  'learning-walk':    'learning-walks-and-instructional-coaching',
+  'devobs':           'learning-walks-and-instructional-coaching',
+  'peer-review':      'peer-self-reviews',
+  'self-review':      'peer-self-reviews',
+  'ppr':              'programme-performance-reviews',
+  'cqrp':             'curriculum-quality-review-panels',
+  'work-review':      'work-review-panels',
+  'qip-review':       'quality-improvement-plans',
+  'sar-contribution': 'self-assessment-reports',
+  'cpd-delivered':    'cpd-dates',
+  'qra':              'curriculum-quality-review-panels',
+});
+
+function daysBetween(fromISO, toISO) {
+  if (!fromISO || !toISO) return null;
+  const a = new Date(fromISO + 'T12:00:00'), b = new Date(toISO + 'T12:00:00');
+  if (isNaN(a) || isNaN(b)) return null;
+  return Math.round((b - a) / 86400000);
+}
+
+// The window currently open for this stream, or the next one due.
+function getCalendarWindow(streamKey, onDate) {
+  const d = onDate || todayISO();
+  const wins = (getQualityCalendar().windows || [])
+    .filter(w => w.streamKey === streamKey)
+    .sort((a, b) => String(a.from).localeCompare(String(b.from)));
+  const open = wins.find(w => w.from <= d && w.to >= d);
+  if (open) return { ...open, status: 'open', daysLeft: daysBetween(d, open.to) };
+  const next = wins.find(w => w.from > d);
+  if (next) return { ...next, status: 'upcoming', daysUntil: daysBetween(d, next.from) };
+  const last = wins[wins.length - 1];
+  return last ? { ...last, status: 'closed' } : null;
+}
+
+// Calendar entries for a stream, optionally only those still ahead.
+function getCalendarEntries(streamKey, opts = {}) {
+  const d = opts.from || todayISO();
+  return (getQualityCalendar().entries || [])
+    .filter(e => e.streamKey === streamKey)
+    .filter(e => !opts.upcomingOnly || e.weekCommencing >= d)
+    .sort((a, b) => a.weekCommencing.localeCompare(b.weekCommencing));
+}
+
+function formatUKDate(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(String(iso).split('T')[0] + 'T12:00:00')
+      .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch { return iso; }
+}
+
+// One plain sentence a panel or a report can print as-is.
+function describeCalendarWindow(win) {
+  if (!win) return '';
+  const name = win.number ? `Window ${win.number}` : 'Window';
+  if (win.status === 'open') {
+    return `${name}, closes ${formatUKDate(win.to)}. ${win.daysLeft} day${win.daysLeft === 1 ? '' : 's'} left.`;
+  }
+  if (win.status === 'upcoming') {
+    return `${name} opens ${formatUKDate(win.from)}. ${win.daysUntil} day${win.daysUntil === 1 ? '' : 's'} away.`;
+  }
+  return `${name} closed ${formatUKDate(win.to)}.`;
+}
+
+// Every sourceNote in the calendar, for a settings or provenance view.
+function getCalendarSourceNotes() {
+  const cal = getQualityCalendar();
+  const out = [];
+  (cal.streams || []).forEach(s => {
+    if (s.sourceNote) out.push({ scope: 'stream', name: s.name, note: s.sourceNote });
+  });
+  (cal.entries || []).forEach(e => {
+    if (e.sourceNote) out.push({ scope: 'entry', name: e.text, weekCommencing: e.weekCommencing, note: e.sourceNote });
+  });
+  return out;
 }
 
 // ── Resource references (Session 67) ────────────────────────────
@@ -2265,6 +2552,7 @@ function markAllDirty() {
   _dirty.add('data-current-focus.json');
   _dirty.add('data-notes.json');
   _dirty.add('data-activities.json');
+  _dirty.add('data-caseloads.json');
 }
 
 // ── Public: force save now (called on user action) ────────────
@@ -2317,6 +2605,7 @@ function _assignToStore(filename, data) {
     'data-departments.json':  'departments',
     'data-ai-runs.json':      'aiRuns',
     'data-activities.json':   'activities',
+    'data-caseloads.json':    'caseloads',
   };
   const key = keyMap[filename];
   if (key && data) window.DPC_DATA[key] = data;
@@ -2341,6 +2630,7 @@ function _getDataForFile(filename) {
     'data-departments.json':  window.DPC_DATA.departments,
     'data-ai-runs.json':      window.DPC_DATA.aiRuns,
     'data-activities.json':   window.DPC_DATA.activities,
+    'data-caseloads.json':    window.DPC_DATA.caseloads,
     [DPC_CONFIG.MANIFEST_FILENAME]: window.DPC_DATA.manifest,
   };
   return keyMap[filename] || null;

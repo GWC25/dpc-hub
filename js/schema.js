@@ -187,6 +187,28 @@ const ACTIVITY_TYPE = Object.freeze({
   HOA_MEETING:        'hoa-meeting',
   DL_MEETING:         'digital-lead-meeting',
   TLAM_MEETING:       'tlam-meeting',
+  // Named instruments from the Quality Assurance & Improvement Manual
+  // 26/27. Added so DPC involvement in the college's own QA processes can
+  // be logged and evidenced, rather than only Hub-native activity.
+  PPR:                'ppr',
+  CQRP:               'cqrp',
+  QRA:                'qra',
+  PEER_REVIEW:        'peer-review',
+  SELF_REVIEW:        'self-review',
+  QIP_REVIEW:         'qip-review',
+  SAR_CONTRIBUTION:   'sar-contribution',
+  SECURING_IMPROVEMENT: 'securing-improvement',
+});
+
+// ── Milestones within a Current Focus action plan ──────────────
+// Every part of an action plan is optional. A milestone may be a single
+// line with a date, or carry success criteria, tasks and resources.
+const MILESTONE_STATE = Object.freeze({
+  NOT_STARTED: 'not-started',
+  IN_PROGRESS: 'in-progress',
+  AT_RISK:     'at-risk',
+  COMPLETE:    'complete',
+  DROPPED:     'dropped',
 });
 
 // ── Touch types ───────────────────────────────────────────────
@@ -489,6 +511,7 @@ const DEFAULT_DATA = Object.freeze({
   'data-health-checks.json': { reviews: [] },
   'data-action-plans.json': { plans: [] },
   'data-activities.json':   { activities: [] },
+  'data-caseloads.json':    { caseloads: [] },
 });
 
 // ── Helper: get LRA theme by ID ───────────────────────────────

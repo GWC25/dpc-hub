@@ -1,4 +1,9 @@
-// DPC Hub · js/quickcapture.js · v1.3 · September 2026
+// DPC Hub · js/quickcapture.js · v1.4 · September 2026
+// v1.4 — the named Quality Assurance & Improvement Manual 26/27
+// instruments are now loggable: PPR, CQRP, QRA, Peer and Self Review,
+// QIP review, SAR contribution and Securing Improvement. Without these
+// there was no way to record DPC involvement in the college's own QA
+// processes, which is where most of the evidence of impact sits.
 // v1.3 — a resource or document can be attached to an activity, either
 // picked from the Resource Library or pasted as a title + link. It rides
 // on links[] as { type: 'resource' }, so it surfaces on whatever else the
@@ -55,6 +60,16 @@ function initQuickCapture() {
               <option value="tlam-meeting">TLAM Meeting</option>
               <option value="meeting">Other Meeting</option>
             </optgroup>
+            <optgroup label="Quality Manual processes">
+              <option value="ppr">Programme Performance Review</option>
+              <option value="cqrp">Curriculum Quality Review Panel</option>
+              <option value="qra">Quality Review Activity</option>
+              <option value="peer-review">Peer Review</option>
+              <option value="self-review">Self-Review</option>
+              <option value="qip-review">Quality Improvement Plan Review</option>
+              <option value="sar-contribution">Self-Assessment Report Contribution</option>
+              <option value="securing-improvement">Securing Improvement</option>
+            </optgroup>
             <optgroup label="Other">
               <option value="health-check-visit">Health Check Visit</option>
               <option value="referral">Referral</option>
@@ -62,6 +77,7 @@ function initQuickCapture() {
               <option value="communication">Communication (email / Teams message)</option>
             </optgroup>
           </select>
+          <p id="qc-type-window" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;" role="status" aria-live="polite"></p>
         </div>
 
         <!-- Area -->
@@ -284,6 +300,7 @@ function openQuickCapture() {
   if (linkStatus) linkStatus.textContent = '';
   _qcSetLinkPanel(false);
   _qcPopulateLinkPickers();
+  _qcShowTypeWindow();
 
   modal.style.display = 'flex';
   document.getElementById('qc-type').focus();
@@ -345,7 +362,10 @@ function _wireQCEvents() {
   });
 
   // Activity type drives sensible link defaults
-  document.getElementById('qc-type')?.addEventListener('change', _qcApplyTypeDefaults);
+  document.getElementById('qc-type')?.addEventListener('change', () => {
+    _qcApplyTypeDefaults();
+    _qcShowTypeWindow();
+  });
 
   // Resource picker: title and link only apply when pasting something new
   document.getElementById('qc-link-resource')?.addEventListener('change', function() {
@@ -524,6 +544,20 @@ function _populateQCAreaDropdown() {
 }
 
 // ── Link to panel (v1.1) ─────────────────────────────────────────
+
+// Prints the Quality Calendar window for the selected activity type, so
+// the deadline is in front of you when you log the work rather than only
+// when you review it later.
+function _qcShowTypeWindow() {
+  const el = document.getElementById('qc-type-window');
+  if (!el) return;
+  const type = document.getElementById('qc-type')?.value || '';
+  const stream = (typeof ACTIVITY_TYPE_CALENDAR_STREAM !== 'undefined')
+    ? ACTIVITY_TYPE_CALENDAR_STREAM[type] : null;
+  if (!stream || typeof getCalendarWindow !== 'function') { el.textContent = ''; return; }
+  const win = getCalendarWindow(stream);
+  el.textContent = win ? 'Quality Calendar: ' + describeCalendarWindow(win) : '';
+}
 
 function _qcSetLinkPanel(open) {
   const panel = document.getElementById('qc-link-panel');
