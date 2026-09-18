@@ -1,4 +1,7 @@
-// DPC Hub · js/currentfocus.js · v1.1 · September 2026
+// DPC Hub · js/currentfocus.js · v1.2 · September 2026
+// v1.2 — resources can be pinned to a focus, either picked from the
+// Resource Library or pasted as a title + link. Resources arriving via
+// linked Quick Capture activity are shown separately and read-only.
 // v1.1 — shows Quick Capture activity linked to this focus, and now
 // persists via saveCurrentFocus() rather than an unread window flag.
 // Current Focus module. Flexible targeted focus objects.
@@ -174,6 +177,64 @@ function _openCFDetail(focusId) {
         </div>
       </div>`:''}
 
+    <section style="margin-top:var(--space-lg);" aria-labelledby="cf-resources-heading">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm);gap:var(--space-md);flex-wrap:wrap;">
+        <h3 id="cf-resources-heading" style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);">Resources</h3>
+        <button id="cf-res-add-btn" type="button" class="btn btn--ghost btn--sm" aria-expanded="false" aria-controls="cf-res-form">+ Add resource</button>
+      </div>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-sm);">Documents and links this focus is built on. Everything is a link \u2014 for a file, paste its OneDrive or SharePoint address.</p>
+
+      <div id="cf-res-form" style="display:none;background:var(--color-light);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+        <div class="form-group">
+          <label class="form-label" for="cf-res-pick">Resource</label>
+          <select class="form-select" id="cf-res-pick">
+            <option value="__new__">Paste a new link\u2026</option>
+            ${typeof renderLibraryOptionsHtml==='function' ? renderLibraryOptionsHtml() : ''}
+          </select>
+        </div>
+        <div id="cf-res-new-fields">
+          <div class="form-group">
+            <label class="form-label" for="cf-res-title">Title</label>
+            <input class="form-input" type="text" id="cf-res-title" placeholder="e.g. SEND Digital Accessibility strategy dossier">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cf-res-url">Link</label>
+            <input class="form-input" type="url" id="cf-res-url" placeholder="https://\u2026">
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:var(--space-xs);cursor:pointer;margin-bottom:0;min-height:32px;">
+              <input type="checkbox" id="cf-res-to-library" checked style="width:16px;height:16px;accent-color:var(--color-teal);flex-shrink:0;">
+              <span style="font-size:var(--text-sm);color:var(--color-navy);">Also add to the Resource Library</span>
+            </label>
+          </div>
+        </div>
+        <p id="cf-res-error" role="alert" style="font-size:var(--text-sm);color:var(--color-red);display:none;margin-bottom:var(--space-sm);"></p>
+        <div class="btn-row">
+          <button id="cf-res-save" type="button" class="btn btn--primary btn--sm">Add</button>
+          <button id="cf-res-cancel" type="button" class="btn btn--secondary btn--sm">Cancel</button>
+        </div>
+      </div>
+
+      <p id="cf-res-status" role="status" aria-live="polite" class="sr-only"></p>
+
+      ${typeof getFocusResources==='function' && typeof renderResourceList==='function'
+        ? renderResourceList(getFocusResources(f), {
+            removeAction: 'cf-res-remove',
+            emptyMsg: 'No resources pinned to this focus yet.'
+          })
+        : ''}
+
+      ${(() => {
+        if (typeof getLinkedActivityResources !== 'function' || typeof renderResourceList !== 'function') return '';
+        const fromActivity = getLinkedActivityResources(ACTIVITY_LINK_TYPES.FOCUS, f.focusId)
+          .filter(r => !((f.resources || []).some(p => p.resourceId === r.resourceId)));
+        if (fromActivity.length === 0) return '';
+        return `
+          <h4 style="font-size:var(--text-sm);font-weight:bold;color:var(--color-muted);margin:var(--space-lg) 0 var(--space-xs);">From linked activity</h4>
+          ${renderResourceList(fromActivity, {})}`;
+      })()}
+    </section>
+
     ${typeof getLinkedActivities==='function' && typeof renderLinkedActivityList==='function'
       ? renderLinkedActivityList(getLinkedActivities(ACTIVITY_LINK_TYPES.FOCUS, f.focusId), {
           heading:   'Linked activity',
@@ -184,6 +245,7 @@ function _openCFDetail(focusId) {
   `;
 
   document.getElementById('cf-edit-btn')?.addEventListener('click',()=>_openCFModal(focusId));
+  _wireCFResourceEvents(focusId);
 }
 
 function _openCFModal(focusId=null) {
@@ -221,6 +283,7 @@ function _saveCFModal() {
     impact:document.getElementById('cf-impact').value.trim(),
     linkedAFIIds:existing?.linkedAFIIds||[],
     linkedAreaCodes:existing?.linkedAreaCodes||[],
+    resources:existing?.resources||[],
     status:document.getElementById('cf-status').value||'active',
     reviewDate:existing?.reviewDate||null,
   };
@@ -247,6 +310,114 @@ function _wireCFEvents() {
   document.getElementById('cf-modal-cancel')?.addEventListener('click',()=>document.getElementById('cf-modal').style.display='none');
   document.getElementById('cf-modal-save')?.addEventListener('click',_saveCFModal);
   document.getElementById('cf-modal')?.addEventListener('click',e=>{if(e.target===document.getElementById('cf-modal'))document.getElementById('cf-modal').style.display='none';});
+}
+
+// ── Focus resources (v1.2) ───────────────────────────────────────
+
+function _wireCFResourceEvents(focusId) {
+  const form   = document.getElementById('cf-res-form');
+  const addBtn = document.getElementById('cf-res-add-btn');
+  const pick   = document.getElementById('cf-res-pick');
+  if (!form || !addBtn) return;
+
+  const setOpen = (open) => {
+    form.style.display = open ? 'block' : 'none';
+    addBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) pick?.focus();
+  };
+
+  addBtn.addEventListener('click', () => setOpen(form.style.display === 'none'));
+  document.getElementById('cf-res-cancel')?.addEventListener('click', () => {
+    _cfResetResourceForm();
+    setOpen(false);
+    addBtn.focus();
+  });
+
+  // Title and link only apply when pasting something new
+  pick?.addEventListener('change', () => {
+    const isNew = pick.value === '__new__';
+    const fields = document.getElementById('cf-res-new-fields');
+    if (fields) fields.style.display = isNew ? 'block' : 'none';
+  });
+
+  document.getElementById('cf-res-save')?.addEventListener('click', () => _cfSaveResource(focusId));
+
+  document.querySelectorAll('.cf-res-remove').forEach(btn => {
+    btn.addEventListener('click', () => _cfRemoveResource(focusId, btn.dataset.resourceId));
+  });
+}
+
+function _cfResetResourceForm() {
+  const pick = document.getElementById('cf-res-pick');
+  if (pick) pick.value = '__new__';
+  const fields = document.getElementById('cf-res-new-fields');
+  if (fields) fields.style.display = 'block';
+  ['cf-res-title','cf-res-url'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const lib = document.getElementById('cf-res-to-library'); if (lib) lib.checked = true;
+  const err = document.getElementById('cf-res-error'); if (err) err.style.display = 'none';
+}
+
+function _cfSaveResource(focusId) {
+  const focus = _getAllFocuses().find(x => x.focusId === focusId);
+  if (!focus) return;
+  const pick = document.getElementById('cf-res-pick');
+  const err  = document.getElementById('cf-res-error');
+  const fail = (msg, focusEl) => {
+    if (err) { err.textContent = msg; err.style.display = 'block'; }
+    focusEl?.focus();
+  };
+
+  let ref;
+  if (pick && pick.value !== '__new__') {
+    const entry = typeof getLibraryEntryById === 'function' ? getLibraryEntryById(pick.value) : null;
+    if (!entry) return fail('That Resource Library entry could not be found. Try pasting the link instead.', pick);
+    ref = makeResourceRef({ resourceId: entry.resourceId, title: entry.title, url: entry.url, fromLibrary: true });
+  } else {
+    const title = document.getElementById('cf-res-title').value.trim();
+    const url   = document.getElementById('cf-res-url').value.trim();
+    if (!url)   return fail('Please enter a link.', document.getElementById('cf-res-url'));
+    if (!title) return fail('Please give the resource a title, so it is recognisable in a report.', document.getElementById('cf-res-title'));
+
+    const toLibrary = document.getElementById('cf-res-to-library')?.checked;
+    ref = makeResourceRef({ title, url, fromLibrary: !!toLibrary });
+    if (toLibrary && typeof saveLibraryEntry === 'function') {
+      saveLibraryEntry({
+        resourceId:  ref.resourceId,
+        type:        typeof LIBRARY_TYPE !== 'undefined' ? LIBRARY_TYPE.EXTERNAL_RESOURCE : 'external-resource',
+        title, url,
+        description: '',
+        tags:        [],
+      });
+    }
+  }
+
+  if (!focus.resources) focus.resources = [];
+  if (focus.resources.some(r => r.url === ref.url)) {
+    return fail('That link is already pinned to this focus.', pick);
+  }
+  focus.resources.push(ref);
+  if (typeof saveCurrentFocus === 'function') saveCurrentFocus(focus);
+
+  _cfResetResourceForm();
+  _openCFDetail(focusId);
+  const status = document.getElementById('cf-res-status');
+  if (status) status.textContent = `Resource added: ${ref.title}.`;
+  if (typeof UI !== 'undefined') UI.showToast('success', `Resource added: ${ref.title}`);
+}
+
+// Removes the pin only. Anything in the Resource Library stays there, and
+// resources that arrived through linked activity are not pinned, so they
+// cannot be removed from here.
+function _cfRemoveResource(focusId, resourceId) {
+  const focus = _getAllFocuses().find(x => x.focusId === focusId);
+  if (!focus || !resourceId) return;
+  const before = (focus.resources || []).length;
+  focus.resources = (focus.resources || []).filter(r => r.resourceId !== resourceId);
+  if (focus.resources.length === before) return;
+  if (typeof saveCurrentFocus === 'function') saveCurrentFocus(focus);
+  _openCFDetail(focusId);
+  const status = document.getElementById('cf-res-status');
+  if (status) status.textContent = 'Resource removed from this focus. It is still in the Resource Library if it was held there.';
 }
 
 function _getAllFocuses(){return(window.DPC_DATA.currentFocus&&window.DPC_DATA.currentFocus.focuses)||[];}
