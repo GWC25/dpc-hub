@@ -1,4 +1,6 @@
-// DPC Hub · js/currentfocus.js · v2.1 · September 2026
+// DPC Hub · js/currentfocus.js · v2.2 · September 2026
+// v2.2 — combined report across every focus, and the option to file a
+// report into the connected folder rather than into Downloads.
 // v2.1 — Report tab: an editable preview with a pre-export check, and
 // Word and Excel downloads. Nothing downloads until you have read it.
 // v2.0 — Current Focus is now the front board. The narrative moves
@@ -27,7 +29,10 @@ function initCurrentFocus() {
     <div id="banner-container" aria-live="polite"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-md);">
       <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);">Current Focus</h1>
-      <button id="cf-new-btn" type="button" class="btn btn--primary btn--sm">+ New focus</button>
+      <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+        <button id="cf-combined-btn" type="button" class="btn btn--ghost btn--sm">Combined report</button>
+        <button id="cf-new-btn" type="button" class="btn btn--primary btn--sm">+ New focus</button>
+      </div>
     </div>
     <p style="font-size:var(--text-base);color:var(--color-muted);margin-bottom:var(--space-xl);">Targeted focus areas beyond routine coaching — a specific theme, initiative, group, or action that needs sustained attention.</p>
 
@@ -499,6 +504,7 @@ function _saveCFModal() {
 
 function _wireCFEvents() {
   document.getElementById('cf-new-btn')?.addEventListener('click',()=>_openCFModal());
+  document.getElementById('cf-combined-btn')?.addEventListener('click',()=>_openCFCombined());
   document.getElementById('cf-modal-close')?.addEventListener('click',()=>document.getElementById('cf-modal').style.display='none');
   document.getElementById('cf-modal-cancel')?.addEventListener('click',()=>document.getElementById('cf-modal').style.display='none');
   document.getElementById('cf-modal-save')?.addEventListener('click',_saveCFModal);
@@ -729,6 +735,9 @@ function _wireCFTabs(focusId) {
 }
 
 function _wireCFScope(focusId) {
+  // The scope bar is shared with the combined report, which has no focus
+  // to re-render, so the refresh has to branch on which view is open.
+  const refresh = () => (focusId ? _openCFDetail(focusId) : _openCFCombined());
   document.getElementById('cf-scope')?.addEventListener('change', function() {
     const v = this.value;
     if (!v) _cfScope = null;
@@ -738,7 +747,7 @@ function _wireCFScope(focusId) {
     } else {
       _cfScope = { areaCodes: [v.slice(2)], name: v.slice(2) };
     }
-    _openCFDetail(focusId);
+    refresh();
   });
 
   const form = document.getElementById('cf-caseload-form');
@@ -751,7 +760,7 @@ function _wireCFScope(focusId) {
     };
     btn.addEventListener('click', () => setOpen(form.style.display === 'none'));
     document.getElementById('cf-cl-cancel')?.addEventListener('click', () => { _cfResetCaseloadForm(); setOpen(false); btn.focus(); });
-    document.getElementById('cf-cl-save')?.addEventListener('click', () => _cfSaveCaseload(focusId));
+    document.getElementById('cf-cl-save')?.addEventListener('click', () => _cfSaveCaseload(focusId, refresh));
     document.querySelectorAll('.cf-cl-edit').forEach(b => {
       b.addEventListener('click', () => { _cfFillCaseloadForm(b.dataset.cl); setOpen(true); });
     });
@@ -777,7 +786,7 @@ function _cfFillCaseloadForm(caseloadId) {
   document.querySelectorAll('.cf-cl-area').forEach(cb => { cb.checked = (c.areaCodes || []).includes(cb.value); });
 }
 
-function _cfSaveCaseload(focusId) {
+function _cfSaveCaseload(focusId, refresh) {
   const err  = document.getElementById('cf-cl-error');
   const fail = (m, el) => { if (err) { err.textContent = m; err.style.display = 'block'; } el?.focus(); };
   const name = document.getElementById('cf-cl-name').value.trim();
@@ -800,7 +809,7 @@ function _cfSaveCaseload(focusId) {
   if (existing) rec.createdAt = existing.createdAt;
   saveCaseload(rec);
   _cfResetCaseloadForm();
-  _openCFDetail(focusId);
+  if (typeof refresh === 'function') refresh(); else _openCFDetail(focusId);
   const st = document.getElementById('cf-ms-status');
   if (st) st.textContent = `Caseload saved: ${rec.name}, ${codes.length} areas.`;
 }
@@ -921,6 +930,8 @@ function _cfRenderReportPanel(f) {
     <div class="btn-row" style="margin-bottom:var(--space-md);">
       <button id="cf-rep-docx" type="button" class="btn btn--primary btn--sm">Download as Word</button>
       <button id="cf-rep-xlsx" type="button" class="btn btn--primary btn--sm">Download as Excel</button>
+      ${(typeof hasFolderAccess === 'function' && hasFolderAccess())
+        ? '<button id="cf-rep-file" type="button" class="btn btn--ghost btn--sm">Save both to the Hub folder</button>' : ''}
       <button id="cf-rep-recheck" type="button" class="btn btn--ghost btn--sm">Re-run check</button>
       ${isEdited ? '<button id="cf-rep-reset" type="button" class="btn btn--ghost btn--sm">Reset to generated text</button>' : ''}
     </div>
@@ -989,6 +1000,189 @@ function _wireCFReportEvents(focusId) {
 
   document.getElementById('cf-rep-docx')?.addEventListener('click', () => _cfExportReport(focusId, 'docx'));
   document.getElementById('cf-rep-xlsx')?.addEventListener('click', () => _cfExportReport(focusId, 'xlsx'));
+  document.getElementById('cf-rep-file')?.addEventListener('click', () => _cfFileReport(focusId));
+}
+
+// Writes both files into a Reports subfolder of the connected folder, so
+// they sit beside the data they came from. The subfolder matters: the
+// loader reads the top level, and a .docx there would be noise.
+async function _cfFileReport(focusId) {
+  const focus = _cfSaveReportDraft(focusId);
+  const st = document.getElementById('cf-rep-status');
+  if (!focus) return;
+  if (st) st.textContent = 'Saving to the Hub folder...';
+  try {
+    const model    = buildFocusReportModel(focus, _cfScope);
+    const sections = _cfCollectReportSections();
+    const stamp    = todayISO();
+    const a = await saveBytesToFolder(safeFilename(`${focus.title} report ${stamp}`, 'docx'),
+                buildFocusReportDocx(model, sections), 'Reports');
+    const b = await saveBytesToFolder(safeFilename(`${focus.title} data ${stamp}`, 'xlsx'),
+                buildFocusReportXlsx(model, sections), 'Reports');
+    if (st) st.textContent = `Saved ${a} and ${b} in ${folderDisplayName() || 'the Hub folder'}.`;
+  } catch (e) {
+    if (st) st.textContent = 'Could not save to the folder: ' + (e && e.message ? e.message : 'unknown error') + ' Use Download instead.';
+  }
+}
+
+// ── Combined report across every focus (v2.2) ────────────────────
+
+let _cfCombinedOpen = false;
+
+function _openCFCombined() {
+  _cfCombinedOpen = true;
+  _cfCurrentId = null;
+  _renderCFList();
+  const detail = document.getElementById('cf-detail');
+  if (!detail) return;
+  detail.style.display = 'block';
+
+  const all = _getAllFocuses();
+  if (all.length === 0) {
+    detail.innerHTML = '<p style="font-size:var(--text-sm);color:var(--color-muted);">There are no focuses to report on yet.</p>';
+    return;
+  }
+
+  const model    = buildCombinedReportModel(all, _cfScope);
+  const draft    = frCombinedDraftSections(model);
+  const saved    = (window.DPC_DATA.currentFocus && window.DPC_DATA.currentFocus.combinedDraft) || {};
+  const sections = {};
+  ['overview','progress','impact','next'].forEach(k => {
+    sections[k] = (saved[k] != null && String(saved[k]).trim()) ? saved[k] : draft[k];
+  });
+  const check = runPreExportCheck(sections, model);
+
+  const levelStyle = { ok:'color:var(--color-green)', warn:'color:var(--color-amber)', note:'color:var(--color-blue)' };
+  const levelWord  = { ok:'Pass', warn:'Check', note:'Note' };
+  const editable = (key, label) => `
+    <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);border-bottom:2px solid var(--color-navy);padding-bottom:2px;margin:var(--space-md) 0 var(--space-xs);">${_cfEsc(label)}</h4>
+    <div class="cf-comb-edit" id="cf-comb-${key}" data-key="${key}" contenteditable="true" role="textbox" aria-multiline="true"
+         aria-label="${_cfEsc(label)} section"
+         style="font-size:var(--text-sm);color:var(--color-slate);white-space:pre-wrap;border:1px solid transparent;border-radius:var(--radius-md);padding:var(--space-xs);min-height:44px;">${_cfEsc(sections[key])}</div>`;
+
+  const periodText = model.period.from ? `${_cfFmtDate(model.period.from)} to ${_cfFmtDate(model.period.to)}` : 'to date';
+
+  detail.innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-md);flex-wrap:wrap;margin-bottom:var(--space-md);">
+      <div>
+        <h2 style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">Combined report</h2>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);">Across ${model.focuses.length} focus${model.focuses.length === 1 ? '' : 'es'}. ${model.acts.length} record${model.acts.length === 1 ? '' : 's'} after removing double counting.</p>
+      </div>
+      <button id="cf-comb-close" type="button" class="btn btn--ghost btn--sm">Back to focuses</button>
+    </div>
+
+    ${_cfRenderScopeBar({ focusId: null })}
+
+    <div style="border:2px solid ${check.pass ? 'var(--color-green)' : 'var(--color-amber)'};background:${check.pass ? 'var(--color-green-lt)' : 'var(--color-amber-lt)'};border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+      <h3 style="font-size:var(--text-sm);font-weight:bold;color:${check.pass ? 'var(--color-green)' : 'var(--color-amber)'};margin-bottom:var(--space-xs);">Pre-export check</h3>
+      <ul style="list-style:none;margin:0;padding:0;">
+        ${check.issues.map(i => `
+          <li style="display:flex;gap:var(--space-sm);padding:2px 0;font-size:var(--text-xs);">
+            <span style="font-weight:bold;flex-shrink:0;min-width:48px;${levelStyle[i.level]}">${levelWord[i.level]}</span>
+            <span><strong>${_cfEsc(i.label)}.</strong> ${_cfEsc(i.detail)}</span>
+          </li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="btn-row" style="margin-bottom:var(--space-md);">
+      <button id="cf-comb-docx" type="button" class="btn btn--primary btn--sm">Download as Word</button>
+      <button id="cf-comb-xlsx" type="button" class="btn btn--primary btn--sm">Download as Excel</button>
+      ${(typeof hasFolderAccess === 'function' && hasFolderAccess())
+        ? '<button id="cf-comb-file" type="button" class="btn btn--ghost btn--sm">Save both to the Hub folder</button>' : ''}
+      <button id="cf-comb-recheck" type="button" class="btn btn--ghost btn--sm">Re-run check</button>
+    </div>
+    <p id="cf-comb-status" role="status" aria-live="polite" style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-md);"></p>
+
+    <div style="border:1px solid var(--color-border);background:var(--color-white);padding:22px;border-radius:2px;">
+      <h3 style="font-size:var(--text-md);font-weight:bold;color:var(--color-navy);border-bottom:2px solid var(--color-navy);padding-bottom:var(--space-xs);">Digital Pedagogy Coach: Current Focus report</h3>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-xs);">Quality Team. Period ${_cfEsc(periodText)}. Scope ${_cfEsc(model.scopeLabel)}. Produced ${_cfEsc(_cfFmtDate(todayISO()))}. Source: DPC Hub, ${model.acts.length} logged record${model.acts.length === 1 ? '' : 's'} across ${model.focuses.length} focus${model.focuses.length === 1 ? '' : 'es'}.</p>
+      ${editable('overview', 'Overview')}
+      ${editable('progress', 'Progress')}
+      <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);border-bottom:2px solid var(--color-navy);padding-bottom:2px;margin:var(--space-md) 0 var(--space-xs);">By focus</h4>
+      <table style="border-collapse:collapse;width:100%;font-size:var(--text-xs);margin-bottom:var(--space-sm);">
+        <thead><tr>
+          ${['Focus','Records','Areas','Milestones complete','At risk'].map(h => `<th scope="col" style="border:1px solid var(--color-border);padding:6px 8px;text-align:left;background:var(--color-light);">${h}</th>`).join('')}
+        </tr></thead>
+        <tbody>${model.models.map(x => `
+          <tr>
+            <td style="border:1px solid var(--color-border);padding:6px 8px;">${_cfEsc(x.focus.title)}</td>
+            <td style="border:1px solid var(--color-border);padding:6px 8px;">${x.acts.length}</td>
+            <td style="border:1px solid var(--color-border);padding:6px 8px;">${x.areasReached.length}</td>
+            <td style="border:1px solid var(--color-border);padding:6px 8px;">${x.progress.complete} of ${x.progress.total}</td>
+            <td style="border:1px solid var(--color-border);padding:6px 8px;">${x.progress.atRisk || 0}</td>
+          </tr>`).join('')}</tbody>
+      </table>
+      ${editable('impact', 'Impact')}
+      ${editable('next', 'Next period')}
+    </div>`;
+
+  _wireCFScope(null);
+  document.getElementById('cf-comb-close')?.addEventListener('click', () => {
+    _cfCombinedOpen = false;
+    detail.style.display = 'none';
+    _renderCFList();
+    document.getElementById('cf-combined-btn')?.focus();
+  });
+  document.getElementById('cf-comb-recheck')?.addEventListener('click', () => { _cfSaveCombinedDraft(); _openCFCombined(); });
+  document.getElementById('cf-comb-docx')?.addEventListener('click', () => _cfExportCombined('docx'));
+  document.getElementById('cf-comb-xlsx')?.addEventListener('click', () => _cfExportCombined('xlsx'));
+  document.getElementById('cf-comb-file')?.addEventListener('click', () => _cfFileCombined());
+}
+
+function _cfCollectCombinedSections() {
+  const out = {};
+  document.querySelectorAll('.cf-comb-edit').forEach(el => {
+    out[el.dataset.key] = (el.innerText != null ? el.innerText : el.textContent).replace(/\u00A0/g, ' ').trim();
+  });
+  return out;
+}
+
+// As with a single focus, only genuinely edited sections are kept, so
+// the generated text keeps tracking the data.
+function _cfSaveCombinedDraft() {
+  const model   = buildCombinedReportModel(_getAllFocuses(), _cfScope);
+  const draft   = frCombinedDraftSections(model);
+  const current = _cfCollectCombinedSections();
+  const edited  = {};
+  const norm = (t) => String(t == null ? '' : t).replace(/\s+/g, ' ').trim();
+  Object.keys(current).forEach(k => { if (norm(current[k]) !== norm(draft[k])) edited[k] = current[k]; });
+  if (!window.DPC_DATA.currentFocus) window.DPC_DATA.currentFocus = { focuses: [] };
+  if (Object.keys(edited).length === 0) delete window.DPC_DATA.currentFocus.combinedDraft;
+  else window.DPC_DATA.currentFocus.combinedDraft = edited;
+  if (typeof saveCurrentFocus === 'function' && _getAllFocuses().length) saveCurrentFocus(_getAllFocuses()[0]);
+  return current;
+}
+
+function _cfExportCombined(kind) {
+  const st = document.getElementById('cf-comb-status');
+  try {
+    const sections = _cfSaveCombinedDraft();
+    const model    = buildCombinedReportModel(_getAllFocuses(), _cfScope);
+    const stamp    = todayISO();
+    if (kind === 'docx') {
+      downloadBytes(buildCombinedReportDocx(model, sections), safeFilename(`DPC Current Focus report ${stamp}`, 'docx'), MIME_DOCX);
+    } else {
+      downloadBytes(buildCombinedReportXlsx(model, sections), safeFilename(`DPC Current Focus data ${stamp}`, 'xlsx'), MIME_XLSX);
+    }
+    if (st) st.textContent = kind === 'docx' ? 'Word document downloaded.' : 'Excel workbook downloaded.';
+  } catch (e) {
+    if (st) st.textContent = 'The file could not be produced: ' + (e && e.message ? e.message : 'unknown error');
+  }
+}
+
+async function _cfFileCombined() {
+  const st = document.getElementById('cf-comb-status');
+  if (st) st.textContent = 'Saving to the Hub folder...';
+  try {
+    const sections = _cfSaveCombinedDraft();
+    const model    = buildCombinedReportModel(_getAllFocuses(), _cfScope);
+    const stamp    = todayISO();
+    const a = await saveBytesToFolder(safeFilename(`DPC Current Focus report ${stamp}`, 'docx'), buildCombinedReportDocx(model, sections), 'Reports');
+    const b = await saveBytesToFolder(safeFilename(`DPC Current Focus data ${stamp}`, 'xlsx'), buildCombinedReportXlsx(model, sections), 'Reports');
+    if (st) st.textContent = `Saved ${a} and ${b} in ${folderDisplayName() || 'the Hub folder'}.`;
+  } catch (e) {
+    if (st) st.textContent = 'Could not save to the folder: ' + (e && e.message ? e.message : 'unknown error') + ' Use Download instead.';
+  }
 }
 
 function _cfExportReport(focusId, kind) {

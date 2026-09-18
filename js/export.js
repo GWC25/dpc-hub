@@ -1,4 +1,7 @@
-// DPC Hub · js/export.js · v1.0 · September 2026
+// DPC Hub · js/export.js · v1.1 · September 2026
+// v1.1 — sheets open with the header row frozen, filters on, and column
+// widths sized to their content, so a colleague can check figures
+// without first reformatting the workbook.
 // Writes real Word and Excel files in the browser, with no library.
 //
 // Why hand-rolled: the Hub has never loaded an external script, and a
@@ -251,6 +254,18 @@ function _colRef(n) {
   return s;
 }
 
+// Widths are in Excel's character units. Capped so one long summary
+// cell cannot push the other columns off the screen.
+function _xlsxCols(rows) {
+  if (!rows || !rows.length) return '';
+  const widths = [];
+  rows.forEach(row => row.forEach((v, c) => {
+    const len = String(v == null ? '' : v).length;
+    widths[c] = Math.max(widths[c] || 8, Math.min(len + 2, 52));
+  }));
+  return `<cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('')}</cols>`;
+}
+
 function _xlsxSheet(rows) {
   const body = (rows || []).map((row, r) => {
     const cells = row.map((v, c) => {
@@ -263,8 +278,20 @@ function _xlsxSheet(rows) {
     }).join('');
     return `<row r="${r + 1}">${cells}</row>`;
   }).join('');
+  // Element order is fixed by the schema: sheetViews, then cols, then
+  // sheetData, then autoFilter. Out of order, Excel rejects the file.
+  const nRows = (rows || []).length;
+  const nCols = Math.max(1, ...(rows || []).map(r => r.length));
+  const ref = `A1:${_colRef(nCols - 1)}${Math.max(1, nRows)}`;
   return XML_DECL + `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-    <sheetData>${body}</sheetData></worksheet>`;
+    <sheetViews><sheetView workbookViewId="0">
+      <pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>
+      <selection pane="bottomLeft" activeCell="A2" sqref="A2"/>
+    </sheetView></sheetViews>
+    ${_xlsxCols(rows)}
+    <sheetData>${body}</sheetData>
+    ${nRows > 1 ? `<autoFilter ref="${ref}"/>` : ''}
+  </worksheet>`;
 }
 
 function buildXlsx(sheets) {

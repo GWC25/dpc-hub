@@ -2618,6 +2618,26 @@ async function _writeFile(filename, data) {
   await writable.close();
 }
 
+// ── Public: write a produced file into the Hub folder ────────
+// The Hub already holds a directory handle for the OneDrive folder, so a
+// report can be filed next to the data it came from rather than landing
+// in Downloads and being moved by hand. Reports go in a subfolder so
+// they never sit among the data files the loader reads.
+function hasFolderAccess() { return !!_folderHandle; }
+
+function folderDisplayName() { return _folderHandle ? _folderHandle.name : null; }
+
+async function saveBytesToFolder(filename, bytes, subfolder) {
+  if (!_folderHandle) throw new Error('No folder is connected. Use Download instead, or reconnect the folder in Settings.');
+  let dir = _folderHandle;
+  if (subfolder) dir = await _folderHandle.getDirectoryHandle(subfolder, { create: true });
+  const fileHandle = await dir.getFileHandle(filename, { create: true });
+  const writable   = await fileHandle.createWritable();
+  await writable.write(bytes);
+  await writable.close();
+  return (subfolder ? subfolder + '/' : '') + filename;
+}
+
 // ── Internal: assign file data to store ──────────────────────
 function _assignToStore(filename, data) {
   const keyMap = {
