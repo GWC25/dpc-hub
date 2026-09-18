@@ -1927,6 +1927,7 @@ const ACTIVITY_LINK_TYPES = Object.freeze({
   FOCUS:        'focus',
   DIGITAL_LEAD: 'digital-lead',
   HEALTH_CHECK: 'healthcheck',
+  RESOURCE:     'resource',
 });
 
 const ACTIVITY_TYPE_LABELS = Object.freeze({
@@ -2045,6 +2046,145 @@ function renderLinkedActivityList(activities, opts = {}) {
       </h3>
       ${body}
     </section>`;
+}
+
+// ── Resource references (Session 67) ────────────────────────────
+// A resource is always a link, never an upload: the Hub has no file
+// store, so a "document" is a OneDrive or SharePoint URL.
+//
+// Every reference carries a title and url snapshot alongside the id.
+// That matters because the Learning Studio entries in the Resource
+// Library are rebuilt from data/resource-tag-map.json on load and only
+// exist once library.js has fetched it — a reference that depended on
+// that cache would render blank anywhere the Library had not been
+// opened. The snapshot means a reference always renders; the live
+// lookup is only used to show whether it is still in the Library.
+function makeResourceRef(opts = {}) {
+  return {
+    resourceId:  opts.resourceId || (typeof generateId === 'function' ? generateId() : String(Date.now())),
+    title:       (opts.title || '').trim(),
+    url:         (opts.url || '').trim(),
+    fromLibrary: !!opts.fromLibrary,
+    addedAt:     nowISO(),
+  };
+}
+
+// Manual entries always; auto Learning Studio entries only once
+// library.js has populated its cache.
+function getLibraryEntries() {
+  if (typeof _libGetAllEntries === 'function') {
+    try { return _libGetAllEntries(); } catch { /* fall through */ }
+  }
+  return (window.DPC_DATA.resourceLibrary && window.DPC_DATA.resourceLibrary.entries) || [];
+}
+
+function getLibraryEntryById(resourceId) {
+  if (!resourceId) return null;
+  return getLibraryEntries().find(e => e.resourceId === resourceId) || null;
+}
+
+// Returns the reference with the best title and url available, plus
+// inLibrary so callers can mark a reference whose Library entry has gone.
+function resolveResourceRef(ref) {
+  if (!ref) return null;
+  const live = ref.fromLibrary ? getLibraryEntryById(ref.resourceId) : null;
+  return {
+    resourceId:  ref.resourceId,
+    title:       (live && live.title) || ref.title || ref.url || 'Untitled resource',
+    url:         (live && live.url)   || ref.url   || '',
+    fromLibrary: !!ref.fromLibrary,
+    inLibrary:   !!live,
+    addedAt:     ref.addedAt || null,
+  };
+}
+
+// Resources pinned to a focus — the things it is built on.
+function getFocusResources(focus) {
+  return ((focus && focus.resources) || []).map(resolveResourceRef).filter(Boolean);
+}
+
+// Resources that arrived through activity linked to this focus / Digital
+// Lead / Health Check review — the things that came out of the work.
+// Deduped by url so the same deck attached twice shows once.
+function getLinkedActivityResources(type, id) {
+  const seen = new Set();
+  const out  = [];
+  getLinkedActivities(type, id).forEach(a => {
+    (a.links || []).forEach(l => {
+      if (!l || l.type !== ACTIVITY_LINK_TYPES.RESOURCE) return;
+      const resolved = resolveResourceRef({
+        resourceId: l.id, title: l.title, url: l.url, fromLibrary: l.fromLibrary,
+      });
+      const key = resolved.url || resolved.resourceId;
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ ...resolved, activityDate: a.date, activityType: a.activityType, areaCode: a.areaCode });
+    });
+  });
+  return out;
+}
+
+// Where a Library entry is being used, for the Library detail view.
+function getResourceUsage(resourceId) {
+  if (!resourceId) return { focuses: [], activityCount: 0 };
+  const focuses = ((window.DPC_DATA.currentFocus && window.DPC_DATA.currentFocus.focuses) || [])
+    .filter(f => (f.resources || []).some(r => r.resourceId === resourceId));
+  const activityCount = getAllActivities().filter(a =>
+    (a.links || []).some(l => l && l.type === ACTIVITY_LINK_TYPES.RESOURCE && l.id === resourceId)
+  ).length;
+  return { focuses, activityCount };
+}
+
+// Option markup for a "choose a resource" select, shared by the Current
+// Focus and Quick Capture pickers. Learning Studio entries are grouped
+// separately because they are read-only and synced, not yours.
+function renderLibraryOptionsHtml() {
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const entries = getLibraryEntries();
+  const auto   = entries.filter(e => e.source === 'auto')
+                        .sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+  const manual = entries.filter(e => e.source !== 'auto')
+                        .sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+  const opt = (e) => `<option value="${esc(e.resourceId)}">${esc(e.title || e.url)}</option>`;
+  let html = '';
+  if (manual.length) html += `<optgroup label="Your Resource Library">${manual.map(opt).join('')}</optgroup>`;
+  if (auto.length)   html += `<optgroup label="Learning Studio">${auto.map(opt).join('')}</optgroup>`;
+  return html;
+}
+
+// Shared renderer, so resources look the same on a focus, a Digital Lead
+// and a Health Check review. Returns an HTML string.
+function renderResourceList(resources, opts = {}) {
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const list       = resources || [];
+  const removeAttr = opts.removeAction || '';
+
+  if (list.length === 0) {
+    return `<p style="font-size:var(--text-sm);color:var(--color-muted);">${esc(opts.emptyMsg || 'No resources yet.')}</p>`;
+  }
+
+  return `<ul style="list-style:none;margin:0;padding:0;">
+    ${list.map(r => `
+      <li style="display:flex;gap:var(--space-md);align-items:flex-start;padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border);">
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">
+            ${r.url
+              ? `<a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer" style="color:var(--color-teal);">${esc(r.title)}<span class="sr-only"> (opens in a new tab)</span></a>`
+              : esc(r.title)}
+          </p>
+          <p style="font-size:var(--text-xs);color:var(--color-muted);word-break:break-all;">
+            ${esc(r.url)}
+            ${r.fromLibrary && !r.inLibrary ? ' \u00b7 no longer in the Resource Library' : ''}
+            ${r.fromLibrary && r.inLibrary ? ' \u00b7 Resource Library' : ''}
+          </p>
+        </div>
+        ${removeAttr
+          ? `<button type="button" class="btn btn--ghost btn--sm ${esc(removeAttr)}" data-resource-id="${esc(r.resourceId)}" style="flex-shrink:0;font-size:10px;min-height:32px;">Remove<span class="sr-only"> ${esc(r.title)}</span></button>`
+          : ''}
+      </li>`).join('')}
+  </ul>`;
 }
 
 // ── Public: save a Current Focus record (Session 66) ─────────────

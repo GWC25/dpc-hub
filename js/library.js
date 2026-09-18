@@ -1,4 +1,6 @@
 // DPC Hub · js/library.js · v1.0 · 31/07/26 · Session 32
+// v1.1 (Sept 2026) — shows where an entry is used: which Current Focus
+// records pin it, and how many logged activities attach it.
 // Resource Library module. Three entry types (LIBRARY_TYPE in schema.js):
 //   - learning-studio  — never stored here. Computed at render time from
 //                         data/resource-tag-map.json (the same file
@@ -288,6 +290,23 @@ function _openLibraryDetail(resourceId) {
         <button id="lib-share-btn" type="button" class="btn btn--primary btn--sm">Share with staff</button>
       </div>
     </div>
+
+    ${(() => {
+      if (typeof getResourceUsage !== 'function') return '';
+      const usage = getResourceUsage(resourceId);
+      if (usage.focuses.length === 0 && usage.activityCount === 0) return '';
+      return `
+        <div style="margin-bottom:var(--space-lg);">
+          <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-sm);">Used in</h3>
+          ${usage.focuses.length > 0 ? `
+            <div style="display:flex;gap:var(--space-xs);flex-wrap:wrap;margin-bottom:var(--space-xs);">
+              ${usage.focuses.map(f => `<span style="font-size:var(--text-xs);font-weight:bold;background:var(--color-teal-lt);color:var(--color-teal);padding:2px 10px;border-radius:999px;">${_libEsc(f.title)}</span>`).join('')}
+            </div>` : ''}
+          ${usage.activityCount > 0
+            ? `<p style="font-size:var(--text-sm);color:var(--color-muted);">Attached to ${usage.activityCount} logged activit${usage.activityCount === 1 ? 'y' : 'ies'}.</p>`
+            : ''}
+        </div>`;
+    })()}
 
     <div>
       <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Shared (${shares.length})</h3>
