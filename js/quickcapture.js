@@ -1,4 +1,9 @@
-// DPC Hub · js/quickcapture.js · v1.2 · September 2026
+// DPC Hub · js/quickcapture.js · v1.3 · September 2026
+// v1.3 — a resource or document can be attached to an activity, either
+// picked from the Resource Library or pasted as a title + link. It rides
+// on links[] as { type: 'resource' }, so it surfaces on whatever else the
+// activity is linked to. Adding it to the Library is opt-in, off by
+// default, to keep one-off links out of the shared list.
 // v1.2 — Area is no longer required. An activity can be logged against a
 // Current Focus, Digital Lead or Health Check review instead, and is then
 // held in the cross-college store rather than an area log. The rule is
@@ -9,6 +14,8 @@
 // view is derived on read via getLinkedActivities() in data.js.
 // Quick Capture module. Floating FAB opens a modal for fast activity logging.
 // Logs to area activityLog[] via saveArea(). Called from app.js initQuickCapture().
+
+let _qcResourceDraftId = null;
 
 function initQuickCapture() {
   // Modal HTML injected once into body — persists across module navigation
@@ -176,6 +183,29 @@ function initQuickCapture() {
               <p id="qc-link-hc-hint" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;">Reviews are held against a named staff member. Linking one will show that name in this activity record.</p>
             </div>
 
+            <div class="form-group">
+              <label class="form-label form-label--optional" for="qc-link-resource">Resource or document</label>
+              <select class="form-select" id="qc-link-resource" aria-describedby="qc-link-resource-hint">
+                <option value="">&mdash; None &mdash;</option>
+                <option value="__new__">Paste a new link&hellip;</option>
+              </select>
+              <p id="qc-link-resource-hint" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:4px;">Everything is a link — for a file, paste its OneDrive or SharePoint address.</p>
+              <div id="qc-res-new-fields" style="display:none;margin-top:var(--space-sm);padding:var(--space-md);background:var(--color-light);border-radius:var(--radius-md);">
+                <div class="form-group">
+                  <label class="form-label" for="qc-res-title">Title</label>
+                  <input class="form-input" type="text" id="qc-res-title" placeholder="e.g. Teams environments walkthrough">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="qc-res-url">Link</label>
+                  <input class="form-input" type="url" id="qc-res-url" placeholder="https://…">
+                </div>
+                <label style="display:flex;align-items:center;gap:var(--space-xs);cursor:pointer;margin-bottom:0;min-height:32px;">
+                  <input type="checkbox" id="qc-res-to-library" style="width:16px;height:16px;accent-color:var(--color-teal);flex-shrink:0;">
+                  <span style="font-size:var(--text-sm);color:var(--color-navy);">Also add to the Resource Library</span>
+                </label>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -233,6 +263,15 @@ function openQuickCapture() {
   document.getElementById('qc-lra-panel').style.display = 'none';
   document.getElementById('qc-lra-toggle').setAttribute('aria-expanded','false');
   document.getElementById('qc-lra-arrow').textContent = '▶';
+
+  // A pasted resource keeps one id for the life of the open modal, so the
+  // summary line, the saved link and any Resource Library entry all agree.
+  _qcResourceDraftId = null;
+  const resSel = document.getElementById('qc-link-resource');
+  if (resSel) resSel.value = '';
+  ['qc-res-title','qc-res-url'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const resLib = document.getElementById('qc-res-to-library'); if (resLib) resLib.checked = false;
+  const resFields = document.getElementById('qc-res-new-fields'); if (resFields) resFields.style.display = 'none';
 
   // Reset + repopulate the Link to panel. Clearing the two selects first
   // matters: repopulating restores a still-valid previous value, which
@@ -308,6 +347,16 @@ function _wireQCEvents() {
   // Activity type drives sensible link defaults
   document.getElementById('qc-type')?.addEventListener('change', _qcApplyTypeDefaults);
 
+  // Resource picker: title and link only apply when pasting something new
+  document.getElementById('qc-link-resource')?.addEventListener('change', function() {
+    const fields = document.getElementById('qc-res-new-fields');
+    if (fields) fields.style.display = this.value === '__new__' ? 'block' : 'none';
+    _qcUpdateLinkSummary();
+  });
+  ['qc-res-title','qc-res-url'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', _qcUpdateLinkSummary);
+  });
+
   // ESC
   document.addEventListener('keydown', function qcEsc(e) {
     if (e.key === 'Escape') {
@@ -335,8 +384,21 @@ function _saveQC() {
   // An activity needs somewhere to live. With no area it must be linked to
   // a focus, a Digital Lead or a Health Check review, or it would save into
   // nowhere and never appear again.
+  // A half-filled resource paste is a mistake worth catching — silently
+  // dropping it would lose the link the user thought they had attached.
+  const resVal = document.getElementById('qc-link-resource')?.value || '';
+  if (resVal === '__new__' && !(document.getElementById('qc-res-url')?.value || '').trim()) {
+    _showQCError('Enter a link for the resource, or set the resource picker back to None.');
+    _qcSetLinkPanel(true);
+    document.getElementById('qc-res-url').focus();
+    return;
+  }
+
   const links = _qcGatherLinks();
-  if (!areaCode && links.length === 0) {
+  // A resource on its own is not somewhere for the activity to live — it
+  // still needs an area, a focus, a Digital Lead or a Health Check review.
+  const homeLinks = links.filter(l => l.type !== 'resource');
+  if (!areaCode && homeLinks.length === 0) {
     _showQCError('Choose an area, or link this to a Current Focus, Digital Lead or Health Check review. Without one of those it would not show up anywhere in the Hub.');
     _qcSetLinkPanel(true);
     document.getElementById('qc-link-toggle').focus();
@@ -412,6 +474,20 @@ function _saveQC() {
 
   if (area) { area.lastUpdated = nowISO(); saveArea(area); }
 
+  // Opt-in Library write. Done here rather than in _qcGatherLinks(), which
+  // runs on every keystroke to update the summary line.
+  const newRes = links.find(l => l.type === 'resource' && l.id === _qcResourceDraftId);
+  if (newRes && newRes.fromLibrary && typeof saveLibraryEntry === 'function') {
+    saveLibraryEntry({
+      resourceId:  newRes.id,
+      type:        typeof LIBRARY_TYPE !== 'undefined' ? LIBRARY_TYPE.EXTERNAL_RESOURCE : 'external-resource',
+      title:       newRes.title,
+      url:         newRes.url,
+      description: '',
+      tags:        [],
+    });
+  }
+
   _closeQC();
 
   // Show confirmation toast
@@ -469,6 +545,7 @@ function _qcPopulateLinkPickers() {
   _qcPopulateFocusList();
   _qcPopulateDLSelect(areaCode);
   _qcPopulateHCSelect(areaCode);
+  _qcPopulateResourceSelect();
   _qcUpdateLinkSummary();
 }
 
@@ -587,11 +664,13 @@ function _qcUpdateLinkSummary() {
     focus: links.filter(l => l.type === 'focus').length,
     dl:    links.filter(l => l.type === 'digital-lead').length,
     hc:    links.filter(l => l.type === 'healthcheck').length,
+    res:   links.filter(l => l.type === 'resource').length,
   };
   const parts = [];
   if (counts.focus) parts.push(`${counts.focus} focus area${counts.focus !== 1 ? 's' : ''}`);
   if (counts.dl)    parts.push('1 Digital Lead');
   if (counts.hc)    parts.push('1 Health Check review');
+  if (counts.res)   parts.push('1 resource');
   el.textContent = 'Linked to: ' + parts.join(', ');
 }
 
@@ -608,7 +687,41 @@ function _qcGatherLinks() {
   const hcId = document.getElementById('qc-link-hc')?.value;
   if (hcId) links.push({ type: 'healthcheck', id: hcId });
 
+  const resVal = document.getElementById('qc-link-resource')?.value || '';
+  if (resVal === '__new__') {
+    const url   = (document.getElementById('qc-res-url')?.value || '').trim();
+    const title = (document.getElementById('qc-res-title')?.value || '').trim();
+    if (url) {
+      if (!_qcResourceDraftId) _qcResourceDraftId = generateId();
+      links.push({
+        type: 'resource', id: _qcResourceDraftId,
+        title: title || url, url,
+        fromLibrary: !!document.getElementById('qc-res-to-library')?.checked,
+      });
+    }
+  } else if (resVal) {
+    const entry = typeof getLibraryEntryById === 'function' ? getLibraryEntryById(resVal) : null;
+    if (entry) {
+      links.push({
+        type: 'resource', id: entry.resourceId,
+        title: entry.title, url: entry.url, fromLibrary: true,
+      });
+    }
+  }
+
   return links;
+}
+
+function _qcPopulateResourceSelect() {
+  const sel = document.getElementById('qc-link-resource');
+  if (!sel) return;
+  const previous = sel.value;
+  sel.innerHTML = '<option value="">&mdash; None &mdash;</option>'
+    + '<option value="__new__">Paste a new link&hellip;</option>'
+    + (typeof renderLibraryOptionsHtml === 'function' ? renderLibraryOptionsHtml() : '');
+  if (previous && sel.querySelector(`option[value="${CSS.escape(previous)}"]`)) sel.value = previous;
+  const fields = document.getElementById('qc-res-new-fields');
+  if (fields) fields.style.display = sel.value === '__new__' ? 'block' : 'none';
 }
 
 function _escHtml(str) {
