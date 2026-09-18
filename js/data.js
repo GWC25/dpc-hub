@@ -1908,6 +1908,116 @@ function saveHealthCheckReview(review) {
   _writeLocalSnapshot();
 }
 
+// ── Activity links (Session 66) ─────────────────────────────────
+// Quick Capture writes links onto the activity only. The reverse view —
+// "which activities relate to this focus / Digital Lead / health check" —
+// is derived on read, so there is one source of truth and no orphan refs
+// when an activity is edited or an area is archived.
+const ACTIVITY_LINK_TYPES = Object.freeze({
+  FOCUS:        'focus',
+  DIGITAL_LEAD: 'digital-lead',
+  HEALTH_CHECK: 'healthcheck',
+});
+
+const ACTIVITY_TYPE_LABELS = Object.freeze({
+  'learning-walk':        'Learning Walk',
+  'devobs':               'Instructional Coaching',
+  'work-review':          'Work Review',
+  'coaching':             '1:1 Coaching Session',
+  'teach-meet':           'Teach Meet',
+  'cpd-delivered':        'CPD Delivered',
+  'hoa-meeting':          'HoA Meeting',
+  'digital-lead-meeting': 'Digital Lead Meeting',
+  'tlam-meeting':         'TLAM Meeting',
+  'meeting':              'Other Meeting',
+  'health-check-visit':   'Health Check Visit',
+  'referral':             'Referral',
+  'resource-created':     'Resource Created',
+  'communication':        'Communication',
+});
+
+function activityTypeLabel(type) {
+  return ACTIVITY_TYPE_LABELS[type] || type || 'Activity';
+}
+
+// Every logged activity carrying a link of this type and id, newest
+// first. Each entry is a shallow copy with areaName attached so callers
+// can render without a second lookup.
+function getLinkedActivities(type, id) {
+  if (!type || !id) return [];
+  const areas = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
+  const out = [];
+  areas.forEach(area => {
+    (area.activityLog || []).forEach(a => {
+      if (Array.isArray(a.links) && a.links.some(l => l && l.type === type && l.id === id)) {
+        out.push({ ...a, areaCode: a.areaCode || area.areaCode, areaName: area.areaName || '' });
+      }
+    });
+  });
+  return out.sort((x, y) => String(y.date || '').localeCompare(String(x.date || '')));
+}
+
+// Shared renderer so Current Focus, Digital Leads and Health Checks all
+// present linked activity identically. Returns an HTML string.
+function renderLinkedActivityList(activities, opts = {}) {
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const fmt = (iso) => {
+    if (!iso) return '';
+    try {
+      return new Date(String(iso).split('T')[0] + 'T12:00:00')
+        .toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch { return iso; }
+  };
+
+  const headingId = opts.headingId || 'linked-activity-heading';
+  const heading   = opts.heading   || 'Linked activity';
+  const emptyMsg  = opts.emptyMsg  ||
+    'Nothing linked yet. Use the "Link to" panel in Quick Capture when logging an activity.';
+  const showArea  = opts.showArea !== false;
+  const list      = activities || [];
+
+  const body = list.length === 0
+    ? `<p style="font-size:var(--text-sm);color:var(--color-muted);">${esc(emptyMsg)}</p>`
+    : `<ul style="list-style:none;margin:0;padding:0;">
+        ${list.map(a => `
+          <li style="padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border);">
+            <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:2px;">
+              ${esc(fmt(a.date))}${showArea && a.areaCode ? ' \u00b7 ' + esc(a.areaCode) : ''}
+            </p>
+            <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);margin-bottom:2px;">
+              ${esc(activityTypeLabel(a.activityType))}
+            </p>
+            ${a.summary ? `<p style="font-size:var(--text-sm);color:var(--color-slate);">${esc(a.summary)}</p>` : ''}
+          </li>`).join('')}
+      </ul>`;
+
+  return `
+    <section style="margin-top:var(--space-lg);" aria-labelledby="${esc(headingId)}">
+      <h3 id="${esc(headingId)}" style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-sm);">
+        ${esc(heading)}${list.length ? ` <span style="font-size:var(--text-xs);font-weight:normal;color:var(--color-muted);">(${list.length})</span>` : ''}
+      </h3>
+      ${body}
+    </section>`;
+}
+
+// ── Public: save a Current Focus record (Session 66) ─────────────
+// currentfocus.js previously set a window flag that nothing read, so
+// focus edits only reached disk on a full markAllDirty. This marks the
+// right file, so edits now persist on the normal auto-save cycle.
+function saveCurrentFocus(focus) {
+  if (!window.DPC_DATA.currentFocus) window.DPC_DATA.currentFocus = { focuses: [] };
+  const focuses = window.DPC_DATA.currentFocus.focuses;
+  const idx = focuses.findIndex(f => f.focusId === focus.focusId);
+  if (idx >= 0) {
+    focuses[idx] = { ...focus, lastUpdated: nowISO() };
+  } else {
+    focuses.push({ ...focus, createdAt: nowISO(), lastUpdated: nowISO() });
+  }
+  _dirty.add('data-current-focus.json');
+  _writeLocalSnapshot();
+}
+
 // ── Public: save a note (meeting shell / quick note) ──────────
 function saveNote(note) {
   const notes = window.DPC_DATA.notes.notes;

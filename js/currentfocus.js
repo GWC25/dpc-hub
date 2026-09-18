@@ -1,4 +1,6 @@
-// DPC Hub · js/currentfocus.js · v1.0 · July 2026
+// DPC Hub · js/currentfocus.js · v1.1 · September 2026
+// v1.1 — shows Quick Capture activity linked to this focus, and now
+// persists via saveCurrentFocus() rather than an unread window flag.
 // Current Focus module. Flexible targeted focus objects.
 // Not tied to curriculum areas — could be SEND, a theme, an action, or a person.
 // What / Why / How / Who / Impact structure.
@@ -171,6 +173,14 @@ function _openCFDetail(focusId) {
           ${f.linkedAreaCodes.map(c=>`<span style="font-size:var(--text-xs);font-weight:bold;background:var(--color-navy);color:var(--color-white);padding:2px 10px;border-radius:999px;">${_cfEsc(c)}</span>`).join('')}
         </div>
       </div>`:''}
+
+    ${typeof getLinkedActivities==='function' && typeof renderLinkedActivityList==='function'
+      ? renderLinkedActivityList(getLinkedActivities(ACTIVITY_LINK_TYPES.FOCUS, f.focusId), {
+          heading:   'Linked activity',
+          headingId: 'cf-linked-activity',
+          emptyMsg:  'No activity linked to this focus yet. Tick it in the "Link to" panel when you log an activity in Quick Capture.'
+        })
+      : ''}
   `;
 
   document.getElementById('cf-edit-btn')?.addEventListener('click',()=>_openCFModal(focusId));
@@ -214,13 +224,17 @@ function _saveCFModal() {
     status:document.getElementById('cf-status').value||'active',
     reviewDate:existing?.reviewDate||null,
   };
-  const all=(window.DPC_DATA.currentFocus&&window.DPC_DATA.currentFocus.focuses)||[];
-  const idx=all.findIndex(x=>x.focusId===focus.focusId);
-  if(idx>=0) all[idx]=focus; else all.push(focus);
-  if(!window.DPC_DATA.currentFocus) window.DPC_DATA.currentFocus={focuses:[]};
-  window.DPC_DATA.currentFocus.focuses=all;
-  // Trigger auto-save
-  if(typeof saveArea==='function') window._cfDirty=true;
+  // saveCurrentFocus() marks data-current-focus.json dirty so the edit
+  // reaches disk on the normal auto-save cycle.
+  if(typeof saveCurrentFocus==='function') {
+    saveCurrentFocus(focus);
+  } else {
+    const all=(window.DPC_DATA.currentFocus&&window.DPC_DATA.currentFocus.focuses)||[];
+    const idx=all.findIndex(x=>x.focusId===focus.focusId);
+    if(idx>=0) all[idx]=focus; else all.push(focus);
+    if(!window.DPC_DATA.currentFocus) window.DPC_DATA.currentFocus={focuses:[]};
+    window.DPC_DATA.currentFocus.focuses=all;
+  }
   document.getElementById('cf-modal').style.display='none';
   _renderCFList();
   _openCFDetail(focus.focusId);

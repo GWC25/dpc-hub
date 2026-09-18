@@ -1,4 +1,6 @@
 // DPC Hub · js/healthcheck.js · v2.2 · 02/09/26 · Session 66 — New review button explains why it is blocked
+// v1.1 (Sept 2026) — shows Quick Capture activity linked to a saved
+// review: the follow-through record for what happened after it.
 // v2.1: shareable per-staff Word report (see "Shareable Word report" at
 // the foot of this file), plus history items rebuilt as real buttons.
 // Digital Health Check module — REBUILT to match the real instrument.
@@ -305,6 +307,15 @@ function _hcRenderReviewForm() {
       ${isSaved ? `<button id="hc-download-btn" type="button" class="btn btn--ghost" data-review-id="${r.reviewId}">Download report (Word)</button>` : ''}
     </div>
     ${isSaved ? '<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-xs);">Includes the action plan — shareable with the Digital Lead. Save first if you have just made changes.</p>' : ''}
+
+    ${isSaved && typeof getLinkedActivities==='function' && typeof renderLinkedActivityList==='function'
+      ? renderLinkedActivityList(getLinkedActivities(ACTIVITY_LINK_TYPES.HEALTH_CHECK, r.reviewId), {
+          heading:   'Activity since this review',
+          headingId: 'hc-linked-activity',
+          showArea:  false,
+          emptyMsg:  'Nothing logged against this review yet. Select it in the "Link to" panel when you log an activity in Quick Capture.'
+        })
+      : ''}
   `;
 
   _hcWireDomainSections();
