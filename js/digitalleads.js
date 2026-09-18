@@ -1,4 +1,6 @@
 // DPC Hub · js/digital-leads.js · v1.0 · July 2026
+// v1.1 (Sept 2026) — surfaces Quick Capture activity linked to this
+// Digital Lead alongside the 1:1 meeting history, as impact evidence.
 // Digital Leads module. DL profiles with 1:1 meeting history,
 // resources created, progress notes, support delivered, impact evidence.
 
@@ -224,6 +226,15 @@ function _renderDLDetailContent(dlId) {
             ${typeof createTaskFromSource === 'function' ? `<button type="button" class="btn btn--ghost btn--sm dl-meeting-create-task" data-meeting-id="${m.meetingId}" style="font-size:10px;">+ Create task from this</button>` : ''}
           `:''}
         </div>`).join('')}
+
+    ${typeof getLinkedActivities==='function' && typeof renderLinkedActivityList==='function'
+      ? renderLinkedActivityList(getLinkedActivities(ACTIVITY_LINK_TYPES.DIGITAL_LEAD, dl.dlId), {
+          heading:   'Linked activity',
+          headingId: 'dl-linked-activity',
+          showArea:  true,
+          emptyMsg:  'No activity linked to this Digital Lead yet. Select them in the "Link to" panel when you log an activity in Quick Capture.'
+        })
+      : ''}
 
     <!-- Add resource -->
     <div style="margin-top:var(--space-lg);">
