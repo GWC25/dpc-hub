@@ -1,4 +1,8 @@
-// DPC Hub · js/currentfocus.js · v1.2 · September 2026
+// DPC Hub · js/currentfocus.js · v1.3 · September 2026
+// v1.3 — optional action plan of milestones, each with an id from the
+// moment it exists so anything can link to it later; and retrospective
+// linking, so activity logged before the board existed can be attached
+// to a focus or a milestone.
 // v1.2 — resources can be pinned to a focus, either picked from the
 // Resource Library or pasted as a title + link. Resources arriving via
 // linked Quick Capture activity are shown separately and read-only.
@@ -177,6 +181,52 @@ function _openCFDetail(focusId) {
         </div>
       </div>`:''}
 
+    <section style="margin-top:var(--space-lg);" aria-labelledby="cf-plan-heading">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm);gap:var(--space-md);flex-wrap:wrap;">
+        <h3 id="cf-plan-heading" style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);">Action plan</h3>
+        <button id="cf-ms-add-btn" type="button" class="btn btn--ghost btn--sm" aria-expanded="false" aria-controls="cf-ms-form">+ Add milestone</button>
+      </div>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-sm);">Every part is optional. A milestone can be one line with a date, or carry success criteria and tasks.</p>
+
+      <div id="cf-ms-form" style="display:none;background:var(--color-light);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+        <input type="hidden" id="cf-ms-id" value="">
+        <div class="form-group">
+          <label class="form-label" for="cf-ms-title">Milestone</label>
+          <input class="form-input" type="text" id="cf-ms-title" placeholder="e.g. Audit returns above 80 per cent">
+        </div>
+        <div class="form-group">
+          <label class="form-label form-label--optional" for="cf-ms-due">Due date</label>
+          <input class="form-input" type="date" id="cf-ms-due">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cf-ms-state">State</label>
+          <select class="form-select" id="cf-ms-state">
+            <option value="not-started">Not started</option>
+            <option value="in-progress">In progress</option>
+            <option value="at-risk">At risk</option>
+            <option value="complete">Complete</option>
+            <option value="dropped">Dropped</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label form-label--optional" for="cf-ms-crit">Success criteria</label>
+          <textarea class="form-input" id="cf-ms-crit" rows="3" placeholder="One per line"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label form-label--optional" for="cf-ms-tasks">Tasks</label>
+          <textarea class="form-input" id="cf-ms-tasks" rows="3" placeholder="One per line"></textarea>
+        </div>
+        <p id="cf-ms-error" role="alert" style="font-size:var(--text-sm);color:var(--color-red);display:none;margin-bottom:var(--space-sm);"></p>
+        <div class="btn-row">
+          <button id="cf-ms-save" type="button" class="btn btn--primary btn--sm">Save milestone</button>
+          <button id="cf-ms-cancel" type="button" class="btn btn--secondary btn--sm">Cancel</button>
+        </div>
+      </div>
+
+      <p id="cf-ms-status" role="status" aria-live="polite" class="sr-only"></p>
+      ${_cfRenderMilestones(f)}
+    </section>
+
     <section style="margin-top:var(--space-lg);" aria-labelledby="cf-resources-heading">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm);gap:var(--space-md);flex-wrap:wrap;">
         <h3 id="cf-resources-heading" style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);">Resources</h3>
@@ -235,9 +285,30 @@ function _openCFDetail(focusId) {
       })()}
     </section>
 
+    <div style="margin-top:var(--space-lg);display:flex;align-items:center;justify-content:space-between;gap:var(--space-md);flex-wrap:wrap;">
+      <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);">Linked activity</h3>
+      <button id="cf-retro-btn" type="button" class="btn btn--ghost btn--sm" aria-expanded="false" aria-controls="cf-retro-form">Link existing activity</button>
+    </div>
+    <div id="cf-retro-form" style="display:none;background:var(--color-light);border-radius:var(--radius-md);padding:var(--space-md);margin:var(--space-sm) 0 var(--space-md);">
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-sm);">Activity logged before this focus existed can be attached here. Only activity not already linked to this focus is listed.</p>
+      <div class="form-group">
+        <label class="form-label" for="cf-retro-pick">Activity</label>
+        <select class="form-select" id="cf-retro-pick"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label form-label--optional" for="cf-retro-ms">Milestone</label>
+        <select class="form-select" id="cf-retro-ms"></select>
+      </div>
+      <p id="cf-retro-error" role="alert" style="font-size:var(--text-sm);color:var(--color-red);display:none;margin-bottom:var(--space-sm);"></p>
+      <div class="btn-row">
+        <button id="cf-retro-save" type="button" class="btn btn--primary btn--sm">Link</button>
+        <button id="cf-retro-cancel" type="button" class="btn btn--secondary btn--sm">Cancel</button>
+      </div>
+    </div>
+
     ${typeof getLinkedActivities==='function' && typeof renderLinkedActivityList==='function'
       ? renderLinkedActivityList(getLinkedActivities(ACTIVITY_LINK_TYPES.FOCUS, f.focusId), {
-          heading:   'Linked activity',
+          heading:   '',
           headingId: 'cf-linked-activity',
           emptyMsg:  'No activity linked to this focus yet. Tick it in the "Link to" panel when you log an activity in Quick Capture.'
         })
@@ -246,6 +317,8 @@ function _openCFDetail(focusId) {
 
   document.getElementById('cf-edit-btn')?.addEventListener('click',()=>_openCFModal(focusId));
   _wireCFResourceEvents(focusId);
+  _wireCFMilestoneEvents(focusId);
+  _wireCFRetroEvents(focusId);
 }
 
 function _openCFModal(focusId=null) {
@@ -284,6 +357,7 @@ function _saveCFModal() {
     linkedAFIIds:existing?.linkedAFIIds||[],
     linkedAreaCodes:existing?.linkedAreaCodes||[],
     resources:existing?.resources||[],
+    milestones:existing?.milestones||[],
     status:document.getElementById('cf-status').value||'active',
     reviewDate:existing?.reviewDate||null,
   };
@@ -310,6 +384,269 @@ function _wireCFEvents() {
   document.getElementById('cf-modal-cancel')?.addEventListener('click',()=>document.getElementById('cf-modal').style.display='none');
   document.getElementById('cf-modal-save')?.addEventListener('click',_saveCFModal);
   document.getElementById('cf-modal')?.addEventListener('click',e=>{if(e.target===document.getElementById('cf-modal'))document.getElementById('cf-modal').style.display='none';});
+}
+
+// ── Action plan and milestones (v1.3) ────────────────────────────
+
+const _CF_STATE_LABEL = {
+  'not-started':'Not started', 'in-progress':'In progress',
+  'at-risk':'At risk', 'complete':'Complete', 'dropped':'Dropped',
+};
+// Colour is never the only carrier: every chip prints its state in words.
+const _CF_STATE_STYLE = {
+  'not-started':'background:var(--color-light);color:var(--color-muted);border-color:var(--color-border)',
+  'in-progress':'background:var(--color-blue-lt);color:var(--color-blue);border-color:var(--color-blue)',
+  'at-risk':    'background:var(--color-amber-lt);color:var(--color-amber);border-color:var(--color-amber)',
+  'complete':   'background:var(--color-green-lt);color:var(--color-green);border-color:var(--color-green)',
+  'dropped':    'background:var(--color-light);color:var(--color-muted);border-color:var(--color-border)',
+};
+
+function _cfFmtDate(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(String(iso).split('T')[0] + 'T12:00:00')
+      .toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  } catch { return iso; }
+}
+
+function _cfRenderMilestones(f) {
+  const list = typeof getMilestones === 'function' ? getMilestones(f) : [];
+  if (list.length === 0) {
+    return '<p style="font-size:var(--text-sm);color:var(--color-muted);">No milestones yet. This focus works perfectly well without them.</p>';
+  }
+  return list.map(m => {
+    const linked = (typeof getLinkedActivities === 'function')
+      ? getLinkedActivities(ACTIVITY_LINK_TYPES.MILESTONE, m.milestoneId) : [];
+    const chk = (items, kind) => (items || []).length === 0 ? '' : `
+      <p style="font-size:var(--text-xs);color:var(--color-muted);font-weight:bold;margin:var(--space-sm) 0 2px;">${kind}</p>
+      <ul style="list-style:none;margin:0;padding:0;">
+        ${items.map(it => `
+          <li style="padding:2px 0;">
+            <label style="display:flex;gap:var(--space-xs);align-items:flex-start;cursor:pointer;margin-bottom:0;min-height:28px;font-size:var(--text-xs);">
+              <input type="checkbox" class="cf-ms-check" data-ms="${_cfEsc(m.milestoneId)}" data-item="${_cfEsc(it.id)}"
+                     ${it.done ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--color-teal);flex-shrink:0;margin-top:4px;">
+              <span style="color:${it.done ? 'var(--color-muted)' : 'var(--color-slate)'};${it.done ? 'text-decoration:line-through;' : ''}">${_cfEsc(it.text)}</span>
+            </label>
+          </li>`).join('')}
+      </ul>`;
+
+    return `
+      <article style="border:1px solid var(--color-border);border-left:6px solid var(--color-teal);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+        <div style="display:flex;justify-content:space-between;gap:var(--space-md);flex-wrap:wrap;align-items:baseline;">
+          <h4 style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);">${_cfEsc(m.title)}</h4>
+          <span style="font-size:12px;font-weight:bold;padding:2px 10px;border-radius:999px;border:1px solid;${_CF_STATE_STYLE[m.state] || ''}">${_cfEsc(_CF_STATE_LABEL[m.state] || m.state)}</span>
+        </div>
+        ${m.dueDate ? `<p style="font-size:var(--text-xs);color:var(--color-muted);">Due ${_cfEsc(_cfFmtDate(m.dueDate))}${m.completedDate ? '. Completed ' + _cfEsc(_cfFmtDate(m.completedDate)) : ''}</p>` : ''}
+        ${chk(m.successCriteria, 'Success criteria')}
+        ${chk(m.tasks, 'Tasks')}
+        ${linked.length > 0 ? `<p style="font-size:var(--text-xs);color:var(--color-teal);margin-top:var(--space-sm);">${linked.length} linked activit${linked.length === 1 ? 'y' : 'ies'}</p>` : ''}
+        <div class="btn-row" style="margin-top:var(--space-sm);">
+          <button type="button" class="btn btn--ghost btn--sm cf-ms-edit" data-ms="${_cfEsc(m.milestoneId)}">Edit<span class="sr-only"> ${_cfEsc(m.title)}</span></button>
+          <button type="button" class="btn btn--ghost btn--sm cf-ms-del" data-ms="${_cfEsc(m.milestoneId)}">Delete<span class="sr-only"> ${_cfEsc(m.title)}</span></button>
+        </div>
+      </article>`;
+  }).join('');
+}
+
+function _wireCFMilestoneEvents(focusId) {
+  const form = document.getElementById('cf-ms-form');
+  const add  = document.getElementById('cf-ms-add-btn');
+  if (!form || !add) return;
+
+  const setOpen = (open) => {
+    form.style.display = open ? 'block' : 'none';
+    add.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) document.getElementById('cf-ms-title').focus();
+  };
+
+  add.addEventListener('click', () => {
+    if (form.style.display === 'none') { _cfResetMilestoneForm(); setOpen(true); }
+    else setOpen(false);
+  });
+  document.getElementById('cf-ms-cancel')?.addEventListener('click', () => {
+    _cfResetMilestoneForm(); setOpen(false); add.focus();
+  });
+  document.getElementById('cf-ms-save')?.addEventListener('click', () => _cfSaveMilestone(focusId));
+
+  document.querySelectorAll('.cf-ms-edit').forEach(b => {
+    b.addEventListener('click', () => { _cfFillMilestoneForm(focusId, b.dataset.ms); setOpen(true); });
+  });
+  document.querySelectorAll('.cf-ms-del').forEach(b => {
+    b.addEventListener('click', () => _cfDeleteMilestone(focusId, b.dataset.ms));
+  });
+  document.querySelectorAll('.cf-ms-check').forEach(cb => {
+    cb.addEventListener('change', () => _cfToggleCheck(focusId, cb.dataset.ms, cb.dataset.item, cb.checked));
+  });
+}
+
+function _cfResetMilestoneForm() {
+  ['cf-ms-id','cf-ms-title','cf-ms-due','cf-ms-crit','cf-ms-tasks'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const st = document.getElementById('cf-ms-state'); if (st) st.value = 'not-started';
+  const err = document.getElementById('cf-ms-error'); if (err) err.style.display = 'none';
+}
+
+function _cfFillMilestoneForm(focusId, milestoneId) {
+  const focus = _getAllFocuses().find(x => x.focusId === focusId);
+  const m = focus && typeof getMilestone === 'function' ? getMilestone(focus, milestoneId) : null;
+  if (!m) return;
+  document.getElementById('cf-ms-id').value    = m.milestoneId;
+  document.getElementById('cf-ms-title').value = m.title || '';
+  document.getElementById('cf-ms-due').value   = m.dueDate || '';
+  document.getElementById('cf-ms-state').value = m.state || 'not-started';
+  document.getElementById('cf-ms-crit').value  = (m.successCriteria || []).map(c => c.text).join('\n');
+  document.getElementById('cf-ms-tasks').value = (m.tasks || []).map(t => t.text).join('\n');
+}
+
+// Existing items keep their id and their done state when the text is
+// unchanged, so editing a milestone never silently unticks work already
+// recorded as done.
+function _cfMergeCheckItems(existing, lines) {
+  const prev = (existing || []).slice();
+  return lines.map(text => {
+    const hit = prev.findIndex(p => p.text === text);
+    if (hit >= 0) { const p = prev[hit]; prev.splice(hit, 1); return p; }
+    return makeCheckItem(text);
+  });
+}
+
+function _cfSaveMilestone(focusId) {
+  const focus = _getAllFocuses().find(x => x.focusId === focusId);
+  if (!focus) return;
+  const err = document.getElementById('cf-ms-error');
+  const title = document.getElementById('cf-ms-title').value.trim();
+  if (!title) {
+    if (err) { err.textContent = 'Please give the milestone a title.'; err.style.display = 'block'; }
+    document.getElementById('cf-ms-title').focus();
+    return;
+  }
+  const lines = (id) => document.getElementById(id).value.split('\n').map(x => x.trim()).filter(Boolean);
+  const id      = document.getElementById('cf-ms-id').value;
+  const existing = id && typeof getMilestone === 'function' ? getMilestone(focus, id) : null;
+  const state   = document.getElementById('cf-ms-state').value;
+
+  const rec = makeMilestone({
+    milestoneId:     existing ? existing.milestoneId : undefined,
+    title,
+    dueDate:         document.getElementById('cf-ms-due').value || null,
+    state,
+    successCriteria: _cfMergeCheckItems(existing && existing.successCriteria, lines('cf-ms-crit')),
+    tasks:           _cfMergeCheckItems(existing && existing.tasks, lines('cf-ms-tasks')),
+    notes:           existing ? existing.notes : '',
+  });
+  if (existing) {
+    rec.createdAt = existing.createdAt;
+    rec.resources = existing.resources || [];
+  }
+  // Completion date is set once, when the state first becomes complete.
+  if (state === 'complete') rec.completedDate = (existing && existing.completedDate) || todayISO();
+  else rec.completedDate = null;
+
+  saveMilestone(focus, rec);
+  _cfResetMilestoneForm();
+  _openCFDetail(focusId);
+  const st = document.getElementById('cf-ms-status');
+  if (st) st.textContent = `Milestone saved: ${rec.title}.`;
+}
+
+function _cfDeleteMilestone(focusId, milestoneId) {
+  const focus = _getAllFocuses().find(x => x.focusId === focusId);
+  if (!focus || !milestoneId) return;
+  const m = getMilestone(focus, milestoneId);
+  const linked = typeof getLinkedActivities === 'function'
+    ? getLinkedActivities(ACTIVITY_LINK_TYPES.MILESTONE, milestoneId) : [];
+  const warn = linked.length > 0
+    ? `\n\n${linked.length} linked activit${linked.length === 1 ? 'y keeps its' : 'ies keep their'} link to this focus and lose${linked.length === 1 ? 's' : ''} only the milestone link.`
+    : '';
+  if (!window.confirm(`Delete the milestone "${m ? m.title : ''}"?${warn}`)) return;
+  deleteMilestone(focus, milestoneId);
+  _openCFDetail(focusId);
+  const st = document.getElementById('cf-ms-status');
+  if (st) st.textContent = 'Milestone deleted.';
+}
+
+function _cfToggleCheck(focusId, milestoneId, itemId, done) {
+  const focus = _getAllFocuses().find(x => x.focusId === focusId);
+  const m = focus ? getMilestone(focus, milestoneId) : null;
+  if (!m) return;
+  let found = false;
+  ['successCriteria','tasks'].forEach(k => {
+    (m[k] || []).forEach(it => { if (it.id === itemId) { it.done = !!done; found = true; } });
+  });
+  if (found) saveMilestone(focus, m);
+}
+
+// ── Retrospective linking (v1.3) ─────────────────────────────────
+
+function _wireCFRetroEvents(focusId) {
+  const form = document.getElementById('cf-retro-form');
+  const btn  = document.getElementById('cf-retro-btn');
+  if (!form || !btn) return;
+
+  const setOpen = (open) => {
+    form.style.display = open ? 'block' : 'none';
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) { _cfPopulateRetro(focusId); document.getElementById('cf-retro-pick').focus(); }
+  };
+  btn.addEventListener('click', () => setOpen(form.style.display === 'none'));
+  document.getElementById('cf-retro-cancel')?.addEventListener('click', () => { setOpen(false); btn.focus(); });
+  document.getElementById('cf-retro-save')?.addEventListener('click', () => _cfRetroLink(focusId));
+}
+
+function _cfPopulateRetro(focusId) {
+  const focus = _getAllFocuses().find(x => x.focusId === focusId);
+  const pick  = document.getElementById('cf-retro-pick');
+  const msSel = document.getElementById('cf-retro-ms');
+  if (!pick || !focus) return;
+
+  const all = typeof getAllActivities === 'function' ? getAllActivities() : [];
+  const candidates = all
+    .filter(a => !(a.links || []).some(l => l && l.type === ACTIVITY_LINK_TYPES.FOCUS && l.id === focusId))
+    .sort((x, y) => String(y.date || '').localeCompare(String(x.date || '')))
+    .slice(0, 100);
+
+  pick.innerHTML = candidates.length === 0
+    ? '<option value="">No unlinked activity found</option>'
+    : candidates.map(a => {
+        const label = [_cfFmtDate(a.date), a.areaCode || 'Cross-college',
+                       (typeof activityTypeLabel === 'function' ? activityTypeLabel(a.activityType) : a.activityType),
+                       a.summary || ''].filter(Boolean).join(' \u00b7 ');
+        return `<option value="${_cfEsc(a.activityId)}">${_cfEsc(label.length > 110 ? label.slice(0, 110) + '\u2026' : label)}</option>`;
+      }).join('');
+
+  if (msSel) {
+    const ms = typeof getMilestones === 'function' ? getMilestones(focus) : [];
+    msSel.innerHTML = '<option value="">Focus only, no milestone</option>'
+      + ms.map(m => `<option value="${_cfEsc(m.milestoneId)}">${_cfEsc(m.title)}</option>`).join('');
+  }
+}
+
+function _cfRetroLink(focusId) {
+  const activityId = document.getElementById('cf-retro-pick')?.value;
+  const err = document.getElementById('cf-retro-error');
+  const fail = (msg) => { if (err) { err.textContent = msg; err.style.display = 'block'; } };
+  if (!activityId) return fail('Select an activity to link.');
+
+  const all = typeof getAllActivities === 'function' ? getAllActivities() : [];
+  const act = all.find(a => a.activityId === activityId);
+  if (!act) return fail('That activity could not be found. Try reopening this focus.');
+
+  const links = (act.links || []).slice();
+  links.push({ type: ACTIVITY_LINK_TYPES.FOCUS, id: focusId });
+  const msId = document.getElementById('cf-retro-ms')?.value;
+  if (msId && !links.some(l => l.type === ACTIVITY_LINK_TYPES.MILESTONE && l.id === msId)) {
+    links.push({ type: ACTIVITY_LINK_TYPES.MILESTONE, id: msId });
+  }
+  if (typeof setActivityLinks !== 'function' || !setActivityLinks(activityId, links)) {
+    return fail('That activity could not be updated.');
+  }
+
+  if (err) err.style.display = 'none';
+  _openCFDetail(focusId);
+  const st = document.getElementById('cf-ms-status');
+  if (st) st.textContent = 'Activity linked to this focus.';
+  if (typeof UI !== 'undefined') UI.showToast('success', 'Activity linked to this focus');
 }
 
 // ── Focus resources (v1.2) ───────────────────────────────────────
