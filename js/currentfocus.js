@@ -1,4 +1,6 @@
-// DPC Hub · js/currentfocus.js · v2.0 · September 2026
+// DPC Hub · js/currentfocus.js · v2.1 · September 2026
+// v2.1 — Report tab: an editable preview with a pre-export check, and
+// Word and Excel downloads. Nothing downloads until you have read it.
 // v2.0 — Current Focus is now the front board. The narrative moves
 // behind an Overview tab and the focus opens on evidence. Evidence
 // panels appear once something links to them, or while empty if pinned.
@@ -158,6 +160,7 @@ function _openCFDetail(focusId) {
     { id:'board',    label:'Board' },
     { id:'plan',     label:'Action plan' },
     { id:'evidence', label:'Evidence' },
+    { id:'report',   label:'Report' },
     { id:'overview', label:'Overview' },
   ];
   if (!tabs.some(t => t.id === _cfTab)) _cfTab = 'board';
@@ -180,6 +183,7 @@ function _openCFDetail(focusId) {
     <div id="cf-panel-board"    role="tabpanel" aria-labelledby="cf-tab-board"    tabindex="0" ${_cfTab === 'board' ? '' : 'hidden'}>${_cfRenderBoard(f)}</div>
     <div id="cf-panel-plan"     role="tabpanel" aria-labelledby="cf-tab-plan"     tabindex="0" ${_cfTab === 'plan' ? '' : 'hidden'}>${_cfRenderPlanPanel(f)}</div>
     <div id="cf-panel-evidence" role="tabpanel" aria-labelledby="cf-tab-evidence" tabindex="0" ${_cfTab === 'evidence' ? '' : 'hidden'}>${_cfRenderEvidencePanel(f)}</div>
+    <div id="cf-panel-report"   role="tabpanel" aria-labelledby="cf-tab-report"   tabindex="0" ${_cfTab === 'report' ? '' : 'hidden'}>${_cfRenderReportPanel(f)}</div>
     <div id="cf-panel-overview" role="tabpanel" aria-labelledby="cf-tab-overview" tabindex="0" ${_cfTab === 'overview' ? '' : 'hidden'}>${_cfRenderOverview(f)}</div>
 
     <p id="cf-ms-status" role="status" aria-live="polite" class="sr-only"></p>
@@ -191,6 +195,7 @@ function _openCFDetail(focusId) {
   if (_cfTab === 'plan')     _wireCFMilestoneEvents(focusId);
   if (_cfTab === 'evidence') { _wireCFResourceEvents(focusId); _wireCFRetroEvents(focusId); _wireCFEvidenceEvents(focusId); }
   if (_cfTab === 'board')    _wireCFBoardEvents(focusId);
+  if (_cfTab === 'report')   _wireCFReportEvents(focusId);
 }
 
 function _cfRenderFocusHeader(f) {
@@ -840,6 +845,172 @@ function _wireCFEvidenceEvents(focusId) {
     _cfEvidenceCycle = this.value;
     _openCFDetail(focusId);
   });
+}
+
+// ── Report panel (v2.1) ──────────────────────────────────────────
+// The preview is the document. Edits are held on the focus so a draft
+// survives leaving the tab, and the check runs against what you have
+// actually written rather than against the generated draft.
+
+function _cfReportSections(f) {
+  const model = buildFocusReportModel(f, _cfScope);
+  const draft = frDraftSections(model);
+  const saved = (f.reportDraft && f.reportDraft.sections) || {};
+  const sections = {};
+  ['intention','activity','progress','impact','next'].forEach(k => {
+    sections[k] = (saved[k] != null && String(saved[k]).trim()) ? saved[k] : draft[k];
+  });
+  return { model, sections, draft, isEdited: !!(f.reportDraft && f.reportDraft.sections) };
+}
+
+function _cfRenderReportPanel(f) {
+  if (typeof buildFocusReportModel !== 'function' || typeof buildDocx !== 'function') {
+    return '<p style="font-size:var(--text-sm);color:var(--color-muted);">The report module has not loaded.</p>';
+  }
+  const { model, sections, isEdited } = _cfReportSections(f);
+  const check = runPreExportCheck(sections, model);
+
+  const levelStyle = {
+    ok:   'color:var(--color-green)',
+    warn: 'color:var(--color-amber)',
+    note: 'color:var(--color-blue)',
+  };
+  const levelWord = { ok:'Pass', warn:'Check', note:'Note' };
+
+  const editable = (key, label) => `
+    <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);border-bottom:2px solid var(--color-navy);padding-bottom:2px;margin:var(--space-md) 0 var(--space-xs);">${_cfEsc(label)}</h4>
+    <div class="cf-rep-edit" id="cf-rep-${key}" data-key="${key}" contenteditable="true" role="textbox" aria-multiline="true"
+         aria-label="${_cfEsc(label)} section"
+         style="font-size:var(--text-sm);color:var(--color-slate);white-space:pre-wrap;border:1px solid transparent;border-radius:var(--radius-md);padding:var(--space-xs);min-height:44px;">${_cfEsc(sections[key])}</div>`;
+
+  const periodText = model.period.from
+    ? `${_cfFmtDate(model.period.from)} to ${_cfFmtDate(model.period.to)}`
+    : 'to date';
+
+  const instTable = model.instruments.length === 0 ? '' : `
+    <table style="border-collapse:collapse;width:100%;margin:var(--space-sm) 0;font-size:var(--text-xs);">
+      <caption style="text-align:left;font-weight:bold;color:var(--color-navy);padding-bottom:var(--space-xs);">Activity by instrument</caption>
+      <thead><tr>
+        <th scope="col" style="border:1px solid var(--color-border);padding:6px 8px;text-align:left;background:var(--color-light);">Instrument</th>
+        <th scope="col" style="border:1px solid var(--color-border);padding:6px 8px;text-align:left;background:var(--color-light);">Count</th>
+        <th scope="col" style="border:1px solid var(--color-border);padding:6px 8px;text-align:left;background:var(--color-light);">Areas</th>
+      </tr></thead>
+      <tbody>${model.instruments.map(i => `
+        <tr>
+          <td style="border:1px solid var(--color-border);padding:6px 8px;">${_cfEsc(i.label)}</td>
+          <td style="border:1px solid var(--color-border);padding:6px 8px;">${i.count}</td>
+          <td style="border:1px solid var(--color-border);padding:6px 8px;">${_cfEsc(Array.from(i.areas).sort().join(', ') || 'Cross-college')}</td>
+        </tr>`).join('')}</tbody>
+    </table>`;
+
+  return `
+    <h3 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-xs);">Report preview</h3>
+    <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-md);">Every paragraph below is editable. Click in and type. The tables are built from logged records and cannot be typed over. Nothing downloads until you have read it.</p>
+
+    <div style="border:2px solid ${check.pass ? 'var(--color-green)' : 'var(--color-amber)'};background:${check.pass ? 'var(--color-green-lt)' : 'var(--color-amber-lt)'};border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+      <h4 style="font-size:var(--text-sm);font-weight:bold;color:${check.pass ? 'var(--color-green)' : 'var(--color-amber)'};margin-bottom:var(--space-xs);">Pre-export check</h4>
+      <ul style="list-style:none;margin:0;padding:0;">
+        ${check.issues.map(i => `
+          <li style="display:flex;gap:var(--space-sm);padding:2px 0;font-size:var(--text-xs);">
+            <span style="font-weight:bold;flex-shrink:0;min-width:48px;${levelStyle[i.level]}">${levelWord[i.level]}</span>
+            <span><strong>${_cfEsc(i.label)}.</strong> ${_cfEsc(i.detail)}</span>
+          </li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="btn-row" style="margin-bottom:var(--space-md);">
+      <button id="cf-rep-docx" type="button" class="btn btn--primary btn--sm">Download as Word</button>
+      <button id="cf-rep-xlsx" type="button" class="btn btn--primary btn--sm">Download as Excel</button>
+      <button id="cf-rep-recheck" type="button" class="btn btn--ghost btn--sm">Re-run check</button>
+      ${isEdited ? '<button id="cf-rep-reset" type="button" class="btn btn--ghost btn--sm">Reset to generated text</button>' : ''}
+    </div>
+    <p id="cf-rep-status" role="status" aria-live="polite" style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-md);"></p>
+
+    <div style="border:1px solid var(--color-border);background:var(--color-white);padding:22px;border-radius:2px;">
+      <h3 style="font-size:var(--text-md);font-weight:bold;color:var(--color-navy);border-bottom:2px solid var(--color-navy);padding-bottom:var(--space-xs);">Current Focus report: ${_cfEsc(f.title)}</h3>
+      <p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-xs);">Digital Pedagogy Coach, Quality Team. Period ${_cfEsc(periodText)}. Scope ${_cfEsc(model.scopeLabel)}. Produced ${_cfEsc(_cfFmtDate(todayISO()))}. Source: DPC Hub, ${model.acts.length} logged record${model.acts.length === 1 ? '' : 's'}.</p>
+
+      ${editable('intention', 'Intention')}
+      ${editable('activity', 'Activity')}
+      ${instTable}
+      ${editable('progress', 'Progress')}
+      ${editable('impact', 'Impact')}
+      ${editable('next', 'Next period')}
+    </div>`;
+}
+
+function _cfCollectReportSections() {
+  const out = {};
+  document.querySelectorAll('.cf-rep-edit').forEach(el => {
+    // innerText rather than textContent: it preserves the line breaks a
+    // contenteditable turns into elements.
+    out[el.dataset.key] = (el.innerText != null ? el.innerText : el.textContent).replace(/\u00A0/g, ' ').trim();
+  });
+  return out;
+}
+
+// Only sections you have actually changed are stored. Storing the
+// generated text as a draft would freeze the report: changing the scope,
+// or logging more activity, would then leave the prose saying whatever
+// was true at the moment you last pressed a button.
+function _cfSaveReportDraft(focusId) {
+  const focus = _getAllFocuses().find(x => x.focusId === focusId);
+  if (!focus) return null;
+  const current = _cfCollectReportSections();
+  const model   = buildFocusReportModel(focus, _cfScope);
+  const draft   = frDraftSections(model);
+  const edited  = {};
+  Object.keys(current).forEach(k => {
+    const norm = (t) => String(t == null ? '' : t).replace(/\s+/g, ' ').trim();
+    if (norm(current[k]) !== norm(draft[k])) edited[k] = current[k];
+  });
+  if (Object.keys(edited).length === 0) delete focus.reportDraft;
+  else focus.reportDraft = { sections: edited, lastUpdated: nowISO() };
+  if (typeof saveCurrentFocus === 'function') saveCurrentFocus(focus);
+  return focus;
+}
+
+function _wireCFReportEvents(focusId) {
+  document.getElementById('cf-rep-recheck')?.addEventListener('click', () => {
+    _cfSaveReportDraft(focusId);
+    _openCFDetail(focusId);
+    const st = document.getElementById('cf-rep-status');
+    if (st) st.textContent = 'Check re-run against the current text.';
+  });
+
+  document.getElementById('cf-rep-reset')?.addEventListener('click', () => {
+    const focus = _getAllFocuses().find(x => x.focusId === focusId);
+    if (!focus) return;
+    if (!window.confirm('Replace your edits with the text generated from the logged records?')) return;
+    delete focus.reportDraft;
+    if (typeof saveCurrentFocus === 'function') saveCurrentFocus(focus);
+    _openCFDetail(focusId);
+  });
+
+  document.getElementById('cf-rep-docx')?.addEventListener('click', () => _cfExportReport(focusId, 'docx'));
+  document.getElementById('cf-rep-xlsx')?.addEventListener('click', () => _cfExportReport(focusId, 'xlsx'));
+}
+
+function _cfExportReport(focusId, kind) {
+  const focus = _cfSaveReportDraft(focusId);
+  if (!focus) return;
+  const st = document.getElementById('cf-rep-status');
+  try {
+    const model    = buildFocusReportModel(focus, _cfScope);
+    const sections = _cfCollectReportSections();
+    const stamp    = todayISO();
+    if (kind === 'docx') {
+      downloadBytes(buildFocusReportDocx(model, sections),
+        safeFilename(`${focus.title} report ${stamp}`, 'docx'), MIME_DOCX);
+    } else {
+      downloadBytes(buildFocusReportXlsx(model, sections),
+        safeFilename(`${focus.title} data ${stamp}`, 'xlsx'), MIME_XLSX);
+    }
+    if (st) st.textContent = kind === 'docx' ? 'Word document downloaded.' : 'Excel workbook downloaded.';
+  } catch (e) {
+    if (st) st.textContent = 'The file could not be produced: ' + (e && e.message ? e.message : 'unknown error');
+    if (typeof UI !== 'undefined') UI.showToast('error', 'Report export failed');
+  }
 }
 
 // ── Action plan and milestones (v1.3) ────────────────────────────
