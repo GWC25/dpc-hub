@@ -1,0 +1,232 @@
+{
+  "accessibility": [
+    {
+      "title": "Make resources accessible with digital tools",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/digital-inclusion/accessible-resources.html"
+    },
+    {
+      "title": "Checking accessibility with Accessibility Checker",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/accessibility-checker.html"
+    }
+  ],
+  "accessible-resources": [
+    {
+      "title": "Make resources accessible with digital tools",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/digital-inclusion/accessible-resources.html"
+    }
+  ],
+  "WCAG": [
+    {
+      "title": "Checking accessibility with Accessibility Checker",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/accessibility-checker.html"
+    }
+  ],
+  "contrast": [
+    {
+      "title": "Checking accessibility with Accessibility Checker",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/accessibility-checker.html"
+    }
+  ],
+  "alt-text": [
+    {
+      "title": "Writing alt text with AI",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/ai-alt-text.html"
+    },
+    {
+      "title": "Adding alt text and heading structure",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/alt-text-and-headings.html"
+    }
+  ],
+  "AT": [
+    {
+      "title": "Using Read&Write for reading and writing support",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/read-and-write.html"
+    },
+    {
+      "title": "Using Immersive Reader for reading support",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/immersive-reader.html"
+    },
+    {
+      "title": "Using Dictate and Read Aloud in Word and Outlook",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/dictation-and-text-to-speech.html"
+    }
+  ],
+  "assistive-technology": [
+    {
+      "title": "Support reading and writing barriers with digital tools",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/digital-inclusion/reading-writing-support.html"
+    }
+  ],
+  "immersive-reader": [
+    {
+      "title": "Using Immersive Reader for reading support",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/immersive-reader.html"
+    }
+  ],
+  "grades-tab": [
+    {
+      "title": "Viewing Insights and Grades in Teams",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/insights-and-grades.html"
+    },
+    {
+      "title": "Use Insights, Grades and Reflect to check how learners are doing",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/digital-foundations/insights-grades-reflect.html"
+    }
+  ],
+  "audio-feedback": [
+    {
+      "title": "Using rubrics and inline feedback in Assignments",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/assignment-feedback-and-rubrics.html"
+    },
+    {
+      "title": "Recording an audio explanation",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/voice-recording.html"
+    }
+  ],
+  "response-to-feedback": [
+    {
+      "title": "Using rubrics and inline feedback in Assignments",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/assignment-feedback-and-rubrics.html"
+    }
+  ],
+  "formative": [
+    {
+      "title": "Using Microsoft Forms to check understanding",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/forms.html"
+    },
+    {
+      "title": "Using mini whiteboards to check understanding",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/mini-whiteboards.html"
+    },
+    {
+      "title": "Using Plickers for a class poll without learner devices",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/plickers.html"
+    }
+  ],
+  "exit-ticket": [
+    {
+      "title": "Using Microsoft Forms to check understanding",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/forms.html"
+    }
+  ],
+  "poll": [
+    {
+      "title": "Using Polls in a Microsoft Teams meeting",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/teams-polls.html"
+    },
+    {
+      "title": "Using Plickers for a class poll without learner devices",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/plickers.html"
+    }
+  ],
+  "diagnostic": [
+    {
+      "title": "Using Microsoft Forms to check understanding",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/forms.html"
+    }
+  ],
+  "checks-for-understanding": [
+    {
+      "title": "Run a quick digital check for understanding",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/digital-inclusion/check-for-understanding.html"
+    }
+  ],
+  "digital-pen": [
+    {
+      "title": "Annotating in OneNote to show working live",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/onenote-annotation.html"
+    },
+    {
+      "title": "Annotating slides to capture working alongside content",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/annotated-slides.html"
+    }
+  ],
+  "annotation": [
+    {
+      "title": "Annotating in OneNote to show working live",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/onenote-annotation.html"
+    },
+    {
+      "title": "Annotating slides to capture working alongside content",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/annotated-slides.html"
+    }
+  ],
+  "screen-recording": [
+    {
+      "title": "Recording your screen to create a reusable video",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/screen-recording.html"
+    }
+  ],
+  "talk-aloud": [
+    {
+      "title": "Recording a think-aloud video",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/think-aloud-video.html"
+    }
+  ],
+  "modelling": [
+    {
+      "title": "Show your thinking with digital tools",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/digital-inclusion/show-thinking.html"
+    }
+  ],
+  "Teams": [
+    {
+      "title": "Creating a Team in Microsoft Teams",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/team-creation.html"
+    },
+    {
+      "title": "Set up a Team space for your group",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/digital-foundations/team-space-setup.html"
+    }
+  ],
+  "channel-structure": [
+    {
+      "title": "Setting up channels by topic or unit",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/channel-structure.html"
+    }
+  ],
+  "file-naming": [
+    {
+      "title": "Using consistent file and folder naming",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/naming-conventions.html"
+    }
+  ],
+  "resources": [
+    {
+      "title": "Organise posts and files so learners can find things",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/digital-foundations/organise-posts-and-files.html"
+    },
+    {
+      "title": "Pinning key posts and resources in a channel",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/pinning-posts.html"
+    }
+  ],
+  "lasting-learning": [
+    {
+      "title": "Catch up absent learners with digital tools",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/digital-inclusion/catch-up-absent-learners.html"
+    },
+    {
+      "title": "Organise posts and files so learners can find things",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/digital-foundations/organise-posts-and-files.html"
+    }
+  ],
+  "captions": [
+    {
+      "title": "Adding captions to video and presentation content",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/captions.html"
+    }
+  ],
+  "feedback": [
+    {
+      "title": "Using rubrics and inline feedback in Assignments",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/assignment-feedback-and-rubrics.html"
+    }
+  ],
+  "timeliness": [
+    {
+      "title": "Setting due dates and returning grades in Assignments",
+      "url": "https://gwc25.github.io/The-Learning-Studio/content/resources/assignment-due-dates.html"
+    }
+  ]
+}

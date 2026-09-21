@@ -545,7 +545,7 @@ function getHeuristicRules() { return HEURISTIC_RULES; }
 // are also never matched, on purpose.
 //
 // This starts hand-curated and small. As Learning Studio's content grows,
-// resource-tag-map.json in the OneDrive folder just gets more entries — no code change
+// data/resource-tag-map.json just gets more entries — no code change
 // needed. A future WalkThru-replacement content set (public-domain TLA
 // technique cards, EEF-sourced, no WalkThru IP) would plug into this same
 // mechanism once it has its own home.
@@ -556,12 +556,10 @@ let _resourceTagMapPromise = null;
 async function loadResourceTagMap() {
   if (_resourceTagMap) return _resourceTagMap;
   if (!_resourceTagMapPromise) {
-    _resourceTagMapPromise = readOneDriveJSON('resource-tag-map.json', {})
-      .then(({ ok, data }) => {
-        if (ok) _resourceTagMap = data;
-        _resourceTagMapPromise = null;   // retry next time if the folder was not connected
-        return data;
-      });
+    _resourceTagMapPromise = fetch('./data/resource-tag-map.json')
+      .then(r => r.ok ? r.json() : {})
+      .then(map => { _resourceTagMap = map; return map; })
+      .catch(() => { _resourceTagMap = {}; return {}; });
   }
   return _resourceTagMapPromise;
 }

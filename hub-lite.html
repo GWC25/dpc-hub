@@ -83,8 +83,10 @@
         <button type="button" class="hl-type-btn" data-type="calendar_entry" aria-pressed="false">📅 Calendar entry</button>
       </div>
 
-      <label class="hl-label" for="hl-area">Curriculum area code <span style="font-weight:400;">(optional)</span></label>
-      <input class="hl-input" id="hl-area" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8">
+      <label class="hl-label" for="hl-area">Curriculum area <span style="font-weight:400;">(optional)</span></label>
+      <select class="hl-select" id="hl-area">
+        <option value="">— No specific area —</option>
+      </select>
 
       <label class="hl-label" for="hl-content">Details</label>
       <textarea class="hl-textarea" id="hl-content"
@@ -123,10 +125,27 @@
   let selectedType = null;
   const todaysCaptures = [];
 
-  // ── Area code ────────────────────────────────────────────────
-  // Area data is no longer published on the public site, and the OneDrive
-  // folder connection is not available on mobile browsers, so Hub Lite
-  // takes a short area code typed in. It is optional.
+  // ── Area dropdown — plain fetch, no File System Access API ───
+  // Hub Lite is standalone: it reads the public areas-seed.json directly
+  // rather than pulling in the full OneDrive Tier 2 data layer, which
+  // depends on showDirectoryPicker() and doesn't work on mobile at all.
+  fetch('data/areas-seed.json')
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+    .then(data => {
+      const areas = (data.areas || []).slice().sort((a, b) =>
+        (a.areaName || '').localeCompare(b.areaName || ''));
+      const select = document.getElementById('hl-area');
+      areas.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.areaCode;
+        opt.textContent = a.areaName || a.areaCode;
+        select.appendChild(opt);
+      });
+    })
+    .catch(err => {
+      console.warn('DPC Hub Lite: could not load areas-seed.json —', err.message);
+      // Non-fatal: area is optional, form still works without the dropdown populated
+    });
 
   // ── Type selector ────────────────────────────────────────────
   document.querySelectorAll('.hl-type-btn').forEach(btn => {
@@ -174,7 +193,7 @@
     if (!content) { showStatus('Add some detail before saving.', 'error'); return; }
     if (!configured) { showStatus('Supabase isn\u2019t configured yet — see the notice above.', 'error'); return; }
 
-    const areaCode = document.getElementById('hl-area').value.trim().toUpperCase() || null;
+    const areaCode = document.getElementById('hl-area').value || null;
     const submitBtn = document.getElementById('hl-submit-btn');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Saving…';

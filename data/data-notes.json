@@ -1,0 +1,5 @@
+{
+  "_comment": "Tier 2 OneDrive data file — DPC Hub. Populated by js/supabase-sync.js when the DPC approves meeting_shell / quick_note captures from Hub Lite. Read into window.DPC_DATA.notes at load. Structure mirrors the afi.js/reflections.js/staff.js convention (domain object containing a same-named array), not calendar.js's 'entries' naming.",
+
+  "notes": []
+}

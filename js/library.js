@@ -143,9 +143,9 @@ function initLibrary() {
 // ── Learning Studio entries (auto, read-only) ───────────────────
 async function _libLoadLearningStudioEntries() {
   if (_libLSEntriesCache) return _libLSEntriesCache;
-  const { ok, data: map } = await readOneDriveJSON('resource-tag-map.json', {});
-  if (!ok) return [];   // not cached, so the entries appear once the folder is connected
   try {
+    const res = await fetch('./data/resource-tag-map.json');
+    const map = res.ok ? await res.json() : {};
     const byUrl = new Map();
     Object.entries(map).forEach(([tag, links]) => {
       (links || []).forEach(link => {
