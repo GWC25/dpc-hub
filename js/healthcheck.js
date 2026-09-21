@@ -533,16 +533,12 @@ async function _hcOpenBaselineImport() {
   panel.innerHTML = '<p style="color:var(--color-muted);">Loading baseline data…</p>';
 
   if (!_hcBaselineData) {
-    try {
-      const res = await fetch('./planning/health-check-import/baseline-2026-parsed.json');
-      _hcBaselineData = res.ok ? await res.json() : [];
-    } catch {
-      _hcBaselineData = [];
-    }
+    const { ok, data } = await readOneDriveJSON('baseline-2026-parsed.json', []);
+    if (ok) _hcBaselineData = data;
   }
 
-  if (_hcBaselineData.length === 0) {
-    panel.innerHTML = '<p style="color:var(--color-red);">Could not load baseline-2026-parsed.json.</p>';
+  if (!_hcBaselineData || _hcBaselineData.length === 0) {
+    panel.innerHTML = '<p style="color:var(--color-red);">Could not find baseline-2026-parsed.json in your OneDrive Hub folder. Copy it into the folder and try again.</p>';
     return;
   }
 

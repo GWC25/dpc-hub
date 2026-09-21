@@ -517,10 +517,12 @@ async function _dlOpenTrackerImport() {
   panel.innerHTML = '<p style="color:var(--color-muted);">Loading tracker data…</p>';
 
   if (!_dlTrackerData) {
-    try {
-      const res = await fetch('./planning/hoa-tracker-import/hoa-tracker-2026-parsed.json');
-      _dlTrackerData = res.ok ? await res.json() : [];
-    } catch { _dlTrackerData = []; }
+    const { ok, data } = await readOneDriveJSON('hoa-tracker-2026-parsed.json', []);
+    if (!ok) {
+      panel.innerHTML = '<p style="color:var(--color-red);">Could not find hoa-tracker-2026-parsed.json in your OneDrive Hub folder. Copy it into the folder and try again.</p>';
+      return;
+    }
+    _dlTrackerData = data;
   }
 
   const hubAreaCodes = new Set((_getAreas(true) || []).map(a => a.areaCode));
@@ -689,10 +691,12 @@ async function _dlOpenConfirmedImport() {
   panel.innerHTML = '<p style="color:var(--color-muted);">Loading confirmed data…</p>';
 
   if (!_dlConfirmedData) {
-    try {
-      const res = await fetch('./planning/dl-confirmed-import/dl-confirmed-2026.json');
-      _dlConfirmedData = res.ok ? await res.json() : [];
-    } catch { _dlConfirmedData = []; }
+    const { ok, data } = await readOneDriveJSON('dl-confirmed-2026.json', []);
+    if (!ok) {
+      panel.innerHTML = '<p style="color:var(--color-red);">Could not find dl-confirmed-2026.json in your OneDrive Hub folder. Copy it into the folder and try again.</p>';
+      return;
+    }
+    _dlConfirmedData = data;
   }
 
   // Dedupe EFE/EHE into one row targeting AMT
