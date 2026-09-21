@@ -1,13 +1,11 @@
 node_modules/
 
-# This repository is public and holds application code only.
-# Data lives in the OneDrive folder the Hub connects to.
-# Documents live in the private GWC25/Files repository.
+# This repository is public. It holds the application and the non-personal
+# data it needs (data/). Reference documents live in the private
+# GWC25/Files repository. Personal data lives in the OneDrive folder.
 Documents/
 planning/
-data/
 admin/
-tools/
 *.docx
 *.xlsx
 *.pdf

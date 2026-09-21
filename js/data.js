@@ -278,10 +278,10 @@ function buildLastWeekSummary() {
 }
 
 // ── Read a JSON file from the connected OneDrive folder ───────
-// All Hub data lives in OneDrive. Nothing is fetched from the public site.
+// Used for data that must never sit in the public repository: the
+// health check baseline, the HoA tracker and Digital Lead imports.
 // Returns { ok, data }. ok is false when no folder is connected or the
-// file is missing, and data is the fallback. Callers only cache when ok
-// is true, so the data loads as soon as the folder is connected.
+// file is missing, and data is the fallback.
 async function readOneDriveJSON(filename, fallback) {
   if (!_folderHandle) return { ok: false, data: fallback };
   try {
@@ -2285,8 +2285,7 @@ function applyScope(activities, scope) {
 }
 
 // ── Quality Calendar 26/27 (Session 68) ─────────────────────────
-// Parsed from the college workbook by parse-quality-calendar.py (kept in
-// the private Files repository). The JSON lives in the OneDrive folder.
+// Parsed from the college workbook by tools/parse-quality-calendar.py.
 // Cell text is verbatim; anything that looks like a slip carries a
 // sourceNote rather than being corrected, so the Hub never quietly
 // rewrites someone else's document.
@@ -2294,10 +2293,13 @@ let _qcalCache = null;
 
 async function loadQualityCalendar() {
   if (_qcalCache) return _qcalCache;
-  const empty = { weeks: [], streams: [], windows: [], entries: [] };
-  const { ok, data } = await readOneDriveJSON('quality-calendar-2627.json', empty);
-  if (ok) _qcalCache = data;
-  return ok ? data : empty;
+  try {
+    const res = await fetch('./data/quality-calendar-2627.json');
+    _qcalCache = res.ok ? await res.json() : { weeks: [], streams: [], windows: [], entries: [] };
+  } catch {
+    _qcalCache = { weeks: [], streams: [], windows: [], entries: [] };
+  }
+  return _qcalCache;
 }
 
 function getQualityCalendar() {
@@ -2723,10 +2725,17 @@ function _writeLocalSnapshot() {
 
 // ── Internal: build default areas from seed ───────────────────
 async function _buildDefaultAreas() {
-  // Seed the area list from areas-seed.json in the OneDrive folder.
-  // Only used when data-areas.json does not exist yet.
-  const { data } = await readOneDriveJSON('areas-seed.json', { areas: [] });
-  return data;
+  // Try to fetch the seed file from the GitHub Pages deployment
+  try {
+    const resp = await fetch('./data/areas-seed.json');
+    if (resp.ok) {
+      const seed = await resp.json();
+      return seed;
+    }
+  } catch (e) {
+    console.warn('DPC Hub: could not load areas-seed.json:', e);
+  }
+  return { areas: [] };
 }
 
 // ── Password authentication ───────────────────────────────────
