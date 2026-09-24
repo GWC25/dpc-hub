@@ -1,4 +1,6 @@
-// DPC Hub · js/currentfocus.js · v2.2 · September 2026
+// DPC Hub · js/currentfocus.js · v2.3 · September 2026
+// v2.3 — action plan import and export (js/actionplan-io.js): Export plan,
+// Import plan with a check-before-apply preview, and a blank template.
 // v2.2 — combined report across every focus, and the option to file a
 // report into the connected folder rather than into Downloads.
 // v2.1 — Report tab: an editable preview with a pre-export check, and
@@ -519,6 +521,7 @@ function _cfRenderPlanPanel(f) {
       <button id="cf-ms-add-btn" type="button" class="btn btn--ghost btn--sm" aria-expanded="false" aria-controls="cf-ms-form">+ Add milestone</button>
     </div>
     <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-sm);">Every part is optional. A milestone can be one line with a date, or carry success criteria and tasks.</p>
+    ${typeof apioRenderControls === 'function' ? apioRenderControls(f) : ''}
 
     <div id="cf-ms-form" style="display:none;background:var(--color-light);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
       <input type="hidden" id="cf-ms-id" value="">
@@ -1298,6 +1301,7 @@ function _wireCFMilestoneEvents(focusId) {
   document.querySelectorAll('.cf-ms-check').forEach(cb => {
     cb.addEventListener('change', () => _cfToggleCheck(focusId, cb.dataset.ms, cb.dataset.item, cb.checked));
   });
+  if (typeof apioWire === 'function') apioWire(focusId);
 }
 
 function _cfResetMilestoneForm() {
