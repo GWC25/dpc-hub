@@ -1082,3 +1082,10 @@ body.underline-links a {
 .ms-group th{background:var(--color-light);color:var(--color-navy);font-weight:700;padding-top:10px}
 .ms-counts{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px var(--space-md);margin:var(--space-sm) 0;padding:0;list-style:none}
 .ms-counts strong{font-size:var(--text-lg);color:var(--color-navy);margin-right:4px}
+
+/* ══ Support Priorities (support-priority.js · Session RAG-3) ════ */
+.sp-band{display:inline-block;font-size:var(--text-xs);font-weight:700;padding:2px 8px;border-radius:999px;border:2px solid;white-space:nowrap}
+.sp-band--urgent{background:var(--ev-red-bg);color:var(--ev-red-text);border-color:var(--ev-red-border)}
+.sp-band--high{background:var(--ev-amber-bg);color:var(--ev-amber-text);border-color:var(--ev-amber-border)}
+.sp-band--moderate{background:var(--color-light);color:var(--color-slate);border-color:var(--color-border)}
+.sp-band--lower{background:var(--ev-green-bg);color:var(--ev-green-text);border-color:var(--ev-green-border)}

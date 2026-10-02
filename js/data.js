@@ -1,4 +1,5 @@
-// DPC Hub · js/data.js · v1.7 · 02/10/26 · Session RAG-2 — list/read any file in the connected folder (Excel imports), Health Check area-code memory, milestone and confidence stores, CPD save fix, action plan shared-with-DL date
+// DPC Hub · js/data.js · v1.8 · 02/10/26 · Session RAG-3 — re-scores Health Checks with the Copilot support priority method on load
+// v1.7 · 02/10/26 · Session RAG-2 — list/read any file in the connected folder (Excel imports), Health Check area-code memory, milestone and confidence stores, CPD save fix, action plan shared-with-DL date
 // v1.6 · 09/09/26 · Job A5 — AFI source stamping, gap/strength separation, one-time backfill
 // Data layer. All read/write operations to OneDrive JSON files.
 // File System Access API logic. Manifest loading. Auto-save scheduler.
@@ -585,6 +586,9 @@ async function loadHub(ui) {
 
   // Job A5: stamp a source onto any record that predates the field.
   try { migrateAFISource(); } catch (e) { console.warn('DPC Hub: AFI source backfill skipped:', e); }
+  // Session RAG-3: re-score every Health Check with the Copilot support
+  // priority method (support-priority.js). Writes only if a score changes.
+  try { if (typeof hcRefreshPriorityScores === 'function') hcRefreshPriorityScores(); } catch (e) { console.warn('DPC Hub: support priority refresh skipped:', e); }
 
   // Job A1: settle the provenance record and paint the header badge before
   // any module renders a figure.
@@ -2674,6 +2678,12 @@ function folderDisplayName() { return _folderHandle ? _folderHandle.name : null;
 // Lets modules read source files that sit beside the data-*.json files,
 // such as a Microsoft Forms Excel export, without a conversion step.
 // Read-only: nothing here writes or deletes.
+// Health Check records changed in bulk (support priority re-score).
+function markHealthChecksDirty() {
+  _dirty.add('data-health-checks.json');
+  _writeLocalSnapshot();
+}
+
 // Staff confidence responses imported from the Forms export
 // (confidence-import.js). Already-deduplicated by the caller.
 function saveConfidenceResponses(list) {

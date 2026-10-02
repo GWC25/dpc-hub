@@ -1,5 +1,6 @@
 // Job A5 (09/09/26): AFI counts here exclude strengths — see isGapAFI().
-// DPC Hub · js/dashboard.js · v1.1 · 02/10/26 · Session RAG-1 — adds Areas at Risk tab (ragevidence.js)
+// DPC Hub · js/dashboard.js · v1.2 · 02/10/26 · Session RAG-3 — adds Support Priorities tab (support-priority.js)
+// v1.1 · 02/10/26 · Session RAG-1 — adds Areas at Risk tab (ragevidence.js)
 // v1.0 · July 2026
 // Dashboards module. Area RAG filterable dashboard. Health Check collegiate view.
 // Reads from window.DPC_DATA across areas, AFIs, health checks.
@@ -19,6 +20,10 @@ function initDashboards() {
       <button role="tab" type="button" id="dash-tab-risk" aria-selected="false" data-dash="risk"
         style="padding:10px 20px;border:none;border-bottom:3px solid transparent;background:none;cursor:pointer;font:var(--text-base) Arial,sans-serif;color:var(--color-muted);min-height:44px;">
         Areas at Risk
+      </button>
+      <button role="tab" type="button" id="dash-tab-support" aria-selected="false" data-dash="support"
+        style="padding:10px 20px;border:none;border-bottom:3px solid transparent;background:none;cursor:pointer;font:var(--text-base) Arial,sans-serif;color:var(--color-muted);min-height:44px;">
+        Support Priorities
       </button>
       <button role="tab" type="button" id="dash-tab-hc" aria-selected="false" data-dash="hc"
         style="padding:10px 20px;border:none;border-bottom:3px solid transparent;background:none;cursor:pointer;font:var(--text-base) Arial,sans-serif;color:var(--color-muted);min-height:44px;">
@@ -53,6 +58,7 @@ function initDashboards() {
         b.style.fontWeight=active?'bold':'normal';
       });
       if(btn.dataset.dash==='rag') _renderDashRAG();
+      if(btn.dataset.dash==='support' && typeof renderSupportPriorities==='function') renderSupportPriorities(document.getElementById('dash-panel'));
       if(btn.dataset.dash==='risk' && typeof renderEvidenceRAGDashboard==='function') renderEvidenceRAGDashboard(document.getElementById('dash-panel'));
       if(btn.dataset.dash==='hc') _renderDashHC();
       if(btn.dataset.dash==='loops') _renderDashLoops();
