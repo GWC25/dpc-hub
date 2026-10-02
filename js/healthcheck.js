@@ -1,4 +1,5 @@
-// DPC Hub · js/healthcheck.js · v2.3 · 02/10/26 · Session RAG-2 — import reads the Forms Excel export from the Data folder (hc-excel-import.js), remembers area matches, sets the review round by date
+// DPC Hub · js/healthcheck.js · v2.4 · 02/10/26 · Session RAG-3 — support priority uses the Copilot workbook method (support-priority.js)
+// v2.3 · 02/10/26 · Session RAG-2 — import reads the Forms Excel export from the Data folder (hc-excel-import.js), remembers area matches, sets the review round by date
 // v2.2 · 02/09/26 · Session 66 — New review button explains why it is blocked
 // v1.1 (Sept 2026) — shows Quick Capture activity linked to a saved
 // review: the follow-through record for what happened after it.
@@ -471,12 +472,12 @@ function _hcSaveReview() {
 // reverse-engineered with full confidence from the baseline spreadsheet
 // alone. Confirm/adjust once the baseline data is actually imported and
 // can be checked against known values.
+// Session RAG-3: replaced the first-draft formula ((6 - lowest) + 0.4 x
+// (6 - average)) with the method in Graeme's Copilot workbook, now in
+// support-priority.js: per focus area, (6 - average) + 1 if an action
+// point was raised + 1 more for support or training; check = average.
 function _hcPriorityScore(review) {
-  const domains = Object.values(review.domains || {});
-  if (domains.length === 0) return null;
-  const avgOfAvgs = domains.reduce((s, d) => s + d.avgScore, 0) / domains.length;
-  const lowestOverall = Math.min(...domains.map(d => d.lowestScore));
-  return (6 - lowestOverall) * 1.0 + (6 - avgOfAvgs) * 0.4;
+  return typeof hcReviewPriority === 'function' ? hcReviewPriority(review) : null;
 }
 
 // ── Wire top-level events ────────────────────────────────────────

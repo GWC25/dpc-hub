@@ -1,4 +1,5 @@
-// DPC Hub · js/ragevidence.js · v1.1 · 02/10/26 · Session RAG-2 — can be worked out as at a past date (asOf) for the milestone impact report
+// DPC Hub · js/ragevidence.js · v1.2 · 02/10/26 · Session RAG-3 — reports the Copilot support priority as an "also note" flag
+// v1.1 · 02/10/26 · Session RAG-2 — can be worked out as at a past date (asOf) for the milestone impact report
 // v1.0 · 02/10/26 · Session RAG-1 — evidence-based area RAG suggestion
 // Suggests an overall at-risk RAG for each area from the evidence the Hub
 // already holds, with a plain-English rationale and a list of the records
@@ -89,9 +90,12 @@ function _evHealthCheck(areaCode, asOf) {
   const staffAvgs = [];
   let scored = 0, low = 0, actions = 0, formal = 0, training = 0;
   const refs = [];
+  const signals = [];
   latest.forEach(r => {
     const avgs = [];
     Object.values(r.domains || {}).forEach(d => {
+      const sp = typeof hcSignalPriority === 'function' ? hcSignalPriority(d) : null;
+      if (sp != null) signals.push(sp);
       Object.values(d.indicatorScores || {}).forEach(v => {
         if (typeof v === 'number') { scored++; if (v <= 2) low++; }
       });
@@ -120,6 +124,8 @@ function _evHealthCheck(areaCode, asOf) {
     scoredItems: scored,
     lowShare: scored ? low / scored : null,
     actions, formal, training,
+    // Copilot workbook support priority (support-priority.js), 1 to 7.
+    supportPriority: signals.length ? signals.reduce((a, b) => a + b, 0) / signals.length : null,
     firstDate: dates[0] || null,
     lastDate: dates[dates.length - 1] || null,
     refs,
@@ -245,6 +251,9 @@ function getAreaEvidenceRAG(areaCode, asOf) {
   rationale.push(dl.present ? `Digital Lead: ${dl.name || 'on the Hub'}${dl.lastMeeting ? ', last 1:1 ' + _evFmtDate(dl.lastMeeting) : ''}.` : 'Digital Lead: none on the Hub.');
 
   const flags = [];
+  if (hc.supportPriority != null && hc.supportPriority >= 4) {
+    flags.push(`Support priority ${_evNum(hc.supportPriority)} out of 7 (${hc.supportPriority >= 5 ? 'Urgent: direct intervention' : 'High: targeted coaching'}).`);
+  }
   if (rec && rec.low.length) flags.push(`Recorded as 1 or 2 on ${rec.low.map(d => d.label).join(', ')}.`);
   if (afi.immediate) flags.push(`${afi.immediate} open Immediate improvement loop${afi.immediate === 1 ? '' : 's'}.`);
   if (rec && rec.ai && hc.basis != null && Math.abs(hc.basis - rec.ai.score) >= 1) {

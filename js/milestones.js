@@ -159,6 +159,11 @@ function msComputeMetrics(asOf) {
   const plansOpen = plans.filter(p => !planDone(p));
   const plansShared = plans.filter(p => p.sharedWithDLAt && _msBy(p.sharedWithDLAt, asOf));
 
+  // Support priority (Copilot method, support-priority.js) as at asOf.
+  const sp = typeof hcSupportAnalysis === 'function' ? hcSupportAnalysis(asOf) : null;
+  const spStaffAvg = sp && sp.staff.length ? _msAvg(sp.staff.map(s => s.priority)) : null;
+  const spUrgent = sp ? sp.staff.filter(s => s.priority >= 5).length : 0;
+  const spUrgentAreas = sp ? sp.areas.filter(a => a.priority >= 5).length : 0;
   const v = (value, display, note) => ({ value, display: display == null ? String(value) : display, note: note || '' });
   return {
     hcReviews:   v(reviews.length),
@@ -166,6 +171,8 @@ function msComputeMetrics(asOf) {
     hcAvg:       v(_msAvg(staffAvgs), staffAvgs.length ? _ms2(_msAvg(staffAvgs)) : 'None'),
     hcAreas:     v(areasWithHC, `${areasWithHC} of ${areas.length}`),
     hcLow:       v(scored ? low / scored : null, scored ? _msPct(low / scored) : 'None'),
+    spAvg:       v(spStaffAvg, spStaffAvg != null ? `${_ms2(spStaffAvg)} of 7` : 'None'),
+    spUrgent:    v(spUrgent, sp && sp.staff.length ? `${spUrgent} staff, ${spUrgentAreas} areas` : 'None'),
     hcRepeat:    v(repeats.length, repeats.length ? `${repeats.length} (avg change ${repeats.length ? (_msAvg(repeats) >= 0 ? '+' : '') + _ms2(_msAvg(repeats)) : ''})` : '0'),
     ragBands:    v(bands, `${bands.red} Red, ${bands.amber} Amber, ${bands.green} Green`),
     ragAILow:    v(recAI.filter(s => s <= 2).length, `${recAI.filter(s => s <= 2).length} of ${recAI.length} scored`),
@@ -199,6 +206,8 @@ const MS_ROWS = Object.freeze([
   { key: 'hcAreas',   label: 'Areas with at least one Health Check' },
   { key: 'hcLow',     label: 'Indicator scores at 1 or 2' },
   { key: 'hcRepeat',  label: 'Staff reviewed more than once' },
+  { key: 'spAvg',     label: 'Support priority, college average (higher = more need)' },
+  { key: 'spUrgent',  label: 'In the Urgent support band (5 or more)' },
   { group: 'RAG' },
   { key: 'ragBands',  label: 'Areas by suggested RAG' },
   { key: 'ragAILow',  label: 'Areas recorded 1 or 2 on Accessibility & Inclusion' },
