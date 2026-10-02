@@ -1,4 +1,5 @@
-// DPC Hub · js/cpd.js · v1.0 · July 2026
+// DPC Hub · js/cpd.js · v1.1 · 02/10/26 · Session RAG-2 — CPD now saves to OneDrive (was never marked dirty); Teach Meet flag, attendance register by area, satisfaction
+// v1.0 · July 2026
 // CPD module. DPC personal CPD log. Planned training. CPD delivered to areas/individuals.
 
 function initCPD() {
@@ -124,7 +125,9 @@ function _renderCPDTab(tab) {
               <span style="font-size:var(--text-xs);color:var(--color-muted);">${_cpdFmtDate(d.date)}</span>
             </div>
             <p style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);">${_cpdEsc(d.title||'')}</p>
-            ${d.attendees?`<p style="font-size:var(--text-sm);color:var(--color-muted);">${d.attendees} attendee${d.attendees!==1?'s':''}</p>`:''}
+            ${d.type==='teach-meet'?'<p style="font-size:var(--text-xs);font-weight:bold;color:var(--color-teal);">Teach Meet</p>':''}
+            ${d.attendees?`<p style="font-size:var(--text-sm);color:var(--color-muted);">${d.attendees} attendee${d.attendees!==1?'s':''}${(d.register||[]).length?`: ${_cpdEsc(d.register.map(p=>p.name+(p.areaCode?' ('+p.areaCode+')':'')).join(', '))}`:''}</p>`:''}
+            ${d.satisfactionAvg?`<p style="font-size:var(--text-sm);color:var(--color-muted);">Satisfaction ${d.satisfactionAvg} of 5${d.feedbackCount?` from ${d.feedbackCount} response${d.feedbackCount!==1?'s':''}`:''}</p>`:''}
             ${d.notes?`<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:4px;">${_cpdEsc(d.notes)}</p>`:''}
           </div>`).join('')}
     `;
@@ -180,7 +183,15 @@ function _openCPDModal(type) {
           <select class="form-select" id="cpd-area-del"><option value="">— Select —</option>${(_getAreas()||[]).map(a=>`<option value="${a.areaCode}">${a.areaCode} — ${a.areaName}</option>`).join('')}</select>
         </div>
       </div>
-      <div class="form-group"><label class="form-label form-label--optional" for="cpd-attendees">Number of attendees</label><input class="form-input" type="number" id="cpd-attendees" min="1"></div>
+      <div class="form-group"><label style="display:flex;gap:8px;align-items:center;font-size:var(--text-sm);"><input type="checkbox" id="cpd-teachmeet"> This was a Teach Meet</label></div>
+      <div class="form-group"><label class="form-label form-label--optional" for="cpd-register">Who attended</label>
+        <p id="cpd-register-hint" class="form-hint" style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:4px;">One person per line: name, then area code. For example: Jo Smith, HAC</p>
+        <textarea class="form-textarea" id="cpd-register" rows="4" aria-describedby="cpd-register-hint"></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);">
+        <div class="form-group"><label class="form-label form-label--optional" for="cpd-attendees">Number of attendees</label><input class="form-input" type="number" id="cpd-attendees" min="1" aria-describedby="cpd-attendees-hint"><p id="cpd-attendees-hint" style="font-size:var(--text-xs);color:var(--color-muted);">Leave blank to count the names above</p></div>
+        <div class="form-group"><label class="form-label form-label--optional" for="cpd-satisfaction">Average satisfaction (1 to 5)</label><input class="form-input" type="number" id="cpd-satisfaction" min="1" max="5" step="0.1"></div>
+        <div class="form-group"><label class="form-label form-label--optional" for="cpd-feedback-n">Feedback responses</label><input class="form-input" type="number" id="cpd-feedback-n" min="0"></div>
+      </div>
       <div class="form-group"><label class="form-label form-label--optional" for="cpd-notes">Notes</label><textarea class="form-textarea" id="cpd-notes" rows="2"></textarea></div>`;
   }
 
@@ -207,10 +218,25 @@ function _saveCPDEntry() {
     cpd.plannedTraining.push({id:generateId(),title,plannedDate:document.getElementById('cpd-date')?.value||'',provider:document.getElementById('cpd-provider')?.value.trim()||'',status:document.getElementById('cpd-status-sel')?.value||'planned'});
   } else {
     if(!cpd.deliveredCPD) cpd.deliveredCPD=[];
-    cpd.deliveredCPD.push({id:generateId(),title,date:document.getElementById('cpd-date')?.value||todayISO(),areaCode:document.getElementById('cpd-area-del')?.value||'',attendees:parseInt(document.getElementById('cpd-attendees')?.value)||null,notes:document.getElementById('cpd-notes')?.value.trim()||''});
+    // Register (Session RAG-2): "Name, AREA" per line, so Teach Meet
+    // attendance can be counted by area in the Milestone Impact Report.
+    const register=(document.getElementById('cpd-register')?.value||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+      const parts=l.split(',').map(x=>x.trim());
+      const code=parts.length>1?parts[parts.length-1].toUpperCase():'';
+      return {name:parts.length>1?parts.slice(0,-1).join(', '):parts[0],areaCode:/^[A-Z]{2,4}$/.test(code)?code:''};
+    });
+    const sat=parseFloat(document.getElementById('cpd-satisfaction')?.value);
+    cpd.deliveredCPD.push({id:generateId(),title,date:document.getElementById('cpd-date')?.value||todayISO(),areaCode:document.getElementById('cpd-area-del')?.value||'',
+      type:document.getElementById('cpd-teachmeet')?.checked?'teach-meet':'cpd',
+      register,
+      attendees:parseInt(document.getElementById('cpd-attendees')?.value)||(register.length||null),
+      satisfactionAvg:(sat>=1&&sat<=5)?sat:null,
+      feedbackCount:parseInt(document.getElementById('cpd-feedback-n')?.value)||null,
+      notes:document.getElementById('cpd-notes')?.value.trim()||''});
   }
 
   window.DPC_DATA.cpd=cpd;
+  if (typeof saveCPDData==='function') saveCPDData();
   document.getElementById('cpd-modal').style.display='none';
   _renderCPDTab(type);
   if(typeof UI!=='undefined') UI.showToast('success','CPD entry saved.');
