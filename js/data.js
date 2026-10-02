@@ -1,4 +1,5 @@
-// DPC Hub · js/data.js · v1.6 · 09/09/26 · Job A5 — AFI source stamping, gap/strength separation, one-time backfill
+// DPC Hub · js/data.js · v1.7 · 02/10/26 · Session RAG-2 — list/read any file in the connected folder (Excel imports), Health Check area-code memory
+// v1.6 · 09/09/26 · Job A5 — AFI source stamping, gap/strength separation, one-time backfill
 // Data layer. All read/write operations to OneDrive JSON files.
 // File System Access API logic. Manifest loading. Auto-save scheduler.
 // Session snapshot to localStorage. No UI logic in this file.
@@ -2645,6 +2646,49 @@ async function _writeFile(filename, data) {
 function hasFolderAccess() { return !!_folderHandle; }
 
 function folderDisplayName() { return _folderHandle ? _folderHandle.name : null; }
+
+// ── Any file in the connected folder (Session RAG-2) ──────────
+// Lets modules read source files that sit beside the data-*.json files,
+// such as a Microsoft Forms Excel export, without a conversion step.
+// Read-only: nothing here writes or deletes.
+async function listFolderFiles(predicate) {
+  if (!_folderHandle) return [];
+  const out = [];
+  try {
+    for await (const [name, handle] of _folderHandle.entries()) {
+      if (handle.kind !== 'file') continue;
+      if (predicate && !predicate(name)) continue;
+      try {
+        const f = await handle.getFile();
+        out.push({ name, lastModified: f.lastModified, size: f.size });
+      } catch { out.push({ name, lastModified: 0, size: 0 }); }
+    }
+  } catch (err) {
+    console.warn('DPC Hub: could not list the connected folder:', err);
+  }
+  return out.sort((a, b) => b.lastModified - a.lastModified);
+}
+
+async function readFolderFileBytes(filename) {
+  if (!_folderHandle) throw new Error('No folder is connected. Reconnect the folder in Settings.');
+  const fileHandle = await _folderHandle.getFileHandle(filename, { create: false });
+  const file = await fileHandle.getFile();
+  return { bytes: await file.arrayBuffer(), lastModified: file.lastModified, name: file.name };
+}
+
+// Remembered Health Check area-code matches: raw Forms code (or name)
+// to Hub areaCode, so a messy code like EMP200 is confirmed once, not
+// every import. Stored inside data-health-checks.json.
+function saveHCAreaCodeMapEntry(key, areaCode) {
+  if (!key || !areaCode) return;
+  if (!window.DPC_DATA.healthChecks) window.DPC_DATA.healthChecks = { reviews: [] };
+  const hc = window.DPC_DATA.healthChecks;
+  if (!hc.areaCodeMap) hc.areaCodeMap = {};
+  if (hc.areaCodeMap[key] === areaCode) return;
+  hc.areaCodeMap[key] = areaCode;
+  _dirty.add('data-health-checks.json');
+  _writeLocalSnapshot();
+}
 
 async function saveBytesToFolder(filename, bytes, subfolder) {
   if (!_folderHandle) throw new Error('No folder is connected. Use Download instead, or reconnect the folder in Settings.');

@@ -1,4 +1,5 @@
-// DPC Hub · js/healthcheck.js · v2.2 · 02/09/26 · Session 66 — New review button explains why it is blocked
+// DPC Hub · js/healthcheck.js · v2.3 · 02/10/26 · Session RAG-2 — import reads the Forms Excel export from the Data folder (hc-excel-import.js), remembers area matches, sets the review round by date
+// v2.2 · 02/09/26 · Session 66 — New review button explains why it is blocked
 // v1.1 (Sept 2026) — shows Quick Capture activity linked to a saved
 // review: the follow-through record for what happened after it.
 // v2.1: shareable per-staff Word report (see "Shareable Word report" at
@@ -52,7 +53,7 @@ function initHealthChecks() {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm);flex-wrap:wrap;gap:var(--space-sm);">
       <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);">Digital Health Checks</h1>
       <div style="display:flex;gap:var(--space-sm);">
-        <button id="hc-import-btn" type="button" class="btn btn--ghost btn--sm">Import baseline data (2026)</button>
+        <button id="hc-import-btn" type="button" class="btn btn--ghost btn--sm">Import Health Checks</button>
         <button id="hc-bulk-generate-btn" type="button" class="btn btn--secondary btn--sm">Generate all Action Plans</button>
       </div>
     </div>
@@ -526,55 +527,106 @@ function _wireHCEvents() {
 // reviews, so this is safe to open more than once.
 
 let _hcBaselineData = null;
+let _hcImportSource = null;   // { kind: 'excel'|'json', name, lastModified }
+let _hcImportFile = null;     // Excel file chosen in the panel, if any
+
+// Import sources, in order of preference:
+//   1. A Microsoft Forms "Digital Health Checks" .xlsx export saved in the
+//      connected Data folder (newest first). Parsed in the browser.
+//   2. baseline-2026-parsed.json in the same folder (the older route).
+// Already-imported rows are recognised by Forms response ID and skipped.
+async function _hcLoadImportRecords(fileName) {
+  const files = typeof hcFindExportFiles === 'function' ? await hcFindExportFiles() : [];
+  if (files.length) {
+    const chosen = files.find(f => f.name === fileName) || files[0];
+    const { bytes, lastModified, name } = await readFolderFileBytes(chosen.name);
+    const parsed = hcParseExportWorkbook(bytes);
+    return { records: parsed.records, warnings: parsed.warnings, files, source: { kind: 'excel', name, lastModified } };
+  }
+  const { ok, data } = await readOneDriveJSON('baseline-2026-parsed.json', []);
+  if (ok && data && data.length) return { records: data, warnings: [], files: [], source: { kind: 'json', name: 'baseline-2026-parsed.json', lastModified: null } };
+  return { records: [], warnings: [], files: [], source: null };
+}
 
 async function _hcOpenBaselineImport() {
   const panel = document.getElementById('hc-import-panel');
   panel.style.display = 'block';
-  panel.innerHTML = '<p style="color:var(--color-muted);">Loading baseline data…</p>';
+  panel.innerHTML = '<p role="status" style="color:var(--color-muted);">Looking for Health Check exports in your Data folder…</p>';
 
-  if (!_hcBaselineData) {
-    const { ok, data } = await readOneDriveJSON('baseline-2026-parsed.json', []);
-    if (ok) _hcBaselineData = data;
+  let loaded;
+  try {
+    loaded = await _hcLoadImportRecords(_hcImportFile);
+  } catch (err) {
+    panel.innerHTML = `<p role="alert" style="color:var(--color-red);">Could not read the Health Checks export: ${_hcEsc(err.message || String(err))}</p>`;
+    return;
   }
+  _hcBaselineData = loaded.records;
+  _hcImportSource = loaded.source;
 
-  if (!_hcBaselineData || _hcBaselineData.length === 0) {
-    panel.innerHTML = '<p style="color:var(--color-red);">Could not find baseline-2026-parsed.json in your OneDrive Hub folder. Copy it into the folder and try again.</p>';
+  if (!_hcBaselineData.length) {
+    panel.innerHTML = `<p role="alert" style="color:var(--color-red);">No Health Check data found in your connected folder (${_hcEsc(typeof folderDisplayName === 'function' ? (folderDisplayName() || 'none') : '')}). Save the Digital Health Checks Forms export (.xlsx) into that folder, keeping "Health Check" in the file name, then try again.</p>`;
     return;
   }
 
-  const alreadyImported = new Set(_hcGetAllReviews().map(r => r.baselineSourceRowId).filter(Boolean));
+  const alreadyImported = new Set(_hcGetAllReviews().map(r => r.baselineSourceRowId).filter(v => v != null));
   const areas = _getAreas() || [];
   const allStaff = (window.DPC_DATA.staff && window.DPC_DATA.staff.staff) || [];
+  const fresh = _hcBaselineData.map((rec, idx) => ({ rec, idx })).filter(x => !alreadyImported.has(x.rec.sourceRowId));
+  const done  = _hcBaselineData.filter(rec => alreadyImported.has(rec.sourceRowId));
+  const src = _hcImportSource;
+  const srcLine = src.kind === 'excel'
+    ? `From <strong>${_hcEsc(src.name)}</strong>${src.lastModified ? `, saved ${_hcEsc(new Date(src.lastModified).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }))}` : ''}.`
+    : `From <strong>${_hcEsc(src.name)}</strong> (no Excel export found in the folder).`;
 
   panel.innerHTML = `
     <div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md);">
-        <h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">Import baseline data — June 2026</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md);gap:var(--space-sm);flex-wrap:wrap;">
+        <h2 style="font-size:var(--text-lg);font-weight:bold;color:var(--color-navy);">Import Health Checks</h2>
         <button id="hc-import-close" type="button" class="btn btn--ghost btn--sm">Close</button>
       </div>
-      <p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-md);">
-        ${_hcBaselineData.length} rows from the original Form export. Area and staff matches are suggestions only —
-        confirm each one before importing. ${alreadyImported.size > 0 ? `${alreadyImported.size} already imported.` : ''}
+      <p style="font-size:var(--text-sm);color:var(--color-slate);margin-bottom:var(--space-xs);">${srcLine}</p>
+      <p role="status" style="font-size:var(--text-sm);color:var(--color-slate);margin-bottom:var(--space-md);">
+        <strong>${_hcBaselineData.length}</strong> responses in the file: <strong>${fresh.length}</strong> new, ${done.length} already in the Hub.
+        Area and staff matches are suggestions only. Confirm each one before importing.
       </p>
-      <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-lg);">
+      ${loaded.warnings.length ? `<p role="alert" style="font-size:var(--text-xs);color:var(--color-amber);margin-bottom:var(--space-md);">${loaded.warnings.map(_hcEsc).join(' ')}</p>` : ''}
+      <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;align-items:flex-end;margin-bottom:var(--space-lg);">
+        ${loaded.files.length > 1 ? `
+          <div class="form-group" style="margin:0;">
+            <label class="form-label" for="hc-import-file">Export file</label>
+            <select id="hc-import-file" class="form-select" style="min-height:40px;font-size:var(--text-sm);">
+              ${loaded.files.map(f => `<option value="${_hcEsc(f.name)}" ${f.name === src.name ? 'selected' : ''}>${_hcEsc(f.name)}</option>`).join('')}
+            </select>
+          </div>` : ''}
+        <div class="form-group" style="margin:0;">
+          <label class="form-label" for="hc-import-cycle">Review round</label>
+          <select id="hc-import-cycle" class="form-select" style="min-height:40px;font-size:var(--text-sm);">
+            <option value="auto">Automatic, by review date</option>
+            <option value="${HC_CYCLES.BASELINE}">Baseline (2026)</option>
+            <option value="${HC_CYCLES.NOVEMBER}">November 2026</option>
+            <option value="${HC_CYCLES.FEB_MARCH}">Feb/March 2027</option>
+            <option value="${HC_CYCLES.JUNE}">June 2027</option>
+          </select>
+        </div>
         <button id="hc-select-matched" type="button" class="btn btn--ghost btn--sm">Select all confidently matched</button>
         <button id="hc-import-selected" type="button" class="btn btn--primary btn--sm">Import selected</button>
       </div>
       <div id="hc-import-rows"></div>
+      ${done.length ? `<details style="margin-top:var(--space-md);"><summary style="cursor:pointer;font-size:var(--text-sm);color:var(--color-teal);font-weight:600;min-height:44px;display:flex;align-items:center;">Already imported (${done.length})</summary><div id="hc-import-done"></div></details>` : ''}
     </div>
   `;
 
   const rowsContainer = document.getElementById('hc-import-rows');
-  _hcBaselineData.forEach((rec, idx) => {
-    if (alreadyImported.has(rec.sourceRowId)) {
-      rowsContainer.appendChild(_hcRenderImportedRow(rec));
-      return;
-    }
+  if (!fresh.length) rowsContainer.innerHTML = '<p style="font-size:var(--text-sm);color:var(--color-muted);">Nothing new to import. Every response in this file is already in the Hub.</p>';
+  fresh.forEach(({ rec, idx }) => {
     const guess = _hcGuessMatch(rec, areas, allStaff);
     rowsContainer.appendChild(_hcRenderImportRow(rec, idx, guess, areas, allStaff));
   });
+  const doneEl = document.getElementById('hc-import-done');
+  if (doneEl) done.forEach(rec => doneEl.appendChild(_hcRenderImportedRow(rec)));
 
   document.getElementById('hc-import-close')?.addEventListener('click', () => { panel.style.display = 'none'; });
+  document.getElementById('hc-import-file')?.addEventListener('change', e => { _hcImportFile = e.target.value; _hcOpenBaselineImport(); });
   document.getElementById('hc-select-matched')?.addEventListener('click', () => {
     document.querySelectorAll('.hc-import-row[data-confident="true"] .hc-import-checkbox').forEach(cb => { cb.checked = true; });
   });
@@ -592,6 +644,14 @@ function _hcGuessMatch(rec, areas, allStaff) {
   const raw = (rec.areaCode || '').trim().toLowerCase();
   const rawName = (rec.areaName || '').trim().toLowerCase();
   let areaMatch = areas.find(a => a.areaCode.toLowerCase() === raw || a.areaName.toLowerCase() === rawName);
+  // A match Graeme confirmed on an earlier import (Session RAG-2): code
+  // first, then name. Still shown for confirmation, never auto-imported.
+  if (!areaMatch && typeof hcAreaMapKeys === 'function') {
+    const map = (window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.areaCodeMap) || {};
+    const keys = hcAreaMapKeys(rec);
+    const remembered = (keys.code && map[keys.code]) || (keys.name && map[keys.name]);
+    if (remembered) areaMatch = areas.find(a => a.areaCode === remembered) || null;
+  }
   if (!areaMatch) {
     const prefix = raw.replace(/\d+$/, '');
     if (prefix && prefix !== raw) {
@@ -621,12 +681,12 @@ function _hcRenderImportRow(rec, idx, guess, areas, allStaff) {
 
   const domainSummary = Object.entries(rec.domains).map(([id, d]) => {
     const label = (HC_FOCUS_AREAS.find(fa => fa.id === id) || {}).label || id;
-    return `${label} (avg ${d.avgScore.toFixed(1)})`;
+    return d.avgScore != null ? `${label} (avg ${d.avgScore.toFixed(1)})` : `${label} (not scored)`;
   }).join(', ');
 
   div.innerHTML = `
     <div style="display:flex;align-items:flex-start;gap:var(--space-md);">
-      <input type="checkbox" class="hc-import-checkbox" style="margin-top:6px;">
+      <input type="checkbox" class="hc-import-checkbox" style="margin-top:6px;" aria-label="Import the review of ${_hcEsc(rec.staffMemberName)}, ${_hcFmtDate(rec.date)}">
       <div style="flex:1;">
         <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-slate);">
           "${_hcEsc(rec.staffMemberName)}" — raw area: "${_hcEsc(rec.areaCode)}" (${_hcEsc(rec.areaName)})
@@ -634,11 +694,11 @@ function _hcRenderImportRow(rec, idx, guess, areas, allStaff) {
         </p>
         <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-xs);">${_hcFmtDate(rec.date)} · Assessor: ${_hcEsc(rec.assessorName)} · ${_hcEsc(domainSummary)}</p>
         <div style="display:flex;gap:var(--space-sm);">
-          <select class="form-select hc-import-area" style="flex:1;min-height:36px;font-size:var(--text-xs);">
+          <select class="form-select hc-import-area" style="flex:1;min-height:36px;font-size:var(--text-xs);" aria-label="Hub area for ${_hcEsc(rec.staffMemberName)}">
             <option value="">— No area match —</option>
             ${areas.map(a => `<option value="${a.areaCode}" ${a.areaCode === guess.areaCode ? 'selected' : ''}>${a.areaCode} — ${a.areaName}</option>`).join('')}
           </select>
-          <select class="form-select hc-import-staff" style="flex:1;min-height:36px;font-size:var(--text-xs);">
+          <select class="form-select hc-import-staff" style="flex:1;min-height:36px;font-size:var(--text-xs);" aria-label="Hub staff record for ${_hcEsc(rec.staffMemberName)}">
             <option value="">— No staff match —</option>
             <option value="__create__" ${!guess.staffId ? 'selected' : ''}>+ Create new staff: "${_hcEsc(rec.staffMemberName)}"</option>
             ${allStaff.map(s => `<option value="${s.staffId}" ${s.staffId === guess.staffId ? 'selected' : ''}>${_hcEsc(s.name)} (${s.areaCode})</option>`).join('')}
@@ -675,6 +735,7 @@ function _hcCommitSelectedImports() {
   // "the same person" in area BUI, only create the staff record once, not twice.
   const newlyCreatedInThisBatch = {};
 
+  const cycleChoice = document.getElementById('hc-import-cycle')?.value || 'auto';
   rows.forEach(row => {
     const checkbox = row.querySelector('.hc-import-checkbox');
     if (!checkbox.checked) return;
@@ -721,9 +782,17 @@ function _hcCommitSelectedImports() {
       }
     }
 
+    // Remember this area match for the raw Forms code and name, so the
+    // next import suggests it straight away.
+    if (typeof hcAreaMapKeys === 'function' && typeof saveHCAreaCodeMapEntry === 'function') {
+      const k = hcAreaMapKeys(rec);
+      const exact = (_getAreas() || []).some(a => a.areaCode.toLowerCase() === String(rec.areaCode || '').trim().toLowerCase());
+      if (!exact) { if (k.code) saveHCAreaCodeMapEntry(k.code, areaCode); else if (k.name) saveHCAreaCodeMapEntry(k.name, areaCode); }
+    }
+
     const review = {
       reviewId: generateId(),
-      cycleId: HC_CYCLES.BASELINE,
+      cycleId: cycleChoice === 'auto' && typeof hcCycleForDate === 'function' ? hcCycleForDate(rec.date) : (cycleChoice === 'auto' ? HC_CYCLES.BASELINE : cycleChoice),
       date: rec.date,
       areaCode,
       staffId,
@@ -736,6 +805,7 @@ function _hcCommitSelectedImports() {
       areasForImprovement: rec.areasForImprovement || '',
       priorityNextSteps: rec.priorityNextSteps || '',
       baselineSourceRowId: rec.sourceRowId, // dedup guard — see file header
+      importSource: _hcImportSource ? _hcImportSource.name : null,
     };
     review.supportPriorityScore = _hcPriorityScore(review);
 
