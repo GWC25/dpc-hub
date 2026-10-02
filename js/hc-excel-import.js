@@ -1,4 +1,5 @@
-// DPC Hub · js/hc-excel-import.js · v1.0 · 02/10/26 · Session RAG-2 — read the Health Checks Forms export (.xlsx) straight from the Data folder
+// DPC Hub · js/hc-excel-import.js · v1.1 · 02/10/26 · Session RAG-2 — "Digital Health Checks Initial Baseline" is the preferred file; other Health Check exports still listed
+// v1.0 · 02/10/26 · Session RAG-2 — read the Health Checks Forms export (.xlsx) straight from the Data folder
 // Parses a Microsoft Forms "Digital Health Checks" Excel export in the
 // browser into the same record shape as baseline-2026-parsed.json, so
 // the existing import review in healthcheck.js works unchanged. Rules are
@@ -15,6 +16,9 @@
 //          hcCycleForDate(isoDate), hcAreaMapKeys(rec)
 
 const HC_EXPORT_FILE_PATTERN = /health\s*check/i;
+// Graeme's master file in the Data folder. Opened by default whenever it
+// is there; any other Health Check export stays selectable in the panel.
+const HC_PREFERRED_FILE = /^digital health checks initial baseline/i;
 
 // "What was seen?" occurrence per domain. Inclusive Knowledge and
 // Practice has no "What was seen?" question in the Form.
@@ -28,7 +32,9 @@ const _HCX_SEEN_INDEX = {
 
 async function hcFindExportFiles() {
   if (typeof listFolderFiles !== 'function') return [];
-  return listFolderFiles(name => /\.xlsx$/i.test(name) && !name.startsWith('~$') && HC_EXPORT_FILE_PATTERN.test(name));
+  const files = await listFolderFiles(name => /\.xlsx$/i.test(name) && !name.startsWith('~$') && HC_EXPORT_FILE_PATTERN.test(name));
+  // Preferred file first, then newest first (listFolderFiles order).
+  return files.filter(f => HC_PREFERRED_FILE.test(f.name)).concat(files.filter(f => !HC_PREFERRED_FILE.test(f.name)));
 }
 
 // Review rounds by date: before November 2026 is the baseline, then the
