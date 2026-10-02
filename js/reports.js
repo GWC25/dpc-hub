@@ -1,4 +1,5 @@
-// DPC Hub · js/reports.js · v1.2 · 02/10/26 · Session RAG-2 — adds Milestone Impact Report (milestones.js)
+// DPC Hub · js/reports.js · v1.3 · 02/10/26 · Session RAG-4 — adds DA&I Day Area Packs (area-packs.js)
+// v1.2 · 02/10/26 · Session RAG-2 — adds Milestone Impact Report (milestones.js)
 // v1.1 · 09/09/26 · Job A1 provenance guard + Job A2 archived-area exclusion
 // Report Builder module. Five audience templates.
 // Word doc generation via lib/docx.min.js (loaded locally, no CDN).
@@ -27,6 +28,7 @@ const REPORT_TYPES = Object.freeze({
   LOOPS_REPORT:     'loops-report',
   AREA_DATA_EXPORT: 'area-data-export',
   MILESTONE_IMPACT: 'milestone-impact',
+  AREA_PACKS:       'area-packs',
 });
 
 let _repCurrentType = null;
@@ -87,6 +89,7 @@ function initReports() {
         <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);padding-bottom:var(--space-sm);margin-bottom:var(--space-md);border-bottom:1px solid var(--color-border);">Select report type</h3>
         <div>
           <div role="group" aria-label="Report type" style="display:flex;flex-direction:column;gap:8px;">
+            ${_repTypeBtn(REPORT_TYPES.AREA_PACKS, 'DA&I Day Area Packs (Excel)', 'One workbook per area for the Head of Area and Digital Lead: overview, 23 October attendance, Health Check position, and a tab per member of staff with their action plan')}
             ${_repTypeBtn(REPORT_TYPES.MILESTONE_IMPACT, 'Milestone Impact Report', 'Accessibility and Inclusion: position at each milestone (March, July, 23 Oct, Terms 2, 4, 6), this fortnight in numbers, Current Focus, every area. Word and Excel')}
             ${_repTypeBtn(REPORT_TYPES.NEIL_FORTNIGHTLY, 'Neil Davies — Fortnightly', 'Cross-college: activity, open loops, RAG movers, coming up')}
             ${_repTypeBtn(REPORT_TYPES.DIGITAL_LEAD,     'Digital Lead — Area Report', 'Area RAG detail, current focus, CPD suggestions')}
@@ -185,7 +188,10 @@ function _repRenderOptions() {
     </div>`;
 
   let html = '';
-  if (type === REPORT_TYPES.MILESTONE_IMPACT) {
+  if (type === REPORT_TYPES.AREA_PACKS) {
+    title.textContent = 'DA&I Day Area Packs';
+    html = '<p class="ms-muted">Choose the areas below, then save them all to the Data folder or download one at a time.</p>';
+  } else if (type === REPORT_TYPES.MILESTONE_IMPACT) {
     title.textContent = 'Milestone Impact Report Options';
     html = `
       ${dateRange(twoWeeksAgo)}
@@ -486,7 +492,12 @@ function _repRenderPreview() {
   const type = _repCurrentType;
   let html = '<p style="color:var(--color-muted)">No preview available.</p>';
 
-  if (type === REPORT_TYPES.MILESTONE_IMPACT && typeof msRenderReport === 'function') {
+  if (type === REPORT_TYPES.AREA_PACKS && typeof apRenderPanel === 'function') {
+    panel.style.display = '';
+    const gp = document.getElementById('rep-generate-panel'); if (gp) gp.style.display = 'none';
+    if (!body._apBusy) { body._apBusy = true; body.innerHTML = _repProvenanceGuard() + '<div id="ap-panel"></div>'; apRenderPanel(document.getElementById('ap-panel')).finally(() => { body._apBusy = false; }); }
+    return;
+  } else if (type === REPORT_TYPES.MILESTONE_IMPACT && typeof msRenderReport === 'function') {
     const msOpts = { dateFrom: opts.dateFrom, dateTo: opts.dateTo, reflection: document.getElementById('rep-ms-reflection')?.value.trim() || '', nextSteps: document.getElementById('rep-ms-next')?.value.trim() || '' };
     body.innerHTML = _repProvenanceGuard() + msRenderReport(msOpts);
     panel.style.display = '';
