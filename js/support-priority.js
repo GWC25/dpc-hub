@@ -1,4 +1,5 @@
-// DPC Hub · js/support-priority.js · v1.0 · 02/10/26 · Session RAG-3 — Copilot's Health Check support analysis, rebuilt in the Hub
+// DPC Hub · js/support-priority.js · v1.1 · 02/10/26 · Session RAG-3 — redesigned screen: tiles, ranked cards, phases; detail in expandable sections
+// v1.0 · 02/10/26 · Session RAG-3 — Copilot's Health Check support analysis, rebuilt in the Hub
 // Rebuilds the analysis in the Copilot workbook "Digital Health Checks"
 // (sheets Signals, Area Detail, Dashboard, Support Plan, Design Session)
 // so it runs on the Hub's own Health Check records, by Hub area code, and
@@ -246,50 +247,107 @@ function _spTable(caption, head, rows) {
 }
 function _spBadge(b) { return b ? `<span class="sp-band sp-band--${b.band.toLowerCase()}">${_spEsc(b.label)}</span>` : ''; }
 
+// Layout (v1.1): summary tiles, then side-by-side cards with short ranked
+// lists (bar + number + band in words, so colour is never the only cue),
+// then the next-steps phases. Full plans sit in expandable sections, so
+// the page stays short and everything still updates from the import.
+function _spBar(p, b) {
+  const pct = Math.max(0, Math.min(100, (p / 7) * 100));
+  return `<span class="sp-bar" aria-hidden="true"><span class="sp-bar__fill sp-bar__fill--${b.band.toLowerCase()}" style="width:${pct.toFixed(0)}%"></span></span>`;
+}
+function _spRankList(items, label) {
+  if (!items.length) return '<p class="ms-muted">None yet.</p>';
+  return `<ol class="sp-rank" aria-label="${_spEsc(label)}">${items.map(it => `
+    <li class="sp-rank__row">
+      <span class="sp-rank__name">${it.name}</span>
+      ${_spBar(it.priority, it.band)}
+      <span class="sp-rank__num">${_sp2(it.priority)}</span>
+      <span class="sp-band sp-band--${it.band.band.toLowerCase()}">${_spEsc(it.band.band)}</span>
+      ${it.sub ? `<span class="sp-rank__sub">${_spEsc(it.sub)}</span>` : ''}
+    </li>`).join('')}</ol>`;
+}
+
 function renderSupportPriorities(panel) {
   if (!panel) return;
   const an = hcSupportAnalysis();
   const k = an.kpis;
   const link = code => `<button type="button" class="ev-rag-link sp-area" data-area-code="${_spEsc(code)}">${_spEsc(code)}</button>`;
+  const bandCount = name => an.areas.filter(a => a.band.band === name).length;
+  const staffBand = name => an.staff.filter(s => s.band.band === name).length;
+
+  if (!an.staff.length) {
+    panel.innerHTML = '<div class="card"><p>No scored Health Checks yet. Use Health Checks, Import Health Checks to bring in the Forms export from the Data folder.</p></div>';
+    return;
+  }
+
   panel.innerHTML = `
-    <div class="ms-report">
-      <p style="max-width:75ch;">Support priority for every focus area of every Health Check: 6 minus the average score, plus 1 if an action point was raised, plus 1 more if the action needs support or training. Higher means greater need. This is the method from the Copilot workbook, running on the Hub's own records.</p>
-      <div class="ms-actions" style="margin:var(--space-sm) 0;">
-        <button type="button" class="btn btn--ghost btn--sm" id="sp-export">Download as spreadsheet</button>
-        <span id="sp-status" role="status" class="ms-muted"></span>
-      </div>
-      <ul class="ms-counts">
-        <li><strong>${k.staff}</strong> staff reviewed</li>
-        <li><strong>${k.areas}</strong> areas reviewed</li>
-        <li><strong>${_sp2(k.avg) || 'None'}</strong> average practice score</li>
-        <li><strong>${_spPct(k.actionRate) || 'None'}</strong> action-point rate</li>
-      </ul>
-      <h4 class="ms-h">Key finding</h4>
-      <p style="max-width:75ch;">${_spEsc(an.finding)}</p>
+    <div class="sp-head">
+      <p class="ms-muted">Support need per area and person, 1 to 7: higher means more support needed. Updates with every Health Check import.</p>
+      <button type="button" class="btn btn--ghost btn--sm" id="sp-export">Download spreadsheet</button>
+    </div>
+    <p id="sp-status" role="status" class="ms-muted"></p>
 
-      <h4 class="ms-h">Implementation sequence</h4>
-      ${_spTable('Implementation sequence', ['Phase', 'When', 'Focus', 'Who', 'Action', 'Success measure'],
-        an.sequence.map(s => [String(s.phase), _spEsc(s.when), _spEsc(s.focus), _spEsc(s.who || 'None yet'), _spEsc(s.action), _spEsc(s.measure)]))}
+    <div class="sp-tiles" role="group" aria-label="Summary">
+      <div class="sp-tile"><span class="sp-tile__n">${k.staff}</span>Staff reviewed</div>
+      <div class="sp-tile"><span class="sp-tile__n">${k.areas}</span>Areas reviewed</div>
+      <div class="sp-tile"><span class="sp-tile__n">${_sp2(k.avg)}</span>Avg practice score (of 5)</div>
+      <div class="sp-tile"><span class="sp-tile__n">${_spPct(k.actionRate)}</span>Reviews with an action point</div>
+      <div class="sp-tile sp-tile--urgent"><span class="sp-tile__n">${bandCount('Urgent')}</span>Areas urgent <span class="ms-muted">(${staffBand('Urgent')} staff)</span></div>
+      <div class="sp-tile sp-tile--high"><span class="sp-tile__n">${bandCount('High')}</span>Areas high <span class="ms-muted">(${staffBand('High')} staff)</span></div>
+    </div>
 
-      <h4 class="ms-h">Area support plan</h4>
-      ${an.areas.length ? _spTable('Area support plan, highest priority first', ['Area', 'Priority', 'Band', 'Avg score', 'Lowest', 'Staff', 'Action rate', 'Main support need', 'Recommended support', 'First action', 'Head of Area', 'Assessors'],
-        an.areas.map(a => [`${link(a.areaCode)} <span class="ms-muted">${_spEsc(a.areaName)}</span>`, _sp2(a.priority), _spBadge(a.band), _sp2(a.avg), String(a.lowest ?? ''), String(a.staffReviewed), _spPct(a.actionRate), _spEsc(a.mainNeed), _spEsc(a.band.support), _spEsc(a.recommendation), _spEsc(a.hoa), _spEsc(a.assessors.join('; '))])) : '<p class="ms-muted">No scored Health Checks yet.</p>'}
+    <div class="sp-grid">
+      <section class="card sp-card" aria-labelledby="sp-areas-h">
+        <h3 id="sp-areas-h" class="sp-card__h">Areas needing most support</h3>
+        ${_spRankList(an.areas.slice(0, 8).map(a => ({ name: `${link(a.areaCode)} <span class="ms-muted">${_spEsc(a.areaName)}</span>`, priority: a.priority, band: a.band, sub: `${a.staffReviewed} staff · ${a.mainNeed}` })), 'Areas, highest priority first')}
+      </section>
+      <section class="card sp-card" aria-labelledby="sp-staff-h">
+        <h3 id="sp-staff-h" class="sp-card__h">Staff needing most support</h3>
+        ${_spRankList(an.staff.slice(0, 8).map(st => ({ name: `${_spEsc(st.name)} <span class="ms-muted">${_spEsc(st.areaCode)}</span>`, priority: st.priority, band: st.band, sub: st.mainNeed })), 'Staff, highest priority first')}
+      </section>
+    </div>
 
-      <h4 class="ms-h">Individual support plan</h4>
-      ${an.staff.length ? `<details class="ev-rag-details"><summary>Show all ${an.staff.length} staff, highest priority first</summary>${_spTable('Individual support plan', ['Staff member', 'Area', 'Priority', 'Band', 'Avg score', 'Lowest', 'Action rate', 'Main support need', 'Recommended support', 'First action', 'Assessors'],
-        an.staff.map(s => [_spEsc(s.name), link(s.areaCode), _sp2(s.priority), _spBadge(s.band), _sp2(s.avg), String(s.lowest ?? ''), _spPct(s.actionRate), _spEsc(s.mainNeed), _spEsc(s.band.support), _spEsc(s.recommendation), _spEsc(s.assessors.join('; '))]))}</details>` : ''}
+    <h3 class="sp-section-h">Next steps</h3>
+    <div class="sp-phases">
+      ${an.sequence.map(sq => `
+        <section class="card sp-phase" aria-label="Phase ${sq.phase}: ${_spEsc(sq.focus)}">
+          <p class="sp-phase__when">Phase ${sq.phase} · ${_spEsc(sq.when)}</p>
+          <p class="sp-phase__focus">${_spEsc(sq.focus)}</p>
+          <p class="sp-phase__who">${_spEsc(sq.who || 'None yet')}</p>
+          <p class="ms-muted">${_spEsc(sq.action)}</p>
+        </section>`).join('')}
+    </div>
 
-      <h4 class="ms-h">Assessor calibration</h4>
-      ${an.assessors.length ? _spTable('Assessor calibration plan', ['Assessor', 'Reviews', 'Areas', 'High-priority cases', 'Avg priority', 'Avg score', 'Action rate', 'Recommended role'],
-        an.assessors.map(a => [_spEsc(a.name), String(a.signals), _spEsc(a.areas.join(', ')), String(a.high), _sp2(a.avgPriority), _sp2(a.avg), _spPct(a.actionRate), _spEsc(a.role)])) : ''}
+    <h3 class="sp-section-h">Accessible Design session</h3>
+    <div class="sp-tiles sp-tiles--3" role="group" aria-label="Design session invite list">
+      <div class="sp-tile"><span class="sp-tile__n">${an.sessionAreas.length}</span>Areas to invite</div>
+      <div class="sp-tile"><span class="sp-tile__n">${an.sessionPeople.length}</span>Individuals to invite</div>
+      <div class="sp-tile"><span class="sp-tile__n">45</span>Minutes, one live resource each</div>
+    </div>
 
-      <h4 class="ms-h">45-minute Accessible Design session: who to invite</h4>
-      <p>Invite rule: area priority ${HC_SUPPORT.INVITE} or above, or anyone in the area at ${HC_SUPPORT.INVITE} or above. Currently <strong>${an.sessionAreas.length}</strong> areas and <strong>${an.sessionPeople.length}</strong> individuals. Ask each person to bring one live resource and leave with one corrected item and one follow-up action.</p>
-      ${an.sessionAreas.length ? _spTable('Target areas for the design session', ['Area', 'Why', 'Area priority', 'Avg score', 'Staff reviewed', 'Individuals to invite', 'Session emphasis', 'Head of Area'],
-        an.sessionAreas.map(a => [`${link(a.areaCode)} <span class="ms-muted">${_spEsc(a.areaName)}</span>`, _spEsc(a.why), _sp2(a.priority), _sp2(a.avg), String(a.staffReviewed), String(a.invitees), _spEsc(a.emphasis), _spEsc(a.hoa)])) : ''}
-      ${an.sessionPeople.length ? `<details class="ev-rag-details"><summary>Individuals to invite (${an.sessionPeople.length})</summary>${_spTable('Individuals to invite', ['Staff member', 'Area', 'Priority', 'Why invite', 'What to practise', 'Follow-up action'],
-        an.sessionPeople.map(s => [_spEsc(s.name), link(s.areaCode), _sp2(s.priority), _spEsc(s.why), _spEsc(s.practise), _spEsc(s.recommendation)]))}</details>` : ''}
-      <details class="ev-rag-details"><summary>Session content (45 minutes)</summary>${_spTable('Session agenda', ['Minutes', 'Segment', 'What to include'], SP_AGENDA.map(r => r.map(_spEsc)))}</details>
+    <div class="sp-more">
+      <details class="ev-rag-details"><summary>Area support plan (${an.areas.length})</summary>
+        ${_spTable('Area support plan, highest priority first', ['Area', 'Priority', 'Band', 'Avg score', 'Staff', 'Main need', 'Support', 'First action', 'Head of Area'],
+          an.areas.map(a => [`${link(a.areaCode)} <span class="ms-muted">${_spEsc(a.areaName)}</span>`, _sp2(a.priority), _spBadge(a.band), _sp2(a.avg), String(a.staffReviewed), _spEsc(a.mainNeed), _spEsc(a.band.support), _spEsc(a.recommendation), _spEsc(a.hoa)]))}
+      </details>
+      <details class="ev-rag-details"><summary>Individual support plan (${an.staff.length})</summary>
+        ${_spTable('Individual support plan', ['Staff member', 'Area', 'Priority', 'Band', 'Avg score', 'Main need', 'Support', 'First action', 'Assessors'],
+          an.staff.map(st => [_spEsc(st.name), link(st.areaCode), _sp2(st.priority), _spBadge(st.band), _sp2(st.avg), _spEsc(st.mainNeed), _spEsc(st.band.support), _spEsc(st.recommendation), _spEsc(st.assessors.join('; '))]))}
+      </details>
+      <details class="ev-rag-details"><summary>Assessor calibration (${an.assessors.length})</summary>
+        ${_spTable('Assessor calibration plan', ['Assessor', 'Reviews', 'Areas', 'High-priority cases', 'Avg priority', 'Role'],
+          an.assessors.map(x => [_spEsc(x.name), String(x.signals), _spEsc(x.areas.join(', ')), String(x.high), _sp2(x.avgPriority), _spEsc(x.role)]))}
+      </details>
+      <details class="ev-rag-details"><summary>Design session invite list and agenda</summary>
+        ${an.sessionAreas.length ? _spTable('Areas to invite', ['Area', 'Why', 'Priority', 'Individuals', 'Emphasis', 'Head of Area'],
+          an.sessionAreas.map(x => [`${link(x.areaCode)} <span class="ms-muted">${_spEsc(x.areaName)}</span>`, _spEsc(x.why), _sp2(x.priority), String(x.invitees), _spEsc(x.emphasis), _spEsc(x.hoa)])) : ''}
+        ${an.sessionPeople.length ? _spTable('Individuals to invite', ['Staff member', 'Area', 'Priority', 'Why', 'Practise', 'Follow-up'],
+          an.sessionPeople.map(x => [_spEsc(x.name), link(x.areaCode), _sp2(x.priority), _spEsc(x.why), _spEsc(x.practise), _spEsc(x.recommendation)])) : ''}
+        ${_spTable('Session agenda', ['Minutes', 'Segment', 'What to include'], SP_AGENDA.map(r => r.map(_spEsc)))}
+      </details>
+      <details class="ev-rag-details"><summary>How the score is worked out</summary>
+        <p class="ms-muted" style="max-width:75ch;">Each focus area of each Health Check scores 6 minus its average, plus 1 if an action point was raised, plus 1 more if the action needs support or training. Areas and staff average their scores, using each person's latest check. Bands: 5 or more Urgent, 4 High, 3 Moderate, below 3 Lower. Same method as the Copilot workbook.</p>
+      </details>
     </div>`;
 
   document.getElementById('sp-export')?.addEventListener('click', () => {
@@ -299,8 +357,8 @@ function renderSupportPriorities(panel) {
   if (!panel._spWired) {
     panel._spWired = true;
     panel.addEventListener('click', e => {
-      const b = e.target.closest('.sp-area');
-      if (b && typeof openAreaProfile === 'function') openAreaProfile(b.dataset.areaCode, 'healthchecks');
+      const btn = e.target.closest('.sp-area');
+      if (btn && typeof openAreaProfile === 'function') openAreaProfile(btn.dataset.areaCode, 'healthchecks');
     });
   }
 }

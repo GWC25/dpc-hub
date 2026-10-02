@@ -180,7 +180,7 @@ function _renderStaffDetailContent(staffId) {
   const detail = document.getElementById('staff-detail');
 
   const etfLabels = {'1':'Stage 1 — Explore','2':'Stage 2 — Adopt','3':'Stage 3 — Adapt','4':'Stage 4 — Create','5':'Stage 5 — Innovate'};
-  const openAFIs  = _getStaffAFIs(staffId).filter(a => a.status !== 'closed');
+  const openAFIs  = _getStaffAFIs(staffId).filter(isOpenLoop);
 
   detail.innerHTML = `
     <!-- Profile header -->
@@ -535,7 +535,7 @@ function _wireStaffEvents() {
 function _getAllStaff() { return (window.DPC_DATA.staff&&window.DPC_DATA.staff.staff)||[]; }
 function _getStaff(id) { return _getAllStaff().find(s=>s.staffId===id)||null; }
 function _getStaffAFIs(id) { return ((window.DPC_DATA.afi&&window.DPC_DATA.afi.afis)||[]).filter(a=>a.staffId===id); }
-function _getStaffOpenAFICount(id) { return _getStaffAFIs(id).filter(a=>a.status!=='closed').length; }
+function _getStaffOpenAFICount(id) { return _getStaffAFIs(id).filter(isOpenLoop).length; }
 function _staffPopulateAreaDropdown(selId) {
   const sel = document.getElementById(selId);
   if (!sel) return;

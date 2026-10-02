@@ -142,11 +142,11 @@ function _populateAreaDropdown(selectId) {
 // ── Metrics ───────────────────────────────────────────────────
 function _renderMetrics() {
   const afis = (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || [];
-  const openCount = afis.filter(a => a.status !== AFI_STATUS.CLOSED).length;
+  const openCount = afis.filter(isOpenLoop).length;
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const closedCount = afis.filter(a => a.status === AFI_STATUS.CLOSED && a.closedAt && a.closedAt >= monthStart).length;
+  const closedCount = afis.filter(a => isGapAFI(a) && a.status === AFI_STATUS.CLOSED && a.closedAt && a.closedAt >= monthStart).length;
 
   const openEl = document.getElementById('metric-open-afis');
   const closedEl = document.getElementById('metric-closed-afis');

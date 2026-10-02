@@ -66,7 +66,7 @@ function _repAFIsForArea(areaCode) {
   return _repGetAFIs().filter(a => a.areaCode === areaCode);
 }
 function _repOpenAFIsForArea(areaCode) {
-  return _repAFIsForArea(areaCode).filter(a => a.status !== AFI_STATUS.CLOSED);
+  return _repAFIsForArea(areaCode).filter(isOpenLoop);
 }
 function _repInWindow(iso, from, to) {
   if (!iso) return false;
@@ -426,7 +426,7 @@ function _repCollegeData(opts) {
 
   const openAFIsByArea = {};
   afis.forEach(a => {
-    if (a.status !== AFI_STATUS.CLOSED) {
+    if (isOpenLoop(a)) {
       openAFIsByArea[a.areaCode] = (openAFIsByArea[a.areaCode] || 0) + 1;
     }
   });
@@ -450,8 +450,8 @@ function _repAreaData(areaCode, opts) {
   if (!area) return null;
 
   const afis = _repAFIsForArea(areaCode);
-  const openAFIs = afis.filter(a => a.status !== AFI_STATUS.CLOSED);
-  const closedAFIs = afis.filter(a => a.status === AFI_STATUS.CLOSED);
+  const openAFIs = afis.filter(isOpenLoop);
+  const closedAFIs = afis.filter(a => isGapAFI(a) && a.status === AFI_STATUS.CLOSED);
 
   const staff = _repGetStaff().filter(s => s.areaCode === areaCode);
   const cpdEntries = (_repGetCPD().deliveredCPD || []).filter(c =>

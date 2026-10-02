@@ -138,6 +138,13 @@ const AFI_SOURCE_LABEL = Object.freeze({
 function isGapAFI(afi) {
   return !!afi && afi.severity !== AFI_SEVERITY.STRENGTH;
 }
+// An open loop is an area for improvement that is not closed. Strengths
+// are recorded for evidence but never need closing, so they are never
+// "open" (Session RAG-3, 02/10/26: the Loops dashboard was counting every
+// learning-walk strength as an open loop).
+function isOpenLoop(afi) {
+  return isGapAFI(afi) && afi.status !== 'closed';
+}
 function isStrengthAFI(afi) {
   return !!afi && afi.severity === AFI_SEVERITY.STRENGTH;
 }

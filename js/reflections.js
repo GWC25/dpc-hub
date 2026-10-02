@@ -320,7 +320,7 @@ function _refPopulateAFIDropdown() {
   const sel = document.getElementById('ref-afi');
   if (!sel) return;
   while(sel.options.length>1) sel.remove(1);
-  const afis = ((window.DPC_DATA.afi&&window.DPC_DATA.afi.afis)||[]).filter(a=>a.status!=='closed');
+  const afis = ((window.DPC_DATA.afi&&window.DPC_DATA.afi.afis)||[]).filter(isOpenLoop);
   afis.forEach(a=>{
     const opt=document.createElement('option');
     opt.value=a.afiId; opt.textContent=`${a.areaCode} — ${a.lraThemeLabel||a.lraThemeId} (${a.status})`; sel.appendChild(opt);
