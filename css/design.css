@@ -1066,3 +1066,19 @@ body.underline-links a {
 .ev-rag-stat{border:2px solid;border-radius:var(--radius-md);padding:var(--space-sm) var(--space-md);
   font-weight:700;font-size:var(--text-sm);min-width:110px}
 .ev-rag-stat__n{font-size:var(--text-2xl);display:block;line-height:1.1}
+
+/* ══ Milestone Impact Report (milestones.js · Session RAG-2) ════ */
+.ms-report{font-size:var(--text-sm);color:var(--color-slate)}
+.ms-actions{display:flex;flex-wrap:wrap;gap:var(--space-sm);align-items:center}
+.ms-h{font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin:var(--space-lg) 0 var(--space-xs)}
+.ms-muted{font-size:var(--text-xs);color:var(--color-muted)}
+.ms-scroll{overflow-x:auto;margin:var(--space-sm) 0}
+.ms-table{border-collapse:collapse;min-width:100%;font-size:var(--text-sm)}
+.ms-table th,.ms-table td{border-bottom:1px solid var(--color-border);padding:6px 8px;text-align:left;vertical-align:top;color:var(--color-slate)}
+.ms-table thead th{color:var(--color-navy);font-weight:700;white-space:nowrap}
+.ms-table tbody th{font-weight:600;min-width:220px}
+.ms-table td.ms-muted{color:var(--color-muted)}
+.ms-col-sub{display:block;font-weight:400;font-size:var(--text-xs);color:var(--color-muted)}
+.ms-group th{background:var(--color-light);color:var(--color-navy);font-weight:700;padding-top:10px}
+.ms-counts{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px var(--space-md);margin:var(--space-sm) 0;padding:0;list-style:none}
+.ms-counts strong{font-size:var(--text-lg);color:var(--color-navy);margin-right:4px}

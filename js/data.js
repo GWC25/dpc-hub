@@ -160,6 +160,10 @@ window.DPC_DATA = {
   // what makes a count defensible; the dated history of who was in it is
   // itself evidence.
   caseloads:     { caseloads: [] },
+  // Frozen milestone figures for the Milestone Impact Report (Session RAG-2).
+  milestones:    { snapshots: [] },
+  // Imported staff confidence responses (WCAG 2.2 AA / Accessibility Checker form).
+  confidence:    { responses: [] },
   // Cross-college activities (Session 66): Quick Capture entries that
   // belong to a focus, a Digital Lead or a Health Check review rather
   // than to one curriculum area. Area-bound activities stay in
@@ -430,7 +434,7 @@ async function loadOptionalFiles() {
       // Capture, so "missing" is the normal starting state rather than a
       // data-integrity problem. Mark it dirty so the next auto-save
       // writes it, and do not raise a banner for it.
-      if (filename === 'data-activities.json' || filename === 'data-caseloads.json') { _dirty.add(filename); continue; }
+      if (filename === 'data-activities.json' || filename === 'data-caseloads.json' || filename === 'data-milestones.json' || filename === 'data-confidence.json') { _dirty.add(filename); continue; }
       _pendingBanners.push({
         type:      'amber',
         message:   `${filename} not found — this module will start empty. Any figure drawn from it will read zero.`,
@@ -2651,6 +2655,17 @@ function folderDisplayName() { return _folderHandle ? _folderHandle.name : null;
 // Lets modules read source files that sit beside the data-*.json files,
 // such as a Microsoft Forms Excel export, without a conversion step.
 // Read-only: nothing here writes or deletes.
+// Milestone Impact Report: one frozen set of figures per column. Saving
+// the same column again replaces it (the report asks first).
+function saveMilestoneSnapshot(snap) {
+  if (!window.DPC_DATA.milestones) window.DPC_DATA.milestones = { snapshots: [] };
+  const list = window.DPC_DATA.milestones.snapshots;
+  const idx = list.findIndex(s => s.columnId === snap.columnId);
+  if (idx >= 0) list[idx] = snap; else list.push(snap);
+  _dirty.add('data-milestones.json');
+  _writeLocalSnapshot();
+}
+
 async function listFolderFiles(predicate) {
   if (!_folderHandle) return [];
   const out = [];
@@ -2721,6 +2736,8 @@ function _assignToStore(filename, data) {
     'data-ai-runs.json':      'aiRuns',
     'data-activities.json':   'activities',
     'data-caseloads.json':    'caseloads',
+    'data-milestones.json':   'milestones',
+    'data-confidence.json':   'confidence',
   };
   const key = keyMap[filename];
   if (key && data) window.DPC_DATA[key] = data;
@@ -2746,6 +2763,8 @@ function _getDataForFile(filename) {
     'data-ai-runs.json':      window.DPC_DATA.aiRuns,
     'data-activities.json':   window.DPC_DATA.activities,
     'data-caseloads.json':    window.DPC_DATA.caseloads,
+    'data-milestones.json':   window.DPC_DATA.milestones,
+    'data-confidence.json':   window.DPC_DATA.confidence,
     [DPC_CONFIG.MANIFEST_FILENAME]: window.DPC_DATA.manifest,
   };
   return keyMap[filename] || null;

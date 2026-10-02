@@ -512,6 +512,8 @@ const DEFAULT_DATA = Object.freeze({
   'data-action-plans.json': { plans: [] },
   'data-activities.json':   { activities: [] },
   'data-caseloads.json':    { caseloads: [] },
+  'data-milestones.json':   { snapshots: [] },
+  'data-confidence.json':   { responses: [] },
 });
 
 // ── Helper: get LRA theme by ID ───────────────────────────────
