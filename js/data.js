@@ -1,4 +1,4 @@
-// DPC Hub · js/data.js · v1.7 · 02/10/26 · Session RAG-2 — list/read any file in the connected folder (Excel imports), Health Check area-code memory
+// DPC Hub · js/data.js · v1.7 · 02/10/26 · Session RAG-2 — list/read any file in the connected folder (Excel imports), Health Check area-code memory, milestone and confidence stores, CPD save fix, action plan shared-with-DL date
 // v1.6 · 09/09/26 · Job A5 — AFI source stamping, gap/strength separation, one-time backfill
 // Data layer. All read/write operations to OneDrive JSON files.
 // File System Access API logic. Manifest loading. Auto-save scheduler.
@@ -1233,6 +1233,12 @@ function renderActionPlanCard(plan, opts = {}) {
       ` : ''}
 
       ${plan.successCriteria ? `<p style="font-size:var(--text-xs);color:var(--color-slate);margin-top:var(--space-sm);"><strong>Success criteria:</strong> ${esc(plan.successCriteria)}</p>` : ''}
+      <p style="font-size:var(--text-xs);color:var(--color-slate);margin-top:var(--space-sm);">
+        <strong>Shared with Digital Lead:</strong> ${plan.sharedWithDLAt ? esc(fmtDate(plan.sharedWithDLAt)) : 'Not yet'}
+        ${editable ? (plan.sharedWithDLAt
+          ? ` <button type="button" class="btn btn--ghost btn--sm ap-shared-clear" data-plan-id="${plan.planId}">Undo</button>`
+          : ` <button type="button" class="btn btn--ghost btn--sm ap-shared-btn" data-plan-id="${plan.planId}">Mark shared today</button>`) : ''}
+      </p>
       ${_renderLinkedLoopsPreview(plan, esc, fmtDate)}
 
       ${editable ? (!isComplete ? `
@@ -1410,6 +1416,19 @@ function wireActionPlanCard(container, opts = {}) {
   });
 
   container.addEventListener('click', (e) => {
+    // Shared with the Digital Lead (Session RAG-2): feeds the Milestone
+    // Impact Report's "action plans shared with the Digital Lead" count.
+    const sharedBtn = e.target.closest('.ap-shared-btn, .ap-shared-clear');
+    if (sharedBtn) {
+      const plan = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || []).find(p => p.planId === sharedBtn.dataset.planId);
+      if (plan) {
+        if (sharedBtn.classList.contains('ap-shared-btn')) plan.sharedWithDLAt = nowISO(); else delete plan.sharedWithDLAt;
+        saveActionPlan(plan);
+        toast('success', plan.sharedWithDLAt ? 'Marked as shared with the Digital Lead.' : 'Shared date removed.');
+        refresh();
+      }
+      return;
+    }
     const loopLink = e.target.closest('.ap-loop-link');
     if (loopLink && typeof openLoop === 'function') {
       openLoop(loopLink.dataset.afiId);
@@ -2655,6 +2674,23 @@ function folderDisplayName() { return _folderHandle ? _folderHandle.name : null;
 // Lets modules read source files that sit beside the data-*.json files,
 // such as a Microsoft Forms Excel export, without a conversion step.
 // Read-only: nothing here writes or deletes.
+// Staff confidence responses imported from the Forms export
+// (confidence-import.js). Already-deduplicated by the caller.
+function saveConfidenceResponses(list) {
+  if (!window.DPC_DATA.confidence) window.DPC_DATA.confidence = { responses: [] };
+  window.DPC_DATA.confidence.responses.push(...list);
+  _dirty.add('data-confidence.json');
+  _writeLocalSnapshot();
+}
+
+// CPD (Session RAG-2): cpd.js changed window.DPC_DATA.cpd in memory but
+// never marked data-cpd.json dirty, so logged CPD only ever reached the
+// browser's local snapshot, never OneDrive. Called after every CPD save.
+function saveCPDData() {
+  _dirty.add('data-cpd.json');
+  _writeLocalSnapshot();
+}
+
 // Milestone Impact Report: one frozen set of figures per column. Saving
 // the same column again replaces it (the report asks first).
 function saveMilestoneSnapshot(snap) {

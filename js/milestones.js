@@ -11,10 +11,11 @@
 // imports never quietly change a number already reported. Frozen columns
 // say so and show when they were frozen.
 //
-// Not yet recorded anywhere in the Hub, shown as "Not yet collected"
-// until they are (Phase 3): staff confidence against WCAG 2.2 AA and the
-// Accessibility Checker, Teach Meet satisfaction, action plans shared
-// with the Digital Lead.
+// Sources added for this report (v1.0, same session): staff confidence
+// from the Accessibility Confidence Check Form (confidence-import.js,
+// data-confidence.json), the Teach Meet register and satisfaction on CPD
+// delivered (cpd.js), and the "shared with Digital Lead" date on action
+// plans (data.js). Rows show "Not yet collected" until there is data.
 //
 // Exports: MS_MILESTONES, msComputeMetrics(asOf), msColumns(),
 //          msRenderReport(opts), msBuildWord(docx, opts),
@@ -68,7 +69,7 @@ function _msActivities() { return typeof getAllActivities === 'function' ? getAl
 function _msConfidence() { return (window.DPC_DATA.confidence && window.DPC_DATA.confidence.responses) || []; }
 function _msSnapshots() { return (window.DPC_DATA.milestones && window.DPC_DATA.milestones.snapshots) || []; }
 
-function _msIsTeachMeet(c) { return /teach\s*-?\s*meet/i.test(c.title || '') || c.type === 'teach-meet'; }
+function _msIsTeachMeet(c) { return c.type === 'teach-meet' || /teach\s*-?\s*meet/i.test(c.title || ''); }
 function _msLWThemes(lw) {
   const list = (lw.lra && lw.lra.areasForDevelopment) || lw.lraThemeIds || [];
   return list.map(x => (typeof x === 'string' ? x : (x && (x.themeId || x.id)) || '')).filter(Boolean);
@@ -124,13 +125,17 @@ function msComputeMetrics(asOf) {
   const tms = cpd.filter(_msIsTeachMeet);
   const tmActs = _msActivities().filter(a => a.activityType === 'teach-meet' && _msBy(a.date, asOf));
   const tmAttendees = tms.reduce((s, c) => s + (Array.isArray(c.register) ? c.register.length : (c.attendees || 0)), 0);
-  const tmSat = tms.flatMap(c => (Array.isArray(c.register) ? c.register : []).map(p => p.satisfaction).filter(v => typeof v === 'number'));
+  const tmSat = tms.map(c => c.satisfactionAvg).filter(v => typeof v === 'number');
+  const tmFeedback = tms.reduce((s, c) => s + (c.feedbackCount || 0), 0);
+  const tmAreas = new Set(tms.flatMap(c => (c.register || []).map(p => p.areaCode).filter(Boolean)));
 
   // Staff confidence (Phase 3 import): latest response per person by asOf.
   const confBy = {};
   _msConfidence().forEach(c => { if (_msBy(c.date, asOf)) { const k = (c.email || c.name || c.responseId || '').toLowerCase(); if (!confBy[k] || c.date > confBy[k].date) confBy[k] = c; } });
   const confLatest = Object.values(confBy);
   const confAvg = _msAvg(confLatest.map(c => c.overall).filter(v => typeof v === 'number'));
+  const confWcag = _msAvg(confLatest.map(c => c.wcag).filter(v => typeof v === 'number'));
+  const confChecker = _msAvg(confLatest.map(c => c.checker).filter(v => typeof v === 'number'));
 
   // Learning walks
   const lws = _msActivities().filter(a => a.activityType === 'learning-walk' && a.status !== 'draft' && _msBy(a.date, asOf));
@@ -166,10 +171,13 @@ function msComputeMetrics(asOf) {
     ragAILow:    v(recAI.filter(s => s <= 2).length, `${recAI.filter(s => s <= 2).length} of ${recAI.length} scored`),
     ragAIAvg:    v(_msAvg(recAI), recAI.length ? _ms2(_msAvg(recAI)) : 'None'),
     teachMeets:  v(tms.length + tmActs.length, `${tms.length + tmActs.length}${tmAttendees ? ` (${tmAttendees} attending)` : ''}`),
-    tmSat:       v(_msAvg(tmSat), tmSat.length ? `${_ms2(_msAvg(tmSat))} of 5 (${tmSat.length})` : 'Not yet collected'),
+    tmSat:       v(_msAvg(tmSat), tmSat.length ? `${_ms2(_msAvg(tmSat))} of 5${tmFeedback ? ` (${tmFeedback} responses)` : ''}` : 'Not yet collected'),
+    tmAreas:     v(tmAreas.size, tms.some(c => (c.register || []).length) ? `${tmAreas.size} of ${areas.length}` : 'Not yet recorded'),
     cpd:         v(cpd.length),
     confN:       v(confLatest.length, confLatest.length ? String(confLatest.length) : 'Not yet collected'),
     confAvg:     v(confAvg, confAvg != null ? `${_ms2(confAvg)} of 5` : 'Not yet collected'),
+    confWcag:    v(confWcag, confWcag != null ? `${_ms2(confWcag)} of 5` : 'Not yet collected'),
+    confChecker: v(confChecker, confChecker != null ? `${_ms2(confChecker)} of 5` : 'Not yet collected'),
     lwTotal:     v(lws.length),
     lwAI:        v(lwAI.length),
     loopsRaised: v(raised.length),
@@ -198,10 +206,13 @@ const MS_ROWS = Object.freeze([
   { group: 'Teach Meets and CPD' },
   { key: 'teachMeets', label: 'Teach Meets delivered' },
   { key: 'tmSat',      label: 'Teach Meet satisfaction' },
+  { key: 'tmAreas',    label: 'Areas with staff at a Teach Meet' },
   { key: 'cpd',        label: 'All CPD sessions delivered' },
   { group: 'Staff confidence (WCAG 2.2 AA and Accessibility Checker)' },
   { key: 'confN',   label: 'Staff who have rated their confidence' },
-  { key: 'confAvg', label: 'Average confidence (1 to 5)' },
+  { key: 'confAvg', label: 'Average confidence, all statements (1 to 5)' },
+  { key: 'confWcag', label: 'Making resources that meet WCAG 2.2 AA' },
+  { key: 'confChecker', label: 'Using and fixing issues from the Accessibility Checker' },
   { group: 'Learning walks' },
   { key: 'lwTotal', label: 'Learning walks completed' },
   { key: 'lwAI',    label: 'Learning walks flagging accessibility and inclusion' },
@@ -236,6 +247,17 @@ function msKeyConcerns(asOf) {
   return Object.values(stats).map(s => ({ ...s, label: label(s.id), share: s.n ? s.low / s.n : 0 }));
 }
 
+// Confidence by statement, as at a date (each person's latest response).
+function msConfidenceItems(asOf) {
+  const by = {};
+  _msConfidence().forEach(c => { if (_msBy(c.date, asOf)) { const k = (c.email || c.name || c.responseId || '').toLowerCase(); if (!by[k] || c.date > by[k].date) by[k] = c; } });
+  const latest = Object.values(by);
+  return (typeof CONF_ITEMS !== 'undefined' ? CONF_ITEMS : []).map(it => {
+    const vals = latest.map(c => c.items && c.items[it.id]).filter(v => typeof v === 'number');
+    return { id: it.id, label: it.text, group: it.group, sc: it.sc, n: vals.length, avg: _msAvg(vals) };
+  });
+}
+
 // ── Columns: milestones, saved checkpoints and today ──────────
 function msColumns() {
   const today = todayISO();
@@ -248,9 +270,10 @@ function msColumns() {
     const frozen = snaps.find(s => s.columnId === c.id);
     const reached = c.date <= today;
     let metrics = null, concerns = null;
-    if (frozen) { metrics = frozen.metrics; concerns = frozen.keyConcerns; }
-    else if (reached) { metrics = msComputeMetrics(c.date); concerns = msKeyConcerns(c.date); }
-    return { ...c, reached, frozen: frozen || null, metrics, concerns };
+    let conf = null;
+    if (frozen) { metrics = frozen.metrics; concerns = frozen.keyConcerns; conf = frozen.confidenceItems || null; }
+    else if (reached) { metrics = msComputeMetrics(c.date); concerns = msKeyConcerns(c.date); conf = msConfidenceItems(c.date); }
+    return { ...c, reached, frozen: frozen || null, metrics, concerns, conf };
   });
 }
 
@@ -260,7 +283,7 @@ function msFreeze(columnId) {
   const snap = {
     snapshotId: generateId(), columnId: col.id, kind: col.kind === 'checkpoint' ? 'checkpoint' : 'milestone',
     label: col.label, date: col.date, savedAt: nowISO(),
-    metrics: msComputeMetrics(col.date), keyConcerns: msKeyConcerns(col.date),
+    metrics: msComputeMetrics(col.date), keyConcerns: msKeyConcerns(col.date), confidenceItems: msConfidenceItems(col.date),
     ragByArea: (typeof getAllAreaEvidenceRAG === 'function' ? getAllAreaEvidenceRAG(col.date) : []).map(r => ({ areaCode: r.areaCode, label: r.label, basis: r.hc.basis, staff: r.hc.staffCount })),
   };
   saveMilestoneSnapshot(snap);
@@ -275,7 +298,7 @@ function msSaveCheckpoint() {
   if (_msSnapshots().some(s => s.columnId === id)) return false;
   const snap = {
     snapshotId: generateId(), columnId: id, kind: 'checkpoint', label: `Checkpoint ${_msShort(today)}`,
-    date: today, savedAt: nowISO(), metrics: msComputeMetrics(today), keyConcerns: msKeyConcerns(today),
+    date: today, savedAt: nowISO(), metrics: msComputeMetrics(today), keyConcerns: msKeyConcerns(today), confidenceItems: msConfidenceItems(today),
     ragByArea: (typeof getAllAreaEvidenceRAG === 'function' ? getAllAreaEvidenceRAG(today) : []).map(r => ({ areaCode: r.areaCode, label: r.label, basis: r.hc.basis, staff: r.hc.staffCount })),
   };
   saveMilestoneSnapshot(snap);
@@ -348,6 +371,10 @@ function msAreaRows() {
     const r = typeof getAreaEvidenceRAG === 'function' ? getAreaEvidenceRAG(a.areaCode) : null;
     const plans = _msPlans().filter(p => p.areaCode === a.areaCode);
     const dl = r && r.dl && r.dl.present ? r.dl : null;
+    const tmPeople = _msCPD().filter(_msIsTeachMeet).reduce((s, c) => s + (c.register || []).filter(p => p.areaCode === a.areaCode).length, 0);
+    const confBy = {};
+    _msConfidence().filter(c => c.areaCode === a.areaCode).forEach(c => { const k = (c.email || c.name || c.responseId).toLowerCase(); if (!confBy[k] || c.date > confBy[k].date) confBy[k] = c; });
+    const conf = _msAvg(Object.values(confBy).map(c => c.overall).filter(v => typeof v === 'number'));
     return {
       areaCode: a.areaCode, areaName: a.areaName,
       dl: dl ? (dl.name || 'Yes') : 'None',
@@ -359,6 +386,8 @@ function msAreaRows() {
       loopsOpen: r ? r.afi.open : 0,
       plansOpen: plans.filter(p => p.status !== 'complete').length,
       plansShared: plans.filter(p => p.sharedWithDLAt).length,
+      teachMeetAttendees: tmPeople,
+      confidence: conf, confidenceN: Object.keys(confBy).length,
     };
   });
 }
@@ -409,7 +438,16 @@ function _msModel(opts) {
     }),
   }));
 
-  return { cols, shown, pending, from, to, measureRows, concernRows, period: msPeriod(from, to), areaRows: msAreaRows(), focusRows: msFocusRows(from, to) };
+  const confRows = _msConfidence().length ? (typeof CONF_ITEMS !== 'undefined' ? CONF_ITEMS : []).map(it => ({
+    label: `${it.text}${it.sc ? ` (WCAG ${it.sc})` : ''}`,
+    cells: cols.map(c => {
+      if (!c.conf) return c.reached ? '' : 'Not reached';
+      const x = c.conf.find(y => y.id === it.id);
+      return x && x.n ? `${_ms2(x.avg)} (${x.n})` : 'None';
+    }),
+  })) : [];
+
+  return { cols, shown, pending, from, to, measureRows, concernRows, confRows, period: msPeriod(from, to), areaRows: msAreaRows(), focusRows: msFocusRows(from, to) };
 }
 
 // ── On-screen report ──────────────────────────────────────────
@@ -428,6 +466,7 @@ function msRenderReport(opts) {
         <button type="button" class="btn btn--primary btn--sm" id="ms-word">Download Word</button>
         <button type="button" class="btn btn--ghost btn--sm" id="ms-xlsx">Download spreadsheet</button>
         <button type="button" class="btn btn--ghost btn--sm" id="ms-checkpoint">Save today as a dated checkpoint</button>
+        <button type="button" class="btn btn--ghost btn--sm" id="ms-conf-import">Import confidence responses</button>
       </div>
       <p id="ms-status" role="status" class="ms-muted"></p>
 
@@ -439,6 +478,9 @@ function msRenderReport(opts) {
       <h4 class="ms-h">Key concerns: indicators most often scored 1 or 2</h4>
       ${m.concernRows.length ? `<div class="ms-scroll"><table class="ms-table"><caption class="sr-only">Key concerns at each milestone</caption><thead>${head.replace('Measure', 'Indicator')}</thead><tbody>${m.concernRows.map(r => `<tr><th scope="row">${_msEsc(r.label)}</th>${r.cells.map(v => `<td>${_msEsc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : '<p class="ms-muted">No Health Check scores yet.</p>'}
 
+      <h4 class="ms-h">Staff confidence by statement (average, number of staff)</h4>
+      ${m.confRows.length ? `<div class="ms-scroll"><table class="ms-table"><caption class="sr-only">Staff confidence by statement at each milestone</caption><thead>${head.replace('Measure', 'Statement')}</thead><tbody>${m.confRows.map(r => `<tr><th scope="row">${_msEsc(r.label)}</th>${r.cells.map(v => `<td>${_msEsc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : '<p class="ms-muted">No confidence responses imported yet. Save the Accessibility Confidence Check export in the Data folder, then use Import confidence responses.</p>'}
+
       <h4 class="ms-h">This period: ${_msEsc(_msFmt(m.from))} to ${_msEsc(_msFmt(m.to))}</h4>
       <ul class="ms-counts">${m.period.counts.map(([k, n]) => `<li><strong>${n}</strong> ${_msEsc(k)}</li>`).join('')}</ul>
       ${m.period.items.length ? `<details class="ev-rag-details"><summary>What happened (${m.period.items.length})</summary><ul class="ev-rag-list">${m.period.items.map(i => `<li>${_msEsc(_msShort(i.date))}, ${_msEsc(i.kind)}: ${_msEsc(i.text)}</li>`).join('')}</ul></details>` : '<p class="ms-muted">Nothing logged in this period.</p>'}
@@ -447,8 +489,8 @@ function msRenderReport(opts) {
       ${m.focusRows.length ? `<div class="ms-scroll"><table class="ms-table"><caption class="sr-only">Current Focus progress</caption><thead><tr><th scope="col">Focus</th><th scope="col">Milestones complete</th><th scope="col">At risk</th><th scope="col">Evidence (period / total)</th><th scope="col">Areas</th><th scope="col">Latest evidence</th></tr></thead><tbody>${m.focusRows.map(f => `<tr><th scope="row">${_msEsc(f.title)}</th><td>${f.milestonesDone} of ${f.milestonesTotal}</td><td>${f.atRisk}</td><td>${f.evidencePeriod} / ${f.evidenceTotal}</td><td>${f.areas}</td><td>${_msEsc(f.latest)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="ms-muted">No active Current Focus.</p>'}
 
       <h4 class="ms-h">Areas today</h4>
-      <div class="ms-scroll"><table class="ms-table"><caption class="sr-only">Position of each area today</caption><thead><tr><th scope="col">Area</th><th scope="col">Digital Lead</th><th scope="col">Staff reviewed</th><th scope="col">Checks from / to</th><th scope="col">Practice average</th><th scope="col">Suggested RAG</th><th scope="col">DL 1:1s</th><th scope="col">Loops open</th><th scope="col">Plans open</th><th scope="col">Plans shared with DL</th></tr></thead>
-      <tbody>${m.areaRows.map(a => `<tr><th scope="row">${_msEsc(a.areaCode)} <span class="ms-muted">${_msEsc(a.areaName)}</span></th><td>${_msEsc(a.dl)}</td><td>${a.staff}</td><td>${a.firstCheck ? _msEsc(_msShort(a.firstCheck) + ' to ' + _msShort(a.lastCheck)) : 'None'}</td><td>${a.avg != null ? _ms2(a.avg) : 'None'}</td><td>${_msEsc(a.rag)}</td><td>${a.dlMeetings}</td><td>${a.loopsOpen}</td><td>${a.plansOpen}</td><td>${a.plansShared}</td></tr>`).join('')}</tbody></table></div>
+      <div class="ms-scroll"><table class="ms-table"><caption class="sr-only">Position of each area today</caption><thead><tr><th scope="col">Area</th><th scope="col">Digital Lead</th><th scope="col">Staff reviewed</th><th scope="col">Checks from / to</th><th scope="col">Practice average</th><th scope="col">Suggested RAG</th><th scope="col">DL 1:1s</th><th scope="col">Loops open</th><th scope="col">Plans open</th><th scope="col">Plans shared with DL</th><th scope="col">Teach Meet attendees</th><th scope="col">Confidence (staff)</th></tr></thead>
+      <tbody>${m.areaRows.map(a => `<tr><th scope="row">${_msEsc(a.areaCode)} <span class="ms-muted">${_msEsc(a.areaName)}</span></th><td>${_msEsc(a.dl)}</td><td>${a.staff}</td><td>${a.firstCheck ? _msEsc(_msShort(a.firstCheck) + ' to ' + _msShort(a.lastCheck)) : 'None'}</td><td>${a.avg != null ? _ms2(a.avg) : 'None'}</td><td>${_msEsc(a.rag)}</td><td>${a.dlMeetings}</td><td>${a.loopsOpen}</td><td>${a.plansOpen}</td><td>${a.plansShared}</td><td>${a.teachMeetAttendees}</td><td>${a.confidence != null ? _ms2(a.confidence) + ' (' + a.confidenceN + ')' : 'None'}</td></tr>`).join('')}</tbody></table></div>
 
       <details class="ev-rag-details" style="margin-top:var(--space-lg);"><summary>How these figures are worked out</summary>
         <ul class="ev-rag-list">
@@ -480,6 +522,12 @@ function msWireReport(opts) {
   document.getElementById('ms-checkpoint')?.addEventListener('click', () => {
     if (msSaveCheckpoint()) { status("Today's figures saved as a checkpoint."); if (typeof _repRenderPreview === 'function') _repRenderPreview(); }
     else status('There is already a checkpoint for today.');
+  });
+  document.getElementById('ms-conf-import')?.addEventListener('click', async () => {
+    if (typeof confImportFromFolder !== 'function') { status('Confidence import is not loaded. Refresh the Hub.'); return; }
+    status('Reading the confidence export…');
+    try { const res = await confImportFromFolder(); if (typeof _repRenderPreview === 'function') _repRenderPreview(); const el = document.getElementById('ms-status'); if (el) el.textContent = res.message; }
+    catch (e) { console.error(e); status('Could not import: ' + e.message); }
   });
   document.querySelectorAll('.ms-freeze').forEach(b => b.addEventListener('click', () => {
     const col = msColumns().find(c => c.id === b.dataset.col);
@@ -519,6 +567,10 @@ function msBuildWord(docx, opts) {
     children.push(_repDocSectionHeading(docx, 'Key concerns: indicators most often scored 1 or 2'));
     children.push(_repDocTable(docx, ['Indicator', ...colHead.slice(1)], m.concernRows.map(r => [r.label, ...r.cells]), colW));
   }
+  if (m.confRows.length) {
+    children.push(_repDocSectionHeading(docx, 'Staff confidence by statement (average, number of staff)'));
+    children.push(_repDocTable(docx, ['Statement', ...colHead.slice(1)], m.confRows.map(r => [r.label, ...r.cells]), colW));
+  }
   if (m.focusRows.length) {
     children.push(_repDocSectionHeading(docx, 'Current Focus'));
     children.push(_repDocTable(docx, ['Focus', 'Milestones complete', 'At risk', 'Evidence (period / total)', 'Latest evidence'],
@@ -551,17 +603,19 @@ function msExportWorkbook(opts) {
   };
   add([head, ...m.measureRows.map(r => r.group ? [r.group] : [r.label, ...r.cells])], 'Milestones', [48, ...m.cols.map(() => 22)]);
   add([['Indicator', ...head.slice(1)], ...m.concernRows.map(r => [r.label, ...r.cells])], 'Key concerns', [44, ...m.cols.map(() => 22)]);
+  if (m.confRows.length) add([['Statement', ...head.slice(1)], ...m.confRows.map(r => [r.label, ...r.cells])], 'Confidence', [70, ...m.cols.map(() => 18)]);
   add([['Measure', 'Count'], ...m.period.counts, [], ['Date', 'Type', 'Detail'], ...m.period.items.map(i => [i.date, i.kind, i.text])], 'This period', [16, 28, 80]);
   add([['Focus', 'Status', 'Milestones complete', 'Milestones total', 'At risk', 'Evidence this period', 'Evidence total', 'Areas linked', 'Latest evidence', 'How impact is measured'],
     ...m.focusRows.map(f => [f.title, f.status, f.milestonesDone, f.milestonesTotal, f.atRisk, f.evidencePeriod, f.evidenceTotal, f.areas, f.latest, f.impact])], 'Current Focus', [36, 12, 10, 10, 8, 10, 10, 10, 60, 50]);
-  add([['Area code', 'Area', 'Digital Lead', 'Staff reviewed', 'First check', 'Last check', 'Practice average', 'Suggested RAG', 'DL 1:1s', 'Loops open', 'Plans open', 'Plans shared with DL'],
-    ...m.areaRows.map(a => [a.areaCode, a.areaName, a.dl, a.staff, a.firstCheck, a.lastCheck, a.avg != null ? Math.round(a.avg * 100) / 100 : '', a.rag, a.dlMeetings, a.loopsOpen, a.plansOpen, a.plansShared])], 'Areas', [10, 34, 18, 10, 12, 12, 10, 20, 8, 10, 10, 12]);
+  add([['Area code', 'Area', 'Digital Lead', 'Staff reviewed', 'First check', 'Last check', 'Practice average', 'Suggested RAG', 'DL 1:1s', 'Loops open', 'Plans open', 'Plans shared with DL', 'Teach Meet attendees', 'Confidence average', 'Confidence responses'],
+    ...m.areaRows.map(a => [a.areaCode, a.areaName, a.dl, a.staff, a.firstCheck, a.lastCheck, a.avg != null ? Math.round(a.avg * 100) / 100 : '', a.rag, a.dlMeetings, a.loopsOpen, a.plansOpen, a.plansShared, a.teachMeetAttendees, a.confidence != null ? Math.round(a.confidence * 100) / 100 : '', a.confidenceN])], 'Areas', [10, 34, 18, 10, 12, 12, 10, 20, 8, 10, 10, 12, 12, 12, 12]);
   add([['How the figures are worked out'],
     ['Health Checks count by review date, not import date. Practice rating: each person\'s latest check by that date, averaged across their scored focus areas, then across staff.'],
     ['Suggested RAG: Areas at Risk rules (rules v' + (typeof EV_RAG !== 'undefined' ? EV_RAG.RULES_VERSION : '1') + ') using only evidence that existed by that date. Digital Leads listed now count as present at earlier dates.'],
     ['Recorded RAG: the RAG Matrix score in force on that date, from its saved history.'],
     ['Teach Meets: CPD with "Teach Meet" in the title, plus Teach Meet activities. Learning walks flag accessibility and inclusion when AR, ARD or LED is an area for development.'],
     ['Loops exclude strengths. Open = raised by that date and not closed by it.'],
+    ['Staff confidence: each person\'s latest Accessibility Confidence Check response by that date, scored 1 to 5 on 10 WCAG 2.2 AA statements and 5 Accessibility Checker statements.'],
     ['Frozen columns keep the figures saved on the day shown. Live columns are worked out when the report is opened.'],
     ['Scale: 1 Urgent, 2 Challenged, 3 Developing, 4 On Track, 5 Confident. Generated ' + _msFmt(todayISO()) + '.'],
   ], 'Method', [140]);
