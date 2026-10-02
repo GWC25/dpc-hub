@@ -453,7 +453,7 @@ function _dlRenderAreaImpact(dl) {
   const avgHC = allScores.length > 0 ? (allScores.reduce((a,b)=>a+b,0)/allScores.length).toFixed(1) : null;
 
   const areaAFIs = ((window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []).filter(a => a.areaCode === areaCode);
-  const openAFIs = areaAFIs.filter(a => a.status !== 'closed').length;
+  const openAFIs = areaAFIs.filter(isOpenLoop).length;
 
   const areaPlans = ((window.DPC_DATA.actionPlans && window.DPC_DATA.actionPlans.plans) || []).filter(p => p.areaCode === areaCode);
   const activePlans = areaPlans.filter(p => p.status !== 'complete').length;
@@ -1035,7 +1035,7 @@ function _dlRenderResourcesDrill(panel, dl) {
 }
 
 function _dlRenderLoopsDrill(panel, dl) {
-  const afis = ((window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []).filter(a => a.areaCode === dl.areaCode && a.status !== 'closed');
+  const afis = ((window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []).filter(a => a.areaCode === dl.areaCode && isOpenLoop(a));
   panel.innerHTML = `
     <h4 style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);margin-bottom:var(--space-md);">Open loops — ${_dlEsc(dl.areaCode)}</h4>
     ${afis.length === 0 ? '<p style="color:var(--color-muted);font-size:var(--text-sm);">No open loops for this area.</p>' : afis.map(a => `

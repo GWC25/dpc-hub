@@ -233,7 +233,7 @@ function _renderAreaTab(tab, areaCode) {
 
   if (tab === 'overview') {
     const openAFIs = _getAreaOpenAFIs(areaCode);
-    const afis = _getAFIs().filter(a => a.areaCode === areaCode && a.status !== AFI_STATUS.CLOSED);
+    const afis = _getAFIs().filter(a => a.areaCode === areaCode && isOpenLoop(a));
     const areaDLs = _getAllDLs().filter(d => d.areaCode === areaCode);
     const campuses = ['SWSC', 'Loxton', 'Knightstone', 'Winter Gardens', 'CTC', 'Puxton Park', 'AMTEC', 'AROSFA'];
     panel.innerHTML = `
@@ -827,7 +827,7 @@ function _renderAPList(areaCode) {
   container.innerHTML = plans.map(p => {
     const openLoops = (p.linkedAFIIds || []).filter(id => {
       const afi = (window.DPC_DATA.afi && window.DPC_DATA.afi.afis || []).find(a => a.afiId === id);
-      return afi && afi.status !== 'closed';
+      return afi && isOpenLoop(afi);
     }).length;
     return typeof renderActionPlanCard === 'function' ? renderActionPlanCard(p, {
       esc: _escHtml,
@@ -1006,10 +1006,10 @@ function _getDepartments(areaCode, includeArchived = false) {
 function _getAFIs()     { return (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []; }
 
 function _getAreaOpenAFIs(areaCode) {
-  return _getAFIs().filter(a => a.areaCode === areaCode && a.status !== AFI_STATUS.CLOSED).length;
+  return _getAFIs().filter(a => a.areaCode === areaCode && isOpenLoop(a)).length;
 }
 function _getStaffOpenAFIs(staffId) {
-  return _getAFIs().filter(a => a.staffId === staffId && a.status !== AFI_STATUS.CLOSED).length;
+  return _getAFIs().filter(a => a.staffId === staffId && isOpenLoop(a)).length;
 }
 function _getAreaLastActivity(areaCode) {
   const area = _getArea(areaCode);

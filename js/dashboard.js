@@ -1,5 +1,6 @@
 // Job A5 (09/09/26): AFI counts here exclude strengths — see isGapAFI().
-// DPC Hub · js/dashboard.js · v1.2 · 02/10/26 · Session RAG-3 — adds Support Priorities tab (support-priority.js)
+// DPC Hub · js/dashboard.js · v1.3 · 02/10/26 · Session RAG-3 — Support Priorities tab redesigned; Loops Overview and RAG table count areas for improvement only (no strengths)
+// v1.2 · 02/10/26 · Session RAG-3 — adds Support Priorities tab (support-priority.js)
 // v1.1 · 02/10/26 · Session RAG-1 — adds Areas at Risk tab (ragevidence.js)
 // v1.0 · July 2026
 // Dashboards module. Area RAG filterable dashboard. Health Check collegiate view.
@@ -139,8 +140,8 @@ function _renderRAGTable() {
   if (search) areas = areas.filter(a=>(a.areaCode+a.areaName).toLowerCase().includes(search));
   if (afiFilter) {
     const afis = (window.DPC_DATA.afi&&window.DPC_DATA.afi.afis)||[];
-    if (afiFilter==='has') areas=areas.filter(a=>afis.some(x=>x.areaCode===a.areaCode&&x.status!=='closed'));
-    if (afiFilter==='none') areas=areas.filter(a=>!afis.some(x=>x.areaCode===a.areaCode&&x.status!=='closed'));
+    if (afiFilter==='has') areas=areas.filter(a=>afis.some(x=>x.areaCode===a.areaCode&&isOpenLoop(x)));
+    if (afiFilter==='none') areas=areas.filter(a=>!afis.some(x=>x.areaCode===a.areaCode&&isOpenLoop(x)));
   }
   if (dimFilter && scoreFilter) {
     areas=areas.filter(a=>{
@@ -202,7 +203,7 @@ function _renderRAGTable() {
       </thead>
       <tbody>
         ${areas.map((area,ri)=>{
-          const openCount=afis.filter(a=>a.areaCode===area.areaCode&&a.status!=='closed').length;
+          const openCount=afis.filter(a=>a.areaCode===area.areaCode&&isOpenLoop(a)).length;
           return `<tr style="background:${ri%2===0?'var(--color-light)':'var(--color-white)'};border-bottom:1px solid var(--color-border);">
             <td style="padding:var(--space-sm) var(--space-md);">
               <span style="font-size:10px;font-weight:bold;background:var(--color-navy);color:var(--color-white);padding:1px 6px;border-radius:999px;margin-right:4px;">${_dEsc(area.areaCode)}</span>
@@ -638,7 +639,9 @@ function _renderDashLoops() {
   const panel = document.getElementById('dash-panel');
   if (!panel) return;
 
-  const afis  = (window.DPC_DATA.afi&&window.DPC_DATA.afi.afis)||[];
+  // Areas for improvement only: strengths never need closing, so they are
+  // left out of every count on this tab (Session RAG-3).
+  const afis  = ((window.DPC_DATA.afi&&window.DPC_DATA.afi.afis)||[]).filter(isGapAFI);
   const areas = _getAreas()||[];
 
   const byStatus={'open':0,'actioned':0,'impact-checked':0,'closed':0,'re-opened':0};
@@ -653,7 +656,7 @@ function _renderDashLoops() {
 
   // Job A5: strengths are reported alongside gaps here deliberately — this
   // is the severity breakdown, the one place the split is the point.
-  const bySeverity={[AFI_SEVERITY.IMMEDIATE]:0,[AFI_SEVERITY.STRENGTHEN]:0,[AFI_SEVERITY.STRENGTH]:0};
+  const bySeverity={[AFI_SEVERITY.IMMEDIATE]:0,[AFI_SEVERITY.STRENGTHEN]:0};
   afis.filter(a=>a.status!=='closed').forEach(a=>{ if(bySeverity.hasOwnProperty(a.severity)) bySeverity[a.severity]++; });
 
   panel.innerHTML=`

@@ -130,7 +130,7 @@ function _mOpenMeeting(entryId) {
   const m = _mGet(entryId);
   if (!detail || !m) return;
 
-  const openAFIs = m.areaCode ? ((window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []).filter(a => a.areaCode === m.areaCode && a.status !== 'closed') : [];
+  const openAFIs = m.areaCode ? ((window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []).filter(a => a.areaCode === m.areaCode && isOpenLoop(a)) : [];
   const area = m.areaCode ? ((window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || []).find(a => a.areaCode === m.areaCode) : null;
 
   detail.innerHTML = `
