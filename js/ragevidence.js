@@ -1,4 +1,5 @@
-// DPC Hub · js/ragevidence.js · v1.0 · 02/10/26 · Session RAG-1 — evidence-based area RAG suggestion
+// DPC Hub · js/ragevidence.js · v1.1 · 02/10/26 · Session RAG-2 — can be worked out as at a past date (asOf) for the milestone impact report
+// v1.0 · 02/10/26 · Session RAG-1 — evidence-based area RAG suggestion
 // Suggests an overall at-risk RAG for each area from the evidence the Hub
 // already holds, with a plain-English rationale and a list of the records
 // it was built from. It NEVER writes to the area: the recorded RAG Matrix
@@ -20,7 +21,14 @@
 // "also note" flags. It does not change the band, so the band always has
 // one traceable reason.
 //
-// Exports: getAreaEvidenceRAG(areaCode), getAllAreaEvidenceRAG(),
+// As at a date (v1.1): pass asOf ('YYYY-MM-DD') to use only evidence that
+// existed by the end of that day. Health Checks by review date, loops
+// open on that day, recorded RAG as it stood (from ragSnapshots), DL 1:1s
+// and activity by date. Digital Leads have no start date in the Hub, so a
+// DL on the Hub now is treated as present at any past date (stated in
+// the report method).
+//
+// Exports: getAreaEvidenceRAG(areaCode, asOf), getAllAreaEvidenceRAG(asOf),
 //          renderEvidenceRAGPanel(areaCode), renderEvidenceRAGDashboard(panel),
 //          exportEvidenceRAGWorkbook()
 
@@ -50,20 +58,27 @@ function _evFmtDate(iso) {
 }
 function _evPct(x) { return Math.round(x * 100) + '%'; }
 function _evNum(x) { return (Math.round(x * 100) / 100).toFixed(2); }
-function _evDaysAgo(iso) {
+function _evDaysAgo(iso, asOf) {
   if (!iso) return null;
   const t = new Date(String(iso).split('T')[0] + 'T12:00:00').getTime();
   if (isNaN(t)) return null;
-  return Math.floor((Date.now() - t) / 86400000);
+  const ref = asOf ? new Date(asOf + 'T12:00:00').getTime() : Date.now();
+  return Math.floor((ref - t) / 86400000);
+}
+// True when a dated record existed by the end of asOf (no asOf = now).
+function _evBy(iso, asOf) {
+  if (!asOf) return true;
+  if (!iso) return false;
+  return String(iso).slice(0, 10) <= asOf;
 }
 
 // ── Evidence gatherers ────────────────────────────────────────
 // Health Check: latest review per staff member (the same set
 // getHCBasisForArea uses), so the basis here matches the Hub's own
 // Accessibility & Inclusion suggestion.
-function _evHealthCheck(areaCode) {
+function _evHealthCheck(areaCode, asOf) {
   const all = (window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.reviews) || [];
-  const reviews = all.filter(r => r.areaCode === areaCode);
+  const reviews = all.filter(r => r.areaCode === areaCode && _evBy(r.date, asOf));
   const byStaff = {};
   reviews.forEach(r => {
     const key = r.staffId || r.reviewId;
@@ -111,8 +126,29 @@ function _evHealthCheck(areaCode) {
   };
 }
 
-function _evRecordedRAG(area) {
-  const dims = area.ragDimensions || {};
+// Recorded scores as they stood at asOf. Each saved version of a
+// dimension (current, plus every ragSnapshots entry) carries updatedAt;
+// the version in force is the newest one updated by asOf. Versions with
+// no updatedAt (early imports) count as in force from the start.
+function _evDimsAsOf(area, asOf) {
+  if (!asOf) return area.ragDimensions || {};
+  const versions = {};
+  const add = (dims) => Object.entries(dims || {}).forEach(([id, v]) => {
+    if (v && typeof v.score === 'number') (versions[id] = versions[id] || []).push(v);
+  });
+  add(area.ragDimensions);
+  (area.ragSnapshots || []).forEach(sn => add(sn.dimensions));
+  const out = {};
+  Object.entries(versions).forEach(([id, list]) => {
+    const ok = list.filter(v => !v.updatedAt || String(v.updatedAt).slice(0, 10) <= asOf)
+      .sort((a, b) => String(a.updatedAt || '').localeCompare(String(b.updatedAt || '')));
+    if (ok.length) out[id] = ok[ok.length - 1];
+  });
+  return out;
+}
+
+function _evRecordedRAG(area, asOf) {
+  const dims = _evDimsAsOf(area, asOf);
   const scored = (typeof RAG_DIMENSIONS !== 'undefined' ? RAG_DIMENSIONS : [])
     .map(d => ({ id: d.id, label: d.label, score: dims[d.id] && dims[d.id].score, updatedAt: dims[d.id] && dims[d.id].updatedAt }))
     .filter(d => typeof d.score === 'number');
@@ -127,40 +163,48 @@ function _evRecordedRAG(area) {
   };
 }
 
-function _evDigitalLead(area) {
+function _evDigitalLead(area, asOf) {
   const dls = (window.DPC_DATA.digitalLeads && window.DPC_DATA.digitalLeads.digitalLeads) || [];
   let dl = area.digitalLeadId ? dls.find(d => d.dlId === area.digitalLeadId) : null;
   if (!dl) dl = dls.find(d => d.areaCode === area.areaCode) || null;
   if (!dl) return { present: false };
-  const meetings = (dl.meetingHistory || []).map(m => m.date || m.createdAt).filter(Boolean).sort();
-  return { present: true, name: dl.name || '', dlId: dl.dlId, lastMeeting: meetings[meetings.length - 1] || null };
+  const meetings = (dl.meetingHistory || []).map(m => m.date || m.createdAt).filter(d => d && _evBy(d, asOf)).sort();
+  return { present: true, name: dl.name || '', dlId: dl.dlId, meetings: meetings.length, lastMeeting: meetings[meetings.length - 1] || null };
 }
 
-function _evActivity(area) {
-  const log = (area.activityLog || []).filter(a => a && a.date);
+function _evActivity(area, asOf) {
+  const log = (area.activityLog || []).filter(a => a && a.date && _evBy(a.date, asOf));
   const dates = log.map(a => a.date).sort();
-  const recent = log.filter(a => { const d = _evDaysAgo(a.date); return d != null && d <= EV_RAG.RECENT_DAYS; });
+  const recent = log.filter(a => { const d = _evDaysAgo(a.date, asOf); return d != null && d <= EV_RAG.RECENT_DAYS; });
   return { count: log.length, recent: recent.length, lastDate: dates[dates.length - 1] || null };
 }
 
-function _evAFIs(areaCode) {
+// Open at asOf: raised by then, and not closed by then.
+function _evAFIOpenAt(a, asOf) {
+  if (!asOf) return a.status !== 'closed';
+  if (!_evBy(a.createdAt, asOf)) return false;
+  if (a.status !== 'closed') return true;
+  return !a.closedAt || String(a.closedAt).slice(0, 10) > asOf;
+}
+function _evAFIs(areaCode, asOf) {
   const afis = ((window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || [])
-    .filter(a => a.areaCode === areaCode && a.status !== 'closed' && (typeof isGapAFI !== 'function' || isGapAFI(a)));
+    .filter(a => a.areaCode === areaCode && _evAFIOpenAt(a, asOf) && (typeof isGapAFI !== 'function' || isGapAFI(a)));
   const immediate = afis.filter(a => typeof AFI_SEVERITY !== 'undefined' && a.severity === AFI_SEVERITY.IMMEDIATE);
   return { open: afis.length, immediate: immediate.length, immediateItems: immediate };
 }
 
 // ── Engine ────────────────────────────────────────────────────
-function getAreaEvidenceRAG(areaCode) {
+function getAreaEvidenceRAG(areaCode, asOf) {
   const area = typeof _getArea === 'function' ? _getArea(areaCode) : null;
   if (!area) return null;
 
-  const hc  = _evHealthCheck(areaCode);
-  const rec = _evRecordedRAG(area);
-  const dl  = _evDigitalLead(area);
-  const act = _evActivity(area);
-  const afi = _evAFIs(areaCode);
-  const drift = typeof getRAGDrift === 'function' ? getRAGDrift(areaCode) : null;
+  const hc  = _evHealthCheck(areaCode, asOf);
+  const rec = _evRecordedRAG(area, asOf);
+  const dl  = _evDigitalLead(area, asOf);
+  const act = _evActivity(area, asOf);
+  const afi = _evAFIs(areaCode, asOf);
+  // Drift compares against now, so it only makes sense for a live view.
+  const drift = !asOf && typeof getRAGDrift === 'function' ? getRAGDrift(areaCode) : null;
 
   let band, label, reason;
   if (hc.staffCount === 0) {
@@ -230,16 +274,16 @@ function getAreaEvidenceRAG(areaCode) {
     areaCode: area.areaCode, areaName: area.areaName, hoaName: area.hoaName || '',
     band, label, reason, rationale, flags, confidence, evidence,
     hc, recorded: rec, dl, activity: act, afi,
-    rulesVersion: EV_RAG.RULES_VERSION, computedAt: nowISO(),
+    rulesVersion: EV_RAG.RULES_VERSION, computedAt: nowISO(), asOf: asOf || null,
   };
 }
 
-function getAllAreaEvidenceRAG() {
+function getAllAreaEvidenceRAG(asOf) {
   const areas = (typeof _getAreas === 'function' ? _getAreas() : []) || [];
   // Practice risk before no evidence: an area with evidence of weak
   // practice is more urgent than one we simply have not seen yet.
   const rank = { 'Red: practice risk': 0, 'Red: no evidence': 1, 'Amber: watch': 2, 'Amber: evidence gap': 3, 'Green: on track': 4 };
-  return areas.map(a => getAreaEvidenceRAG(a.areaCode)).filter(Boolean).sort((x, y) =>
+  return areas.map(a => getAreaEvidenceRAG(a.areaCode, asOf)).filter(Boolean).sort((x, y) =>
     (rank[x.label] ?? 9) - (rank[y.label] ?? 9) ||
     (x.hc.basis == null ? -1 : x.hc.basis) - (y.hc.basis == null ? -1 : y.hc.basis) ||
     x.areaCode.localeCompare(y.areaCode));

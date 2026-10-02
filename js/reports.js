@@ -1,4 +1,5 @@
-// DPC Hub · js/reports.js · v1.1 · 09/09/26 · Job A1 provenance guard + Job A2 archived-area exclusion
+// DPC Hub · js/reports.js · v1.2 · 02/10/26 · Session RAG-2 — adds Milestone Impact Report (milestones.js)
+// v1.1 · 09/09/26 · Job A1 provenance guard + Job A2 archived-area exclusion
 // Report Builder module. Five audience templates.
 // Word doc generation via lib/docx.min.js (loaded locally, no CDN).
 // AI narrative for the performance review calls js/ai-support.js —
@@ -25,6 +26,7 @@ const REPORT_TYPES = Object.freeze({
   COLLEGE_ACTION_PLAN: 'college-action-plan',
   LOOPS_REPORT:     'loops-report',
   AREA_DATA_EXPORT: 'area-data-export',
+  MILESTONE_IMPACT: 'milestone-impact',
 });
 
 let _repCurrentType = null;
@@ -85,6 +87,7 @@ function initReports() {
         <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);padding-bottom:var(--space-sm);margin-bottom:var(--space-md);border-bottom:1px solid var(--color-border);">Select report type</h3>
         <div>
           <div role="group" aria-label="Report type" style="display:flex;flex-direction:column;gap:8px;">
+            ${_repTypeBtn(REPORT_TYPES.MILESTONE_IMPACT, 'Milestone Impact Report', 'Accessibility and Inclusion: position at each milestone (March, July, 23 Oct, Terms 2, 4, 6), this fortnight in numbers, Current Focus, every area. Word and Excel')}
             ${_repTypeBtn(REPORT_TYPES.NEIL_FORTNIGHTLY, 'Neil Davies — Fortnightly', 'Cross-college: activity, open loops, RAG movers, coming up')}
             ${_repTypeBtn(REPORT_TYPES.DIGITAL_LEAD,     'Digital Lead — Area Report', 'Area RAG detail, current focus, CPD suggestions')}
             ${_repTypeBtn(REPORT_TYPES.AP_HOA_AREA,      'AP / HoA — Area Report', 'Area trajectory, staff CPD, suggested observation focus')}
@@ -182,7 +185,19 @@ function _repRenderOptions() {
     </div>`;
 
   let html = '';
-  if (type === REPORT_TYPES.NEIL_FORTNIGHTLY) {
+  if (type === REPORT_TYPES.MILESTONE_IMPACT) {
+    title.textContent = 'Milestone Impact Report Options';
+    html = `
+      ${dateRange(twoWeeksAgo)}
+      <div style="margin-bottom:var(--space-md);">
+        <label class="form-label form-label--optional" for="rep-ms-reflection">Reflection (appears in the Word report)</label>
+        <textarea class="form-input" id="rep-ms-reflection" rows="3"></textarea>
+      </div>
+      <div style="margin-bottom:var(--space-md);">
+        <label class="form-label form-label--optional" for="rep-ms-next">Next steps</label>
+        <textarea class="form-input" id="rep-ms-next" rows="2"></textarea>
+      </div>`;
+  } else if (type === REPORT_TYPES.NEIL_FORTNIGHTLY) {
     title.textContent = 'Neil Davies — Fortnightly Report Options';
     html = `
       ${dateRange(twoWeeksAgo)}
@@ -361,7 +376,9 @@ function _repRenderOptions() {
 
 function el_wireLiveInputs() {
   document.querySelectorAll('#rep-options-body input, #rep-options-body textarea, #rep-options-body select')
-    .forEach(inp => inp.addEventListener('input', _repRenderPreview));
+    // Milestone report text boxes only feed the Word file, so typing in
+    // them should not rebuild the whole report on every key press.
+    .forEach(inp => { if (inp.id && inp.id.startsWith('rep-ms-')) return; inp.addEventListener('input', _repRenderPreview); });
 }
 
 function _repGatherOptions() {
@@ -469,7 +486,13 @@ function _repRenderPreview() {
   const type = _repCurrentType;
   let html = '<p style="color:var(--color-muted)">No preview available.</p>';
 
-  if (type === REPORT_TYPES.NEIL_FORTNIGHTLY) {
+  if (type === REPORT_TYPES.MILESTONE_IMPACT && typeof msRenderReport === 'function') {
+    const msOpts = { dateFrom: opts.dateFrom, dateTo: opts.dateTo, reflection: document.getElementById('rep-ms-reflection')?.value.trim() || '', nextSteps: document.getElementById('rep-ms-next')?.value.trim() || '' };
+    body.innerHTML = _repProvenanceGuard() + msRenderReport(msOpts);
+    panel.style.display = '';
+    msWireReport(msOpts);
+    return;
+  } else if (type === REPORT_TYPES.NEIL_FORTNIGHTLY) {
     html = _repPreviewNeil(_repCollegeData(opts), opts);
   } else if (type === REPORT_TYPES.DIGITAL_LEAD || type === REPORT_TYPES.AP_HOA_AREA) {
     if (!opts.areaCode) { body.innerHTML = '<p style="color:var(--color-muted)">Select an area to preview.</p>'; panel.style.display=''; return; }
@@ -721,7 +744,9 @@ async function _repGenerate() {
   showStatus('Building document…', null);
 
   try {
-    if (type === REPORT_TYPES.NEIL_FORTNIGHTLY) {
+    if (type === REPORT_TYPES.MILESTONE_IMPACT) {
+      msBuildWord(docx, { dateFrom: opts.dateFrom, dateTo: opts.dateTo, reflection: document.getElementById('rep-ms-reflection')?.value.trim() || '', nextSteps: document.getElementById('rep-ms-next')?.value.trim() || '' });
+    } else if (type === REPORT_TYPES.NEIL_FORTNIGHTLY) {
       _repBuildNeilDoc(docx, _repCollegeData(opts), opts);
     } else if (type === REPORT_TYPES.DIGITAL_LEAD) {
       if (!opts.areaCode) { showStatus('Select an area first.', 'error'); return; }
