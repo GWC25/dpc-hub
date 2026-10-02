@@ -1,4 +1,5 @@
-// DPC Hub · js/incl-issues.js · v1.0 · 09/09/26
+// DPC Hub · js/incl-issues.js · v1.1 · 02/10/26 · Session RAG-1 — RAG weak-area check reads ragDimensions.accessibilityInclusion first
+// v1.0 · 09/09/26
 // Cross-source issue clustering for accessibility and inclusion.
 //
 // The v1.0 dashboard read the AFI store only and bucketed by LRA theme,
@@ -218,8 +219,13 @@ function inclBuildIssues() {
   // ── 5. RAG ratings — area-level context, not an issue signal ─
   const ragWeak = [];
   for (const area of areas) {
+    // Prefer the score saved through the RAG Matrix (ragDimensions,
+    // key accessibilityInclusion). Fall back to the seed store
+    // (ragRatings.current.accessibilityHealth) only when nothing has been
+    // saved, so a newer RAG Matrix score is never hidden by the seed.
+    const saved = area.ragDimensions && area.ragDimensions.accessibilityInclusion;
     const cur = (area.ragRatings && area.ragRatings.current) || {};
-    const acc = cur.accessibilityHealth;
+    const acc = (saved && typeof saved.score === 'number') ? saved.score : cur.accessibilityHealth;
     if (acc != null && acc <= 2) {
       ragWeak.push({ areaCode: area.areaCode, areaName: area.areaName, score: acc });
     }

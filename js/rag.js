@@ -1,4 +1,5 @@
-// DPC Hub · js/rag.js · v1.1 · 02/09/26 · Session 64 — captures unrounded Health Check basis on snapshot save
+// DPC Hub · js/rag.js · v1.2 · 02/10/26 · Session RAG-1 — shows the evidence-based suggestion (ragevidence.js) above the dimension rows
+// v1.1 · 02/09/26 · Session 64 — captures unrounded Health Check basis on snapshot save
 // RAG Matrix module. 8-dimension scoring 1-5 with rationale and snapshot history.
 // Called from areas.js initRAGTab(areaCode). Writes to area.ragDimensions via saveArea().
 
@@ -16,6 +17,9 @@ function initRAGTab(areaCode) {
       <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);">RAG Matrix</h3>
       <button id="rag-update-btn" type="button" class="btn btn--primary btn--sm">+ Update RAG scores</button>
     </div>
+
+    <!-- Evidence-based suggestion (read-only, never saved) -->
+    ${typeof renderEvidenceRAGPanel === 'function' ? renderEvidenceRAGPanel(areaCode) : ''}
 
     <!-- 8 dimension rows -->
     <div id="rag-dimension-rows" role="list" aria-label="RAG dimension scores">
