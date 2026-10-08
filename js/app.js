@@ -165,6 +165,7 @@ const MODULES = {
   tasks:          { label: 'Tasks',          icon: '✓',  init: () => initTasks() },
   meetings:       { label: 'Meetings',       icon: '💬', init: () => initMeetings() },
   notes:          { label: 'Notes',          icon: '✏',  init: () => initNotes() },
+  meetingnotes:   { label: 'Meeting notes',  icon: '📝', init: () => initMeetingNotes() },
   staff:          { label: 'Staff',          icon: '👤', init: () => initStaff() },
   afis:           { label: 'Loops',          icon: '🔁', init: () => initAFIs() },
   inclusion:      { label: 'Accessibility & Inclusion', icon: '♿', init: () => initInclusion() },
