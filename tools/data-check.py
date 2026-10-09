@@ -81,6 +81,12 @@ def main():
     if problems:
         print(f"Data check FAILED: {len(problems)} thing(s) to fix before this repo is safe to publish.\n")
         print("\n".join(problems))
+        if os.environ.get("GITHUB_ACTIONS"):
+            # Also post each finding as an annotation on the run.
+            for p in problems[:50]:
+                where, _, msg = p.partition(": ")
+                file, _, line = where.partition(":")
+                print(f"::error file={file},line={line or 1}::{msg}")
         return 1
     print(f"Data check passed: {len(tracked_files())} files checked, nothing personal or secret found.")
     return 0
