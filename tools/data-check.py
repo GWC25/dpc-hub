@@ -76,6 +76,8 @@ def main():
 
     if not names:
         print("WARNING: NAME_DENYLIST is not set, so names were not checked.")
+    else:
+        print(f"Name list loaded: {len(names)} name(s) checked (names are never shown).")
     if problems:
         print(f"Data check FAILED: {len(problems)} thing(s) to fix before this repo is safe to publish.\n")
         print("\n".join(problems))
