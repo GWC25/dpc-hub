@@ -14,3 +14,15 @@ admin/
 *token*
 .env
 .env.*
+
+# Added Oct 2026: more file types that can carry personal data.
+*.xls
+*.xlsm
+*.doc
+*.pptx
+*.tsv
+*.bundle
+# Hub data files from the OneDrive folder (never in this repo).
+/data-*.json
+*baseline*.json
+*tracker*.json

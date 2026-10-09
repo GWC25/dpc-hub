@@ -1,0 +1,28 @@
+# Data safeguard: runs on every push and every Monday morning.
+# A failed run shows a red cross on the commit and GitHub emails you.
+# Names to look for live in the NAME_DENYLIST secret, never in this repo:
+# Settings > Secrets and variables > Actions > New repository secret.
+name: Data check
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check for names, secrets and data files
+        env:
+          NAME_DENYLIST: ${{ secrets.NAME_DENYLIST }}
+        run: python3 tools/data-check.py
