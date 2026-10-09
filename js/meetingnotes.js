@@ -25,6 +25,14 @@
    Before writing, the import text is saved to "Notes import backups"
    in the OneDrive folder (or downloaded). Undo lasts for the session.
 
+   From Claude   Notes talked through with Claude and saved to the
+                 private inbox (claude-inbox.js). Same review, same
+                 checks.
+
+   Saving needs the OneDrive folder. If it is not connected, the page
+   offers a one-click reconnect (then reloads and comes back here) or
+   saving in this browser only.
+
    Privacy: initials only, no learner data. notes-import.js flags
    anything that looks otherwise and leaves it unticked.
    ================================================================ */
@@ -38,6 +46,7 @@ const MN_MARKS = [
   { value: '?', label: '? · Check' },
 ];
 const MN_DEST_ORDER = ['Meetings', 'Tasks', 'Calendar', 'Notes'];
+const MN_TABS = ['write', 'paper', 'claude'];
 
 let _mn = { tab: 'write', draft: null, review: null, lastImport: null, saveTimer: null };
 
@@ -107,6 +116,7 @@ function initMeetingNotes() {
       <div class="mn-tabs" role="tablist" aria-label="How are you taking notes?">
         <button type="button" class="mn-tab" role="tab" id="mn-tab-write" aria-controls="mn-panel" data-tab="write">Write notes</button>
         <button type="button" class="mn-tab" role="tab" id="mn-tab-paper" aria-controls="mn-panel" data-tab="paper">From paper (Copilot)</button>
+        <button type="button" class="mn-tab" role="tab" id="mn-tab-claude" aria-controls="mn-panel" data-tab="claude">From Claude</button>
       </div>
       <div id="mn-panel" role="tabpanel" tabindex="-1"></div>
       <p id="mn-live" class="mn-sr" role="status" aria-live="polite"></p>
@@ -114,11 +124,16 @@ function initMeetingNotes() {
 
   el.querySelector('.mn-tabs').addEventListener('click', (e) => {
     const t = e.target.closest('.mn-tab');
-    if (t) _mnShowTab(t.dataset.tab, true);
+    if (!t) return;
+    if (t.dataset.tab === 'claude' && typeof _ci !== 'undefined') _ci.editing = null;
+    _mnShowTab(t.dataset.tab, true);
   });
   el.querySelector('.mn-tabs').addEventListener('keydown', (e) => {
-    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-    const next = _mn.tab === 'write' ? 'paper' : 'write';
+    if (['ArrowRight', 'ArrowLeft', 'Home', 'End'].indexOf(e.key) < 0) return;
+    e.preventDefault();
+    const i = MN_TABS.indexOf(_mn.tab), n = MN_TABS.length;
+    const next = e.key === 'Home' ? MN_TABS[0] : e.key === 'End' ? MN_TABS[n - 1]
+      : MN_TABS[(i + (e.key === 'ArrowRight' ? 1 : n - 1)) % n];
     _mnShowTab(next, false);
     document.getElementById('mn-tab-' + next).focus();
   });
@@ -128,7 +143,7 @@ function initMeetingNotes() {
 function _mnShowTab(tab, focusPanel) {
   _mn.tab = tab;
   _mn.review = null;
-  ['write', 'paper'].forEach(t => {
+  MN_TABS.forEach(t => {
     const b = document.getElementById('mn-tab-' + t);
     if (!b) return;
     b.setAttribute('aria-selected', String(t === tab));
@@ -136,7 +151,9 @@ function _mnShowTab(tab, focusPanel) {
   });
   const panel = document.getElementById('mn-panel');
   panel.setAttribute('aria-labelledby', 'mn-tab-' + tab);
-  if (tab === 'write') _mnRenderWrite(); else _mnRenderPaper();
+  if (tab === 'write') _mnRenderWrite();
+  else if (tab === 'claude' && typeof ciRender === 'function') ciRender(panel);
+  else _mnRenderPaper();
   if (focusPanel) panel.focus();
 }
 
@@ -572,7 +589,7 @@ function _mnReview(text, source) {
         <h3>${parsed.errors.length} thing${parsed.errors.length === 1 ? '' : 's'} to fix before this can go into the Hub</h3>
         <ul>${parsed.errors.map(e => `<li>${_mnEsc(e.msg)}</li>`).join('')}</ul>
       </div>
-      <div class="mn-actions-bar"><button type="button" id="mn-back" class="btn btn--secondary">Back to ${source === 'form' ? 'my notes' : 'the pasted reply'}</button></div>`;
+      <div class="mn-actions-bar"><button type="button" id="mn-back" class="btn btn--secondary">Back to ${source === 'form' ? 'my notes' : source === 'claude' ? 'the text' : 'the pasted reply'}</button></div>`;
     document.getElementById('mn-back').addEventListener('click', () => _mnBack(text, source));
     document.getElementById('mn-err').focus();
     return;
@@ -600,6 +617,7 @@ function _mnReview(text, source) {
         </div>
         ${groups[g].map(i => _mnItemHtml(ops[i], i)).join('')}
       </fieldset>`).join('')}
+    <div id="mn-connect"></div>
     <div class="mn-actions-bar">
       <button type="button" id="mn-apply" class="btn btn--primary">Save ticked items to the Hub</button>
       <button type="button" id="mn-back" class="btn btn--secondary">Back</button>
@@ -613,7 +631,7 @@ function _mnReview(text, source) {
     count();
   }));
   document.getElementById('mn-back').addEventListener('click', () => _mnBack(text, source));
-  document.getElementById('mn-apply').addEventListener('click', _mnApply);
+  document.getElementById('mn-apply').addEventListener('click', () => _mnApply());
   count();
   document.getElementById('mn-review-h').focus();
 }
@@ -642,6 +660,12 @@ function _mnItemHtml(o, i) {
 
 function _mnBack(text, source) {
   _mn.review = null;
+  if (source === 'claude') {
+    // Came from an edited copy: go back to that text, keeping the edits.
+    if (typeof _ci !== 'undefined' && _ci.editing) _ci.editing.text = text;
+    _mnShowTab('claude', false);
+    return;
+  }
   if (source === 'form') { _mnShowTab('write', false); document.getElementById('mn-review-btn')?.focus(); }
   else { _mnShowTab('paper', false); const p = document.getElementById('mn-paste'); if (p) { p.value = text; p.focus(); } }
 }
@@ -689,11 +713,14 @@ async function _mnBackup(text, ref) {
   }
 }
 
-async function _mnApply() {
+async function _mnApply(e, offlineOk) {
   const r = _mn.review;
   if (!r) return;
   const chosen = r.ops.filter(o => o.include);
   if (!chosen.length) { _mnToast('error', 'Nothing is ticked.'); return; }
+  // October 2026: saving while the OneDrive folder is not connected only
+  // keeps the items in this browser. Say so before it happens.
+  if (!offlineOk && typeof hasFolderAccess === 'function' && !hasFolderAccess()) { _mnShowConnectPrompt(); return; }
   const btn = document.getElementById('mn-apply'); if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
   const backupMsg = await _mnBackup(r.text, r.parsed.header.ref);
@@ -766,10 +793,44 @@ async function _mnApply() {
   if (typeof forceSaveNow === 'function' && typeof UI !== 'undefined') { try { await forceSaveNow(UI); } catch (e) { /* autosave will retry */ } }
   _mn.lastImport = { undo, ref: r.parsed.header.ref };
   if (r.source === 'form') { _mn.draft = _mnBlankDraft(); _mnClearDraft(); }
-  _mnRenderDone(chosen, backupMsg, meetingOp ? mapId(meetingOp.entity.entryId) : null);
+  _mnRenderDone(chosen, backupMsg, meetingOp ? mapId(meetingOp.entity.entryId) : null, r.source);
 }
 
-function _mnRenderDone(chosen, backupMsg, meetingId) {
+function _mnShowConnectPrompt() {
+  const box = document.getElementById('mn-connect');
+  if (!box) return;
+  const keep = _mn.tab === 'paper' ? ' The pasted reply will need pasting again after the page reloads.' : '';
+  box.innerHTML = `
+    <div class="mn-callout" role="alert" tabindex="-1" id="mn-connect-box">
+      <h3>Your OneDrive folder is not connected</h3>
+      <p class="mn-hint" style="margin:0 0 8px;">Saving now keeps these items in this browser only. Reconnect first so they reach your folder. The Hub reloads to fetch your latest data, then brings you back here.${keep}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" id="mn-reconnect" class="btn btn--primary btn--sm">Reconnect the folder</button>
+        <button type="button" id="mn-save-offline" class="btn btn--ghost btn--sm">Save in this browser only</button>
+      </div>
+    </div>`;
+  document.getElementById('mn-reconnect').addEventListener('click', async () => {
+    if (typeof requestStoredFolderPermission !== 'function' || !(await requestStoredFolderPermission())) {
+      _mnToast('error', 'The folder could not be reconnected here. Use Settings to choose it again.');
+      return;
+    }
+    try { sessionStorage.setItem('dpc-meeting-notes-return', _mn.tab); } catch (err) { /* lands on home instead */ }
+    location.reload();
+  });
+  document.getElementById('mn-save-offline').addEventListener('click', () => _mnApply(null, true));
+  document.getElementById('mn-connect-box').focus();
+}
+
+// Called once after the Hub loads: reopen the right tab after a reconnect.
+function mnResumeAfterReconnect() {
+  let tab = null;
+  try { tab = sessionStorage.getItem('dpc-meeting-notes-return'); sessionStorage.removeItem('dpc-meeting-notes-return'); } catch (e) { return; }
+  if (!tab || MN_TABS.indexOf(tab) < 0) return;
+  _mn.tab = tab;
+  if (typeof navigateTo === 'function') navigateTo('meetingnotes');
+}
+
+function _mnRenderDone(chosen, backupMsg, meetingId, source) {
   const counts = {};
   chosen.forEach(o => { const g = o.dest.indexOf('Area log') === 0 || o.dest === 'Cross-college activity' ? 'Evidence' : o.dest; counts[g] = (counts[g] || 0) + 1; });
   _mn.review = null;
@@ -781,12 +842,14 @@ function _mnRenderDone(chosen, backupMsg, meetingId) {
       <p class="mn-hint">${_mnEsc(backupMsg)}</p>
       <div class="mn-actions-bar">
         ${meetingId ? '<button type="button" id="mn-open-meeting" class="btn btn--primary btn--sm">Open the meeting</button>' : ''}
+        ${source === 'claude' ? '<button type="button" id="mn-to-inbox" class="btn btn--secondary btn--sm">Back to the Claude inbox</button>' : ''}
         <button type="button" id="mn-new" class="btn btn--secondary btn--sm">Take new notes</button>
         <button type="button" id="mn-undo" class="btn btn--ghost btn--sm">Undo this import</button>
       </div>
     </div>`;
   document.getElementById('mn-open-meeting')?.addEventListener('click', () => { if (typeof openMeeting === 'function') openMeeting(meetingId); });
   document.getElementById('mn-new').addEventListener('click', () => _mnShowTab('write', false));
+  document.getElementById('mn-to-inbox')?.addEventListener('click', () => { if (typeof _ci !== 'undefined') _ci.editing = null; _mnShowTab('claude', false); document.getElementById('mn-tab-claude')?.focus(); });
   document.getElementById('mn-undo').addEventListener('click', _mnUndo);
   document.getElementById('mn-done-h').focus();
   _mnToast('success', 'Notes saved to the Hub.');

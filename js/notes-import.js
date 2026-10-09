@@ -53,7 +53,8 @@
     'Deputy Principal','Assistive Technology','Share Point','Sharepoint Site','Cognitive Overload',
     'New Staff','Curriculum Review','Curriculum Reviews','Action Plan','Area Action','Learning Walk',
     'Learning Walks','Task Force','Quality Hub','Digital Development','Digital Lead','Digital Leads',
-    'Current Focus','Health Check','Health Checks','Teach Meet','Microsoft Teams','Google Classroom'];
+    'Current Focus','Health Check','Health Checks','Teach Meet','Microsoft Teams','Google Classroom',
+    'Immersive Reader','Exam Access','Access Arrangements','Line Focus','Screen Mask'];
 
   function _isNone(v) { return v == null || /^\s*(none|n\/a|-)?\s*$/i.test(String(v)); }
 
@@ -206,7 +207,14 @@
       ['Date', 'Due'].forEach(function (d) { if (f[d] != null && _parseDate(f[d]) === undefined) e(d + ' "' + f[d] + '" is not a real date.'); });
       if (f.Time != null && _parseTime(f.Time) === undefined) e('Time "' + f.Time + '" not understood. Use HH:MM or HH:MM-HH:MM.');
       if (!_isNone(f.Area) && areas.length && areas.indexOf(f.Area.toUpperCase()) < 0) e('Area "' + f.Area + '" is not a live area code.');
-      if (!_isNone(f.Focus) && !(ctx.focuses || {})[f.Focus.toUpperCase()]) e('Focus "' + f.Focus + '" is not in the list.');
+      if (!_isNone(f.Focus) && !(ctx.focuses || {})[f.Focus.toUpperCase()]) {
+        // Claude writes notes without knowing the live F1, F2 codes, so a
+        // focus can also be given by its title.
+        var byTitle = _focusByTitle(f.Focus, ctx);
+        if (byTitle) f.Focus = byTitle;
+        else if (/^F\d+$/i.test(String(f.Focus).trim())) e('Focus "' + f.Focus + '" is not in the list.');
+        else { w('Focus "' + f.Focus + '" was not found among open focuses, so it is left off. Link it after saving.'); f.Focus = 'none'; }
+      }
       if (!_isNone(f.Loop) && !(ctx.loops || {})[f.Loop.toUpperCase()]) e('Loop "' + f.Loop + '" is not in the list.');
       if (!_isNone(f.Meeting) && !meetingKeys[f.Meeting.toUpperCase()]) e('Meeting "' + f.Meeting + '" is not a meeting key in these notes.');
       if (it.kind === 'meeting' && !_isNone(f.Type) && NI_MEETING_TYPES.indexOf(f.Type) < 0) e('Meeting type "' + f.Type + '" not recognised.');
@@ -221,6 +229,18 @@
       _privacy(it, w, areaNames);
       it.errors = out.errors.length - before;
     });
+  }
+
+  // Focus title -> live code. Exact match first (ignoring case and
+  // punctuation), then a single focus whose title contains the text.
+  function _focusByTitle(v, ctx) {
+    var norm = function (s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); };
+    var want = norm(v), codes = Object.keys(ctx.focuses || {});
+    if (want.length < 3) return null;
+    var exact = codes.filter(function (c) { return norm(ctx.focuses[c].title) === want; });
+    if (exact.length === 1) return exact[0];
+    var part = codes.filter(function (c) { return norm(ctx.focuses[c].title).indexOf(want) >= 0; });
+    return part.length === 1 ? part[0] : null;
   }
 
   function _kindLabel(k) { return { meeting: 'Meeting', action: 'Action', note: 'Note', evidence: 'Evidence', date: 'Date' }[k] || k; }

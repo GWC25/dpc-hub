@@ -109,6 +109,26 @@ async function tryReconnectSilently() {
   return false;
 }
 
+// Asks the browser to grant access again to the folder already stored in
+// IndexedDB. Must run from a click. Returns true when _folderHandle is now
+// usable. Does not load data: if the Hub started offline, reload the page
+// afterwards so OneDrive data loads before anything is saved over it.
+let _storedHandlePromise = null;
+function _storedHandle() {
+  if (!_storedHandlePromise) _storedHandlePromise = _idbGetHandle();
+  return _storedHandlePromise;
+}
+async function requestStoredFolderPermission() {
+  const handle = await _storedHandle();
+  if (!handle || typeof handle.requestPermission !== 'function') return false;
+  try {
+    if ((await handle.requestPermission({ mode: 'readwrite' })) !== 'granted') return false;
+    _folderHandle = handle;
+    return true;
+  } catch { return false; }
+}
+async function hasStoredFolder() { return !!(await _storedHandle()); }
+
 // For the Settings tab connection-status display.
 function getConnectionStatus() {
   return _folderHandle ? 'connected' : 'offline';
@@ -236,6 +256,7 @@ async function selectFolderFirstTime(ui) {
 
 // ── Step 3b: Weekly reconnect ─────────────────────────────────
 async function reconnectFolder(ui) {
+  _storedHandle(); // read it now, so the click below can ask for permission straight away
   const lastWeekSummary = buildLastWeekSummary();
   return new Promise((resolve) => {
     ui.showFolderModal({
@@ -245,6 +266,15 @@ async function reconnectFolder(ui) {
       btnLabel:'Reconnect to OneDrive folder',
       allowOffline: true,
       onConfirm: async () => {
+        // October 2026: after a browser restart the stored handle usually
+        // only needs permission again. Ask for that first (one click, no
+        // folder picker); fall back to the picker if it is refused or gone.
+        if (await requestStoredFolderPermission()) {
+          localStorage.setItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE, new Date().toISOString());
+          ui.hideFolderModal();
+          resolve(true);
+          return;
+        }
         try {
           const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
           _folderHandle = handle;

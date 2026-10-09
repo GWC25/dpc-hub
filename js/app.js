@@ -271,5 +271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (loaded) {
     navigateTo('home');
+    // Back to Meeting notes after a one-click reconnect from that page.
+    if (typeof mnResumeAfterReconnect === 'function') mnResumeAfterReconnect();
   }
 });
