@@ -273,5 +273,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     navigateTo('home');
     // Back to Meeting notes after a one-click reconnect from that page.
     if (typeof mnResumeAfterReconnect === 'function') mnResumeAfterReconnect();
+    // Send Claude a fresh task list at the start of each session.
+    if (typeof ciQueueTaskSync === 'function') ciQueueTaskSync(2000);
   }
 });

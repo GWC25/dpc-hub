@@ -1,4 +1,5 @@
-// DPC Hub · js/tasks.js · v1.0 · 07/08/26 · Session 48
+// DPC Hub · js/tasks.js · v1.1 · 10/10/26 · Do-on day, steps (microTasks), Today view; editing keeps links and steps
+// v1.0 · 07/08/26 · Session 48
 // Tasks module. Was a bare placeholder (renderPlaceholder('Tasks','✓')) —
 // no real data model existed at all before this.
 //
@@ -15,22 +16,26 @@
 // where it came from — a DL meeting, an Action Plan item — even though
 // it's stored as an ordinary calendar entry alongside everything else.
 
-let _tasksFilter = 'open'; // 'open' | 'complete' | 'all'
+let _tasksFilter = 'open'; // 'today' | 'open' | 'complete' | 'all'
+let _taskSteps = [];        // steps being edited in the modal
 
 function initTasks() {
   const main = document.getElementById('main-content');
   main.innerHTML = `
     <div id="banner-container" aria-live="polite"></div>
+    <style>.task-row-open:focus-visible, .task-filter-btn:focus-visible { outline:3px solid var(--color-navy); outline-offset:2px; border-radius:4px; }</style>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-md);">
       <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);">Tasks</h1>
       <button id="task-new-btn" type="button" class="btn btn--primary btn--sm">+ New task</button>
     </div>
 
-    <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-lg);">
-      <button type="button" class="btn btn--ghost btn--sm task-filter-btn" data-filter="open" style="font-weight:bold;">Open</button>
-      <button type="button" class="btn btn--ghost btn--sm task-filter-btn" data-filter="complete">Complete</button>
-      <button type="button" class="btn btn--ghost btn--sm task-filter-btn" data-filter="all">All</button>
+    <div role="group" aria-label="Show tasks" style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-lg);flex-wrap:wrap;">
+      <button type="button" class="btn btn--ghost btn--sm task-filter-btn" data-filter="today" aria-pressed="false">Today</button>
+      <button type="button" class="btn btn--ghost btn--sm task-filter-btn" data-filter="open" aria-pressed="false">Open</button>
+      <button type="button" class="btn btn--ghost btn--sm task-filter-btn" data-filter="complete" aria-pressed="false">Complete</button>
+      <button type="button" class="btn btn--ghost btn--sm task-filter-btn" data-filter="all" aria-pressed="false">All</button>
     </div>
+    <p id="task-filter-hint" style="font-size:var(--text-sm);color:var(--color-slate);margin:-8px 0 var(--space-md);"></p>
 
     <div id="task-list"></div>
 
@@ -38,7 +43,7 @@ function initTasks() {
     <div id="task-modal" role="dialog" aria-modal="true" aria-labelledby="task-modal-title" style="
       display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);
       z-index:600;align-items:center;justify-content:center;padding:var(--space-lg);">
-      <div style="background:var(--color-white);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:100%;max-width:480px;padding:var(--space-xl);">
+      <div style="background:var(--color-white);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:100%;max-width:520px;max-height:calc(100vh - 32px);overflow-y:auto;padding:var(--space-xl);">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-lg);">
           <h2 id="task-modal-title" style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-navy);">New task</h2>
           <button id="task-modal-close" type="button" aria-label="Close" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--color-muted);min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;">×</button>
@@ -53,10 +58,20 @@ function initTasks() {
             <input class="form-input" type="date" id="task-date" required>
           </div>
           <div class="form-group">
-            <label class="form-label form-label--optional" for="task-time">Time</label>
-            <input class="form-input" type="time" id="task-time">
+            <label class="form-label form-label--optional" for="task-do">Do on</label>
+            <input class="form-input" type="date" id="task-do" aria-describedby="task-do-hint">
           </div>
         </div>
+        <p id="task-do-hint" style="font-size:var(--text-xs);color:var(--color-slate);margin:-8px 0 var(--space-md);">The day you plan to work on it. Leave blank to plan by the due date.</p>
+        <div class="form-group">
+          <label class="form-label form-label--optional" for="task-time">Time</label>
+          <input class="form-input" type="time" id="task-time" style="max-width:160px;">
+        </div>
+        <fieldset class="form-group" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-sm) var(--space-md);">
+          <legend class="form-label" style="padding:0 4px;">Steps <span style="font-weight:400;">(optional)</span></legend>
+          <div id="task-steps"></div>
+          <button type="button" id="task-step-add" class="btn btn--secondary btn--sm" style="margin-top:4px;">+ Add step</button>
+        </fieldset>
         <div class="form-group">
           <label class="form-label form-label--optional" for="task-area">Area</label>
           <select class="form-select" id="task-area"><option value="">— None —</option></select>
@@ -105,37 +120,50 @@ function _renderTaskList() {
   if (!list) return;
   let tasks = _getAllTasks();
 
+  const today = todayISO();
+  if (_tasksFilter === 'today') tasks = tasks.filter(t => t.status !== TASK_STATUS.COMPLETE && taskPlanDay(t) && taskPlanDay(t) <= today);
   if (_tasksFilter === 'open') tasks = tasks.filter(t => t.status !== TASK_STATUS.COMPLETE);
   if (_tasksFilter === 'complete') tasks = tasks.filter(t => t.status === TASK_STATUS.COMPLETE);
+  const hint = document.getElementById('task-filter-hint');
+  if (hint) hint.textContent = _tasksFilter === 'today' ? 'Planned for today, plus anything planned earlier or overdue that is not done yet.' : '';
 
-  // Overdue first, then by due date ascending, complete tasks last
-  const today = todayISO();
+  // Complete tasks last, then by planned day (do-on, or due date).
   tasks.sort((a, b) => {
     if (a.status === TASK_STATUS.COMPLETE && b.status !== TASK_STATUS.COMPLETE) return 1;
     if (b.status === TASK_STATUS.COMPLETE && a.status !== TASK_STATUS.COMPLETE) return -1;
-    return (a.date || '').localeCompare(b.date || '');
+    return (taskPlanDay(a) || '').localeCompare(taskPlanDay(b) || '') || (a.date || '').localeCompare(b.date || '');
   });
 
   if (tasks.length === 0) {
-    list.innerHTML = `<p style="color:var(--color-muted);font-size:var(--text-sm);">No ${_tasksFilter === 'all' ? '' : _tasksFilter + ' '}tasks.</p>`;
+    list.innerHTML = `<p style="color:var(--color-muted);font-size:var(--text-sm);">${_tasksFilter === 'today' ? 'Nothing planned for today.' : 'No ' + (_tasksFilter === 'all' ? '' : _tasksFilter + ' ') + 'tasks.'}</p>`;
     return;
   }
 
   list.innerHTML = tasks.map(t => {
     const isOverdue = t.status !== TASK_STATUS.COMPLETE && t.date && t.date < today;
     const isDone = t.status === TASK_STATUS.COMPLETE;
+    const steps = t.microTasks || [];
+    const stepsDone = steps.filter(m => m.done).length;
     return `
     <div style="display:flex;align-items:flex-start;gap:var(--space-md);padding:var(--space-md);border:1px solid ${isOverdue ? 'var(--color-red)' : 'var(--color-border)'};border-radius:var(--radius-md);margin-bottom:var(--space-sm);${isDone ? 'opacity:0.6;' : ''}">
-      <input type="checkbox" class="task-done-checkbox" data-task-id="${t.entryId}" ${isDone ? 'checked' : ''} style="margin-top:4px;width:20px;height:20px;">
-      <div style="flex:1;cursor:pointer;" class="task-row-open" data-task-id="${t.entryId}">
-        <p style="font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);${isDone ? 'text-decoration:line-through;' : ''}">${_tEsc(t.title)}</p>
+      <input type="checkbox" class="task-done-checkbox" data-task-id="${t.entryId}" ${isDone ? 'checked' : ''} aria-label="Done: ${_tEsc(t.title)}" style="margin-top:4px;width:20px;height:20px;">
+      <div style="flex:1;">
+        <button type="button" class="task-row-open" data-task-id="${t.entryId}" style="all:unset;cursor:pointer;display:block;">
+          <span style="display:block;font-size:var(--text-sm);font-weight:bold;color:var(--color-navy);${isDone ? 'text-decoration:line-through;' : ''}">${_tEsc(t.title)}</span>
+        </button>
         <p style="font-size:var(--text-xs);color:${isOverdue ? 'var(--color-red)' : 'var(--color-muted)'};">
-          ${isOverdue ? 'Overdue — ' : ''}${_tFmtDate(t.date)}
+          ${t.doDate && !isDone ? 'Do on ' + _tFmtDate(t.doDate) + ' · ' : ''}${isOverdue ? 'Overdue, due ' : 'Due '}${_tFmtDate(t.date)}
+          ${steps.length ? ' · ' + stepsDone + ' of ' + steps.length + ' steps done' : ''}
           ${t.areaCode ? ' · ' + _tEsc(t.areaCode) : ''}
           ${(t.personRefs||[]).length ? ' · ' + _tEsc(t.personRefs.join(', ')) : ''}
           ${t.source && t.source !== 'manual' ? ` · <span style="font-style:italic;">from ${_tEsc(t.source)}</span>` : ''}
         </p>
         ${t.notes ? `<p style="font-size:var(--text-xs);color:var(--color-slate);margin-top:2px;">${_tEsc(t.notes)}</p>` : ''}
+        ${steps.length && !isDone ? `<ul style="list-style:none;margin:6px 0 0;padding:0;">${steps.map((m, i) => `
+          <li style="display:flex;align-items:center;gap:8px;min-height:32px;">
+            <input type="checkbox" id="step-${t.entryId}-${i}" class="task-step-checkbox" data-task-id="${t.entryId}" data-step="${i}" ${m.done ? 'checked' : ''} style="width:18px;height:18px;">
+            <label for="step-${t.entryId}-${i}" style="font-size:var(--text-sm);color:var(--color-slate);${m.done ? 'text-decoration:line-through;' : ''}">${_tEsc(m.title)}</label>
+          </li>`).join('')}</ul>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -146,7 +174,20 @@ function _renderTaskList() {
   list.querySelectorAll('.task-row-open').forEach(row => {
     row.addEventListener('click', () => _openTaskModal(row.dataset.taskId));
   });
+  list.querySelectorAll('.task-step-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const task = _getAllTasks().find(t => t.entryId === cb.dataset.taskId);
+      if (!task || !task.microTasks || !task.microTasks[+cb.dataset.step]) return;
+      task.microTasks[+cb.dataset.step].done = cb.checked;
+      saveCalendarEntry(task);
+      _renderTaskList();
+      document.getElementById(cb.id)?.focus();
+    });
+  });
 }
+
+// The day a task is planned for: its do-on day, otherwise its due date.
+function taskPlanDay(t) { return t.doDate || t.date || null; }
 
 function _tSetTaskDone(taskId, done) {
   const task = _getAllTasks().find(t => t.entryId === taskId);
@@ -173,6 +214,9 @@ function _openTaskModal(taskId = null) {
   document.getElementById('task-title').value = task ? task.title : '';
   document.getElementById('task-date').value = task ? task.date : todayISO();
   document.getElementById('task-time').value = task ? (task.startTime || '') : '';
+  document.getElementById('task-do').value = task ? (task.doDate || '') : '';
+  _taskSteps = task ? (task.microTasks || []).map(m => ({ ...m })) : [];
+  _renderTaskSteps();
   document.getElementById('task-area').value = task ? (task.areaCode || '') : '';
   document.getElementById('task-person').value = task ? (task.personRefs || []).join(', ') : '';
   document.getElementById('task-notes').value = task ? (task.notes || '') : '';
@@ -192,18 +236,23 @@ function _saveTaskModal() {
   const existing = existingId ? _getAllTasks().find(t => t.entryId === existingId) : null;
   const personStr = document.getElementById('task-person').value.trim();
 
+  // October 2026: start from the existing task so editing keeps what the
+  // form does not show (steps, focus and loop links, import IDs). Before
+  // this, saving an edit wiped them.
   const task = {
+    ...(existing || {}),
     entryId: existingId || generateId(),
     entryType: CALENDAR_TYPE.TASK,
     title,
     date,
-    startTime: document.getElementById('task-time').value || null, endTime: null,
+    doDate: document.getElementById('task-do').value || null,
+    startTime: document.getElementById('task-time').value || null, endTime: existing ? (existing.endTime || null) : null,
     personRefs: personStr ? personStr.split(',').map(p => p.trim()).filter(Boolean) : [],
     areaCode: document.getElementById('task-area').value || null,
-    projectRef: null,
+    projectRef: existing ? (existing.projectRef || null) : null,
     status: existing ? existing.status : TASK_STATUS.UPCOMING,
     notes: document.getElementById('task-notes').value.trim() || null,
-    microTasks: [],
+    microTasks: _taskSteps.filter(m => String(m.title || '').trim()).map(m => ({ ...m, title: m.title.trim() })),
     isSurfaceLayerVisible: true,
     source: existing?.source || 'manual',
     sourceRef: existing?.sourceRef || null,
@@ -219,6 +268,24 @@ function _wireTaskEvents() {
   document.getElementById('task-modal-close')?.addEventListener('click', () => { document.getElementById('task-modal').style.display = 'none'; });
   document.getElementById('task-modal-cancel')?.addEventListener('click', () => { document.getElementById('task-modal').style.display = 'none'; });
   document.getElementById('task-modal-save')?.addEventListener('click', _saveTaskModal);
+  document.getElementById('task-step-add')?.addEventListener('click', () => {
+    _taskSteps.push({ id: generateId(), title: '', done: false });
+    _renderTaskSteps();
+    document.getElementById('task-step-' + (_taskSteps.length - 1))?.focus();
+  });
+  document.getElementById('task-steps')?.addEventListener('input', e => {
+    const i = e.target.dataset.step; if (i == null) return;
+    if (e.target.type === 'checkbox') _taskSteps[+i].done = e.target.checked; else _taskSteps[+i].title = e.target.value;
+  });
+  document.getElementById('task-steps')?.addEventListener('change', e => {
+    const i = e.target.dataset.step; if (i != null && e.target.type === 'checkbox') _taskSteps[+i].done = e.target.checked;
+  });
+  document.getElementById('task-steps')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-step-remove]'); if (!b) return;
+    const i = +b.dataset.stepRemove;
+    _taskSteps.splice(i, 1); _renderTaskSteps();
+    (document.getElementById('task-step-' + Math.min(i, _taskSteps.length - 1)) || document.getElementById('task-step-add')).focus();
+  });
   document.getElementById('task-modal-delete')?.addEventListener('click', () => {
     const taskId = document.getElementById('task-modal-id').value;
     if (!taskId) return;
@@ -230,14 +297,26 @@ function _wireTaskEvents() {
   });
   document.getElementById('task-modal')?.addEventListener('click', e => { if (e.target === document.getElementById('task-modal')) document.getElementById('task-modal').style.display = 'none'; });
 
-  document.querySelectorAll('.task-filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      _tasksFilter = btn.dataset.filter;
-      document.querySelectorAll('.task-filter-btn').forEach(b => b.style.fontWeight = 'normal');
-      btn.style.fontWeight = 'bold';
-      _renderTaskList();
-    });
+  const markFilter = () => document.querySelectorAll('.task-filter-btn').forEach(b => {
+    const on = b.dataset.filter === _tasksFilter;
+    b.style.fontWeight = on ? 'bold' : 'normal';
+    b.setAttribute('aria-pressed', String(on));
   });
+  document.querySelectorAll('.task-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => { _tasksFilter = btn.dataset.filter; markFilter(); _renderTaskList(); });
+  });
+  markFilter();
+}
+
+function _renderTaskSteps() {
+  const box = document.getElementById('task-steps');
+  if (!box) return;
+  box.innerHTML = _taskSteps.length ? _taskSteps.map((m, i) => `
+    <div style="display:grid;grid-template-columns:28px minmax(0,1fr) 44px;gap:6px;align-items:center;margin-bottom:6px;">
+      <input type="checkbox" data-step="${i}" ${m.done ? 'checked' : ''} aria-label="Step ${i + 1} done" style="width:20px;height:20px;">
+      <input type="text" class="form-input" id="task-step-${i}" data-step="${i}" value="${_tEsc(m.title)}" aria-label="Step ${i + 1}">
+      <button type="button" data-step-remove="${i}" aria-label="Remove step ${i + 1}" style="min-width:44px;min-height:44px;border:1px solid var(--color-border);background:var(--color-white);border-radius:var(--radius-sm);cursor:pointer;font-size:20px;color:var(--color-slate);">×</button>
+    </div>`).join('') : '<p style="font-size:var(--text-xs);color:var(--color-slate);margin:0 0 4px;">No steps yet.</p>';
 }
 
 function _tasksPopulateAreaDropdown() {

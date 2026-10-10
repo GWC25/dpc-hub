@@ -530,6 +530,10 @@ async function _saveAllDirty(ui) {
   } else {
     ui.showSaveIndicator('saved');
   }
+  // October 2026: after a save to the folder, refresh the task list copy
+  // Claude reads (claude-inbox.js). Debounced there; does nothing if the
+  // tasks have not changed or no key is set.
+  if (typeof ciQueueTaskSync === 'function') ciQueueTaskSync();
 }
 
 // ── Step 10: Session snapshot check ──────────────────────────

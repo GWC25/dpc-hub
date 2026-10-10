@@ -33,11 +33,13 @@
     action:   { prefix: 'A', required: ['Key'] },
     note:     { prefix: 'N', required: ['Key', 'Text'] },
     evidence: { prefix: 'E', required: ['Key', 'Type', 'Summary'] },
-    date:     { prefix: 'D', required: ['Key', 'Date'] }
+    date:     { prefix: 'D', required: ['Key', 'Date'] },
+    // Changes to a task already in the Hub, by its Hub ID (Task:).
+    update:   { prefix: 'U', required: ['Key', 'Task'] }
   };
   var NI_FIELDS = ['Key','Date','Due','Time','Type','With','Owner','Area','Focus','Loop',
-    'Meeting','Project','Status','Kind','Repeats','Movement','Attended','Check','Notes','Detail','Text','Summary'];
-  var NI_LONG = ['Notes','Text','Summary','Detail'];
+    'Meeting','Project','Status','Kind','Repeats','Movement','Attended','Task','Do','Check','Notes','Detail','Text','Summary','Steps'];
+  var NI_LONG = ['Notes','Text','Summary','Detail','Steps'];
   var NI_MEETING_TYPES = (typeof MEETING_TYPE !== 'undefined')
     ? Object.keys(MEETING_TYPE).map(function (k) { return MEETING_TYPE[k]; })
     : ['quality-team','digital-lead','hoa','digital-projects-team','ap-joe','ap-neil','vp-ben','external-partner','other-staff'];
@@ -167,7 +169,7 @@
     out.checks.forEach(function (q) {
       var terms = [], m, re = /[“"']([^”"']{2,40})[”"']/g;
       while ((m = re.exec(q))) terms.push(m[1].replace(/[.\s]+$/, '').toLowerCase());
-      var keys = (q.match(/\b[AMNEDamned]\d{1,2}\b/g) || []).map(function (k) { return k.toUpperCase(); });
+      var keys = (q.match(/\b[AMNEDUamnedu]\d{1,2}\b/g) || []).map(function (k) { return k.toUpperCase(); });
       var hits = out.items.filter(function (it) {
         if (keys.indexOf((it.f.Key || '').toUpperCase()) >= 0) return true;
         var hay = (it.title + ' ' + Object.keys(it.f).map(function (k) { return it.f[k]; }).join(' '))
@@ -205,7 +207,7 @@
         if (keys[K]) e('Duplicate key ' + f.Key + '.');
         keys[K] = true;
       }
-      ['Date', 'Due'].forEach(function (d) { if (f[d] != null && _parseDate(f[d]) === undefined) e(d + ' "' + f[d] + '" is not a real date.'); });
+      ['Date', 'Due', 'Do'].forEach(function (d) { if (f[d] != null && _parseDate(f[d]) === undefined) e(d + ' "' + f[d] + '" is not a real date.'); });
       if (f.Time != null && _parseTime(f.Time) === undefined) e('Time "' + f.Time + '" not understood. Use HH:MM or HH:MM-HH:MM.');
       if (!_isNone(f.Area) && areas.length && areas.indexOf(f.Area.toUpperCase()) < 0) e('Area "' + f.Area + '" is not a live area code.');
       if (!_isNone(f.Focus) && !(ctx.focuses || {})[f.Focus.toUpperCase()]) {
@@ -225,7 +227,9 @@
       if (it.kind === 'evidence' && _isNone(f.Area) && _isNone(f.Focus)) e('Evidence "' + it.title + '" needs an area or a focus so it has somewhere to live.');
       if (it.kind === 'evidence' && !_isNone(f.Movement) && f.Movement !== 'none' && _isNone(f.Loop)) w('Movement "' + f.Movement + '" given without a loop, so it will be ignored.');
       if (it.kind === 'date' && !_isNone(f.Kind) && NI_DATE_KINDS.indexOf(f.Kind) < 0) e('Date kind "' + f.Kind + '" not recognised.');
-      if (it.kind === 'action' && !_isNone(f.Status) && NI_STATUS.indexOf(f.Status) < 0) e('Status "' + f.Status + '" not recognised.');
+      if ((it.kind === 'action' || it.kind === 'update') && !_isNone(f.Status) && NI_STATUS.indexOf(f.Status) < 0) e('Status "' + f.Status + '" not recognised.');
+      if (it.kind === 'update' && !_isNone(f.Task) && ctx.taskIds && !ctx.taskIds[String(f.Task).trim()]) e('Task "' + it.title + '" is not in the Hub any more. It may have been deleted.');
+      if (it.kind === 'update' && _isNone(f.Do) && _isNone(f.Due) && _isNone(f.Status) && _isNone(f.Steps) && _isNone(f.Detail)) e('Update "' + it.title + '" does not change anything.');
 
       if (!_isNone(f.Check) && /^yes/i.test(f.Check)) w('Marked for checking: ' + (f.Check.replace(/^yes\s*[-:]?\s*/i, '') || 'no reason given') + '.');
       _privacy(it, w, areaNames);
@@ -245,7 +249,59 @@
     return part.length === 1 ? part[0] : null;
   }
 
-  function _kindLabel(k) { return { meeting: 'Meeting', action: 'Action', note: 'Note', evidence: 'Evidence', date: 'Date' }[k] || k; }
+  function _kindLabel(k) { return { meeting: 'Meeting', action: 'Action', note: 'Note', evidence: 'Evidence', date: 'Date', update: 'Update' }[k] || k; }
+
+  // "- Book the room" lines -> subtasks.
+  function _steps(v, id) {
+    if (_isNone(v)) return [];
+    return String(v).split('\n').map(function (l) { return l.replace(/^\s*[-*•]\s*/, '').trim(); })
+      .filter(function (l) { return l && !/^none$/i.test(l); })
+      .map(function (t) { return { id: id(), title: t, done: false }; });
+  }
+
+  // For copies of Hub data that leave the Hub (the task list for Claude):
+  // anything that looks like a full name becomes initials, emails go.
+  // A run of capitalised words is checked pair by pair. A pair is left
+  // alone if either word is ordinary vocabulary (NI_COMMON), the pair is
+  // on the allow list, or the first word only has a capital because it
+  // starts the text or a sentence.
+  var NI_COMMON = ('Email Call Ask Send Book Meet Chase Prepare Share Download Upload Check Confirm Plan Write Review Update Draft ' +
+    'Print Create Make Follow Finish Complete Arrange Agree Discuss Present Deliver Run Set Add Find Get Look Read Tell Remind ' +
+    'Day Days Week Inclusion Accessibility Digital Learning Meeting Meetings Team Teams Quality Report Reports Audit Audits College Weston ' +
+    'Campus Session Sessions Training Lead Leads Head Heads Area Areas Focus Plan Action Actions Zone Microsoft Word PowerPoint Excel ' +
+    'Forms Copilot Immersive Reader Assistive Technology Health Check Hub Studio Curriculum Strategy Framework Pyramid Foundations ' +
+    'Innovation Barriers Without Event Room Rooms Booking Library Resource Resources Staff Learners Learner Students Student Course ' +
+    'Level Unit Toolkit Inspection Ofsted Mock Deep Dive Walk Walks Observation Coaching Task Tasks Force Taskforce Director ' +
+    'Principal Assistant Vice Manager Specialist Specialists Support Centre Nightstone Knightstone Loxton South West North East ' +
+    'Monday Tuesday Wednesday Thursday Friday Saturday Sunday January February March April May June July August September ' +
+    'October November December Term Half Autumn Spring Summer Year New Open Evening Showcase Conference Network Group Panel ' +
+    'Board Governors Policy Procedure Guide Guidance Template Workbook Handbook Survey Form Data Dashboard Overview Update ' +
+    'Exam Exams Access Arrangements Profile Profiles Pupil Lesson Lessons Class Classes Teacher Teachers Tutor Tutors Lecturer ' +
+    'Lecturers Assessment Assessments Feedback Induction Celebration Awards Showcase Station Stations Carousel Poster Posters ' +
+    'Video Videos Slides Deck Notes Agenda Minutes Kick Off Catch Up Planning Development Professional Practice Skills Pedagogy ' +
+    'Teaching Assessment Inclusive Accessible Checker Alt Text Captions Subtitles Dictate Dictation Narration Personas Persona').split(' ');
+  function niInitialiseNames(text, areaNames) {
+    var allow = NI_NAME_ALLOW.concat(areaNames || []).map(function (s) { return String(s).toLowerCase(); });
+    var common = {}; NI_COMMON.forEach(function (w) { common[w.toLowerCase()] = true; });
+    var str = String(text == null ? '' : text).replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, '[email removed]');
+    return str.replace(/\b[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})+\b/g, function (run, offset) {
+      var words = run.split(/\s+/);
+      var before = str.slice(0, offset);
+      var sentenceStart = /(^|[.!?:;]\s*|\n\s*)$/.test(before);
+      var out = [], i = 0;
+      while (i < words.length) {
+        var a = words[i], b = words[i + 1];
+        var skipA = (i === 0 && sentenceStart) || common[a.toLowerCase()];
+        if (b && !skipA && !common[b.toLowerCase()] &&
+            !allow.some(function (x) { return x.indexOf((a + ' ' + b).toLowerCase()) >= 0; })) {
+          var ini = a[0] + b[0]; i += 2;
+          while (words[i] && !common[words[i].toLowerCase()]) { ini += words[i][0]; i += 1; }
+          out.push(ini);
+        } else { out.push(a); i += 1; }
+      }
+      return out.join(' ');
+    });
+  }
 
   function _privacy(it, w, areaNames) {
     var text = [it.title].concat(Object.keys(it.f).map(function (k) { return k === 'Key' ? '' : it.f[k]; })).join('\n');
@@ -297,7 +353,8 @@
         op.dest = 'Tasks';
         op.entity = { entryId: id(), entryType: 'task', title: it.title, date: _parseDate(f.Due) || null,
           startTime: null, endTime: null, personRefs: people(f.Owner), areaCode: area(f.Area), projectRef: null,
-          status: _isNone(f.Status) ? 'upcoming' : f.Status, notes: f.Detail || null, microTasks: [], isSurfaceLayerVisible: true,
+          status: _isNone(f.Status) ? 'upcoming' : f.Status, notes: f.Detail || null, microTasks: _steps(f.Steps, id), isSurfaceLayerVisible: true,
+          doDate: _parseDate(f.Do) || null,
           source: meetingRef ? 'meeting' : 'notes-import', sourceRef: meetingRef ? { entryId: meetingRef } : {},
           linkedFocusId: fo ? fo.id : null, linkedAfiId: lo ? lo.id : null, importId: importId(f.Key) };
         if (!op.entity.date) op.note = 'No due date, so it is set to the meeting date.';
@@ -318,6 +375,15 @@
         // How many people took part (sessions delivered). Feeds the My week report.
         if (!_isNone(f.Attended)) op.entity.attendees = parseInt(f.Attended, 10);
         if (lo) op.loopEvidence = { afiId: lo.id, loopMovement: (_isNone(f.Movement) || f.Movement === 'none') ? 'progresses' : f.Movement };
+      } else if (it.kind === 'update') {
+        op.dest = 'Task changes';
+        var ch = {};
+        if (!_isNone(f.Do)) ch.doDate = _parseDate(f.Do);
+        if (!_isNone(f.Due)) ch.date = _parseDate(f.Due);
+        if (!_isNone(f.Status)) ch.status = f.Status;
+        if (!_isNone(f.Detail)) ch.notes = f.Detail;
+        op.entity = { entryId: String(f.Task).trim(), changes: ch, addSteps: _steps(f.Steps, id),
+          date: ch.doDate || ch.date || null, importId: importId(f.Key) };
       } else if (it.kind === 'date') {
         var kind = _isNone(f.Kind) ? 'deadline' : f.Kind;
         op.dest = 'Calendar';
@@ -341,7 +407,7 @@
     return ops;
   }
 
-  var api = { NI_HEADER: NI_HEADER, niParse: niParse, niBuild: niBuild, niParseDate: _parseDate, NI_EVIDENCE_TYPES: NI_EVIDENCE_TYPES };
+  var api = { NI_HEADER: NI_HEADER, niParse: niParse, niBuild: niBuild, niParseDate: _parseDate, NI_EVIDENCE_TYPES: NI_EVIDENCE_TYPES, niInitialiseNames: niInitialiseNames };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  else { root.niParse = niParse; root.niBuild = niBuild; root.NI_HEADER = NI_HEADER; root.niParseDate = _parseDate; }
+  else { root.niParse = niParse; root.niBuild = niBuild; root.NI_HEADER = NI_HEADER; root.niParseDate = _parseDate; root.niInitialiseNames = niInitialiseNames; }
 })(this);

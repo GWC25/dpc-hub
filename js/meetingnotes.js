@@ -45,7 +45,7 @@ const MN_MARKS = [
   { value: 'E', label: 'E · Evidence' },
   { value: '?', label: '? · Check' },
 ];
-const MN_DEST_ORDER = ['Meetings', 'Tasks', 'Calendar', 'Notes'];
+const MN_DEST_ORDER = ['Meetings', 'Tasks', 'Task changes', 'Calendar', 'Notes'];
 const MN_TABS = ['write', 'paper', 'claude'];
 
 let _mn = { tab: 'write', draft: null, review: null, lastImport: null, saveTimer: null };
@@ -196,7 +196,8 @@ function _mnContext() {
   const loopList = (typeof getOpenGapAFIs === 'function' ? getOpenGapAFIs() : ((window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || []))
     .slice().sort(byCreated);
   const ctx = { areas: areas.map(a => a.areaCode), areaNames: areas.map(a => a.areaName || ''), areaList: areas,
-    focuses: {}, loops: {}, focusCodeById: {}, loopCodeById: {}, focusList, loopList };
+    focuses: {}, loops: {}, focusCodeById: {}, loopCodeById: {}, focusList, loopList, taskIds: {} };
+  _mnCalendar().forEach(e => { if (e.entryType === 'task') ctx.taskIds[e.entryId] = true; });
   focusList.forEach((f, i) => { const c = 'F' + (i + 1); ctx.focuses[c] = { id: f.focusId, title: f.title || 'Untitled focus' }; ctx.focusCodeById[f.focusId] = c; });
   loopList.forEach((l, i) => {
     const c = 'L' + (i + 1);
@@ -637,7 +638,7 @@ function _mnReview(text, source) {
 }
 
 function _mnItemHtml(o, i) {
-  const when = o.entity.date ? new Date(o.entity.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
+  const when = (o.entity.date && o.kind !== 'update') ? new Date(o.entity.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
   const time = o.entity.startTime ? ' ' + o.entity.startTime + (o.entity.endTime ? '–' + o.entity.endTime : '') : '';
   const who = (o.entity.personRefs || []).join(', ');
   const descId = `mn-op-d-${i}`;
@@ -651,12 +652,33 @@ function _mnItemHtml(o, i) {
           ${who ? `<span class="mn-chip">${_mnEsc(who)}</span>` : ''}
           ${o.links.filter(l => l.type !== 'meeting').map(l => `<span class="mn-chip">${_mnEsc((l.type === 'area' ? 'Area ' : l.type === 'focus' ? 'Focus: ' : 'Loop: ') + l.label)}</span>`).join('')}
           ${o.entity.attendees != null ? `<span class="mn-chip">${_mnEsc(o.entity.attendees)} attended</span>` : ''}
+          ${_mnTaskChips(o)}
           ${o.existing ? '<span class="mn-chip mn-chip--update">Updates earlier import</span>' : ''}
           ${o.note ? `<span>${_mnEsc(o.note)}</span>` : ''}
           ${o.warnings.length ? `<ul class="mn-warn">${o.warnings.map(w => `<li>${_mnEsc(w)}</li>`).join('')}</ul>` : ''}
         </div>
       </div>
     </div>`;
+}
+
+// Do-on day, steps and changes, for tasks and task updates.
+function _mnTaskChips(o) {
+  const day = (iso) => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  const out = [];
+  if (o.kind === 'action') {
+    if (o.entity.doDate) out.push('Do on ' + day(o.entity.doDate));
+    if ((o.entity.microTasks || []).length) out.push(o.entity.microTasks.length + ' step' + (o.entity.microTasks.length === 1 ? '' : 's'));
+  }
+  if (o.kind === 'update') {
+    const c = o.entity.changes, task = _mnCalendar().find(e => e.entryId === o.entity.entryId);
+    if (task) out.push('Task: ' + task.title.slice(0, 60));
+    if (c.doDate) out.push('Do on ' + day(c.doDate));
+    if (c.date) out.push('Due ' + day(c.date));
+    if (c.status) out.push(c.status === 'complete' ? 'Mark done' : 'Status: ' + c.status);
+    if (c.notes) out.push('New notes');
+    if (o.entity.addSteps.length) out.push('Add ' + o.entity.addSteps.length + ' step' + (o.entity.addSteps.length === 1 ? '' : 's'));
+  }
+  return out.map(t => `<span class="mn-chip">${_mnEsc(t)}</span>`).join('');
 }
 
 function _mnBack(text, source) {
@@ -677,6 +699,7 @@ function _mnNotes() { return (window.DPC_DATA.notes && window.DPC_DATA.notes.not
 function _mnActivities() { return typeof getAllActivities === 'function' ? getAllActivities() : []; }
 
 function _mnFindExisting(o) {
+  if (o.kind === 'update') return null;
   const id = o.entity.importId;
   if (o.kind === 'note') return _mnNotes().find(n => n.importId === id) || null;
   if (o.kind === 'evidence') return _mnActivities().find(a => a.importId === id) || null;
@@ -764,6 +787,16 @@ async function _mnApply(e, offlineOk) {
       const merged = o._existing ? { ...o._existing, ...ent, status: o._existing.status || ent.status, microTasks: o._existing.microTasks || ent.microTasks } : ent;
       saveCalendarEntry(merged);
       undo.push({ store: 'calendar', id: merged.entryId, prev: o._existing });
+    } else if (o.kind === 'update') {
+      const task = _mnCalendar().find(e => e.entryId === ent.entryId);
+      if (!task) return;
+      const prev = JSON.parse(JSON.stringify(task));
+      const have = (task.microTasks || []).map(m => String(m.title).toLowerCase());
+      const merged = { ...task, ...ent.changes,
+        microTasks: (task.microTasks || []).concat(ent.addSteps.filter(m => have.indexOf(m.title.toLowerCase()) < 0)),
+        updateImportIds: (task.updateImportIds || []).filter(x => x !== ent.importId).concat([ent.importId]) };
+      saveCalendarEntry(merged);
+      undo.push({ store: 'calendar', id: merged.entryId, prev });
     } else if (o.kind === 'note') {
       if (ent.linkedMeetingId) ent.linkedMeetingId = meetingOp ? mapId(ent.linkedMeetingId) : null;
       const merged = o._existing ? { ...o._existing, ...ent, createdAt: o._existing.createdAt } : { ...ent, createdAt: ent.createdAt || nowISO() };
