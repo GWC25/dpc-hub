@@ -650,6 +650,7 @@ function _mnItemHtml(o, i) {
           ${when ? `<span class="mn-chip">${_mnEsc(when + time)}</span>` : ''}
           ${who ? `<span class="mn-chip">${_mnEsc(who)}</span>` : ''}
           ${o.links.filter(l => l.type !== 'meeting').map(l => `<span class="mn-chip">${_mnEsc((l.type === 'area' ? 'Area ' : l.type === 'focus' ? 'Focus: ' : 'Loop: ') + l.label)}</span>`).join('')}
+          ${o.entity.attendees != null ? `<span class="mn-chip">${_mnEsc(o.entity.attendees)} attended</span>` : ''}
           ${o.existing ? '<span class="mn-chip mn-chip--update">Updates earlier import</span>' : ''}
           ${o.note ? `<span>${_mnEsc(o.note)}</span>` : ''}
           ${o.warnings.length ? `<ul class="mn-warn">${o.warnings.map(w => `<li>${_mnEsc(w)}</li>`).join('')}</ul>` : ''}

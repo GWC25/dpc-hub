@@ -36,7 +36,7 @@
     date:     { prefix: 'D', required: ['Key', 'Date'] }
   };
   var NI_FIELDS = ['Key','Date','Due','Time','Type','With','Owner','Area','Focus','Loop',
-    'Meeting','Project','Status','Kind','Repeats','Movement','Check','Notes','Detail','Text','Summary'];
+    'Meeting','Project','Status','Kind','Repeats','Movement','Attended','Check','Notes','Detail','Text','Summary'];
   var NI_LONG = ['Notes','Text','Summary','Detail'];
   var NI_MEETING_TYPES = (typeof MEETING_TYPE !== 'undefined')
     ? Object.keys(MEETING_TYPE).map(function (k) { return MEETING_TYPE[k]; })
@@ -54,7 +54,8 @@
     'New Staff','Curriculum Review','Curriculum Reviews','Action Plan','Area Action','Learning Walk',
     'Learning Walks','Task Force','Quality Hub','Digital Development','Digital Lead','Digital Leads',
     'Current Focus','Health Check','Health Checks','Teach Meet','Microsoft Teams','Google Classroom',
-    'Immersive Reader','Exam Access','Access Arrangements','Line Focus','Screen Mask'];
+    'Immersive Reader','Exam Access','Access Arrangements','Line Focus','Screen Mask',
+    'Accessibility Checker','Digital Accessibility'];
 
   function _isNone(v) { return v == null || /^\s*(none|n\/a|-)?\s*$/i.test(String(v)); }
 
@@ -220,6 +221,7 @@
       if (it.kind === 'meeting' && !_isNone(f.Type) && NI_MEETING_TYPES.indexOf(f.Type) < 0) e('Meeting type "' + f.Type + '" not recognised.');
       if (it.kind === 'evidence' && !_isNone(f.Type) && NI_EVIDENCE_TYPES.indexOf(f.Type) < 0) e('Evidence type "' + f.Type + '" not recognised.');
       if (it.kind === 'evidence' && !_isNone(f.Movement) && NI_MOVEMENTS.indexOf(f.Movement) < 0) e('Movement "' + f.Movement + '" not recognised.');
+      if (!_isNone(f.Attended) && !/^\d{1,4}$/.test(String(f.Attended).trim())) e('Attended "' + f.Attended + '" should be a number of people.');
       if (it.kind === 'evidence' && _isNone(f.Area) && _isNone(f.Focus)) e('Evidence "' + it.title + '" needs an area or a focus so it has somewhere to live.');
       if (it.kind === 'evidence' && !_isNone(f.Movement) && f.Movement !== 'none' && _isNone(f.Loop)) w('Movement "' + f.Movement + '" given without a loop, so it will be ignored.');
       if (it.kind === 'date' && !_isNone(f.Kind) && NI_DATE_KINDS.indexOf(f.Kind) < 0) e('Date kind "' + f.Kind + '" not recognised.');
@@ -313,6 +315,8 @@
           staffIds: [], lraThemeIds: [], hyperThemes: [],
           summary: f.Summary.indexOf(it.title) === 0 ? f.Summary : it.title + ': ' + f.Summary, links: links,
           afiIdsGenerated: [], sharedId: null, qipRef: null, createdAt: null, source: 'notes-import', importId: importId(f.Key) };
+        // How many people took part (sessions delivered). Feeds the My week report.
+        if (!_isNone(f.Attended)) op.entity.attendees = parseInt(f.Attended, 10);
         if (lo) op.loopEvidence = { afiId: lo.id, loopMovement: (_isNone(f.Movement) || f.Movement === 'none') ? 'progresses' : f.Movement };
       } else if (it.kind === 'date') {
         var kind = _isNone(f.Kind) ? 'deadline' : f.Kind;

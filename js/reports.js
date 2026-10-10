@@ -1,4 +1,5 @@
-// DPC Hub · js/reports.js · v1.3 · 02/10/26 · Session RAG-4 — adds DA&I Day Area Packs (area-packs.js)
+// DPC Hub · js/reports.js · v1.4 · 10/10/26 · adds My week report (myweek.js)
+// v1.3 · 02/10/26 · Session RAG-4 — adds DA&I Day Area Packs (area-packs.js)
 // v1.2 · 02/10/26 · Session RAG-2 — adds Milestone Impact Report (milestones.js)
 // v1.1 · 09/09/26 · Job A1 provenance guard + Job A2 archived-area exclusion
 // Report Builder module. Five audience templates.
@@ -29,6 +30,7 @@ const REPORT_TYPES = Object.freeze({
   AREA_DATA_EXPORT: 'area-data-export',
   MILESTONE_IMPACT: 'milestone-impact',
   AREA_PACKS:       'area-packs',
+  MY_WEEK:          'my-week',
 });
 
 let _repCurrentType = null;
@@ -89,6 +91,7 @@ function initReports() {
         <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);padding-bottom:var(--space-sm);margin-bottom:var(--space-md);border-bottom:1px solid var(--color-border);">Select report type</h3>
         <div>
           <div role="group" aria-label="Report type" style="display:flex;flex-direction:column;gap:8px;">
+            ${_repTypeBtn(REPORT_TYPES.MY_WEEK, 'My week', 'What I did this week, who it reached and what it links to: sessions, people trained, meetings, areas, coming up. Word')}
             ${_repTypeBtn(REPORT_TYPES.AREA_PACKS, 'DA&I Day Area Packs (Excel)', 'One workbook per area for the Head of Area and Digital Lead: overview, 23 October attendance, Health Check position, and a tab per member of staff with their action plan')}
             ${_repTypeBtn(REPORT_TYPES.MILESTONE_IMPACT, 'Milestone Impact Report', 'Accessibility and Inclusion: position at each milestone (March, July, 23 Oct, Terms 2, 4, 6), this fortnight in numbers, Current Focus, every area. Word and Excel')}
             ${_repTypeBtn(REPORT_TYPES.NEIL_FORTNIGHTLY, 'ND — Fortnightly', 'Cross-college: activity, open loops, RAG movers, coming up')}
@@ -188,7 +191,19 @@ function _repRenderOptions() {
     </div>`;
 
   let html = '';
-  if (type === REPORT_TYPES.AREA_PACKS) {
+  if (type === REPORT_TYPES.MY_WEEK) {
+    title.textContent = 'My week options';
+    html = `
+      ${dateRange(typeof mwDefaultFrom === 'function' ? mwDefaultFrom() : twoWeeksAgo)}
+      <div style="margin-bottom:var(--space-md);">
+        <label class="form-label form-label--optional" for="rep-mw-impact">Impact and what is changing (appears in the Word report)</label>
+        <textarea class="form-input" id="rep-mw-impact" rows="3"></textarea>
+      </div>
+      <div style="margin-bottom:var(--space-md);">
+        <label class="form-label form-label--optional" for="rep-mw-next">Anything else coming up</label>
+        <textarea class="form-input" id="rep-mw-next" rows="2"></textarea>
+      </div>`;
+  } else if (type === REPORT_TYPES.AREA_PACKS) {
     title.textContent = 'DA&I Day Area Packs';
     html = '<p class="ms-muted">Choose the areas below, then save them all to the Data folder or download one at a time.</p>';
   } else if (type === REPORT_TYPES.MILESTONE_IMPACT) {
@@ -384,7 +399,7 @@ function el_wireLiveInputs() {
   document.querySelectorAll('#rep-options-body input, #rep-options-body textarea, #rep-options-body select')
     // Milestone report text boxes only feed the Word file, so typing in
     // them should not rebuild the whole report on every key press.
-    .forEach(inp => { if (inp.id && inp.id.startsWith('rep-ms-')) return; inp.addEventListener('input', _repRenderPreview); });
+    .forEach(inp => { if (inp.id && (inp.id.startsWith('rep-ms-') || inp.id.startsWith('rep-mw-'))) return; inp.addEventListener('input', _repRenderPreview); });
 }
 
 function _repGatherOptions() {
@@ -496,6 +511,10 @@ function _repRenderPreview() {
     panel.style.display = '';
     const gp = document.getElementById('rep-generate-panel'); if (gp) gp.style.display = 'none';
     if (!body._apBusy) { body._apBusy = true; body.innerHTML = _repProvenanceGuard() + '<div id="ap-panel"></div>'; apRenderPanel(document.getElementById('ap-panel')).finally(() => { body._apBusy = false; }); }
+    return;
+  } else if (type === REPORT_TYPES.MY_WEEK && typeof mwRenderReport === 'function') {
+    body.innerHTML = _repProvenanceGuard() + mwRenderReport({ dateFrom: opts.dateFrom, dateTo: opts.dateTo });
+    panel.style.display = '';
     return;
   } else if (type === REPORT_TYPES.MILESTONE_IMPACT && typeof msRenderReport === 'function') {
     const msOpts = { dateFrom: opts.dateFrom, dateTo: opts.dateTo, reflection: document.getElementById('rep-ms-reflection')?.value.trim() || '', nextSteps: document.getElementById('rep-ms-next')?.value.trim() || '' };
@@ -755,7 +774,9 @@ async function _repGenerate() {
   showStatus('Building document…', null);
 
   try {
-    if (type === REPORT_TYPES.MILESTONE_IMPACT) {
+    if (type === REPORT_TYPES.MY_WEEK) {
+      mwBuildWord(docx, { dateFrom: opts.dateFrom, dateTo: opts.dateTo, impact: document.getElementById('rep-mw-impact')?.value.trim() || '', next: document.getElementById('rep-mw-next')?.value.trim() || '' });
+    } else if (type === REPORT_TYPES.MILESTONE_IMPACT) {
       msBuildWord(docx, { dateFrom: opts.dateFrom, dateTo: opts.dateTo, reflection: document.getElementById('rep-ms-reflection')?.value.trim() || '', nextSteps: document.getElementById('rep-ms-next')?.value.trim() || '' });
     } else if (type === REPORT_TYPES.NEIL_FORTNIGHTLY) {
       _repBuildNeilDoc(docx, _repCollegeData(opts), opts);
