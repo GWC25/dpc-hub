@@ -57,7 +57,8 @@
     'Learning Walks','Task Force','Quality Hub','Digital Development','Digital Lead','Digital Leads',
     'Current Focus','Health Check','Health Checks','Teach Meet','Microsoft Teams','Google Classroom',
     'Immersive Reader','Exam Access','Access Arrangements','Line Focus','Screen Mask',
-    'Accessibility Checker','Digital Accessibility'];
+    'Accessibility Checker','Digital Accessibility','Winter Gardens','Learning Technology','Open Clinics','Experiential Learning',
+    'Cognitive Overload','Text Scrambling','Vision Simulation','Persona Spectrum','Reading Order','Colour Contrast'];
 
   function _isNone(v) { return v == null || /^\s*(none|n\/a|-)?\s*$/i.test(String(v)); }
 
