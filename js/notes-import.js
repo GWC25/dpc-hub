@@ -240,7 +240,7 @@
   // Focus title -> live code. Exact match first (ignoring case and
   // punctuation), then a single focus whose title contains the text.
   function _focusByTitle(v, ctx) {
-    var norm = function (s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); };
+    var norm = function (s) { return String(s || '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim(); };
     var want = norm(v), codes = Object.keys(ctx.focuses || {});
     if (want.length < 3) return null;
     var exact = codes.filter(function (c) { return norm(ctx.focuses[c].title) === want; });
