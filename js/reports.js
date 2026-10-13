@@ -1,4 +1,4 @@
-// DPC Hub · js/reports.js · v1.4 · 10/10/26 · adds My week report (myweek.js)
+// DPC Hub · js/reports.js · v1.5 · 13/10/26 · My week report: this week, last week or last fortnight
 // v1.3 · 02/10/26 · Session RAG-4 — adds DA&I Day Area Packs (area-packs.js)
 // v1.2 · 02/10/26 · Session RAG-2 — adds Milestone Impact Report (milestones.js)
 // v1.1 · 09/09/26 · Job A1 provenance guard + Job A2 archived-area exclusion
@@ -91,7 +91,7 @@ function initReports() {
         <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);padding-bottom:var(--space-sm);margin-bottom:var(--space-md);border-bottom:1px solid var(--color-border);">Select report type</h3>
         <div>
           <div role="group" aria-label="Report type" style="display:flex;flex-direction:column;gap:8px;">
-            ${_repTypeBtn(REPORT_TYPES.MY_WEEK, 'My week', 'What I did this week, who it reached and what it links to: sessions, people trained, meetings, areas, coming up. Word')}
+            ${_repTypeBtn(REPORT_TYPES.MY_WEEK, 'My week', 'What I did this week, last week or over the last fortnight, who it reached and what it links to: sessions, people trained, meetings, areas, coming up. Word')}
             ${_repTypeBtn(REPORT_TYPES.AREA_PACKS, 'DA&I Day Area Packs (Excel)', 'One workbook per area for the Head of Area and Digital Lead: overview, 23 October attendance, Health Check position, and a tab per member of staff with their action plan')}
             ${_repTypeBtn(REPORT_TYPES.MILESTONE_IMPACT, 'Milestone Impact Report', 'Accessibility and Inclusion: position at each milestone (March, July, 23 Oct, Terms 2, 4, 6), this fortnight in numbers, Current Focus, every area. Word and Excel')}
             ${_repTypeBtn(REPORT_TYPES.NEIL_FORTNIGHTLY, 'ND — Fortnightly', 'Cross-college: activity, open loops, RAG movers, coming up')}
@@ -194,6 +194,7 @@ function _repRenderOptions() {
   if (type === REPORT_TYPES.MY_WEEK) {
     title.textContent = 'My week options';
     html = `
+      ${typeof mwPeriodPicker === 'function' ? mwPeriodPicker() : ''}
       ${dateRange(typeof mwDefaultFrom === 'function' ? mwDefaultFrom() : twoWeeksAgo)}
       <div style="margin-bottom:var(--space-md);">
         <label class="form-label form-label--optional" for="rep-mw-impact">Impact and what is changing (appears in the Word report)</label>
@@ -391,6 +392,7 @@ function _repRenderOptions() {
 
   const areaSel = document.getElementById('rep-area');
   if (areaSel) areaSel.addEventListener('change', _repRenderPreview);
+  if (type === REPORT_TYPES.MY_WEEK && typeof mwWirePeriod === 'function') mwWirePeriod();
   el_wireLiveInputs();
   _repRenderPreview();
 }

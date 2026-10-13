@@ -1,6 +1,7 @@
 /* ================================================================
    myweek.js — DPC Hub
-   My week report (October 2026).
+   My week report (October 2026). Period picker for this week, last
+   week or the last fortnight added 13/10/26.
 
    What I did in a period, who it reached and what it links to, by
    numbers where the data allows. Built for a weekly record of the
@@ -54,6 +55,45 @@ function mwDefaultFrom() {
   const back = (d.getDay() + 6) % 7;
   d.setDate(d.getDate() - back);
   return d.toISOString().slice(0, 10);
+}
+
+// Period presets for the My week report. "This week" runs Monday to
+// today, "Last week" is the full Monday to Sunday before it, and
+// "Last fortnight" is last Monday through to today, so last week can
+// be seen alongside this one.
+function mwPeriodRange(period) {
+  const mon = mwDefaultFrom(), today = todayISO();
+  if (period === 'last-week') return { from: _mwAddDays(mon, -7), to: _mwAddDays(mon, -1) };
+  if (period === 'fortnight') return { from: _mwAddDays(mon, -7), to: today };
+  return { from: mon, to: today };
+}
+
+function mwPeriodPicker() {
+  const opt = (v, label, checked) => `<label style="display:inline-flex;align-items:center;gap:6px;margin:0 16px 6px 0;font-size:var(--text-sm);min-height:24px;">
+      <input type="radio" name="rep-mw-period" value="${v}"${checked ? ' checked' : ''}> ${label}</label>`;
+  return `<fieldset style="border:0;padding:0;margin:0 0 var(--space-sm);">
+      <legend class="form-label">Period</legend>
+      ${opt('this-week', 'This week', true)}${opt('last-week', 'Last week', false)}${opt('fortnight', 'Last fortnight', false)}${opt('custom', 'Custom dates', false)}
+    </fieldset>`;
+}
+
+// Bind before the live preview listeners so the dates are set first.
+function mwWirePeriod() {
+  const from = document.getElementById('rep-from'), to = document.getElementById('rep-to');
+  if (!from || !to) return;
+  document.querySelectorAll('input[name="rep-mw-period"]').forEach(r => r.addEventListener('input', () => {
+    if (!r.checked || r.value === 'custom') return;
+    const range = mwPeriodRange(r.value);
+    from.value = range.from; to.value = range.to;
+  }));
+  const toCustom = () => { const c = document.querySelector('input[name="rep-mw-period"][value="custom"]'); if (c) c.checked = true; };
+  from.addEventListener('input', toCustom); to.addEventListener('input', toCustom);
+}
+
+// Name for the period: a week, a fortnight, or a span of dates.
+function _mwSpanLabel(from, to) {
+  const days = Math.round((new Date(to + 'T12:00:00') - new Date(from + 'T12:00:00')) / 86400000) + 1;
+  return days <= 7 ? 'week' : days <= 14 ? 'fortnight' : 'period';
 }
 
 function mwData(opts) {
@@ -126,7 +166,7 @@ function mwRenderReport(opts) {
       .mw-h { font-size:var(--text-base); color:var(--color-navy); margin:var(--space-md) 0 4px; }
     </style>
     <div class="report-preview">
-      <h3>My week: ${_mwEsc(_mwDate(d.from))} to ${_mwEsc(_mwDate(d.to))}</h3>
+      <h3>My ${_mwSpanLabel(d.from, d.to)}: ${_mwEsc(_mwDate(d.from))} to ${_mwEsc(_mwDate(d.to))}</h3>
       <div class="mw-stats" role="list" aria-label="This period in numbers">
         <div role="listitem">${_mwStat(n.sessions, n.sessions === 1 ? 'session delivered' : 'sessions delivered')}</div>
         <div role="listitem">${_mwStat(n.trained, n.trained === 1 ? 'person trained' : 'people trained')}</div>
@@ -152,10 +192,11 @@ function mwBuildWord(docx, opts) {
   const { Document, Paragraph, TextRun } = docx;
   const d = mwData(opts), n = d.numbers;
   const W = [1500, 1700, 5000, 1100];
+  const span = _mwSpanLabel(d.from, d.to);
   const kids = [
-    _repDocTitle(docx, 'My week: Digital Pedagogy Coach'),
+    _repDocTitle(docx, `My ${span}: Digital Pedagogy Coach`),
     _repDocPara(docx, `${_mwLongDate(d.from)} to ${_mwLongDate(d.to)}. Prepared ${_mwLongDate(todayISO())}.`, { italics: true, spacing: { after: 200 } }),
-    _repDocSectionHeading(docx, 'This week in numbers'),
+    _repDocSectionHeading(docx, `This ${span} in numbers`),
     _repDocTable(docx, ['Measure', 'Number'], [
       ['Training sessions delivered', String(n.sessions)],
       ['People trained', String(n.trained) + (n.sessionsWithoutCount ? ` (${n.sessionsWithoutCount} session${n.sessionsWithoutCount === 1 ? '' : 's'} without a count)` : '')],
@@ -192,5 +233,5 @@ function mwBuildWord(docx, opts) {
     numbering: _repDocNumberingConfig(docx),
     styles: { default: { document: { run: { font: 'Arial', size: 24 }, paragraph: { spacing: { line: 360 } } } } },
   });
-  _repDownloadDoc(docx, doc, `my-week-${d.from}.docx`);
+  _repDownloadDoc(docx, doc, `my-${span}-${d.from}.docx`);
 }
