@@ -1,4 +1,5 @@
-// DPC Hub · js/area-packs.js · v1.1 · 02/10/26 · Session RAG-4 — matched to the real Area attendance workbook: one pack per Head of Area tab, sessions and groups per person, access and dietary needs never included
+// DPC Hub · js/area-packs.js · v1.2 · 19/10/26 · live DA&I attendance list: template and example copies are passed over when choosing the file, Curriculum Area and Head read from their real cells, example rows skipped, a 'what the Hub found' check per tab (no names) and a Re-read button
+// v1.1 · 02/10/26 · Session RAG-4 — matched to the real Area attendance workbook: one pack per Head of Area tab, sessions and groups per person, access and dietary needs never included
 // v1.0 · 02/10/26 · Session RAG-4 — DA&I Day area packs: one styled Excel workbook per area for Heads of Area and Digital Leads
 // Each workbook has an Overview tab (staff reviewed, who is booked for
 // 23 October and when, the area's current Health Check position, key
@@ -103,8 +104,12 @@ async function apFindAttendance() {
   if (typeof listFolderFiles !== 'function' || typeof hasFolderAccess === 'function' && !hasFolderAccess()) return null;
   const files = await listFolderFiles(n => /\.xlsx$/i.test(n) && !n.startsWith('~$') && /attendance/i.test(n));
   if (!files.length) return null;
-  const { bytes, name, lastModified } = await readFolderFileBytes(files[0].name);
-  return { name, lastModified, ...apParseAttendance(bytes) };
+  // Template, example and empty copies are passed over while a live list
+  // is there; newest first among what is left.
+  const live = files.filter(f => !/template|example|empty|sample/i.test(f.name));
+  const pick = (live.length ? live : files)[0];
+  const { bytes, name, lastModified } = await readFolderFileBytes(pick.name);
+  return { name, lastModified, candidates: files.map(f => f.name), ...apParseAttendance(bytes) };
 }
 
 // Area-attendance-template (v1.1, matched to the real workbook 02/10/26):
@@ -119,12 +124,14 @@ async function apFindAttendance() {
 // Access or dietary needs is personal, for catering only: it is read past
 // and never put in a pack. Any other unrecognised column is carried over.
 const AP_SKIP_TABS = /^template\b|session totals|lw trained|session groups|area completion/i;
+const AP_NAME_HEAD = /^\s*(staff\s+|full\s+|staff\s+full\s+)?name\s*$/i;
+const AP_EXAMPLE_ROW = /example row|^a sample\b/i;
 const AP_PRIVATE_COLS = /dietary|access needs|access or|medical|allerg/i;
 
 function apParseAttendance(arrayBuffer) {
   const wb = XLSX.read(arrayBuffer, { type: 'array', cellDates: false });
   const codes = _apAreas().map(a => a.areaCode);
-  const people = [], sheets = [];
+  const people = [], sheets = [], skipped = [];
   const cellText = v => {
     if (v == null) return '';
     if (typeof v === 'number' && v > 0 && v < 1) { const m = Math.round(v * 1440); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; }
@@ -134,13 +141,16 @@ function apParseAttendance(arrayBuffer) {
   wb.SheetNames.forEach(sn => {
     if (AP_SKIP_TABS.test(sn)) return;
     const ws = wb.Sheets[sn];
-    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, blankrows: true });
-    const hi = rows.slice(0, 15).findIndex(r => (r || []).some(c => /^\s*(staff\s+)?name\s*$/i.test(String(c || ''))));
-    if (hi < 0) return;
+    // range: 'A1' so row and column positions are real ones even when the
+    // used range starts at B2, as the attendance template does.
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, blankrows: true, range: 'A1:' + (ws['!ref'] || 'A1').split(':').pop() });
+    const isNameHead = c => AP_NAME_HEAD.test(String(c || ''));
+    const hi = rows.slice(0, 25).findIndex(r => (r || []).some(isNameHead));
+    if (hi < 0) { skipped.push({ sheet: sn, reason: 'no Name heading in the first 25 rows' }); return; }
     const head = rows[hi].map(h => String(h == null ? '' : h).trim());
     const find = re => head.findIndex(h => re.test(h));
     const c = {
-      name: find(/^\s*(staff\s+)?name\s*$/i),
+      name: head.findIndex(isNameHead),
       role: find(/role|subject/i),
       attending: find(/attend/i),
       lw: find(/learning walk|lw/i),
@@ -151,10 +161,15 @@ function apParseAttendance(arrayBuffer) {
       return { col: x.i, label: m ? m[1].replace(/\s+/g, ' ') : x.h, time: m && m[2] ? m[2].replace(/\s*to\s*/i, ' to ') : '' };
     });
     const known = new Set([...Object.values(c), ...sessionCols.map(s => s.col)]);
-    // Curriculum area and Head: B2 and B3 ("Head: XX"), else the tab name.
-    const b2 = afterColon(cellText((rows[1] || [])[1]));
-    const b3 = afterColon(cellText((rows[2] || [])[1]));
-    const label = b2 && !/^curriculum area$/i.test(b2) ? b2 : sn;
+    // Curriculum area and Head: B2 and B3, either "Head: XX" in one cell or
+    // the heading in B and the value in C. Else the tab name.
+    const pair = r => {
+      const b = cellText((rows[r] || [])[1]), cv = cellText((rows[r] || [])[2]);
+      const v = afterColon(b);
+      return v && v !== b ? v : (v && !/^(curriculum area|head)\s*:?$/i.test(v) ? v : cv);
+    };
+    const b2 = pair(1), b3 = pair(2);
+    const label = b2 || sn;
     const scan = `${sn} ${label}`.toUpperCase();
     const tabCodes = codes.filter(code => new RegExp(`(^|[^A-Z])${code}([^A-Z]|$)`).test(scan));
     const sheet = { sheet: sn, label, head: b3 && !/^head$/i.test(b3) ? b3 : '', codes: tabCodes, sessions: sessionCols.map(s => ({ label: s.label, time: s.time })), people: [] };
@@ -162,7 +177,7 @@ function apParseAttendance(arrayBuffer) {
     rows.slice(hi + 1).forEach(r => {
       r = r || [];
       const name = c.name >= 0 ? cellText(r[c.name]) : '';
-      if (!name) return;
+      if (!name || AP_EXAMPLE_ROW.test(name)) return;
       const get = i => (i >= 0 ? cellText(r[i]) : '');
       const att = get(c.attending), lw = get(c.lw);
       const extra = {};
@@ -175,8 +190,10 @@ function apParseAttendance(arrayBuffer) {
       };
       people.push(p); sheet.people.push(p);
     });
+    sheet.headerRow = hi + 1;
+    sheet.found = Object.entries(c).filter(([, i]) => i >= 0).map(([k]) => k).concat(sessionCols.length ? [`${sessionCols.length} sessions`] : []);
   });
-  return { people, sheets };
+  return { people, sheets, skipped };
 }
 
 // Match a name to a Hub staff record (case-insensitive, punctuation ignored).
@@ -536,8 +553,16 @@ async function apRenderPanel(body) {
     <div class="ms-report">
       <p class="ms-muted">One Excel workbook per Head of Area tab on the attendance list: an Overview, then a tab for each member of staff. Built from the Hub's Health Checks and the attendance list when you press the button.</p>
       <p>${attendance ? `Attendance list: <strong>${_apEsc(attendance.name)}</strong>, ${attendance.people.length} people on ${attendance.sheets.length} area tabs.` : `<strong>No attendance list found.</strong> Save the Area attendance workbook in the Data folder, keeping "attendance" in the name. Packs below are one per Hub area until it is there. ${_apEsc(attErr)}`}
+      ${attendance && attendance.candidates && attendance.candidates.length > 1 ? `<br><span class="ms-muted">Other attendance files in the Data folder, not used: ${_apEsc(attendance.candidates.filter(n => n !== attendance.name).join(', '))}.</span>` : ''}
       ${noCode.length ? `<br><span class="ms-muted">Tabs with no Hub area code (${_apEsc(noCode.join(', '))}): their staff's Health Checks are found by name.</span>` : ''}</p>
+      ${attendance ? `<details><summary>What the Hub found in the attendance list</summary>
+        <div class="ms-scroll"><table class="ms-table"><caption class="sr-only">Each tab read from the attendance list, without names</caption>
+          <thead><tr><th scope="col">Tab</th><th scope="col">Hub areas</th><th scope="col">Heading row</th><th scope="col">Columns recognised</th><th scope="col">People</th><th scope="col">Attending</th></tr></thead>
+          <tbody>${attendance.sheets.map(s => `<tr><th scope="row">${_apEsc(s.sheet)}</th><td>${_apEsc(s.codes.join(', ') || 'None')}</td><td>${s.headerRow || ''}</td><td>${_apEsc((s.found || []).join(', '))}</td><td>${s.people.length}</td><td>${s.people.filter(p => p.attending === true).length}</td></tr>`).join('')}
+          ${(attendance.skipped || []).map(s => `<tr><th scope="row">${_apEsc(s.sheet)}</th><td colspan="5">Not read: ${_apEsc(s.reason)}</td></tr>`).join('')}</tbody></table></div>
+      </details>` : ''}
       <div class="ms-actions" style="margin:var(--space-sm) 0;">
+        <button type="button" class="btn btn--ghost btn--sm" id="ap-reread">Re-read attendance list</button>
         <button type="button" class="btn btn--primary btn--sm" id="ap-save-all">Save selected to Data folder (Area packs)</button>
         <button type="button" class="btn btn--ghost btn--sm" id="ap-select-data">Select packs with data</button>
         <button type="button" class="btn btn--ghost btn--sm" id="ap-select-none">Clear selection</button>
@@ -560,6 +585,7 @@ async function apRenderPanel(body) {
     try { _apDownload(await _apWorkbookBytes(u, attendance), _apFileName(u)); status(`${u.label} downloaded.`); }
     catch (e) { console.error(e); status('Could not build the pack: ' + e.message); }
   }));
+  document.getElementById('ap-reread')?.addEventListener('click', () => apRenderPanel(body));
   document.getElementById('ap-select-data')?.addEventListener('click', () => body.querySelectorAll('.ap-pick').forEach(cb => { const x = rows[+cb.value]; cb.checked = !!(x.reviewed || x.listed); }));
   document.getElementById('ap-select-none')?.addEventListener('click', () => body.querySelectorAll('.ap-pick').forEach(cb => { cb.checked = false; }));
   document.getElementById('ap-save-all')?.addEventListener('click', async () => {
