@@ -1,4 +1,5 @@
-// DPC Hub · js/area-packs.js · v1.2 · 19/10/26 · live DA&I attendance list: template and example copies are passed over when choosing the file, Curriculum Area and Head read from their real cells, example rows skipped, a 'what the Hub found' check per tab (no names) and a Re-read button
+// DPC Hub · js/area-packs.js · v1.3 · 20/10/26 · Overview sheet shared with the AP College Pack (ap-college-pack.js); Assistant Principal shown in At a glance
+// v1.2 · 19/10/26 · live DA&I attendance list: template and example copies are passed over when choosing the file, Curriculum Area and Head read from their real cells, example rows skipped, a 'what the Hub found' check per tab (no names) and a Re-read button
 // v1.1 · 02/10/26 · Session RAG-4 — matched to the real Area attendance workbook: one pack per Head of Area tab, sessions and groups per person, access and dietary needs never included
 // v1.0 · 02/10/26 · Session RAG-4 — DA&I Day area packs: one styled Excel workbook per area for Heads of Area and Digital Leads
 // Each workbook has an Overview tab (staff reviewed, who is booked for
@@ -26,7 +27,8 @@
 //
 // Exports: apFindAttendance(), apParseAttendance(buf), apUnits(attendance),
 //          apUnitPeople(unit), apBuildUnitWorkbook(unit, attendance),
-//          apRenderPanel(body), AP_FIRST_ACTIONS
+//          apRenderPanel(body), AP_FIRST_ACTIONS, _apWriteUnitOverview(),
+//          apSplitAPs(), apAreaAPs(code), apUnitAPs(unit)
 
 const AP_FIRST_ACTIONS = Object.freeze({
   usesAccessibilityChecker: 'Run the Accessibility Checker (Review tab, Check Accessibility) before sharing anything, and fix every error it lists.',
@@ -348,8 +350,8 @@ function _apTimetable(att) {
 }
 
 // ── Workbook ──────────────────────────────────────────────────
-async function apBuildUnitWorkbook(unit, attendance) {
-  const ExcelJS = await _apLoadExcelJS();
+// The area Overview sheet, shared by the area pack and the AP College Pack.
+function _apWriteUnitOverview(wb, unit, attendance, opts = {}) {
   const areas = _apAreas();
   const people = apUnitPeople(unit);
   const reviewed = people.filter(p => p.review);
@@ -365,19 +367,16 @@ async function apBuildUnitWorkbook(unit, attendance) {
   const sessions = unit.sheet ? unit.sheet.sessions : [];
   const onList = people.filter(p => p.attend);
 
-  const wb = new ExcelJS.Workbook();
-  wb.creator = 'DPC Hub'; wb.created = new Date();
-  wb.title = `${unit.label} DA&I Day area pack`;
-
   // ── Overview ──
-  const ov = wb.addWorksheet('Overview', { views: [{ showGridLines: false }], pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+  const ov = wb.addWorksheet(opts.sheetName || 'Overview', { views: [{ showGridLines: false }], pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
   ov.columns = [{ width: 40 }, { width: 26 }, { width: 14 }, { width: 14 }, { width: 22 }, { width: 22 }, { width: 22 }, { width: 40 }];
   const o = _apSheetHelpers(ov, 6);
-  o.title(`${unit.label}: Digital Accessibility and Inclusion`, `Area pack for the DA&I Day, 23 October 2026. Prepared ${_apFmt(today)} from the DPC Hub.`);
+  o.title(`${unit.label}: Digital Accessibility and Inclusion`, opts.subtitle || `Area pack for the DA&I Day, 23 October 2026. Prepared ${_apFmt(today)} from the DPC Hub.`);
 
   o.section('At a glance', 8);
   o.pairs([
     ['Head of Area', unit.head || _apUniq(unit.codes.map(c => (areas.find(a => a.areaCode === c) || {}).hoaName)).join(', ')],
+    ['Assistant Principal', apUnitAPs(unit).join(', ') || 'Not assigned'],
     ['Digital Lead', dls.join(', ') || 'Not recorded'],
     ['Areas in this pack', unit.codes.length ? unit.codes.map(c => `${c} ${(areas.find(a => a.areaCode === c) || {}).areaName || ''}`.trim()).join('; ') : unit.label],
     ['Staff in this pack', people.length],
@@ -448,7 +447,18 @@ async function apBuildUnitWorkbook(unit, attendance) {
     ['What we already do well', areaStats.filter(s => s.n && s.avg >= 4).sort((a, b) => b.avg - a.avg).slice(0, 3).map(s => s.label).join('; ')],
     ['Our biggest gaps', areaStats.filter(s => s.n && s.low).sort((a, b) => b.lowShare - a.lowShare).slice(0, 3).map(s => s.label).join('; ')],
   ]);
-  o.para("Scores: 1 Urgent, 2 Challenged, 3 Developing, 4 On Track, 5 Confident. Individual results are on each person's own tab and are not ranked here.", { italic: true, color: 'FF475569', span: 8 });
+  o.para(opts.note || "Scores: 1 Urgent, 2 Challenged, 3 Developing, 4 On Track, 5 Confident. Individual results are on each person's own tab and are not ranked here.", { italic: true, color: 'FF475569', span: 8 });
+  return { people, today, areas };
+}
+
+async function apBuildUnitWorkbook(unit, attendance) {
+  const ExcelJS = await _apLoadExcelJS();
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'DPC Hub'; wb.created = new Date();
+  wb.title = `${unit.label} DA&I Day area pack`;
+
+  // ── Overview ──
+  const { people, today, areas } = _apWriteUnitOverview(wb, unit, attendance);
 
   // ── One tab per person ──
   const used = new Set(['overview']);
@@ -520,6 +530,11 @@ async function apBuildUnitWorkbook(unit, attendance) {
   return wb;
 }
 function _apUniq(a) { return [...new Set(a.filter(Boolean))]; }
+// Assistant Principal(s) for an area: area.apName, initials, more than one
+// separated by a comma, "/", "&" or "and".
+function apSplitAPs(v) { return _apUniq(String(v || '').split(/\s*(?:,|;|\/|&|\band\b)\s*/i).map(x => x.trim())); }
+function apAreaAPs(code) { const a = _apAreas().find(x => x.areaCode === code); return apSplitAPs(a && a.apName); }
+function apUnitAPs(unit) { return _apUniq((unit.codes || []).flatMap(apAreaAPs)); }
 function _apFileName(unit) {
   const key = String(unit.fileKey || unit.label).replace(/[^A-Za-z0-9()&]+/g, '-').replace(/^-|-$/g, '');
   return `DAI-Day-area-pack-${key}-${(typeof todayISO === 'function' ? todayISO() : '')}.xlsx`;

@@ -1,4 +1,5 @@
-// DPC Hub · js/areas.js · v1.2 · 02/09/26 · Session 65 — Action Plan JSON import (paste, preview, untick, apply)
+// DPC Hub · js/areas.js · v1.3 · 20/10/26 · Assistant Principal field on area details (area.apName)
+// v1.2 · 02/09/26 · Session 65 — Action Plan JSON import (paste, preview, untick, apply)
 // Areas module. 35-area overview grid, area detail view with tabs.
 // Reads from window.DPC_DATA.areas via data.js globals.
 
@@ -246,6 +247,10 @@ function _renderAreaTab(tab, areaCode) {
             <input class="form-input" type="text" id="area-hoa-input" value="${_escHtml(area.hoaName || '')}">
           </div>
           <div class="form-group">
+            <label class="form-label form-label--optional" for="area-ap-input">Assistant Principal (initials; two APs separated by a comma)</label>
+            <input class="form-input" type="text" id="area-ap-input" value="${_escHtml(area.apName || '')}" autocomplete="off">
+          </div>
+          <div class="form-group">
             <label class="form-label" for="area-dl-select">Digital Lead</label>
             <select class="form-select" id="area-dl-select">
               <option value="">— None —</option>
@@ -298,6 +303,7 @@ function _renderAreaTab(tab, areaCode) {
 
     document.getElementById('area-details-save')?.addEventListener('click', () => {
       area.hoaName = document.getElementById('area-hoa-input').value.trim();
+      area.apName = document.getElementById('area-ap-input').value.trim();
       area.digitalLeadId = document.getElementById('area-dl-select').value || null;
       area.campus = document.getElementById('area-campus-select').value;
       area.pyramidLevel = document.getElementById('area-pyramid-select').value;

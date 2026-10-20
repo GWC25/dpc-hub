@@ -1,4 +1,5 @@
-// DPC Hub · js/reports.js · v1.5 · 13/10/26 · My week report: this week, last week or last fortnight
+// DPC Hub · js/reports.js · v1.6 · 20/10/26 · adds DA&I AP College Pack (ap-college-pack.js)
+// v1.5 · 13/10/26 · My week report: this week, last week or last fortnight
 // v1.3 · 02/10/26 · Session RAG-4 — adds DA&I Day Area Packs (area-packs.js)
 // v1.2 · 02/10/26 · Session RAG-2 — adds Milestone Impact Report (milestones.js)
 // v1.1 · 09/09/26 · Job A1 provenance guard + Job A2 archived-area exclusion
@@ -30,6 +31,7 @@ const REPORT_TYPES = Object.freeze({
   AREA_DATA_EXPORT: 'area-data-export',
   MILESTONE_IMPACT: 'milestone-impact',
   AREA_PACKS:       'area-packs',
+  AP_COLLEGE_PACK:  'ap-college-pack',
   MY_WEEK:          'my-week',
 });
 
@@ -92,6 +94,7 @@ function initReports() {
         <div>
           <div role="group" aria-label="Report type" style="display:flex;flex-direction:column;gap:8px;">
             ${_repTypeBtn(REPORT_TYPES.MY_WEEK, 'My week', 'What I did this week, last week or over the last fortnight, who it reached and what it links to: sessions, people trained, meetings, areas, coming up. Word')}
+            ${_repTypeBtn(REPORT_TYPES.AP_COLLEGE_PACK, 'DA&I AP College Pack (Excel)', 'For Assistant Principals: college overview with averages by campus, by area and by AP, 23 October bookings, then each area\'s DA&I Day overview. Whole college or one AP. Assign APs to areas here')}
             ${_repTypeBtn(REPORT_TYPES.AREA_PACKS, 'DA&I Day Area Packs (Excel)', 'One workbook per area for the Head of Area and Digital Lead: overview, 23 October attendance, Health Check position, and a tab per member of staff with their action plan')}
             ${_repTypeBtn(REPORT_TYPES.MILESTONE_IMPACT, 'Milestone Impact Report', 'Accessibility and Inclusion: position at each milestone (March, July, 23 Oct, Terms 2, 4, 6), this fortnight in numbers, Current Focus, every area. Word and Excel')}
             ${_repTypeBtn(REPORT_TYPES.NEIL_FORTNIGHTLY, 'ND — Fortnightly', 'Cross-college: activity, open loops, RAG movers, coming up')}
@@ -204,6 +207,9 @@ function _repRenderOptions() {
         <label class="form-label form-label--optional" for="rep-mw-next">Anything else coming up</label>
         <textarea class="form-input" id="rep-mw-next" rows="2"></textarea>
       </div>`;
+  } else if (type === REPORT_TYPES.AP_COLLEGE_PACK) {
+    title.textContent = 'DA&I AP College Pack';
+    html = '<p class="ms-muted">Choose the whole college or one AP, then download. Assign APs to areas in the table below the button.</p>';
   } else if (type === REPORT_TYPES.AREA_PACKS) {
     title.textContent = 'DA&I Day Area Packs';
     html = '<p class="ms-muted">Choose the areas below, then save them all to the Data folder or download one at a time.</p>';
@@ -509,7 +515,12 @@ function _repRenderPreview() {
   const type = _repCurrentType;
   let html = '<p style="color:var(--color-muted)">No preview available.</p>';
 
-  if (type === REPORT_TYPES.AREA_PACKS && typeof apRenderPanel === 'function') {
+  if (type === REPORT_TYPES.AP_COLLEGE_PACK && typeof apcRenderPanel === 'function') {
+    panel.style.display = '';
+    const gp = document.getElementById('rep-generate-panel'); if (gp) gp.style.display = 'none';
+    if (!body._apBusy) { body._apBusy = true; body.innerHTML = _repProvenanceGuard() + '<div id="apc-panel"></div>'; apcRenderPanel(document.getElementById('apc-panel')).finally(() => { body._apBusy = false; }); }
+    return;
+  } else if (type === REPORT_TYPES.AREA_PACKS && typeof apRenderPanel === 'function') {
     panel.style.display = '';
     const gp = document.getElementById('rep-generate-panel'); if (gp) gp.style.display = 'none';
     if (!body._apBusy) { body._apBusy = true; body.innerHTML = _repProvenanceGuard() + '<div id="ap-panel"></div>'; apRenderPanel(document.getElementById('ap-panel')).finally(() => { body._apBusy = false; }); }
