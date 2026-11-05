@@ -58,22 +58,26 @@ function initMeetingNotes() {
 
   el.innerHTML = `
     <style>
-      .mn-wrap { max-width: 980px; }
+      .mn-wrap { width:100%; max-width:none; }
+      .mn-wrap .mn-hint { line-height:1.4; }
       .mn-tabs { display:flex; gap:4px; border-bottom:2px solid var(--color-border); margin-bottom:var(--space-lg); flex-wrap:wrap; }
       .mn-tab { font:inherit; font-weight:var(--font-bold); background:none; border:none; border-bottom:3px solid transparent; margin-bottom:-2px;
         padding:10px 16px; min-height:44px; cursor:pointer; color:var(--color-slate); }
       .mn-tab[aria-selected="true"] { color:var(--color-navy); border-bottom-color:var(--color-teal); }
       .mn-tab:focus-visible, .mn-wrap button:focus-visible, .mn-wrap input:focus-visible, .mn-wrap select:focus-visible, .mn-wrap textarea:focus-visible, .mn-wrap a:focus-visible
         { outline:3px solid var(--color-navy); outline-offset:2px; }
-      .mn-section { background:var(--color-white); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-md); }
+      .mn-section { background:var(--color-white); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-sm) var(--space-md); margin-bottom:var(--space-sm); }
       .mn-section > h3 { margin:0 0 4px; font-size:var(--text-lg); color:var(--color-navy); display:flex; align-items:center; gap:8px; }
       .mn-hint { margin:0 0 var(--space-sm); font-size:var(--text-sm); color:var(--color-slate); }
       .mn-mark { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border:2px solid var(--color-navy); border-radius:4px; font-size:14px; font-weight:700; color:var(--color-navy); flex:none; }
-      .mn-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:var(--space-sm) var(--space-md); }
+      .mn-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:6px var(--space-sm); }
       .mn-field { display:flex; flex-direction:column; gap:4px; }
       .mn-field label { font-size:var(--text-sm); font-weight:var(--font-bold); color:var(--color-navy); }
       .mn-row { display:grid; gap:6px; align-items:center; margin-bottom:6px; }
       .mn-row--line { grid-template-columns: 150px minmax(0,1fr) 44px; }
+      .mn-row--line.mn-row--marked { grid-template-columns: 150px minmax(0,1fr) 200px 44px; }
+      .mn-savebar { position:sticky; top:0; z-index:5; display:flex; gap:8px; flex-wrap:wrap; align-items:center; background:var(--color-white); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:6px var(--space-sm); margin-bottom:var(--space-sm); }
+      .mn-savebar .mn-status { font-weight:600; color:var(--color-navy); }
       .mn-row--action { grid-template-columns: minmax(0,1fr) 90px 150px 140px 44px; }
       .mn-row--date { grid-template-columns: 150px 130px minmax(0,1fr) 140px 44px; }
       .mn-row--evidence { grid-template-columns: minmax(0,1fr) 140px 44px; }
@@ -102,7 +106,8 @@ function initMeetingNotes() {
       @media (max-width: 760px) {
         .mn-row--action, .mn-row--date { grid-template-columns: minmax(0,1fr) 44px; }
         .mn-row--action > :not(:first-child):not(.mn-remove), .mn-row--date > :not(:nth-child(3)):not(.mn-remove) { grid-column:1; }
-        .mn-row--line { grid-template-columns: 120px minmax(0,1fr) 44px; }
+        .mn-row--line, .mn-row--line.mn-row--marked { grid-template-columns: 120px minmax(0,1fr) 44px; }
+        .mn-row--line.mn-row--marked > select[data-f="area"] { grid-column:2; }
         .mn-colheads { display:none; }
       }
     </style>
@@ -177,14 +182,47 @@ function _mnBlankDraft() {
 function _mnLoadDraft() {
   try { const raw = localStorage.getItem(MN_DRAFT_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
 }
+function _mnSaveDraftNow(announce) {
+  clearTimeout(_mn.saveTimer); _mn.saveTimer = null;
+  if (!_mn.draft) return false;
+  try {
+    _mn.draft.savedAt = new Date().toISOString();
+    localStorage.setItem(MN_DRAFT_KEY, JSON.stringify(_mn.draft));
+    const t = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    _mnSetStatus('Draft saved at ' + t + ' on this device.');
+    if (announce) _mnSay('Draft saved at ' + t + '.');
+    return true;
+  } catch (e) {
+    _mnSetStatus('Draft could not be saved on this device. Use Download a copy before leaving.');
+    if (announce) _mnSay('Draft could not be saved. Use Download a copy.');
+    return false;
+  }
+}
 function _mnSaveDraftSoon() {
   clearTimeout(_mn.saveTimer);
-  _mn.saveTimer = setTimeout(() => {
-    try { localStorage.setItem(MN_DRAFT_KEY, JSON.stringify(_mn.draft)); _mnSetStatus('Draft kept on this device.'); }
-    catch (e) { _mnSetStatus('Draft could not be kept on this device. Send it to the Hub before leaving.'); }
-  }, 600);
+  _mnSetStatus('Saving...');
+  _mn.saveTimer = setTimeout(() => _mnSaveDraftNow(false), 600);
 }
-function _mnClearDraft() { clearTimeout(_mn.saveTimer); try { localStorage.removeItem(MN_DRAFT_KEY); } catch (e) { /* storage unavailable */ } }
+// Never lose the last few keystrokes when the tab is closed, refreshed or hidden.
+if (typeof window !== 'undefined' && !window._mnFlushBound) {
+  window._mnFlushBound = true;
+  const flush = () => { if (_mn.saveTimer) _mnSaveDraftNow(false); };
+  window.addEventListener('pagehide', flush);
+  window.addEventListener('beforeunload', flush);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
+}
+function _mnDownloadDraft() {
+  _mnSaveDraftNow(false);
+  const d = _mn.draft, text = _mnDraftToText(d, _mnContext());
+  const name = 'meeting-notes-' + (d.date || todayISO()) + '-' + (_mnOneLine(d.title) || 'untitled').replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 40) + '.txt';
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  _mnSay('Copy downloaded as ' + name + '.');
+}
+function _mnClearDraft() { clearTimeout(_mn.saveTimer); _mn.saveTimer = null; try { localStorage.removeItem(MN_DRAFT_KEY); } catch (e) { /* storage unavailable */ } }
 function _mnSetStatus(msg) { const el = document.getElementById('mn-draft-status'); if (el) el.textContent = msg; }
 
 // Live lists, with stable short codes for Copilot (F1, L1 ...).
@@ -217,6 +255,11 @@ function _mnRenderWrite() {
   const typeLabels = (typeof MEETING_TYPE_LABELS !== 'undefined') ? MEETING_TYPE_LABELS : { 'other-staff': 'Other' };
   const panel = document.getElementById('mn-panel');
   panel.innerHTML = `
+    <div class="mn-savebar" role="group" aria-label="Save your notes">
+      <button type="button" id="mn-save-btn" class="btn btn--primary btn--sm">Save draft</button>
+      <button type="button" id="mn-download-btn" class="btn btn--secondary btn--sm">Download a copy</button>
+      <span id="mn-draft-status" class="mn-status" aria-live="polite">${d.savedAt ? 'Draft saved at ' + _mnEsc(new Date(d.savedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })) + ' on this device.' : 'Your notes save as you type.'}</span>
+    </div>
     <section class="mn-section" aria-labelledby="mn-h-details">
       <h3 id="mn-h-details">Meeting details</h3>
       <div class="mn-grid">
@@ -235,7 +278,7 @@ function _mnRenderWrite() {
 
     <section class="mn-section" aria-labelledby="mn-h-notes">
       <h3 id="mn-h-notes">Notes</h3>
-      <p class="mn-hint" id="mn-notes-hint">One line, one thing. Choose a marker for anything that is not just a note. Press Enter to start a new line. For a date line, start with the date, for example 23/10.</p>
+      <p class="mn-hint" id="mn-notes-hint">One line, one thing. Choose a marker for anything that is not just a note, then choose its area if it is not the meeting area. Press Enter to start a new line. For a date line, start with the date, for example 23/10.</p>
       <div id="mn-lines"></div>
       <button type="button" class="btn btn--secondary btn--sm mn-add" data-add="lines">+ Add line</button>
     </section>
@@ -273,7 +316,6 @@ function _mnRenderWrite() {
     <div class="mn-actions-bar">
       <button type="button" id="mn-review-btn" class="btn btn--primary">Review and send to Hub</button>
       <button type="button" id="mn-clear-btn" class="btn btn--ghost btn--sm">Start new notes</button>
-      <span id="mn-draft-status" class="mn-status" aria-live="polite"></span>
     </div>`;
 
   ['lines', 'actions', 'dates', 'evidence', 'checks'].forEach(k => _mnRenderRows(k, ctx));
@@ -299,7 +341,10 @@ function _mnRenderWrite() {
       _mnSaveDraftSoon();
     }
   });
+  document.getElementById('mn-save-btn').addEventListener('click', () => _mnSaveDraftNow(true));
+  document.getElementById('mn-download-btn').addEventListener('click', _mnDownloadDraft);
   document.getElementById('mn-review-btn').addEventListener('click', () => {
+    _mnSaveDraftNow(false);
     if (!_mn.draft.date) { document.getElementById('mn-date').focus(); _mnToast('error', 'Add the meeting date first.'); return; }
     _mnReview(_mnDraftToText(_mn.draft, _mnContext()), 'form');
   });
@@ -316,10 +361,11 @@ function _mnRenderRows(kind, ctx) {
   const rows = _mn.draft[kind];
   const n = (i) => i + 1;
   box.innerHTML = rows.map((r, i) => {
-    if (kind === 'lines') return `<div class="mn-row mn-row--line" data-i="${i}">
+    if (kind === 'lines') { const marked = r.type && r.type !== 'note'; return `<div class="mn-row mn-row--line${marked ? ' mn-row--marked' : ''}" data-i="${i}">
         <select class="form-select" data-f="type" aria-label="Marker for line ${n(i)}">${MN_MARKS.map(m => `<option value="${m.value}"${m.value === r.type ? ' selected' : ''}>${m.label}</option>`).join('')}</select>
         <input class="form-input" data-f="text" value="${_mnEsc(r.text)}" aria-label="Line ${n(i)}" aria-describedby="mn-notes-hint">
-        <button type="button" class="mn-remove" data-remove="lines" aria-label="Remove line ${n(i)}">×</button></div>`;
+        ${marked ? `<select class="form-select" data-f="area" aria-label="Area, line ${n(i)}">${_mnAreaOptions(ctx, r.area, 'Meeting area')}</select>` : ''}
+        <button type="button" class="mn-remove" data-remove="lines" aria-label="Remove line ${n(i)}">×</button></div>`; }
     if (kind === 'actions') return `<div class="mn-row mn-row--action" data-i="${i}">
         <input class="form-input" data-f="text" value="${_mnEsc(r.text)}" aria-label="Action ${n(i)}">
         <input class="form-input" data-f="who" value="${_mnEsc(r.who)}" aria-label="Who, action ${n(i)}">
@@ -346,8 +392,16 @@ function _mnRowInput(e) {
   const t = e.target, row = t.closest('[data-i]');
   if (!row || !t.dataset.f) return;
   const kind = row.parentElement.id.replace('mn-', '');
-  _mn.draft[kind][+row.dataset.i][t.dataset.f] = t.value;
+  const i = +row.dataset.i;
+  _mn.draft[kind][i][t.dataset.f] = t.value;
   _mnSaveDraftSoon();
+  // Changing a line's marker shows or hides its area picker.
+  if (kind === 'lines' && t.dataset.f === 'type' && e.type === 'change') {
+    _mnRenderRows('lines', _mnContext());
+    const sel = document.querySelector(`#mn-lines [data-i="${i}"] select[data-f="type"]`);
+    if (sel) sel.focus();
+    if (t.value !== 'note') _mnSay('Area picker added for line ' + (i + 1) + '.');
+  }
 }
 function _mnRowRemove(e) {
   const b = e.target.closest('[data-remove]');
@@ -423,12 +477,12 @@ function _mnDraftToText(d, ctx) {
   d.lines.forEach(l => {
     const t = _mnOneLine(l.text);
     if (!t) return;
-    if (l.type === 'A') action(t, 'GW', '', '');
-    else if (l.type === 'E') evidence(t, '');
-    else if (l.type === '?') action('Check: ' + t, 'GW', '', '');
+    if (l.type === 'A') action(t, 'GW', '', l.area || '');
+    else if (l.type === 'E') evidence(t, l.area || '');
+    else if (l.type === '?') action('Check: ' + t, 'GW', '', l.area || '');
     else if (l.type === 'D') {
       const ld = _mnLeadingDate(t, d.date);
-      dateBlock(ld ? ld.date : '', '', ld ? (ld.rest || t) : t, '');
+      dateBlock(ld ? ld.date : '', '', ld ? (ld.rest || t) : t, l.area || '');
     }
   });
   d.actions.forEach(r => { const t = _mnOneLine(r.text); if (t) action(t, r.who, r.by, r.area); });

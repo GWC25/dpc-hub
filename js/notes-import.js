@@ -225,7 +225,7 @@
       if (it.kind === 'evidence' && !_isNone(f.Type) && NI_EVIDENCE_TYPES.indexOf(f.Type) < 0) e('Evidence type "' + f.Type + '" not recognised.');
       if (it.kind === 'evidence' && !_isNone(f.Movement) && NI_MOVEMENTS.indexOf(f.Movement) < 0) e('Movement "' + f.Movement + '" not recognised.');
       if (!_isNone(f.Attended) && !/^\d{1,4}$/.test(String(f.Attended).trim())) e('Attended "' + f.Attended + '" should be a number of people.');
-      if (it.kind === 'evidence' && _isNone(f.Area) && _isNone(f.Focus)) e('Evidence "' + it.title + '" needs an area or a focus so it has somewhere to live.');
+      if (it.kind === 'evidence' && _isNone(f.Area) && _isNone(f.Focus)) e('Evidence "' + it.title + '" needs an area or a focus. Go back to your notes and choose an area on that line, or a focus for the meeting.');
       if (it.kind === 'evidence' && !_isNone(f.Movement) && f.Movement !== 'none' && _isNone(f.Loop)) w('Movement "' + f.Movement + '" given without a loop, so it will be ignored.');
       if (it.kind === 'date' && !_isNone(f.Kind) && NI_DATE_KINDS.indexOf(f.Kind) < 0) e('Date kind "' + f.Kind + '" not recognised.');
       if ((it.kind === 'action' || it.kind === 'update') && !_isNone(f.Status) && NI_STATUS.indexOf(f.Status) < 0) e('Status "' + f.Status + '" not recognised.');
