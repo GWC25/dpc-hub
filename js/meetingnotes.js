@@ -74,14 +74,17 @@ function initMeetingNotes() {
       .mn-field { display:flex; flex-direction:column; gap:4px; }
       .mn-field label { font-size:var(--text-sm); font-weight:var(--font-bold); color:var(--color-navy); }
       .mn-row { display:grid; gap:6px; align-items:center; margin-bottom:6px; }
-      .mn-row--line { grid-template-columns: 150px minmax(0,1fr) 44px; }
-      .mn-row--line.mn-row--marked { grid-template-columns: 150px minmax(0,1fr) 200px 44px; }
+      /* Every row: its own fields, then Area, Focus, Loop and People links. */
+      .mn-row--line     { grid-template-columns: 130px minmax(0,1fr) 150px 160px 150px 90px 44px; }
+      .mn-row--action   { grid-template-columns: minmax(0,1fr) 80px 140px 150px 160px 150px 44px; }
+      .mn-row--date     { grid-template-columns: 140px 110px minmax(0,1fr) 150px 160px 90px 44px; }
+      .mn-row--evidence { grid-template-columns: minmax(0,1fr) 150px 160px 150px 90px 44px; }
+      .mn-row--check    { grid-template-columns: minmax(0,1fr) 150px 160px 150px 80px 44px; }
+      .mn-row select.form-select, .mn-row input.form-input { min-width:0; }
+      .mn-row .mn-link { font-size:var(--text-sm); }
+      .mn-row .mn-link.mn-own { border-color:var(--color-teal); box-shadow:inset 3px 0 0 var(--color-teal); }
       .mn-savebar { position:sticky; top:0; z-index:5; display:flex; gap:8px; flex-wrap:wrap; align-items:center; background:var(--color-white); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:6px var(--space-sm); margin-bottom:var(--space-sm); }
       .mn-savebar .mn-status { font-weight:600; color:var(--color-navy); }
-      .mn-row--action { grid-template-columns: minmax(0,1fr) 90px 150px 140px 44px; }
-      .mn-row--date { grid-template-columns: 150px 130px minmax(0,1fr) 140px 44px; }
-      .mn-row--evidence { grid-template-columns: minmax(0,1fr) 140px 44px; }
-      .mn-row--check { grid-template-columns: minmax(0,1fr) 44px; }
       .mn-colheads { font-size:var(--text-xs); font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--color-slate); margin-bottom:4px; }
       .mn-remove { min-width:44px; min-height:44px; border:1px solid var(--color-border); background:var(--color-white); border-radius:var(--radius-sm); cursor:pointer; font-size:20px; color:var(--color-slate); }
       .mn-remove:hover { border-color:var(--color-red); color:var(--color-red); }
@@ -103,11 +106,10 @@ function initMeetingNotes() {
       .mn-callout { background:var(--color-amber-lt); border-radius:var(--radius-md); padding:var(--space-sm) var(--space-md); margin-bottom:var(--space-md); }
       .mn-callout ul, .mn-err ul { margin:0; padding-left:20px; font-size:var(--text-sm); }
       .mn-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
-      @media (max-width: 760px) {
-        .mn-row--action, .mn-row--date { grid-template-columns: minmax(0,1fr) 44px; }
-        .mn-row--action > :not(:first-child):not(.mn-remove), .mn-row--date > :not(:nth-child(3)):not(.mn-remove) { grid-column:1; }
-        .mn-row--line, .mn-row--line.mn-row--marked { grid-template-columns: 120px minmax(0,1fr) 44px; }
-        .mn-row--line.mn-row--marked > select[data-f="area"] { grid-column:2; }
+      @media (max-width: 1280px) {
+        .mn-row--line, .mn-row--action, .mn-row--date, .mn-row--evidence, .mn-row--check { grid-template-columns: repeat(4, minmax(0,1fr)) 44px; }
+        .mn-row > [data-f="text"], .mn-row > [data-f="what"] { grid-column: 1 / 5; }
+        .mn-row > .mn-remove { grid-column: 5; grid-row: 1; }
         .mn-colheads { display:none; }
       }
     </style>
@@ -172,12 +174,19 @@ function _mnBlankDraft() {
   return {
     ref: 'mn-' + (typeof generateId === 'function' ? generateId().slice(0, 8) : Date.now().toString(36)),
     title: '', date: todayISO(), time: '', withInit: '', meetingType: 'other-staff', area: '', focusId: '',
-    lines: [{ type: 'note', text: '' }, { type: 'note', text: '' }, { type: 'note', text: '' }],
-    actions: [{ text: '', who: 'GW', by: '', area: '' }],
-    dates: [{ date: '', time: '', what: '', area: '' }],
-    evidence: [{ text: '', area: '' }],
-    checks: [{ text: '' }],
+    lines: [_mnBlankRow('lines'), _mnBlankRow('lines'), _mnBlankRow('lines')],
+    actions: [_mnBlankRow('actions')],
+    dates: [_mnBlankRow('dates')],
+    evidence: [_mnBlankRow('evidence')],
+    checks: [_mnBlankRow('checks')],
   };
+}
+function _mnBlankRow(kind) {
+  const links = { area: '', focusId: '', loopId: '', people: '' };
+  return Object.assign({
+    lines: { type: 'note', text: '' }, actions: { text: '', who: 'GW', by: '' },
+    dates: { date: '', time: '', what: '' }, evidence: { text: '' }, checks: { text: '', who: 'GW' },
+  }[kind], links);
 }
 function _mnLoadDraft() {
   try { const raw = localStorage.getItem(MN_DRAFT_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
@@ -278,7 +287,8 @@ function _mnRenderWrite() {
 
     <section class="mn-section" aria-labelledby="mn-h-notes">
       <h3 id="mn-h-notes">Notes</h3>
-      <p class="mn-hint" id="mn-notes-hint">One line, one thing. Choose a marker for anything that is not just a note, then choose its area if it is not the meeting area. Press Enter to start a new line. For a date line, start with the date, for example 23/10.</p>
+      <p class="mn-hint" id="mn-notes-hint">One line, one thing. Choose a marker for anything that is not just a note. Each line can link to its own area, focus, loop and people; leave them on Meeting to use the meeting details. Press Enter to start a new line. For a date line, start with the date, for example 23/10.</p>
+      <div class="mn-row mn-row--line mn-colheads" aria-hidden="true"><span>Marker</span><span>Line</span><span>Area</span><span>Focus</span><span>Loop</span><span>People</span><span></span></div>
       <div id="mn-lines"></div>
       <button type="button" class="btn btn--secondary btn--sm mn-add" data-add="lines">+ Add line</button>
     </section>
@@ -286,7 +296,7 @@ function _mnRenderWrite() {
     <section class="mn-section" aria-labelledby="mn-h-actions">
       <h3 id="mn-h-actions"><span class="mn-mark" aria-hidden="true">A</span>Actions</h3>
       <p class="mn-hint">Start with a verb.</p>
-      <div class="mn-row mn-row--action mn-colheads" aria-hidden="true"><span>Action</span><span>Who</span><span>By</span><span>Area</span><span></span></div>
+      <div class="mn-row mn-row--action mn-colheads" aria-hidden="true"><span>Action</span><span>Who</span><span>By</span><span>Area</span><span>Focus</span><span>Loop</span><span></span></div>
       <div id="mn-actions"></div>
       <button type="button" class="btn btn--secondary btn--sm mn-add" data-add="actions">+ Add action</button>
     </section>
@@ -294,7 +304,7 @@ function _mnRenderWrite() {
     <section class="mn-section" aria-labelledby="mn-h-dates">
       <h3 id="mn-h-dates"><span class="mn-mark" aria-hidden="true">D</span>Dates</h3>
       <p class="mn-hint">Events, sessions and deadlines.</p>
-      <div class="mn-row mn-row--date mn-colheads" aria-hidden="true"><span>Date</span><span>Time</span><span>What</span><span>Area</span><span></span></div>
+      <div class="mn-row mn-row--date mn-colheads" aria-hidden="true"><span>Date</span><span>Time</span><span>What</span><span>Area</span><span>Focus</span><span>People</span><span></span></div>
       <div id="mn-dates"></div>
       <button type="button" class="btn btn--secondary btn--sm mn-add" data-add="dates">+ Add date</button>
     </section>
@@ -302,6 +312,7 @@ function _mnRenderWrite() {
     <section class="mn-section" aria-labelledby="mn-h-evidence">
       <h3 id="mn-h-evidence"><span class="mn-mark" aria-hidden="true">E</span>Impact and evidence</h3>
       <p class="mn-hint">Only what has already happened or changed.</p>
+      <div class="mn-row mn-row--evidence mn-colheads" aria-hidden="true"><span>What happened or changed</span><span>Area</span><span>Focus</span><span>Loop</span><span>People</span><span></span></div>
       <div id="mn-evidence"></div>
       <button type="button" class="btn btn--secondary btn--sm mn-add" data-add="evidence">+ Add evidence</button>
     </section>
@@ -309,6 +320,7 @@ function _mnRenderWrite() {
     <section class="mn-section" aria-labelledby="mn-h-checks">
       <h3 id="mn-h-checks"><span class="mn-mark" aria-hidden="true">?</span>Check</h3>
       <p class="mn-hint">Anything to chase or confirm. Each one becomes a task.</p>
+      <div class="mn-row mn-row--check mn-colheads" aria-hidden="true"><span>Check</span><span>Area</span><span>Focus</span><span>Loop</span><span>Who</span><span></span></div>
       <div id="mn-checks"></div>
       <button type="button" class="btn btn--secondary btn--sm mn-add" data-add="checks">+ Add check</button>
     </section>
@@ -335,7 +347,7 @@ function _mnRenderWrite() {
     if (e.key === 'Enter' && e.target.matches('input[data-f="text"]')) {
       e.preventDefault();
       const i = +e.target.closest('[data-i]').dataset.i;
-      _mn.draft.lines.splice(i + 1, 0, { type: 'note', text: '' });
+      _mn.draft.lines.splice(i + 1, 0, _mnBlankRow('lines'));
       _mnRenderRows('lines', _mnContext());
       _mnFocusRow('lines', i + 1);
       _mnSaveDraftSoon();
@@ -355,36 +367,57 @@ function _mnRenderWrite() {
   });
 }
 
+function _mnFocusOptions(ctx, selected) {
+  return `<option value="">Meeting focus</option>` +
+    ctx.focusList.map(f => `<option value="${_mnEsc(f.focusId)}"${f.focusId === selected ? ' selected' : ''}>${_mnEsc(ctx.focusCodeById[f.focusId])} · ${_mnEsc(String(f.title || 'Untitled focus').slice(0, 50))}</option>`).join('');
+}
+function _mnLoopOptions(ctx, selected) {
+  return `<option value="">No loop</option>` +
+    ctx.loopList.map(l => { const c = ctx.loopCodeById[l.afiId]; return `<option value="${_mnEsc(l.afiId)}"${l.afiId === selected ? ' selected' : ''}>${_mnEsc(c)} · ${_mnEsc(ctx.loops[c].title.slice(0, 50))}</option>`; }).join('');
+}
+// The link controls shared by every row. A teal edge shows a link that
+// differs from the meeting.
+function _mnLinkCells(ctx, r, label, opts) {
+  const own = (v) => v ? ' mn-own' : '';
+  let h = `<select class="form-select mn-link${own(r.area)}" data-f="area" aria-label="Area, ${label}">${_mnAreaOptions(ctx, r.area, 'Meeting area')}</select>`;
+  h += `<select class="form-select mn-link${own(r.focusId)}" data-f="focusId" aria-label="Focus, ${label}">${_mnFocusOptions(ctx, r.focusId)}</select>`;
+  if (opts.loop) h += `<select class="form-select mn-link${own(r.loopId)}" data-f="loopId" aria-label="Loop, ${label}">${_mnLoopOptions(ctx, r.loopId)}</select>`;
+  if (opts.people) h += `<input class="form-input mn-link${own(r.people)}" data-f="people" value="${_mnEsc(r.people)}" placeholder="Initials" aria-label="People (initials), ${label}">`;
+  return h;
+}
 function _mnRenderRows(kind, ctx) {
   const box = document.getElementById('mn-' + kind);
   if (!box) return;
   const rows = _mn.draft[kind];
   const n = (i) => i + 1;
+  const rm = (k, what, i) => `<button type="button" class="mn-remove" data-remove="${k}" aria-label="Remove ${what} ${n(i)}">×</button>`;
   box.innerHTML = rows.map((r, i) => {
-    if (kind === 'lines') { const marked = r.type && r.type !== 'note'; return `<div class="mn-row mn-row--line${marked ? ' mn-row--marked' : ''}" data-i="${i}">
+    if (kind === 'lines') return `<div class="mn-row mn-row--line" data-i="${i}">
         <select class="form-select" data-f="type" aria-label="Marker for line ${n(i)}">${MN_MARKS.map(m => `<option value="${m.value}"${m.value === r.type ? ' selected' : ''}>${m.label}</option>`).join('')}</select>
         <input class="form-input" data-f="text" value="${_mnEsc(r.text)}" aria-label="Line ${n(i)}" aria-describedby="mn-notes-hint">
-        ${marked ? `<select class="form-select" data-f="area" aria-label="Area, line ${n(i)}">${_mnAreaOptions(ctx, r.area, 'Meeting area')}</select>` : ''}
-        <button type="button" class="mn-remove" data-remove="lines" aria-label="Remove line ${n(i)}">×</button></div>`; }
+        ${_mnLinkCells(ctx, r, 'line ' + n(i), { loop: true, people: true })}
+        ${rm('lines', 'line', i)}</div>`;
     if (kind === 'actions') return `<div class="mn-row mn-row--action" data-i="${i}">
         <input class="form-input" data-f="text" value="${_mnEsc(r.text)}" aria-label="Action ${n(i)}">
-        <input class="form-input" data-f="who" value="${_mnEsc(r.who)}" aria-label="Who, action ${n(i)}">
+        <input class="form-input" data-f="who" value="${_mnEsc(r.who)}" aria-label="Who (initials), action ${n(i)}">
         <input class="form-input" type="date" data-f="by" value="${_mnEsc(r.by)}" aria-label="By when, action ${n(i)}">
-        <select class="form-select" data-f="area" aria-label="Area, action ${n(i)}">${_mnAreaOptions(ctx, r.area, 'Meeting area')}</select>
-        <button type="button" class="mn-remove" data-remove="actions" aria-label="Remove action ${n(i)}">×</button></div>`;
+        ${_mnLinkCells(ctx, r, 'action ' + n(i), { loop: true })}
+        ${rm('actions', 'action', i)}</div>`;
     if (kind === 'dates') return `<div class="mn-row mn-row--date" data-i="${i}">
         <input class="form-input" type="date" data-f="date" value="${_mnEsc(r.date)}" aria-label="Date ${n(i)}">
         <input class="form-input" type="time" data-f="time" value="${_mnEsc(r.time)}" aria-label="Time, date ${n(i)}">
         <input class="form-input" data-f="what" value="${_mnEsc(r.what)}" aria-label="What is happening, date ${n(i)}">
-        <select class="form-select" data-f="area" aria-label="Area, date ${n(i)}">${_mnAreaOptions(ctx, r.area, 'Meeting area')}</select>
-        <button type="button" class="mn-remove" data-remove="dates" aria-label="Remove date ${n(i)}">×</button></div>`;
+        ${_mnLinkCells(ctx, r, 'date ' + n(i), { people: true })}
+        ${rm('dates', 'date', i)}</div>`;
     if (kind === 'evidence') return `<div class="mn-row mn-row--evidence" data-i="${i}">
         <input class="form-input" data-f="text" value="${_mnEsc(r.text)}" aria-label="What happened or changed, evidence ${n(i)}">
-        <select class="form-select" data-f="area" aria-label="Area, evidence ${n(i)}">${_mnAreaOptions(ctx, r.area, 'Meeting area')}</select>
-        <button type="button" class="mn-remove" data-remove="evidence" aria-label="Remove evidence ${n(i)}">×</button></div>`;
+        ${_mnLinkCells(ctx, r, 'evidence ' + n(i), { loop: true, people: true })}
+        ${rm('evidence', 'evidence', i)}</div>`;
     return `<div class="mn-row mn-row--check" data-i="${i}">
         <input class="form-input" data-f="text" value="${_mnEsc(r.text)}" aria-label="Check ${n(i)}">
-        <button type="button" class="mn-remove" data-remove="checks" aria-label="Remove check ${n(i)}">×</button></div>`;
+        ${_mnLinkCells(ctx, r, 'check ' + n(i), { loop: true })}
+        <input class="form-input" data-f="who" value="${_mnEsc(r.who || 'GW')}" aria-label="Who (initials), check ${n(i)}">
+        ${rm('checks', 'check', i)}</div>`;
   }).join('');
 }
 
@@ -392,16 +425,9 @@ function _mnRowInput(e) {
   const t = e.target, row = t.closest('[data-i]');
   if (!row || !t.dataset.f) return;
   const kind = row.parentElement.id.replace('mn-', '');
-  const i = +row.dataset.i;
-  _mn.draft[kind][i][t.dataset.f] = t.value;
+  _mn.draft[kind][+row.dataset.i][t.dataset.f] = t.value;
+  if (t.classList.contains('mn-link')) t.classList.toggle('mn-own', !!t.value);
   _mnSaveDraftSoon();
-  // Changing a line's marker shows or hides its area picker.
-  if (kind === 'lines' && t.dataset.f === 'type' && e.type === 'change') {
-    _mnRenderRows('lines', _mnContext());
-    const sel = document.querySelector(`#mn-lines [data-i="${i}"] select[data-f="type"]`);
-    if (sel) sel.focus();
-    if (t.value !== 'note') _mnSay('Area picker added for line ' + (i + 1) + '.');
-  }
 }
 function _mnRowRemove(e) {
   const b = e.target.closest('[data-remove]');
@@ -416,9 +442,7 @@ function _mnRowRemove(e) {
   else document.querySelector(`[data-add="${kind}"]`).focus();
 }
 function _mnAddRow(kind) {
-  const blank = { lines: { type: 'note', text: '' }, actions: { text: '', who: 'GW', by: '', area: '' },
-    dates: { date: '', time: '', what: '', area: '' }, evidence: { text: '', area: '' }, checks: { text: '' } }[kind];
-  _mn.draft[kind].push(blank);
+  _mn.draft[kind].push(_mnBlankRow(kind));
   _mnRenderRows(kind, _mnContext());
   _mnFocusRow(kind, _mn.draft[kind].length - 1);
   _mnSaveDraftSoon();
@@ -444,51 +468,64 @@ function _mnLeadingDate(text, meetingDate) {
 
 // The form becomes the same import text Copilot would produce.
 function _mnDraftToText(d, ctx) {
-  const L = [], fcode = d.focusId ? (ctx.focusCodeById[d.focusId] || 'none') : 'none';
-  const area = d.area || 'none';
+  const L = [];
+  const fc = (id) => id ? (ctx.focusCodeById[id] || 'none') : 'none';
+  const lc = (id) => id ? (ctx.loopCodeById[id] || '') : '';
+  const meetArea = d.area || 'none', meetFocus = fc(d.focusId);
   const title = _mnOneLine(d.title) || ('Meeting ' + d.date);
-  let a = 0, dd = 0, ev = 0;
+  let a = 0, dd = 0, ev = 0, nn = 0;
+  // A row's own link wins; otherwise it takes the meeting's.
+  const links = (r) => {
+    const out = ['Area: ' + (r.area || meetArea), 'Focus: ' + (r.focusId ? fc(r.focusId) : meetFocus)];
+    if (lc(r.loopId)) out.push('Loop: ' + lc(r.loopId));
+    return out;
+  };
+  const withLine = (r) => _mnOneLine(r.people) ? ['With: ' + _mnOneLine(r.people)] : [];
+  const ownLinks = (r) => !!(r.area || r.focusId || r.loopId || _mnOneLine(r.people));
+
   L.push(NI_HEADER, 'Source: Hub meeting notes form', 'Captured: ' + d.date, 'Ref: ' + d.ref, '');
   L.push('## Meeting: ' + title, 'Key: M1', 'Date: ' + d.date);
   if (d.time) L.push('Time: ' + d.time);
-  L.push('Type: ' + (d.meetingType || 'other-staff'), 'With: ' + (_mnOneLine(d.withInit) || 'none'), 'Area: ' + area, 'Focus: ' + fcode, 'Notes:');
+  L.push('Type: ' + (d.meetingType || 'other-staff'), 'With: ' + (_mnOneLine(d.withInit) || 'none'), 'Area: ' + meetArea, 'Focus: ' + meetFocus, 'Notes:');
   d.lines.filter(l => l.type === 'note' && _mnOneLine(l.text)).forEach(l => L.push('- ' + _mnOneLine(l.text)));
   L.push('');
 
-  const action = (text, who, by, rowArea, check) => {
+  const action = (text, who, by, r) => {
     a++;
-    L.push('## Action: ' + text, 'Key: A' + a, 'Due: ' + (by || 'none'), 'Owner: ' + (_mnOneLine(who) || 'GW'),
-      'Area: ' + (rowArea || area), 'Focus: ' + fcode, 'Meeting: M1');
-    if (check) L.push('Check: yes - ' + check);
-    L.push('');
+    L.push('## Action: ' + text, 'Key: A' + a, 'Due: ' + (by || 'none'), 'Owner: ' + (_mnOneLine(who) || 'GW'), ...links(r), 'Meeting: M1', '');
   };
-  const dateBlock = (date, time, what, rowArea) => {
+  const dateBlock = (date, time, what, r) => {
     dd++;
     L.push('## Date: ' + what, 'Key: D' + dd, 'Date: ' + (date || 'none'));
     if (time) L.push('Time: ' + time);
-    L.push('Kind: ' + (time ? 'meeting' : 'deadline'), 'Area: ' + (rowArea || area), 'Focus: ' + fcode, '');
+    L.push('Kind: ' + (time ? 'meeting' : 'deadline'), ...links(r).filter(x => !/^Loop:/.test(x)), ...withLine(r), '');
   };
-  const evidence = (text, rowArea) => {
+  const evidence = (text, r) => {
     ev++;
-    L.push('## Evidence: ' + text.slice(0, 80), 'Key: E' + ev, 'Date: ' + d.date, 'Type: meeting',
-      'Area: ' + (rowArea || area), 'Focus: ' + fcode, 'Summary:', text, '');
+    L.push('## Evidence: ' + text.slice(0, 80), 'Key: E' + ev, 'Date: ' + d.date, 'Type: meeting', ...links(r), ...withLine(r), 'Meeting: M1', 'Summary:', text, '');
+  };
+  // A note line with its own links also becomes a linked Note, so it
+  // shows up against that area, focus, loop or person.
+  const note = (text, r) => {
+    nn++;
+    L.push('## Note: ' + text.slice(0, 80), 'Key: N' + nn, ...links(r), ...withLine(r), 'Meeting: M1', 'Text:', text, '');
   };
 
   d.lines.forEach(l => {
     const t = _mnOneLine(l.text);
     if (!t) return;
-    if (l.type === 'A') action(t, 'GW', '', l.area || '');
-    else if (l.type === 'E') evidence(t, l.area || '');
-    else if (l.type === '?') action('Check: ' + t, 'GW', '', l.area || '');
+    if (l.type === 'A') action(t, l.people || 'GW', '', l);
+    else if (l.type === 'E') evidence(t, l);
+    else if (l.type === '?') action('Check: ' + t, l.people || 'GW', '', l);
     else if (l.type === 'D') {
       const ld = _mnLeadingDate(t, d.date);
-      dateBlock(ld ? ld.date : '', '', ld ? (ld.rest || t) : t, l.area || '');
-    }
+      dateBlock(ld ? ld.date : '', '', ld ? (ld.rest || t) : t, l);
+    } else if (ownLinks(l)) note(t, l);
   });
-  d.actions.forEach(r => { const t = _mnOneLine(r.text); if (t) action(t, r.who, r.by, r.area); });
-  d.dates.forEach(r => { const t = _mnOneLine(r.what); if (t || r.date) dateBlock(r.date, r.time, t || 'Untitled date', r.area); });
-  d.evidence.forEach(r => { const t = _mnOneLine(r.text); if (t) evidence(t, r.area); });
-  d.checks.forEach(r => { const t = _mnOneLine(r.text); if (t) action('Check: ' + t, 'GW', '', ''); });
+  d.actions.forEach(r => { const t = _mnOneLine(r.text); if (t) action(t, r.who, r.by, r); });
+  d.dates.forEach(r => { const t = _mnOneLine(r.what); if (t || r.date) dateBlock(r.date, r.time, t || 'Untitled date', r); });
+  d.evidence.forEach(r => { const t = _mnOneLine(r.text); if (t) evidence(t, r); });
+  d.checks.forEach(r => { const t = _mnOneLine(r.text); if (t) action('Check: ' + t, r.who || 'GW', '', r); });
   return L.join('\n');
 }
 

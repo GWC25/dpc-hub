@@ -362,8 +362,8 @@
       } else if (it.kind === 'note') {
         op.dest = 'Notes';
         op.entity = { noteId: id(), createdAt: cap ? cap + 'T09:00:00.000Z' : null, text: f.Text, areaCode: area(f.Area),
-          projectRef: _isNone(f.Project) ? null : f.Project, linkedMeetingId: meetingRef, personRef: null, personStaffId: null,
-          departmentId: null, linkedAfiId: lo ? lo.id : null, linkedFocusId: fo ? fo.id : null,
+          projectRef: _isNone(f.Project) ? null : f.Project, linkedMeetingId: meetingRef, personRef: people(f.With).join(', ') || null, personStaffId: null,
+          departmentId: null, linkedAfiId: lo ? lo.id : null, linkedFocusId: fo ? fo.id : null, personRefs: people(f.With),
           source: 'notes-import', importId: importId(f.Key) };
       } else if (it.kind === 'evidence') {
         op.dest = area(f.Area) ? 'Area log · ' + area(f.Area) : 'Cross-college activity';
@@ -371,7 +371,7 @@
         if (fo) links.push({ type: 'focus', id: fo.id });
         op.entity = { activityId: id(), activityType: f.Type, date: _parseDate(f.Date) || cap, areaCode: area(f.Area) || '',
           staffIds: [], lraThemeIds: [], hyperThemes: [],
-          summary: f.Summary.indexOf(it.title) === 0 ? f.Summary : it.title + ': ' + f.Summary, links: links,
+          summary: (f.Summary.indexOf(it.title) === 0 ? f.Summary : it.title + ': ' + f.Summary) + (people(f.With).length ? ' (with ' + people(f.With).join(', ') + ')' : ''), links: links, personRefs: people(f.With),
           afiIdsGenerated: [], sharedId: null, qipRef: null, createdAt: null, source: 'notes-import', importId: importId(f.Key) };
         // How many people took part (sessions delivered). Feeds the My week report.
         if (!_isNone(f.Attended)) op.entity.attendees = parseInt(f.Attended, 10);
@@ -389,7 +389,7 @@
         var kind = _isNone(f.Kind) ? 'deadline' : f.Kind;
         op.dest = 'Calendar';
         op.entity = { entryId: id(), entryType: kind, title: it.title, date: _parseDate(f.Date),
-          startTime: tm.start || null, endTime: tm.end || null, personRefs: [], areaCode: area(f.Area), status: null,
+          startTime: tm.start || null, endTime: tm.end || null, personRefs: people(f.With), areaCode: area(f.Area), status: null,
           notes: _isNone(f.Repeats) ? null : 'Repeats: ' + f.Repeats, linkedFocusId: fo ? fo.id : null,
           source: 'notes-import', importId: importId(f.Key) };
       }
