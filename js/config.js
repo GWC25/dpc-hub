@@ -1,4 +1,5 @@
-// DPC Hub · js/config.js · v1.0 · July 2026
+// DPC Hub · js/config.js · v1.1 · 09/11/26 · Hub Lite archived: Supabase settings removed (kept on branch archive/hub-lite)
+// v1.0 · July 2026
 // Configuration constants.
 // PASSWORD IS NOT STORED HERE IN PLAIN TEXT.
 // The hash below is a SHA-256 hash of the chosen password.
@@ -12,12 +13,6 @@ const DPC_CONFIG = Object.freeze({
   // Default hash below = 'dpc2026weston' — CHANGE BEFORE FIRST USE.
   // Generate your own hash using the instructions above.
   DPC_PASSWORD_HASH: 'c67ea4b261209bd50ab989ac5472a8551f73b3aff2507faaee3205638c683c8b',
-  // ── Supabase (Phase 7 — Hub Lite + supabase-sync.js) ──────
-  // These are the non-sensitive publishable/anon credentials — safe to
-  // expose client-side. The service role key is NEVER stored here — it
-  // goes in dpc-manifest.json which lives on OneDrive, not in the public repo.
-  SUPABASE_URL:      'https://gygngjifcmyjslsqpkmb.supabase.co',
-  SUPABASE_ANON_KEY: 'sb_publishable_3iVEEIuwPL9ldyltSV5r8g_WazUfZSX',
   // ── Auto-save interval ────────────────────────────────────
   AUTOSAVE_INTERVAL_MS: 60000,  // 60 seconds
   // ── File System Access API permission window ──────────────

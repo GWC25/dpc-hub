@@ -1,4 +1,5 @@
-// DPC Hub · js/data.js · v1.8 · 02/10/26 · Session RAG-3 — re-scores Health Checks with the Copilot support priority method on load
+// DPC Hub · js/data.js · v1.9 · 09/11/26 · Hub Lite archived: Supabase capture check removed
+// v1.8 · 02/10/26 · Session RAG-3 — re-scores Health Checks with the Copilot support priority method on load
 // v1.7 · 02/10/26 · Session RAG-2 — list/read any file in the connected folder (Excel imports), Health Check area-code memory, milestone and confidence stores, CPD save fix, action plan shared-with-DL date
 // v1.6 · 09/09/26 · Job A5 — AFI source stamping, gap/strength separation, one-time backfill
 // Data layer. All read/write operations to OneDrive JSON files.
@@ -482,18 +483,6 @@ async function loadOptionalFiles() {
   }
 }
 
-// ── Step 8: Check Supabase captures ────────────────────────────
-// This stub is intentionally left as a harmless fallback. The real
-// implementation is a same-named function declared in js/supabase-sync.js,
-// which loads AFTER this file — its declaration overrides this one, same
-// convention as app.js's real initReports()/initAISupport(). If
-// supabase-sync.js is ever removed from hub.html's script list, this
-// no-op keeps loadHub() safe rather than throwing.
-async function checkSupabaseCaptures() {
-  if (!DPC_CONFIG.SUPABASE_URL || !DPC_CONFIG.SUPABASE_ANON_KEY) return;
-  // No-op fallback — see js/supabase-sync.js for the real implementation.
-}
-
 // ── Step 9: Initialise auto-save ──────────────────────────────
 function initAutoSave(ui) {
   _lastSavedSnap = _snapshotData();
@@ -614,7 +603,6 @@ async function loadHub(ui) {
   await loadManifest(ui);
   await loadRequiredFiles(ui);
   await loadOptionalFiles();
-  checkSupabaseCaptures();  // non-blocking
   await checkSessionSnapshot(ui);
   initAutoSave(ui);
 

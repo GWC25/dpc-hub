@@ -238,10 +238,9 @@ function renderPlaceholder(label, icon) {
 
 // ── Notification badge update ─────────────────────────────────
 function updateBadgeCount() {
-  // Unorganised notes + pending Supabase captures
-  const unorgNotes = 0; // Phase 7 will populate this
-  const pending    = 0; // Phase 7 will populate this
-  UI.updateNotificationBadge(unorgNotes + pending);
+  // Unorganised notes
+  const unorgNotes = 0;
+  UI.updateNotificationBadge(unorgNotes);
 }
 
 // ── Boot sequence ─────────────────────────────────────────────

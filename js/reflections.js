@@ -1,7 +1,6 @@
 // DPC Hub · js/reflections.js · v1.0 · July 2026
 // Reflection module. Lists all reflections. Links to staff profiles and AFIs.
 // Anonymous at area level. Immediate + follow-up stages.
-// Standalone reflection-form.html writes to Supabase (Phase 7) or pending captures.
 
 function initReflections() {
   const main = document.getElementById('main-content');
