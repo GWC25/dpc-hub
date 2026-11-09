@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-support.js · v1.0 · 09/11/26 · DA&I support recommendations: themes, format, urgency, campus and area grouping; priorities from targets
+// DPC Hub · js/dai-support.js · v1.1 · 09/11/26 · split into tab panels; planning prompt on every action, resource and need (dai-prompts.js)
+// v1.0 · 09/11/26 · DA&I support recommendations: themes, format, urgency, campus and area grouping; priorities from targets
 //
 // Turns each person's latest "How's it going" response into support needs,
 // then recommends the format and where to run it.
@@ -28,7 +29,7 @@
 // for DSU_AREA or more people in one area suggests a session with that team.
 // Campus comes from the staff profile, else the area's campus.
 //
-// Public: daiSupportNeeds(), daiSupportForStaff(staffId), daiSupportSection(),
+// Public: daiSupportNeeds(), daiSupportForStaff(staffId), daiSupportParts(), daiPromptSpec(i),
 //         daiFillPriorities(staffIds?), DSU_THEMES
 
 const DSU_TEACHMEET = 5;
@@ -139,7 +140,8 @@ function _dsuActions(needs) {
     if (campus === 'Unassigned' || ps.length < DSU_DROPIN) return;
     const tm = ps.length >= DSU_TEACHMEET;
     acts.push({ kind: tm ? 'Teach Meet' : 'Drop-in', where: campus, theme: list[0].themeLabel, people: ps, score: sum(list),
-      text: `${tm ? 'Run a Teach Meet' : 'Hold a drop-in'} at ${campus} on ${list[0].themeLabel}` });
+      text: `${tm ? 'Run a Teach Meet' : 'Hold a drop-in'} at ${campus} on ${list[0].themeLabel}`,
+      prompt: { kind: tm ? 'teachmeet' : 'dropin', themes: [list[0].theme], needs: list, campus } });
   });
   _dsuGroup(needs, n => n.areaCode + '|' + n.theme).forEach((list, k) => {
     const ps = people(list); const [area] = k.split('|');
@@ -148,60 +150,95 @@ function _dsuActions(needs) {
     const ids = new Set(ps.map(p => p.staffId));
     if (acts.some(a => (a.kind === 'Teach Meet' || a.kind === 'Drop-in') && a.theme === list[0].themeLabel && [...ids].every(id => a.people.some(p => p.staffId === id)))) return;
     acts.push({ kind: 'Area session', where: area, theme: list[0].themeLabel, people: ps, score: sum(list),
-      text: `Session with the ${area} team on ${list[0].themeLabel}` });
+      text: `Session with the ${area} team on ${list[0].themeLabel}`,
+      prompt: { kind: 'area', themes: [list[0].theme], needs: list, areaCode: area } });
   });
   _dsuGroup(needs.filter(n => n.format !== 'coaching'), n => n.format + '|' + n.theme).forEach((list, k) => {
     const ps = people(list); const [fmt] = k.split('|');
     if (ps.length < DSU_RESOURCE) return;
     acts.push({ kind: DSU_FORMATS[fmt], where: 'College-wide', theme: list[0].themeLabel, people: ps, score: sum(list),
-      text: `Make or share a ${DSU_FORMATS[fmt].toLowerCase()} on ${list[0].themeLabel}` });
+      text: `Make or share a ${DSU_FORMATS[fmt].toLowerCase()} on ${list[0].themeLabel}`,
+      prompt: { kind: fmt, themes: [list[0].theme], needs: list } });
   });
   _dsuGroup(needs.filter(n => n.format === 'coaching'), n => n.staffId).forEach(list => {
     acts.push({ kind: 'Coaching', where: list[0].areaCode || 'No area', theme: list.map(n => n.themeLabel).join(', '), people: [list[0]], score: sum(list),
-      text: `Coach ${list[0].name}` });
+      text: `Coach ${list[0].name}`,
+      prompt: { kind: 'coaching', themes: list.map(n => n.theme), needs: list, staffId: list[0].staffId } });
   });
   return acts.sort((a, b) => b.score - a.score);
 }
 
-// ── Page section (called from dai.js) ─────────────────────────
+// ── Tab panels (called from dai.js) ───────────────────────────
+// Every prompt button carries an index into this list, rebuilt on each render.
 let _dsuCampusFilter = '';
-function daiSupportSection() {
+let _dsuPrompts = [];
+function daiPromptSpec(i) { return _dsuPrompts[i] || null; }
+function _dsuPromptBtn(spec, what) {
+  _dsuPrompts.push(spec);
+  return `<button type="button" class="btn btn--ghost btn--sm" data-dsu-prompt="${_dsuPrompts.length - 1}" aria-label="Planning prompt: ${_daiEsc(what)}" style="min-height:32px;white-space:nowrap;">Planning prompt</button>`;
+}
+const _dsuH3 = (t, top) => `<h2 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin:${top ? 'var(--space-lg)' : '0'} 0 var(--space-xs);">${t}</h2>`;
+const _dsuP = t => `<p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-sm);max-width:70ch;">${t}</p>`;
+const _dsuNames = ps => ps.slice().sort((a, b) => a.name.localeCompare(b.name)).map(_daiPersonBtn).join(', ');
+const _dsuWho = ps => ps.length > 1 ? `<details><summary style="cursor:pointer;min-height:24px;">${ps.length} people</summary>${_dsuNames(ps)}</details>` : _dsuNames(ps);
+const _dsuPeople = list => [...new Map(list.map(n => [n.staffId, n])).values()];
+
+function daiSupportParts() {
+  _dsuPrompts = [];
   const needs = daiSupportNeeds();
-  if (!needs.length) return _daiSection('dsu-h', 'Support recommendations', '', '<p style="font-size:var(--text-sm);color:var(--color-muted);">No support needs found in the "How\'s it going" responses yet.</p>');
+  const none = _dsuP('No support needs found in the "How\'s it going" responses yet.');
+  if (!needs.length) return { actions: none, resources: none, themes: none, areaNeeds: none, campus: none, person: none };
   const acts = _dsuActions(needs);
-  const names = ps => ps.slice().sort((a, b) => a.name.localeCompare(b.name)).map(_daiPersonBtn).join(', ');
 
-  const actRows = acts.map(a => `<tr>${_daiTd(`<strong>${_daiEsc(a.text)}</strong>`)}${_daiTd(_daiEsc(a.kind))}${_daiTd(a.people.length)}${_daiTd(Math.round(a.score))}${_daiTd(a.people.length > 1 ? `<details><summary style="cursor:pointer;min-height:24px;">Who</summary>${names(a.people)}</details>` : names(a.people))}</tr>`);
-  const actions = `<h3 style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin:var(--space-md) 0 var(--space-xs);">What to do next</h3>
-    <p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-sm);max-width:70ch;">Highest total urgency first. A Teach Meet is suggested when ${DSU_TEACHMEET} or more people on one campus share a need, a drop-in for ${DSU_DROPIN} or 4, an area session for ${DSU_AREA} or more in one area, and a resource when ${DSU_RESOURCE} or more people need the same one.</p>
-    ${_daiTable('Recommended support actions, most urgent first', ['Action', 'Type', 'People', 'Urgency', 'Who'], actRows, 760)}`;
+  const actRows = acts.map(a => `<tr>${_daiTd(`<strong>${_daiEsc(a.text)}</strong>`)}${_daiTd(_daiEsc(a.kind))}${_daiTd(Math.round(a.score))}${_daiTd(_dsuWho(a.people))}${_daiTd(_dsuPromptBtn(a.prompt, a.text))}</tr>`);
+  const actions = _dsuH3('What to do next') + _dsuP(`Highest total urgency first. A Teach Meet is suggested when ${DSU_TEACHMEET} or more people on one campus share a need, a drop-in for ${DSU_DROPIN} or 4, an area session for ${DSU_AREA} or more in one area, and a resource when ${DSU_RESOURCE} or more people need the same one. Planning prompt gives you text to paste into Claude or Copilot.`)
+    + _daiTable('Recommended support actions, most urgent first', ['Action', 'Type', 'Urgency', 'Who', 'Plan it'], actRows, 820);
 
-  const themeRows = [..._dsuGroup(needs, n => n.theme).entries()].map(([id, list]) => {
-    const th = DSU_THEMES.find(t => t.id === id);
-    const c = f => list.filter(n => n.format === f).length;
-    return { th, list, avg: _daiAvg(list.map(n => n.confidence)), high: list.filter(n => n.band === 'High').length, c };
-  }).sort((a, b) => b.list.length - a.list.length).map(x => `<tr>${_daiTd(_daiEsc(x.th.label))}${_daiTd(x.list.length)}${_daiTd(x.high)}${_daiTd(_daiFmt(x.avg))}${_daiTd(DSU_COMPLEXITY[x.th.complexity])}${_daiTd(`${x.c('coaching')} coaching, ${x.c('video')} video, ${x.c('guide')} guide`)}</tr>`);
-  const themes = `<h3 style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin:var(--space-lg) 0 var(--space-xs);">By theme</h3>
-    ${_daiTable('Support needs grouped by theme', ['Theme', 'People', 'High urgency', 'Average confidence', 'Complexity', 'Recommended formats'], themeRows, 760)}`;
+  // Resources: every format and theme, however few people, so nothing is hidden by a threshold.
+  const resGroups = [..._dsuGroup(needs, n => n.format + '|' + n.theme).entries()].map(([k, list]) => ({ fmt: k.split('|')[0], list, ps: _dsuPeople(list), score: list.reduce((x, n) => x + n.urgency, 0) }))
+    .sort((a, b) => b.ps.length - a.ps.length || b.score - a.score);
+  const fmtBlock = fmt => {
+    const g = resGroups.filter(x => x.fmt === fmt);
+    if (!g.length) return '';
+    const rows = g.map(x => `<tr>${_daiTd(_daiEsc(x.list[0].themeLabel))}${_daiTd(x.ps.length)}${_daiTd(x.list.filter(n => n.band === 'High').length)}${_daiTd(_daiFmt(_daiAvg(x.list.map(n => n.confidence))))}${_daiTd(_dsuWho(x.ps))}${_daiTd(fmt === 'coaching'
+      ? _dsuPromptBtn({ kind: 'coachgroup', themes: [x.list[0].theme], needs: x.list }, `coaching on ${x.list[0].themeLabel}`)
+      : _dsuPromptBtn({ kind: fmt, themes: [x.list[0].theme], needs: x.list }, `${DSU_FORMATS[fmt]} on ${x.list[0].themeLabel}`))}</tr>`);
+    return _dsuH3(DSU_FORMATS[fmt] + (fmt === 'coaching' ? '' : 's'), true) + _daiTable(`${DSU_FORMATS[fmt]} needs by theme`, ['Theme', 'People', 'High urgency', 'Average confidence', 'Who', 'Plan it'], rows, 760);
+  };
+  const resources = _dsuP('Every recommended resource and coaching need, grouped by type and theme, however few people need it.') + fmtBlock('video') + fmtBlock('guide') + fmtBlock('coaching');
+
+  const themeRows = [..._dsuGroup(needs, n => n.theme).entries()].map(([id, list]) => ({ th: DSU_THEMES.find(t => t.id === id), list }))
+    .sort((a, b) => b.list.length - a.list.length).map(({ th, list }) => {
+      const c = f => list.filter(n => n.format === f).length;
+      const top = ['video', 'guide', 'coaching'].sort((a, b) => c(b) - c(a))[0];
+      const spec = { kind: top === 'coaching' ? 'coachgroup' : top, themes: [th.id], needs: list };
+      return `<tr>${_daiTd(_daiEsc(th.label))}${_daiTd(list.length)}${_daiTd(list.filter(n => n.band === 'High').length)}${_daiTd(_daiFmt(_daiAvg(list.map(n => n.confidence))))}${_daiTd(DSU_COMPLEXITY[th.complexity])}${_daiTd(`${c('coaching')} coaching, ${c('video')} video, ${c('guide')} guide`)}${_daiTd(_dsuPromptBtn(spec, `${DSU_FORMATS[top]} on ${th.label}`))}</tr>`;
+    });
+  const themes = _dsuH3('Support needs by theme') + _dsuP('Planning prompt uses the format most of these people need.') + _daiTable('Support needs grouped by theme', ['Theme', 'People', 'High urgency', 'Average confidence', 'Complexity', 'Recommended formats', 'Plan it'], themeRows, 860);
+
+  const arRows = [..._dsuGroup(needs, n => (n.areaCode || '') + '|' + n.theme).entries()].map(([k, list]) => ({ code: k.split('|')[0], list, ps: _dsuPeople(list) }))
+    .sort((a, b) => a.code.localeCompare(b.code) || b.ps.length - a.ps.length)
+    .map(x => `<tr>${_daiTd(x.code ? `<strong>${_daiEsc(x.code)}</strong> ${_daiEsc(_daiAreaName(x.code))}` : 'No area')}${_daiTd(_daiEsc(x.list[0].themeLabel))}${_daiTd(x.ps.length)}${_daiTd(_dsuWho(x.ps))}${_daiTd(x.code && x.ps.length >= 2 ? _dsuPromptBtn({ kind: 'area', themes: [x.list[0].theme], needs: x.list, areaCode: x.code }, `${x.code} session on ${x.list[0].themeLabel}`) : '')}</tr>`);
+  const areaNeeds = _dsuH3('Support needs by area', true) + _daiTable('Support needs by area and theme', ['Area', 'Theme', 'People', 'Who', 'Plan it'], arRows, 760);
 
   const campuses = [...new Set(needs.map(n => n.campus))].sort();
   const filtered = _dsuCampusFilter ? needs.filter(n => n.campus === _dsuCampusFilter) : needs;
-  const camRows = [..._dsuGroup(filtered, n => n.campus + '|' + n.theme).entries()].map(([k, list]) => ({ campus: k.split('|')[0], list, ps: [...new Map(list.map(n => [n.staffId, n])).values()] }))
+  const camRows = [..._dsuGroup(filtered, n => n.campus + '|' + n.theme).entries()].map(([k, list]) => ({ campus: k.split('|')[0], list, ps: _dsuPeople(list) }))
     .sort((a, b) => a.campus.localeCompare(b.campus) || b.ps.length - a.ps.length)
     .map(x => {
-      const rec = x.campus === 'Unassigned' ? 'Set a campus on the profile or area' : x.ps.length >= DSU_TEACHMEET ? 'Teach Meet' : x.ps.length >= DSU_DROPIN ? 'Drop-in' : 'Individual support';
-      return `<tr>${_daiTd(_daiEsc(x.campus))}${_daiTd(_daiEsc(x.list[0].themeLabel))}${_daiTd(x.ps.length)}${_daiTd(_daiEsc(rec))}${_daiTd(`<details><summary style="cursor:pointer;min-height:24px;">Who</summary>${names(x.ps)}</details>`)}</tr>`;
+      const un = x.campus === 'Unassigned';
+      const kind = x.ps.length >= DSU_TEACHMEET ? 'teachmeet' : 'dropin';
+      const rec = un ? 'Set a campus on the profile or area' : x.ps.length >= DSU_TEACHMEET ? 'Teach Meet' : x.ps.length >= DSU_DROPIN ? 'Drop-in' : 'Individual support';
+      return `<tr>${_daiTd(_daiEsc(x.campus))}${_daiTd(_daiEsc(x.list[0].themeLabel))}${_daiTd(x.ps.length)}${_daiTd(_daiEsc(rec))}${_daiTd(_dsuWho(x.ps))}${_daiTd(!un && x.ps.length >= DSU_DROPIN ? _dsuPromptBtn({ kind, themes: [x.list[0].theme], needs: x.list, campus: x.campus }, `${rec} at ${x.campus} on ${x.list[0].themeLabel}`) : '')}</tr>`;
     });
-  const campus = `<h3 style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin:var(--space-lg) 0 var(--space-xs);">By campus</h3>
-    <div class="form-group" style="max-width:320px;"><label class="form-label" for="dsu-campus">Show campus</label>
+  const campus = `<div class="form-group" style="max-width:320px;"><label class="form-label" for="dsu-campus">Show campus</label>
       <select id="dsu-campus" class="form-select"><option value="">All campuses</option>${campuses.map(c => `<option value="${_daiEsc(c)}"${c === _dsuCampusFilter ? ' selected' : ''}>${_daiEsc(c)}</option>`).join('')}</select></div>
-    ${_daiTable('Support needs by campus and theme', ['Campus', 'Theme', 'People', 'Suggested', 'Who'], camRows, 680)}`;
+    ${_daiTable('Support needs by campus and theme', ['Campus', 'Theme', 'People', 'Suggested', 'Who', 'Plan it'], camRows, 820)}`;
 
-  const perRows = needs.map(n => `<tr>${_daiTd(_daiPersonBtn(n))}${_daiTd(_daiEsc(n.areaCode))}${_daiTd(_daiEsc(n.themeLabel))}${_daiTd(n.confidence == null ? '–' : n.confidence)}${_daiTd(_daiEsc(n.band))}${_daiTd(`<strong>${_daiEsc(DSU_FORMATS[n.format])}</strong><br><span style="color:var(--color-muted);">${_daiEsc(n.why)}</span>`)}</tr>`);
-  const person = `<details style="margin-top:var(--space-lg);"><summary style="cursor:pointer;font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);min-height:24px;">Every need, by person (${needs.length})</summary>
-    ${_daiTable('Each person\'s support needs, most urgent first', ['Name', 'Area', 'Theme', 'Confidence', 'Urgency', 'Recommended'], perRows, 760)}</details>`;
+  const perRows = needs.map(n => `<tr>${_daiTd(_daiPersonBtn(n))}${_daiTd(_daiEsc(n.areaCode))}${_daiTd(_daiEsc(n.themeLabel))}${_daiTd(n.confidence == null ? '–' : n.confidence)}${_daiTd(_daiEsc(n.band))}${_daiTd(`<strong>${_daiEsc(DSU_FORMATS[n.format])}</strong><br><span style="color:var(--color-muted);">${_daiEsc(n.why)}</span>`)}${_daiTd(_dsuPromptBtn(n.format === 'coaching' ? { kind: 'coaching', themes: [n.theme], needs: [n], staffId: n.staffId } : { kind: n.format, themes: [n.theme], needs: [n] }, `${DSU_FORMATS[n.format]} on ${n.themeLabel} for ${n.name}`))}</tr>`);
+  const person = _dsuH3(`Every need, by person (${needs.length})`, true) + _daiTable('Each person\'s support needs, most urgent first', ['Name', 'Area', 'Theme', 'Confidence', 'Urgency', 'Recommended', 'Plan it'], perRows, 900);
 
-  return _daiSection('dsu-h', 'Support recommendations', 'Built from each person\'s element ratings, targets and support requests. Complexity, confidence and urgency decide the format; campus and area decide where to run it.', actions + themes + campus + person);
+  return { actions, resources, themes, areaNeeds, campus, person };
 }
 
 function daiWireSupportSection() {

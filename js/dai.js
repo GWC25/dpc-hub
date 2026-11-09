@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v1.1 · 09/11/26 · support recommendations section (dai-support.js), priorities filled from targets on import
+// DPC Hub · js/dai.js · v1.2 · 09/11/26 · progress page split into tabs; planning prompt buttons
+// v1.1 · 09/11/26 · support recommendations section (dai-support.js), priorities filled from targets on import
 // v1.0 · 09/11/26 · Digital Accessibility and Inclusion: Registration and "How's it going" imports, staff matching, progress view, staff profile card
 //
 // Reads two Microsoft Forms Excel exports from the connected Data folder:
@@ -509,6 +510,13 @@ function initDAI() {
 }
 
 function _daiDelegate(ev) {
+  const pb = ev.target.closest('[data-dsu-prompt]');
+  if (pb) {
+    ev.preventDefault();
+    const spec = typeof daiPromptSpec === 'function' ? daiPromptSpec(+pb.getAttribute('data-dsu-prompt')) : null;
+    if (spec && typeof daiPromptOpen === 'function') daiPromptOpen(spec, pb);
+    return;
+  }
   const b = ev.target.closest('[data-dai-staff]');
   if (!b) return;
   ev.preventDefault();
@@ -675,9 +683,50 @@ function _daiRenderBody() {
 
   const caveat = `<p style="font-size:var(--text-xs);color:var(--color-muted);max-width:75ch;">Before is one overall rating given at registration; after is the average of 11 element ratings. Treat the change as an indication, not a like-for-like measure. Each person's latest response of each kind counts.${d.unscored ? ` ${d.unscored} registration answer${d.unscored === 1 ? ' is' : 's are'} not scored yet: run the import again to map the wording.` : ''}</p>`;
 
-  const recs = typeof daiSupportSection === 'function' ? daiSupportSection() : '';
-  body.innerHTML = kpis + recs + elements + areas + coaching + support + caveat;
+  const sp = typeof daiSupportParts === 'function' ? daiSupportParts() : {};
+  const panels = {
+    overview:  kpis + (sp.actions || '') + caveat,
+    resources: sp.resources || '',
+    theme:     (sp.themes || '') + elements,
+    area:      areas + (sp.areaNeeds || ''),
+    campus:    sp.campus || '',
+    people:    coaching + (sp.person || ''),
+    asked:     support,
+  };
+  if (!panels[_daiTab]) _daiTab = 'overview';
+  body.innerHTML = `
+    <div role="tablist" aria-label="DA&amp;I progress views" style="display:flex;flex-wrap:wrap;gap:2px;border-bottom:2px solid var(--color-border);margin-bottom:var(--space-lg);">
+      ${DAI_TABS.map(t => `<button type="button" role="tab" id="dai-tab-${t.id}" aria-controls="dai-panel" aria-selected="${t.id === _daiTab}" tabindex="${t.id === _daiTab ? '0' : '-1'}" data-dai-tab="${t.id}"
+        style="padding:10px 16px;min-height:44px;border:none;border-bottom:3px solid ${t.id === _daiTab ? 'var(--color-teal)' : 'transparent'};margin-bottom:-2px;background:none;cursor:pointer;font:${t.id === _daiTab ? 'bold ' : ''}var(--text-sm) Arial,sans-serif;color:${t.id === _daiTab ? 'var(--color-teal)' : 'var(--color-slate)'};">${t.label}</button>`).join('')}
+    </div>
+    <div id="dai-panel" role="tabpanel" aria-labelledby="dai-tab-${_daiTab}" tabindex="0">${panels[_daiTab]}</div>`;
+  body.querySelectorAll('[data-dai-tab]').forEach(b => {
+    b.addEventListener('click', () => _daiSetTab(b.dataset.daiTab));
+    b.addEventListener('keydown', e => {
+      const i = DAI_TABS.findIndex(t => t.id === b.dataset.daiTab);
+      const go = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: DAI_TABS.length - 1 }[e.key];
+      if (go == null) return;
+      e.preventDefault();
+      _daiSetTab(DAI_TABS[(go + DAI_TABS.length) % DAI_TABS.length].id);
+    });
+  });
   if (typeof daiWireSupportSection === 'function') daiWireSupportSection();
+}
+
+const DAI_TABS = Object.freeze([
+  { id: 'overview',  label: 'Overview' },
+  { id: 'resources', label: 'By resource type' },
+  { id: 'theme',     label: 'By theme' },
+  { id: 'area',      label: 'By area' },
+  { id: 'campus',    label: 'By campus' },
+  { id: 'people',    label: 'By person' },
+  { id: 'asked',     label: 'Support asked for' },
+]);
+let _daiTab = 'overview';
+function _daiSetTab(id) {
+  _daiTab = id;
+  _daiRenderBody();
+  document.getElementById('dai-tab-' + id)?.focus();
 }
 
 // ── Staff profile card ────────────────────────────────────────
