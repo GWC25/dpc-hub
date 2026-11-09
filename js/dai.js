@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v1.4 · 09/11/26 · the 1-or-2 count is a clear button that lists just those people
+// DPC Hub · js/dai.js · v1.5 · 09/11/26 · Area Action Plans imported with the DA&I files (dai-plans.js); Area plans tab; area code found anywhere in the answer
+// v1.4 · 09/11/26 · the 1-or-2 count is a clear button that lists just those people
 // v1.3 · 09/11/26 · element rows open to show who rated what, with their targets and support asks
 // v1.2 · 09/11/26 · progress page split into tabs; planning prompt buttons
 // v1.1 · 09/11/26 · support recommendations section (dai-support.js), priorities filled from targets on import
@@ -236,7 +237,9 @@ function _daiAreaExact(raw) {
   const byCode = areas.find(a => a.areaCode.toLowerCase() === n || (lead && a.areaCode.toLowerCase() === lead[1].toLowerCase() && n.includes(_daiNorm(a.areaName))));
   if (byCode) return byCode.areaCode;
   const byName = areas.find(a => _daiNorm(a.areaName) === n);
-  return byName ? byName.areaCode : null;
+  if (byName) return byName.areaCode;
+  const codes = [...new Set((String(raw).match(/\b[A-Z]{3}\b/g) || []))].filter(c => areas.some(a => a.areaCode === c));
+  return codes.length === 1 ? codes[0] : null;
 }
 function _daiAreaGuess(raw) {
   const n = _daiNorm(raw);
@@ -262,7 +265,7 @@ async function _daiScan() {
   const files = await listFolderFiles(n => /\.xlsx$/i.test(n) && !n.startsWith('~$'));
   if (!files.length) throw new Error('No Excel files found in the connected Data folder. Check the folder is connected in Settings.');
 
-  const found = [], records = [], notes = [];
+  const found = [], records = [], notes = [], plans = [];
   for (const f of files) {
     let parsed = null;
     try { parsed = _daiReadWorkbook((await readFolderFileBytes(f.name)).bytes); } catch (e) { continue; }
@@ -276,17 +279,22 @@ async function _daiScan() {
       found.push({ name: f.name, kind: "How's it going", count: list.length });
       if (missing.length) notes.push(`${f.name}: no column found for ${missing.join(', ')}.`);
       records.push(...list);
-    } else if (parsed.kind === 'actionplan') {
-      found.push({ name: f.name, kind: 'Area Action Plan', count: parsed.rows.length, later: true });
+    } else if (parsed.kind === 'actionplan' && typeof daiPlanParse === 'function') {
+      const list = daiPlanParse(parsed.head, parsed.rows, f.name);
+      found.push({ name: f.name, kind: 'Area Action Plan', count: list.length });
+      plans.push(...list);
     }
   }
-  if (!found.some(f => !f.later)) throw new Error('No Registration or "How\'s it going" export found in the Data folder.');
+  if (!found.length) throw new Error('No Registration, "How\'s it going" or Area Action Plan export found in the Data folder.');
 
   const store = _daiStore();
   const have = new Set(store.responses.map(r => r.key));
   const fresh = [];
   const seen = new Set();
   records.forEach(r => { r.key = _daiKey(r); if (!have.has(r.key) && !seen.has(r.key)) { seen.add(r.key); fresh.push(r); } });
+  const havePlans = new Set((store.plans || []).map(p => p.key));
+  const freshPlans = [];
+  plans.forEach(p => { p.key = daiPlanKey(p); if (!havePlans.has(p.key) && !seen.has(p.key)) { seen.add(p.key); freshPlans.push(p); } });
 
   // Answer wordings the Hub cannot score yet.
   const wordings = new Map();
@@ -298,7 +306,7 @@ async function _daiScan() {
 
   // Area wordings without an exact or remembered match.
   const areaTexts = new Map();
-  fresh.forEach(r => {
+  [...fresh, ...freshPlans].forEach(r => {
     if (!r.areaRaw || _daiAreaExact(r.areaRaw)) return;
     const k = _daiNorm(r.areaRaw);
     if (!areaTexts.has(k)) areaTexts.set(k, { raw: r.areaRaw, count: 0, guess: _daiAreaGuess(r.areaRaw) });
@@ -329,7 +337,7 @@ async function _daiScan() {
   });
 
   return {
-    found, notes, fresh, already: records.length - fresh.length,
+    found, notes, fresh, freshPlans, already: records.length - fresh.length + plans.length - freshPlans.length,
     wordings: [...wordings.values()].sort((a, b) => b.count - a.count),
     areaTexts: [...areaTexts.values()].sort((a, b) => a.raw.localeCompare(b.raw)),
     people: [...people.values()], nameMatches, byEmailCount, toCreate,
@@ -399,11 +407,12 @@ function _daiApply(scan, decisions) {
     staff.filter(s => s.areaCode === code && !area.staffRefs.includes(s.staffId)).forEach(s => area.staffRefs.push(s.staffId));
     if (typeof saveArea === 'function') saveArea(area);
   });
+  const plansAdded = scan.freshPlans && scan.freshPlans.length && typeof daiPlanSave === 'function' ? daiPlanSave(scan.freshPlans) : 0;
   if (typeof saveStaffBulk === 'function') saveStaffBulk();
   if (typeof saveDAIData === 'function') saveDAIData();
   // Empty development priorities take the person's DA&I targets.
   const pr = typeof daiFillPriorities === 'function' ? daiFillPriorities(importedIds) : { filled: 0 };
-  return { created, linked, added, prioritiesFilled: pr.filled };
+  return { created, linked, added, plansAdded, prioritiesFilled: pr.filled };
 }
 
 // ── Analysis ──────────────────────────────────────────────────
@@ -519,6 +528,8 @@ function _daiDelegate(ev) {
     if (spec && typeof daiPromptOpen === 'function') daiPromptOpen(spec, pb);
     return;
   }
+  const ob = ev.target.closest('[data-dpl-open]');
+  if (ob) { ev.preventDefault(); if (typeof openAreaProfile === 'function') openAreaProfile(ob.getAttribute('data-dpl-open'), 'daiplan'); return; }
   const eb = ev.target.closest('[data-dai-el]');
   if (eb) {
     ev.preventDefault();
@@ -560,14 +571,12 @@ function _daiAreaOptions(selected) {
 }
 
 function _daiReviewHTML(s) {
-  const later = s.found.filter(f => f.later);
   const h3 = t => `<h4 style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin:var(--space-lg) 0 var(--space-xs);">${t}</h4>`;
   const hint = t => `<p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-sm);max-width:70ch;">${t}</p>`;
   const row = 'display:flex;flex-wrap:wrap;gap:var(--space-sm);align-items:center;padding:var(--space-xs) 0;border-bottom:1px solid var(--color-border);';
-  if (!s.fresh.length) {
+  if (!s.fresh.length && !s.freshPlans.length) {
     return `<h3 id="dai-review-h" tabindex="-1" style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin-top:var(--space-md);">Nothing new to import</h3>
-      ${hint(`All ${s.already} responses in these files are already in the Hub.`)}
-      ${later.length ? hint(`Area Action Plan export found (${_daiEsc(later[0].name)}). Its import comes in the next update.`) : ''}`;
+      ${hint(`All ${s.already} responses and plans in these files are already in the Hub.`)}`;
   }
 
   const wordings = s.wordings.length ? `${h3('How should these answers be scored?')}
@@ -601,12 +610,12 @@ function _daiReviewHTML(s) {
     <ul style="font-size:var(--text-sm);color:var(--color-slate);margin:var(--space-sm) 0 0 var(--space-lg);">
       <li>${regs} new Registration response${regs === 1 ? '' : 's'} and ${refl} new "How's it going" response${refl === 1 ? '' : 's'}${s.already ? `, ${s.already} already in the Hub` : ''}.</li>
       <li>${s.people.length} people: ${s.byEmailCount} matched to a profile by email, ${s.nameMatches.length} by name (check below), ${s.toCreate} new profile${s.toCreate === 1 ? '' : 's'} to create.</li>
-      ${later.length ? `<li>Area Action Plan export found (${_daiEsc(later[0].name)}). Its import comes in the next update.</li>` : ''}
+      ${s.freshPlans.length ? `<li>${s.freshPlans.length} new Area Action Plan${s.freshPlans.length === 1 ? '' : 's'}. A resubmitted plan becomes the latest version; earlier versions are kept.</li>` : ''}
       ${s.notes.map(n => `<li>${_daiEsc(n)}</li>`).join('')}
     </ul>
     ${wordings}${areas}${names}
     <div class="btn-row" style="margin-top:var(--space-lg);">
-      <button id="dai-apply-btn" type="button" class="btn btn--primary">Import ${s.fresh.length} response${s.fresh.length === 1 ? '' : 's'}</button>
+      <button id="dai-apply-btn" type="button" class="btn btn--primary">Import ${s.fresh.length + s.freshPlans.length} item${s.fresh.length + s.freshPlans.length === 1 ? '' : 's'}</button>
       <button id="dai-cancel-btn" type="button" class="btn btn--secondary">Cancel</button>
     </div>`;
 }
@@ -620,7 +629,7 @@ function _daiOnApply() {
   const res = _daiApply(_daiPending, decisions);
   _daiPending = null;
   document.getElementById('dai-review').innerHTML = '';
-  const msg = `Imported ${res.added} response${res.added === 1 ? '' : 's'}: ${res.linked} linked to existing profiles, ${res.created} new profile${res.created === 1 ? '' : 's'} created${res.prioritiesFilled ? `, ${res.prioritiesFilled} development priorit${res.prioritiesFilled === 1 ? 'y' : 'ies'} filled from targets` : ''}.`;
+  const msg = `${res.plansAdded ? `Imported ${res.plansAdded} Area Action Plan${res.plansAdded === 1 ? '' : 's'}. ` : ''}Imported ${res.added} response${res.added === 1 ? '' : 's'}: ${res.linked} linked to existing profiles, ${res.created} new profile${res.created === 1 ? '' : 's'} created${res.prioritiesFilled ? `, ${res.prioritiesFilled} development priorit${res.prioritiesFilled === 1 ? 'y' : 'ies'} filled from targets` : ''}.`;
   document.getElementById('dai-status').textContent = msg;
   if (typeof UI !== 'undefined' && UI.showToast) UI.showToast('success', msg);
   _daiRenderBody();
@@ -659,7 +668,7 @@ const _daiPersonBtn = p => `<button type="button" data-dai-staff="${_daiEsc(p.st
 function _daiRenderBody() {
   const body = document.getElementById('dai-body');
   if (!body) return;
-  if (!_daiStore().responses.length) {
+  if (!_daiStore().responses.length && !(_daiStore().plans || []).length) {
     body.innerHTML = `<p style="font-size:var(--text-sm);color:var(--color-muted);">No DA&amp;I responses imported yet. Use "Check the Data folder" above.</p>`;
     return;
   }
@@ -709,6 +718,7 @@ function _daiRenderBody() {
     campus:    sp.campus || '',
     people:    coaching + (sp.person || ''),
     asked:     support,
+    plans:     typeof daiPlansOverviewHTML === 'function' ? daiPlansOverviewHTML() : '',
   };
   if (!panels[_daiTab]) _daiTab = 'overview';
   body.innerHTML = `
@@ -772,6 +782,7 @@ const DAI_TABS = Object.freeze([
   { id: 'campus',    label: 'By campus' },
   { id: 'people',    label: 'By person' },
   { id: 'asked',     label: 'Support asked for' },
+  { id: 'plans',     label: 'Area plans' },
 ]);
 let _daiTab = 'overview';
 function _daiSetTab(id) {

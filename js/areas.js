@@ -1,4 +1,5 @@
-// DPC Hub · js/areas.js · v1.4 · 09/11/26 · opening an area starts at the top of the page
+// DPC Hub · js/areas.js · v1.5 · 09/11/26 · DA&I Plan tab (Heads of Area Action Plan, dai-plans.js)
+// v1.4 · 09/11/26 · opening an area starts at the top of the page
 // v1.3 · 20/10/26 · Assistant Principal field on area details (area.apName)
 // v1.2 · 02/09/26 · Session 65 — Action Plan JSON import (paste, preview, untick, apply)
 // Areas module. 35-area overview grid, area detail view with tabs.
@@ -192,13 +193,13 @@ function _renderAreaDetail(areaCode) {
 
     <!-- Tabs -->
     <div role="tablist" aria-label="Area sections" style="display:flex;border-bottom:2px solid var(--color-border);margin-bottom:var(--space-lg);gap:0;">
-      ${['overview','rag','activity','staff','resources','healthchecks','actionplan','industryskills'].map(tab => `
+      ${['overview','rag','activity','staff','resources','healthchecks','actionplan','daiplan','industryskills'].map(tab => `
         <button role="tab" type="button" id="tab-${tab}" data-tab="${tab}"
           aria-selected="${tab===_areasDetailTab?'true':'false'}"
           style="padding:10px 20px;border:none;border-bottom:3px solid ${tab===_areasDetailTab?'var(--color-teal)':'transparent'};
           background:none;cursor:pointer;font:${tab===_areasDetailTab?'bold':''} var(--text-base) Arial,sans-serif;
           color:${tab===_areasDetailTab?'var(--color-teal)':'var(--color-muted)'};min-height:44px;white-space:nowrap;">
-          ${{overview:'Overview',rag:'RAG Matrix',activity:'Activity Log',staff:'Staff',resources:'Resources Shared',healthchecks:'Health Checks',actionplan:'Action Plan',industryskills:'Digital Skills'}[tab]}
+          ${{overview:'Overview',rag:'RAG Matrix',activity:'Activity Log',staff:'Staff',resources:'Resources Shared',healthchecks:'Health Checks',actionplan:'Action Plan',daiplan:'DA&amp;I Plan',industryskills:'Digital Skills'}[tab]}
         </button>`).join('')}
     </div>
 
@@ -426,6 +427,11 @@ function _renderAreaTab(tab, areaCode) {
 
   if (tab === 'actionplan') {
     _renderActionPlanTab(panel, areaCode);
+  }
+
+  if (tab === 'daiplan') {
+    if (typeof daiPlanRenderAreaTab === 'function') daiPlanRenderAreaTab(panel, areaCode);
+    else panel.innerHTML = '<p>The DA&amp;I plan module did not load. Refresh the Hub.</p>';
   }
 
   if (tab === 'industryskills') {
