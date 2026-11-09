@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v1.2 · 09/11/26 · progress page split into tabs; planning prompt buttons
+// DPC Hub · js/dai.js · v1.3 · 09/11/26 · element rows open to show who rated what, with their targets and support asks
+// v1.2 · 09/11/26 · progress page split into tabs; planning prompt buttons
 // v1.1 · 09/11/26 · support recommendations section (dai-support.js), priorities filled from targets on import
 // v1.0 · 09/11/26 · Digital Accessibility and Inclusion: Registration and "How's it going" imports, staff matching, progress view, staff profile card
 //
@@ -517,6 +518,17 @@ function _daiDelegate(ev) {
     if (spec && typeof daiPromptOpen === 'function') daiPromptOpen(spec, pb);
     return;
   }
+  const eb = ev.target.closest('[data-dai-el]');
+  if (eb) {
+    ev.preventDefault();
+    const id = eb.getAttribute('data-dai-el');
+    const which = eb.getAttribute('aria-label') ? 'count' : 'name';
+    if (_daiOpenEls.has(id)) _daiOpenEls.delete(id); else _daiOpenEls.add(id);
+    _daiRenderBody();
+    const again = [...document.querySelectorAll(`[data-dai-el="${id}"]`)].find(x => (x.getAttribute('aria-label') ? 'count' : 'name') === which);
+    (again || document.querySelector(`[data-dai-el="${id}"]`))?.focus();
+    return;
+  }
   const b = ev.target.closest('[data-dai-staff]');
   if (!b) return;
   ev.preventDefault();
@@ -653,6 +665,7 @@ function _daiRenderBody() {
     return;
   }
   const d = _daiCompute();
+  const sp = typeof daiSupportParts === 'function' ? daiSupportParts() : {};
   const shift = d.both.length ? _daiAvg(d.both.map(p => p.after - p.before)) : null;
 
   const kpis = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);">
@@ -663,8 +676,13 @@ function _daiRenderBody() {
     ${_daiKPI(shift == null ? '–' : `${shift >= 0 ? '+' : ''}${_daiFmt(shift)}`, 'Average change', `${d.both.length} people answered both`)}
   </div>`;
 
-  const elRows = d.elements.map(e => `<tr>${_daiTd(_daiEsc(e.label))}${_daiTd(`${_daiFmt(e.avg)}${_daiBar(e.avg)}`)}${_daiTd(e.low)}${_daiTd(e.n)}</tr>`);
-  const elements = _daiSection('dai-el-h', 'Confidence by element', 'Lowest first. These are the elements to train or resource next.',
+  const elRows = d.elements.map(e => {
+    const open = _daiOpenEls.has(e.id);
+    const btn = (label, extra) => `<button type="button" data-dai-el="${e.id}" aria-expanded="${open}" aria-controls="dai-el-detail-${e.id}"${extra || ''} style="background:none;border:none;padding:0;color:var(--color-teal);text-decoration:underline;cursor:pointer;font:inherit;min-height:24px;text-align:left;">${label}</button>`;
+    return `<tr>${_daiTd(btn(`<span aria-hidden="true">${open ? '▾' : '▸'}</span> ${_daiEsc(e.label)}`))}${_daiTd(`${_daiFmt(e.avg)}${_daiBar(e.avg)}`)}${_daiTd(e.low ? btn(String(e.low), ` aria-label="${e.low} ${e.low === 1 ? 'person' : 'people'} at 1 or 2 on ${_daiEsc(e.label)}, show who"`) : '0')}${_daiTd(e.n)}</tr>
+      <tr id="dai-el-detail-${e.id}"${open ? '' : ' hidden'}><td colspan="4" style="padding:var(--space-sm) var(--space-md) var(--space-md);border-bottom:1px solid var(--color-border);background:var(--color-light);">${open ? _daiElementDetail(e, d) : ''}</td></tr>`;
+  });
+  const elements = _daiSection('dai-el-h', 'Confidence by element', 'Lowest first. These are the elements to train or resource next. Select an element or its count to see who rated what.',
     _daiTable('Average confidence after the training, out of 5, for each element', ['Element', 'Average of 5', 'People at 1 or 2', 'Answers'], elRows));
 
   const arRows = d.areas.map(a => `<tr>${_daiTd(a.code ? `<strong>${_daiEsc(a.code)}</strong> ${_daiEsc(a.name)}` : _daiEsc(a.name))}${_daiTd(a.registered)}${_daiTd(a.reflections)}${_daiTd(_daiFmt(a.before))}${_daiTd(_daiFmt(a.after))}${_daiTd(_daiEsc(a.weakest))}</tr>`);
@@ -683,7 +701,6 @@ function _daiRenderBody() {
 
   const caveat = `<p style="font-size:var(--text-xs);color:var(--color-muted);max-width:75ch;">Before is one overall rating given at registration; after is the average of 11 element ratings. Treat the change as an indication, not a like-for-like measure. Each person's latest response of each kind counts.${d.unscored ? ` ${d.unscored} registration answer${d.unscored === 1 ? ' is' : 's are'} not scored yet: run the import again to map the wording.` : ''}</p>`;
 
-  const sp = typeof daiSupportParts === 'function' ? daiSupportParts() : {};
   const panels = {
     overview:  kpis + (sp.actions || '') + caveat,
     resources: sp.resources || '',
@@ -711,6 +728,40 @@ function _daiRenderBody() {
     });
   });
   if (typeof daiWireSupportSection === 'function') daiWireSupportSection();
+}
+
+// Who rated an element at each level. People at 1 or 2 come first, with
+// any target or support request of theirs that mentions the element.
+const _daiOpenEls = new Set();
+function _daiElementDetail(e, d) {
+  const rated = d.all.filter(p => p.elements[e.id] != null);
+  if (!rated.length) return '<p style="font-size:var(--text-sm);">No ratings yet.</p>';
+  const mentions = p => {
+    if (!p.refl || typeof _dsuThemesIn !== 'function') return [];
+    const out = [];
+    _daiTargets(p.refl).forEach(t => { if (_dsuThemesIn(t.text).includes(e.id)) out.push(`Target: "${t.text}"${t.confidence != null ? ` (confidence ${t.confidence} of 5)` : ''}`); });
+    if (p.refl.supportDetail && _dsuThemesIn(p.refl.supportDetail).includes(e.id)) out.push(`Asked for support: "${p.refl.supportDetail}"`);
+    return out;
+  };
+  const low = rated.filter(p => p.elements[e.id] <= 2).sort((a, b) => a.elements[e.id] - b.elements[e.id] || a.name.localeCompare(b.name));
+  const lowHTML = low.length ? `<h3 style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-xs);">Rated 1 or 2 (${low.length})</h3>
+    <ul style="list-style:none;margin:0 0 var(--space-md);">${low.map(p => {
+      const m = mentions(p);
+      return `<li style="font-size:var(--text-sm);padding:var(--space-xs) 0;border-top:1px solid var(--color-border);">${_daiPersonBtn(p)} <span style="color:var(--color-muted);">${_daiEsc(p.areaCode || 'No area')}</span>: <strong>${p.elements[e.id]} of 5</strong>, ${DAI_SCALE_WORDS[p.elements[e.id]].toLowerCase()}${m.length ? `<br>${m.map(_daiEsc).join('<br>')}` : ''}</li>`;
+    }).join('')}</ul>` : '<p style="font-size:var(--text-sm);margin-bottom:var(--space-md);">No one rated this 1 or 2.</p>';
+  const others = [5, 4, 3].map(v => ({ v, ps: rated.filter(p => p.elements[e.id] === v).sort((a, b) => a.name.localeCompare(b.name)) })).filter(x => x.ps.length);
+  const othersHTML = others.length ? `<details><summary style="cursor:pointer;font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);min-height:24px;">Everyone else (${rated.length - low.length})</summary>
+    ${others.map(x => `<p style="font-size:var(--text-sm);margin-top:var(--space-xs);"><strong>${x.v} of 5, ${DAI_SCALE_WORDS[x.v].toLowerCase()} (${x.ps.length}):</strong> ${x.ps.map(_daiPersonBtn).join(', ')}</p>`).join('')}</details>` : '';
+  let prompt = '';
+  if (typeof daiSupportNeeds === 'function' && typeof _dsuPromptBtn === 'function') {
+    const needs = daiSupportNeeds().filter(n => n.theme === e.id);
+    if (needs.length) {
+      const th = DSU_THEMES.find(t => t.id === e.id);
+      const kind = th && th.complexity === 3 ? 'coachgroup' : 'video';
+      prompt = `<p style="margin-top:var(--space-sm);">${_dsuPromptBtn({ kind, themes: [e.id], needs }, `${DSU_FORMATS[kind === 'coachgroup' ? 'coaching' : 'video']} on ${e.label}`)}</p>`;
+    }
+  }
+  return lowHTML + othersHTML + prompt;
 }
 
 const DAI_TABS = Object.freeze([
