@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-evidence.js · v1.0 · 09/11/26 · evidence log for Area Action Plans: add, edit, delete; link to actions, milestones and staff
+// DPC Hub · js/dai-evidence.js · v1.1 · 09/11/26 · dialog takes other link targets and staff (personal targets, dai-targets.js)
+// v1.0 · 09/11/26 · evidence log for Area Action Plans: add, edit, delete; link to actions, milestones and staff
 //
 // Evidence is Graeme's record of work with an area: learning walks,
 // coaching, conversations, meetings, training, Teach Meets, resources
@@ -59,6 +60,7 @@ function _devLinkLabel(key, plan) {
   if (t) return t.label.split(':')[0];
   if (key.startsWith('action:')) { const a = DAI_PLAN_ACTIONS.find(x => 'action:' + x.id === key); return a ? a.label : key; }
   if (/^m\d$/.test(key)) return 'Milestone ' + key.slice(1);
+  if (key.startsWith('tgt:')) return 'Personal target';
   return key;
 }
 
@@ -134,9 +136,9 @@ let _devReturnFocus = null;
 function _devOpenDialog(areaCode, plan, opts, onSaved) {
   _devReturnFocus = document.activeElement;
   const existing = opts.id ? _devStore().find(e => e.id === opts.id) : null;
-  const ev = existing || { type: 'learning-walk', date: todayISO(), title: '', notes: '', link: '', links: [opts.linkKey || 'plan'], staffIds: [] };
-  const targets = _devTargets(plan);
-  const staff = _devAreaStaff(areaCode);
+  const ev = existing || { type: opts.targets ? 'coaching' : 'learning-walk', date: todayISO(), title: '', notes: '', link: '', links: [opts.linkKey || 'plan'], staffIds: opts.staffIds || [] };
+  const targets = opts.targets || _devTargets(plan);
+  const staff = (opts.staffList || _devAreaStaff(areaCode)).slice();
   (ev.staffIds || []).forEach(id => { if (!staff.some(s => s.staffId === id)) { const s = _daiStaffList().find(x => x.staffId === id); if (s) staff.push(s); } });
 
   document.getElementById('dev-dialog')?.remove();
@@ -212,12 +214,15 @@ function _devOpenDialog(areaCode, plan, opts, onSaved) {
     host.querySelector('#dev-link-err').textContent = !link || _devSafeUrl(link) ? '' : 'Links must start with https:// (copy the share link from SharePoint or OneDrive).';
     if (!title) { host.querySelector('#dev-what').focus(); return; }
     if (link && !_devSafeUrl(link)) { host.querySelector('#dev-link').focus(); return; }
-    const links = [...host.querySelectorAll('[data-dev-link]:checked')].map(c => c.value);
+    // Links this dialog does not show (a personal target seen from the area, or the reverse) are kept.
+    const shown = new Set(targets.map(t => t.key));
+    const links = [...host.querySelectorAll('[data-dev-link]:checked')].map(c => c.value)
+      .concat((existing ? existing.links || [] : []).filter(k => !shown.has(k)));
     const record = {
       type: host.querySelector('#dev-type').value,
       date: host.querySelector('#dev-date').value || todayISO(),
       title, notes: host.querySelector('#dev-notes').value.trim(), link,
-      links: links.length ? links : ['plan'],
+      links: links.length ? links : [targets[0] ? targets[0].key : 'plan'],
       staffIds: [...host.querySelectorAll('[data-dev-person]:checked')].map(c => c.value),
       updatedAt: nowISO(),
     };

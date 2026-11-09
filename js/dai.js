@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v1.6 · 09/11/26 · click handler bound once (revisiting the page no longer doubles clicks)
+// DPC Hub · js/dai.js · v1.7 · 09/11/26 · staff card targets with progress and evidence (dai-targets.js); targets KPI
+// v1.6 · 09/11/26 · click handler bound once (revisiting the page no longer doubles clicks)
 // v1.5 · 09/11/26 · Area Action Plans imported with the DA&I files (dai-plans.js); Area plans tab; area code found anywhere in the answer
 // v1.4 · 09/11/26 · the 1-or-2 count is a clear button that lists just those people
 // v1.3 · 09/11/26 · element rows open to show who rated what, with their targets and support asks
@@ -683,6 +684,7 @@ function _daiRenderBody() {
     ${_daiKPI(d.before == null ? '–' : `${_daiFmt(d.before)} of 5`, 'Confidence before', 'One overall rating at registration')}
     ${_daiKPI(d.after == null ? '–' : `${_daiFmt(d.after)} of 5`, 'Confidence after', 'Average across the 11 elements')}
     ${_daiKPI(shift == null ? '–' : `${shift >= 0 ? '+' : ''}${_daiFmt(shift)}`, 'Average change', `${d.both.length} people answered both`)}
+    ${(() => { const t = typeof daiTargetsSummary === 'function' ? daiTargetsSummary() : null; return t && t.total ? _daiKPI(`${t.achieved} of ${t.total}`, 'Personal targets achieved', `${t.inProgress} in progress, ${t.withEvidence} with evidence`) : ''; })()}
   </div>`;
 
   const elRows = d.elements.map(e => {
@@ -824,12 +826,12 @@ function daiRenderStaffCard(staffId) {
           <tbody>${DAI_ELEMENTS.map(e => `<tr>${_daiTd(_daiEsc(e.label))}${_daiTd(`${els[e.id] == null ? '–' : els[e.id] + ' of 5'}${_daiBar(els[e.id])}`)}</tr>`).join('')}</tbody>
         </table>
       </div>
-      ${targets.length ? `<h4 style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);margin-top:var(--space-md);">Their targets to December</h4>
-        <ol style="margin:var(--space-xs) 0 0 var(--space-lg);font-size:var(--text-sm);">${targets.map(t => `<li style="margin-bottom:var(--space-xs);">${_daiEsc(t.text)} <span style="color:var(--color-muted);">(confidence ${t.confidence == null ? 'not given' : t.confidence + ' of 5'})</span></li>`).join('')}</ol>` : ''}
+      ${typeof daiTargetsStaffHTML === 'function' ? daiTargetsStaffHTML(staffId, targets) : ''}
       ${typeof daiSupportStaffHTML === 'function' ? daiSupportStaffHTML(staffId) : ''}
       ${line('Support asked for', (refl.supportWanted || '').split(/;|\n/).map(x => x.trim()).filter(Boolean).join(', '))}${line('What for', refl.supportDetail)}
       ${(refl.takeaway || refl.tried || refl.why) ? `<details style="margin-top:var(--space-md);"><summary style="cursor:pointer;font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);min-height:24px;">Their reflections</summary>
         ${line('Took away', refl.takeaway)}${line('Tried since', refl.tried)}${line('Why it matters to them', refl.why)}</details>` : ''}
     ` : ''}
+    ${typeof daiStaffEvidenceHTML === 'function' ? daiStaffEvidenceHTML(staffId) : ''}
   </section>`;
 }

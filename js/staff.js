@@ -1,4 +1,5 @@
-// DPC Hub · js/staff.js · v1.4 · 09/11/26 · opening a profile starts at the top of the page
+// DPC Hub · js/staff.js · v1.5 · 09/11/26 · DA&I targets: progress and evidence wired on the profile
+// v1.4 · 09/11/26 · opening a profile starts at the top of the page
 // v1.3 · 09/11/26 · campus field (campus support view)
 // v1.2 · 09/11/26 · email field (links Forms responses), DA&I card on the profile
 // v1.1 · 01/09/26 · Session 63 — Health Check tab: per-review Word report download
@@ -255,6 +256,7 @@ function _renderStaffDetailContent(staffId) {
 
   _renderStaffTab(_staffTab, staffId);
   _wireStaffDetailEvents(staffId);
+  if (typeof daiStaffCardWire === 'function') daiStaffCardWire(detail, staffId);
 }
 
 function _renderStaffTab(tab, staffId) {
