@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v1.8 · 09/11/26 · impact report download on the Overview tab (dai-report.js)
+// DPC Hub · js/dai.js · v1.9 · 09/11/26 · support action progress (dai-actions.js): Mark done button, filters
+// v1.8 · 09/11/26 · impact report download on the Overview tab (dai-report.js)
 // v1.7 · 09/11/26 · staff card targets with progress and evidence (dai-targets.js); targets KPI
 // v1.6 · 09/11/26 · click handler bound once (revisiting the page no longer doubles clicks)
 // v1.5 · 09/11/26 · Area Action Plans imported with the DA&I files (dai-plans.js); Area plans tab; area code found anywhere in the answer
@@ -531,6 +532,8 @@ function _daiDelegate(ev) {
     if (spec && typeof daiPromptOpen === 'function') daiPromptOpen(spec, pb);
     return;
   }
+  const ab = ev.target.closest('[data-dac-open]');
+  if (ab) { ev.preventDefault(); if (typeof daiActionOpen === 'function') daiActionOpen(+ab.getAttribute('data-dac-open'), ab); return; }
   const ob = ev.target.closest('[data-dpl-open]');
   if (ob) { ev.preventDefault(); if (typeof openAreaProfile === 'function') openAreaProfile(ob.getAttribute('data-dpl-open'), 'daiplan'); return; }
   const eb = ev.target.closest('[data-dai-el]');
@@ -685,6 +688,7 @@ function _daiRenderBody() {
     ${_daiKPI(d.before == null ? '–' : `${_daiFmt(d.before)} of 5`, 'Confidence before', 'One overall rating at registration')}
     ${_daiKPI(d.after == null ? '–' : `${_daiFmt(d.after)} of 5`, 'Confidence after', 'Average across the 11 elements')}
     ${_daiKPI(shift == null ? '–' : `${shift >= 0 ? '+' : ''}${_daiFmt(shift)}`, 'Average change', `${d.both.length} people answered both`)}
+    ${(() => { const a = typeof daiActionSummary === 'function' ? daiActionSummary() : null; return a ? _daiKPI(a.done, 'Support actions done', `${a.inProgress} planned or in progress`) : ''; })()}
     ${(() => { const t = typeof daiTargetsSummary === 'function' ? daiTargetsSummary() : null; return t && t.total ? _daiKPI(`${t.achieved} of ${t.total}`, 'Personal targets achieved', `${t.inProgress} in progress, ${t.withEvidence} with evidence`) : ''; })()}
   </div>`;
 
@@ -743,6 +747,7 @@ function _daiRenderBody() {
   });
   if (typeof daiWireSupportSection === 'function') daiWireSupportSection();
   if (typeof daiReportWire === 'function') daiReportWire(body);
+  if (typeof daiActionWireFilters === 'function') daiActionWireFilters(body);
 }
 
 // Who rated an element at each level. People at 1 or 2 come first, with

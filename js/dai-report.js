@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-report.js · v1.0 · 09/11/26 · DA&I impact report: Word export from the DA&I progress page
+// DPC Hub · js/dai-report.js · v1.1 · 09/11/26 · support actions done
+// v1.0 · 09/11/26 · DA&I impact report: Word export from the DA&I progress page
 //
 // A Word document for line management and the task force: confidence
 // before and after the training, element gaps, area picture, Area Action
@@ -138,7 +139,11 @@ function _drpBuild(docx, opts) {
     const acts = _dsuActions(needs).filter(a => a.kind !== 'Coaching').slice(0, 10);
     const coached = new Set(needs.filter(n => n.format === 'coaching').map(n => n.staffId)).size;
     children.push(P('Planned group support:', { spacing: { before: 160 } }));
-    children.push(...B([...acts.map(a => `${a.text} (${a.people.length} staff).`), `Individual coaching recommended for ${coached} staff.`]));
+    children.push(...B([...acts.map(a => `${a.text} (${a.people.length} staff)${typeof daiActionIsDone === 'function' && daiActionIsDone(a.key) ? ': done' : ''}.`), `Individual coaching recommended for ${coached} staff.`]));
+    if (typeof daiActionSummary === 'function') {
+      const s = daiActionSummary();
+      children.push(P(`Support actions marked done: ${s.done}; planned or in progress: ${s.inProgress}.`, { spacing: { before: 120 } }));
+    }
   }
 
   // Evidence
