@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v1.3 · 09/11/26 · element rows open to show who rated what, with their targets and support asks
+// DPC Hub · js/dai.js · v1.4 · 09/11/26 · the 1-or-2 count is a clear button that lists just those people
+// v1.3 · 09/11/26 · element rows open to show who rated what, with their targets and support asks
 // v1.2 · 09/11/26 · progress page split into tabs; planning prompt buttons
 // v1.1 · 09/11/26 · support recommendations section (dai-support.js), priorities filled from targets on import
 // v1.0 · 09/11/26 · Digital Accessibility and Inclusion: Registration and "How's it going" imports, staff matching, progress view, staff profile card
@@ -521,12 +522,10 @@ function _daiDelegate(ev) {
   const eb = ev.target.closest('[data-dai-el]');
   if (eb) {
     ev.preventDefault();
-    const id = eb.getAttribute('data-dai-el');
-    const which = eb.getAttribute('aria-label') ? 'count' : 'name';
-    if (_daiOpenEls.has(id)) _daiOpenEls.delete(id); else _daiOpenEls.add(id);
+    const id = eb.getAttribute('data-dai-el'), mode = eb.getAttribute('data-dai-mode');
+    if (_daiOpenEls.get(id) === mode) _daiOpenEls.delete(id); else _daiOpenEls.set(id, mode);
     _daiRenderBody();
-    const again = [...document.querySelectorAll(`[data-dai-el="${id}"]`)].find(x => (x.getAttribute('aria-label') ? 'count' : 'name') === which);
-    (again || document.querySelector(`[data-dai-el="${id}"]`))?.focus();
+    document.querySelector(`[data-dai-el="${id}"][data-dai-mode="${mode}"]`)?.focus();
     return;
   }
   const b = ev.target.closest('[data-dai-staff]');
@@ -677,12 +676,13 @@ function _daiRenderBody() {
   </div>`;
 
   const elRows = d.elements.map(e => {
-    const open = _daiOpenEls.has(e.id);
-    const btn = (label, extra) => `<button type="button" data-dai-el="${e.id}" aria-expanded="${open}" aria-controls="dai-el-detail-${e.id}"${extra || ''} style="background:none;border:none;padding:0;color:var(--color-teal);text-decoration:underline;cursor:pointer;font:inherit;min-height:24px;text-align:left;">${label}</button>`;
-    return `<tr>${_daiTd(btn(`<span aria-hidden="true">${open ? '▾' : '▸'}</span> ${_daiEsc(e.label)}`))}${_daiTd(`${_daiFmt(e.avg)}${_daiBar(e.avg)}`)}${_daiTd(e.low ? btn(String(e.low), ` aria-label="${e.low} ${e.low === 1 ? 'person' : 'people'} at 1 or 2 on ${_daiEsc(e.label)}, show who"`) : '0')}${_daiTd(e.n)}</tr>
-      <tr id="dai-el-detail-${e.id}"${open ? '' : ' hidden'}><td colspan="4" style="padding:var(--space-sm) var(--space-md) var(--space-md);border-bottom:1px solid var(--color-border);background:var(--color-light);">${open ? _daiElementDetail(e, d) : ''}</td></tr>`;
+    const mode = _daiOpenEls.get(e.id) || '';
+    const nameBtn = `<button type="button" data-dai-el="${e.id}" data-dai-mode="all" aria-expanded="${mode === 'all'}" aria-controls="dai-el-detail-${e.id}" style="background:none;border:none;padding:0;color:var(--color-teal);text-decoration:underline;cursor:pointer;font:inherit;min-height:24px;text-align:left;"><span aria-hidden="true">${mode === 'all' ? '▾' : '▸'}</span> ${_daiEsc(e.label)}</button>`;
+    const countBtn = `<button type="button" data-dai-el="${e.id}" data-dai-mode="low" aria-expanded="${mode === 'low'}" aria-controls="dai-el-detail-${e.id}" aria-label="${e.low} ${e.low === 1 ? 'person' : 'people'} rated ${_daiEsc(e.label)} 1 or 2, show who" style="min-width:44px;min-height:32px;padding:2px 12px;border:2px solid var(--color-teal);border-radius:999px;background:${mode === 'low' ? 'var(--color-teal)' : 'var(--color-white)'};color:${mode === 'low' ? 'var(--color-white)' : 'var(--color-teal)'};font:bold var(--text-sm) Arial,sans-serif;cursor:pointer;">${e.low} <span aria-hidden="true">${mode === 'low' ? '▾' : '▸'}</span></button>`;
+    return `<tr>${_daiTd(nameBtn)}${_daiTd(`${_daiFmt(e.avg)}${_daiBar(e.avg)}`)}${_daiTd(e.low ? countBtn : '0')}${_daiTd(e.n)}</tr>
+      <tr id="dai-el-detail-${e.id}"${mode ? '' : ' hidden'}><td colspan="4" style="padding:var(--space-sm) var(--space-md) var(--space-md);border-bottom:1px solid var(--color-border);background:var(--color-light);">${mode ? _daiElementDetail(e, d, mode) : ''}</td></tr>`;
   });
-  const elements = _daiSection('dai-el-h', 'Confidence by element', 'Lowest first. These are the elements to train or resource next. Select an element or its count to see who rated what.',
+  const elements = _daiSection('dai-el-h', 'Confidence by element', 'Lowest first. These are the elements to train or resource next. Select the number of people at 1 or 2 to see who they are, or an element name to see everyone\'s rating. Select a name to open their targets and reflections.',
     _daiTable('Average confidence after the training, out of 5, for each element', ['Element', 'Average of 5', 'People at 1 or 2', 'Answers'], elRows));
 
   const arRows = d.areas.map(a => `<tr>${_daiTd(a.code ? `<strong>${_daiEsc(a.code)}</strong> ${_daiEsc(a.name)}` : _daiEsc(a.name))}${_daiTd(a.registered)}${_daiTd(a.reflections)}${_daiTd(_daiFmt(a.before))}${_daiTd(_daiFmt(a.after))}${_daiTd(_daiEsc(a.weakest))}</tr>`);
@@ -732,8 +732,8 @@ function _daiRenderBody() {
 
 // Who rated an element at each level. People at 1 or 2 come first, with
 // any target or support request of theirs that mentions the element.
-const _daiOpenEls = new Set();
-function _daiElementDetail(e, d) {
+const _daiOpenEls = new Map(); // element id -> 'low' (just 1 or 2) | 'all'
+function _daiElementDetail(e, d, mode) {
   const rated = d.all.filter(p => p.elements[e.id] != null);
   if (!rated.length) return '<p style="font-size:var(--text-sm);">No ratings yet.</p>';
   const mentions = p => {
@@ -761,7 +761,7 @@ function _daiElementDetail(e, d) {
       prompt = `<p style="margin-top:var(--space-sm);">${_dsuPromptBtn({ kind, themes: [e.id], needs }, `${DSU_FORMATS[kind === 'coachgroup' ? 'coaching' : 'video']} on ${e.label}`)}</p>`;
     }
   }
-  return lowHTML + othersHTML + prompt;
+  return lowHTML + (mode === 'all' ? othersHTML : '') + prompt;
 }
 
 const DAI_TABS = Object.freeze([

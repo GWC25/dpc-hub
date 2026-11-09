@@ -1,4 +1,5 @@
-// DPC Hub · js/staff.js · v1.3 · 09/11/26 · campus field (campus support view)
+// DPC Hub · js/staff.js · v1.4 · 09/11/26 · opening a profile starts at the top of the page
+// v1.3 · 09/11/26 · campus field (campus support view)
 // v1.2 · 09/11/26 · email field (links Forms responses), DA&I card on the profile
 // v1.1 · 01/09/26 · Session 63 — Health Check tab: per-review Word report download
 // Staff Profile module. Dynamic creation via Instructional Coaching/LW/referral.
@@ -188,6 +189,7 @@ function _openStaffDetail(staffId) {
   if (!detail) return;
   detail.style.display = 'block';
   _renderStaffDetailContent(staffId);
+  if (typeof scrollHubToTop === 'function') scrollHubToTop();
 }
 
 function _renderStaffDetailContent(staffId) {

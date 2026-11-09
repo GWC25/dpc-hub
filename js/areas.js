@@ -1,4 +1,5 @@
-// DPC Hub · js/areas.js · v1.3 · 20/10/26 · Assistant Principal field on area details (area.apName)
+// DPC Hub · js/areas.js · v1.4 · 09/11/26 · opening an area starts at the top of the page
+// v1.3 · 20/10/26 · Assistant Principal field on area details (area.apName)
 // v1.2 · 02/09/26 · Session 65 — Action Plan JSON import (paste, preview, untick, apply)
 // Areas module. 35-area overview grid, area detail view with tabs.
 // Reads from window.DPC_DATA.areas via data.js globals.
@@ -158,6 +159,7 @@ function _openAreaDetail(areaCode, tab = 'overview') {
   if (detail) detail.style.display = 'block';
 
   _renderAreaDetail(areaCode);
+  if (typeof scrollHubToTop === 'function') scrollHubToTop();
 }
 
 // Public: navigate to Areas and open a specific area's tab — same

@@ -1,4 +1,5 @@
-// DPC Hub · js/app.js · v1.1 · 09/11/26 · DA&I progress module
+// DPC Hub · js/app.js · v1.2 · 09/11/26 · every page and opened record starts at the top
+// v1.1 · 09/11/26 · DA&I progress module
 // v1.0 · July 2026
 // Application controller. Tab routing. Module initialisation.
 // UI helper functions passed to data.js as the `ui` object.
@@ -205,6 +206,22 @@ function navigateTo(moduleKey) {
 
   _currentModule = moduleKey;
   MODULES[moduleKey].init();
+  scrollHubToTop();
+}
+
+// Opening a page, or a record within a page (a staff profile, an area),
+// starts at the top. The main panel scrolls, not the window, so both are
+// reset; once more on the next frame for pages that finish rendering late.
+function scrollHubToTop() {
+  const reset = () => {
+    const main = document.getElementById('main-content');
+    if (main) main.scrollTop = 0;
+    document.querySelectorAll('.hub-layout, .hub-body').forEach(el => { el.scrollTop = 0; });
+    window.scrollTo(0, 0);
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+  };
+  reset();
+  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(reset);
 }
 
 // ── Module stubs (Phases 2-7 fill these in) ───────────────────

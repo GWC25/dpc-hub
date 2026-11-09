@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-support.js · v1.1 · 09/11/26 · split into tab panels; planning prompt on every action, resource and need (dai-prompts.js)
+// DPC Hub · js/dai-support.js · v1.2 · 09/11/26 · theme table: people count opens the list of names with their confidence
+// v1.1 · 09/11/26 · split into tab panels; planning prompt on every action, resource and need (dai-prompts.js)
 // v1.0 · 09/11/26 · DA&I support recommendations: themes, format, urgency, campus and area grouping; priorities from targets
 //
 // Turns each person's latest "How's it going" response into support needs,
@@ -212,7 +213,9 @@ function daiSupportParts() {
       const c = f => list.filter(n => n.format === f).length;
       const top = ['video', 'guide', 'coaching'].sort((a, b) => c(b) - c(a))[0];
       const spec = { kind: top === 'coaching' ? 'coachgroup' : top, themes: [th.id], needs: list };
-      return `<tr>${_daiTd(_daiEsc(th.label))}${_daiTd(list.length)}${_daiTd(list.filter(n => n.band === 'High').length)}${_daiTd(_daiFmt(_daiAvg(list.map(n => n.confidence))))}${_daiTd(DSU_COMPLEXITY[th.complexity])}${_daiTd(`${c('coaching')} coaching, ${c('video')} video, ${c('guide')} guide`)}${_daiTd(_dsuPromptBtn(spec, `${DSU_FORMATS[top]} on ${th.label}`))}</tr>`;
+      const who = list.slice().sort((a, b) => (a.confidence ?? 9) - (b.confidence ?? 9) || a.name.localeCompare(b.name))
+        .map(n => `<li style="padding:2px 0;">${_daiPersonBtn(n)} <span style="color:var(--color-muted);">${_daiEsc(n.areaCode || '')}${n.confidence != null ? `, confidence ${n.confidence}` : ''}</span></li>`).join('');
+      return `<tr>${_daiTd(_daiEsc(th.label))}${_daiTd(`<details><summary style="cursor:pointer;min-height:24px;color:var(--color-teal);font-weight:bold;">${list.length} <span class="sr-only">people, show who</span></summary><ul style="list-style:none;margin-top:var(--space-xs);">${who}</ul></details>`)}${_daiTd(list.filter(n => n.band === 'High').length)}${_daiTd(_daiFmt(_daiAvg(list.map(n => n.confidence))))}${_daiTd(DSU_COMPLEXITY[th.complexity])}${_daiTd(`${c('coaching')} coaching, ${c('video')} video, ${c('guide')} guide`)}${_daiTd(_dsuPromptBtn(spec, `${DSU_FORMATS[top]} on ${th.label}`))}</tr>`;
     });
   const themes = _dsuH3('Support needs by theme') + _dsuP('Planning prompt uses the format most of these people need.') + _daiTable('Support needs grouped by theme', ['Theme', 'People', 'High urgency', 'Average confidence', 'Complexity', 'Recommended formats', 'Plan it'], themeRows, 860);
 
