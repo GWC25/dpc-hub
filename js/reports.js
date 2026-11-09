@@ -1,4 +1,5 @@
-// DPC Hub · js/reports.js · v1.6 · 20/10/26 · adds DA&I AP College Pack (ap-college-pack.js)
+// DPC Hub · js/reports.js · v1.7 · 09/11/26 · Area Full Data Export: Round column, DA&I Confidence and Risk Items sheets, Copilot assessment-framework prompt
+// v1.6 · 20/10/26 · adds DA&I AP College Pack (ap-college-pack.js)
 // v1.5 · 13/10/26 · My week report: this week, last week or last fortnight
 // v1.3 · 02/10/26 · Session RAG-4 — adds DA&I Day Area Packs (area-packs.js)
 // v1.2 · 02/10/26 · Session RAG-2 — adds Milestone Impact Report (milestones.js)
@@ -359,8 +360,16 @@ function _repRenderOptions() {
     html = `${areaSelect}
       <div style="background:var(--color-light);border:1px solid var(--color-border);border-radius:var(--radius-md);
         padding:var(--space-md);font-size:var(--text-sm);">
-        Every raw data point currently held for the selected area, across every module — RAG (current + full history), Digital Skills, Action Plans, Loops, Health Checks, Meetings, Notes, Staff, Reflections, CPD. One sheet per category, real dates and numbers throughout so a tool like Copilot can genuinely analyse trends and gaps, not just read a summary. No interpretation applied — this is the raw data, not a report.
-      </div>`;
+        Every raw data point currently held for the selected area, across every module — RAG (current + full history), Digital Skills, Action Plans, Loops, Health Checks, Meetings, Notes, Staff, Reflections, CPD, DA&I Confidence, Risk Items. One sheet per category, real dates and numbers throughout so a tool like Copilot can genuinely analyse trends and gaps, not just read a summary. No interpretation applied — this is the raw data, not a report.
+      </div>
+      <section aria-labelledby="rep-cp-heading" style="margin-top:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);">
+        <h4 id="rep-cp-heading" style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin:0 0 var(--space-sm);">Copilot prompt: analysis and assessment framework</h4>
+        <p style="font-size:var(--text-sm);margin:0 0 var(--space-sm);">Generate the workbook, open Copilot in the college Microsoft 365, attach the workbook, then paste this prompt. It is filled in with the area you chose and the current Health Check round. Copilot works in phases and stops after each one for you to approve.</p>
+        <button type="button" class="btn btn--secondary" id="rep-cp-copy-btn">Copy Copilot prompt</button>
+        <p id="rep-cp-status" role="status" aria-live="polite" style="font-size:var(--text-sm);margin:var(--space-xs) 0 0;"></p>
+        <label class="form-label" for="rep-cp-text" style="margin-top:var(--space-sm);display:block;">Prompt text (select and copy by hand if the button does not work)</label>
+        <textarea class="form-input" id="rep-cp-text" readonly rows="10" style="width:100%;font-family:inherit;font-size:var(--text-sm);"></textarea>
+      </section>`;
   }
 
   body.innerHTML = html;
@@ -380,6 +389,26 @@ function _repRenderOptions() {
       if (s) { s.textContent = 'Could not copy automatically — select and copy the prompt manually.'; s.style.color = 'var(--color-red)'; }
     });
   });
+
+  // Area Full Data Export: Copilot assessment-framework prompt.
+  // Fresh DOM node per render, so binding directly is safe.
+  if (type === REPORT_TYPES.AREA_DATA_EXPORT) {
+    const cpText = document.getElementById('rep-cp-text');
+    const cpStatus = document.getElementById('rep-cp-status');
+    const cpRefresh = () => { if (cpText) cpText.value = _repBuildCopilotFrameworkPrompt(document.getElementById('rep-area')?.value || ''); if (cpStatus) cpStatus.textContent = ''; };
+    cpRefresh();
+    document.getElementById('rep-area')?.addEventListener('change', cpRefresh);
+    document.getElementById('rep-cp-copy-btn')?.addEventListener('click', () => {
+      const text = cpText ? cpText.value : '';
+      const done = (ok) => {
+        if (!cpStatus) return;
+        cpStatus.textContent = ok ? 'Copied. Paste it into Copilot after attaching the workbook.' : 'Could not copy automatically. Select the prompt text below and copy it by hand.';
+        cpStatus.style.color = ok ? 'var(--color-green)' : 'var(--color-red)';
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => done(true)).catch(() => done(false));
+      else done(false);
+    });
+  }
 
   // College Action Plan Overview: select-all/deselect-all for the
   // Areas and Themes checklists — same "fresh DOM node per render"
@@ -1165,10 +1194,10 @@ function _repBuildAreaDataExportXlsx(areaCode) {
 
   // 7. Health Checks — one row per review×domain
   const reviews = ((window.DPC_DATA.healthChecks && window.DPC_DATA.healthChecks.reviews) || []).filter(r => r.areaCode === areaCode);
-  const hcRows = [['Review Date', 'Domain', 'Avg Score', 'Action Identified', 'Action Description']];
+  const hcRows = [['Review Date', 'Domain', 'Avg Score', 'Action Identified', 'Action Description', 'Round']];
   reviews.forEach(r => Object.entries(r.domains || {}).forEach(([domainId, d]) => {
     const fa = (typeof HC_FOCUS_AREAS !== 'undefined' ? HC_FOCUS_AREAS : []).find(f => f.id === domainId);
-    hcRows.push([r.date || '', fa ? fa.label : domainId, d.avgScore != null ? d.avgScore : '', d.actionIdentified ? 'Yes' : 'No', d.actionDescription || '']);
+    hcRows.push([r.date || '', fa ? fa.label : domainId, d.avgScore != null ? d.avgScore : '', d.actionIdentified ? 'Yes' : 'No', d.actionDescription || '', _repRoundLabel(r.cycleId)]);
   }));
   addSheet(hcRows, 'Health Checks');
 
@@ -1202,7 +1231,118 @@ function _repBuildAreaDataExportXlsx(areaCode) {
   cpdEntries.forEach(c => cpdRows.push([c.date || '', c.title || '', c.attendees != null ? c.attendees : '', c.notes || '']));
   addSheet(cpdRows, 'CPD');
 
+  // 13. DA&I Confidence — each response from this area, initials only
+  const confAll = (window.DPC_DATA.confidence && window.DPC_DATA.confidence.responses) || [];
+  const confItems = typeof CONF_ITEMS !== 'undefined' ? CONF_ITEMS : [];
+  const confHead = ['Date', 'Initials', 'Role', 'Point in training'];
+  confItems.forEach(it => confHead.push(it.sc ? `${it.text} (WCAG ${it.sc})` : it.text));
+  confHead.push('WCAG average', 'Accessibility Checker average', 'Overall average');
+  const confRows = [confHead];
+  const rnd2 = v => (v == null ? '' : Math.round(v * 100) / 100);
+  confAll.filter(r => r.areaCode === areaCode).forEach(r => {
+    const row = [r.date || '', _repInitials(r.name), r.role || '', r.point || ''];
+    confItems.forEach(it => row.push(r.items && r.items[it.id] != null ? r.items[it.id] : ''));
+    row.push(rnd2(r.wcag), rnd2(r.checker), rnd2(r.overall));
+    confRows.push(row);
+  });
+  addSheet(confRows, 'DA&I Confidence');
+
+  // 14. Risk Items — the same items the College Overview shows for this area
+  const riskRows = [['Type', 'Severity', 'Description', 'Detail']];
+  const risks = typeof _dashGatherRiskItems === 'function' ? _dashGatherRiskItems([areaCode]) : [];
+  risks.forEach(r => riskRows.push([r.type || '', r.severity != null ? r.severity : '', r.description || '', r.detail || '']));
+  addSheet(riskRows, 'Risk Items');
+
   XLSX.writeFile(wb, `area-data-export-${areaCode}-${todayISO()}.xlsx`);
+}
+
+function _repRoundLabel(cycleId) {
+  if (!cycleId) return '';
+  return typeof _hcCycleLabel === 'function' ? _hcCycleLabel(cycleId) : cycleId;
+}
+
+function _repInitials(name) {
+  return String(name || '').trim().split(/\s+/).filter(Boolean).map(w => w[0].toUpperCase()).join('');
+}
+
+// ── Copilot prompt: analysis + WCAG 2.2 AA / cognitive overload framework ──
+// Pasted into Copilot in the college tenant alongside the Area Full
+// Data Export, so the data never leaves Microsoft 365.
+function _repBuildCopilotFrameworkPrompt(areaCode) {
+  const area = _repGetAreas().find(a => a.areaCode === areaCode);
+  const areaLine = area ? `${area.areaName} (${area.areaCode})` : '[choose an area in the Hub first]';
+  const roundId = typeof hcCycleForDate === 'function' ? hcCycleForDate(todayISO()) : '';
+  const round = _repRoundLabel(roundId) || 'current';
+  const confItems = typeof CONF_ITEMS !== 'undefined' ? CONF_ITEMS : [];
+  const confList = confItems.map(it => `- ${it.text}${it.sc ? ` (WCAG ${it.sc})` : ' (Accessibility Checker)'}`).join('\n');
+
+  return `ROLE AND CONTEXT
+You are supporting the Digital Pedagogy Coach in the Quality team at an FE and HE college, who leads a cross-college Digital Accessibility and Inclusion (DA&I) task force. I have attached the DPC Hub Area Full Data Export for ${areaLine}. The current Health Check round is ${round}.
+
+Your job is to help me (a) analyse this area's data, and (b) co-design an assessment framework for staff resources covering WCAG 2.2 AA digital accessibility and cognitive overload. I make the decisions; you propose, evidence and show your working. The framework will go to the task force for collaborative approval before anyone uses it.
+
+THE WORKBOOK
+Sheets: Area Overview, RAG Current, RAG History, Digital Skills, Action Items, Loops, Health Checks (with a Round column), Meetings, Notes, Staff, Reflections, CPD, DA&I Confidence, Risk Items.
+- Health Checks: one row per review and domain, scored 1 to 5.
+- DA&I Confidence: each staff response to the Accessibility Confidence Check, every statement scored 1 (Not confident yet) to 5 (Very confident, I could show a colleague). The statements are:
+${confList}
+- Risk Items: low RAG dimensions, Health Check domains flagged for action, and open immediate loops for this area.
+
+DATA RULES (apply throughout)
+- Refer to people by initials only. Never output full names, even where the workbook contains them.
+- Do not invent data. If a field is missing, empty or ambiguous, say so and name the sheet and column you looked at.
+- Separate what the data shows from your interpretation, and label interpretation clearly.
+- Treat confidence as a growth indicator that points to support and next steps, never as a judgement of staff.
+- Do not use review-cycle or governance-review language (no review dates, review periods or pilot framing).
+
+PHASE 1: INVENTORY (then stop)
+- List every sheet, its columns and number of rows, and what it appears to hold.
+- Identify the columns that relate to accessibility, inclusion, cognitive load or confidence.
+- Flag data quality issues: duplicates, blanks, inconsistent scales, rounds with no data.
+Stop and ask me to confirm before continuing.
+
+PHASE 2: ANALYSIS (then stop)
+Using only confirmed data:
+- Summarise Health Check results by round, highlighting accessibility and inclusion domains.
+- Summarise DA&I Confidence by statement: number of responses, median, spread, and the lowest-confidence statements.
+- Cross-reference: where do low confidence, weak Health Check domains and Risk Items point to the same gap? Present a table with one row per gap and the sheet and column evidence for each.
+- Note strengths in this area that others could learn from.
+Stop and ask which findings to carry into the framework.
+
+PHASE 3: DRAFT ASSESSMENT FRAMEWORK (then stop)
+Draft a framework staff can use to check a teaching resource (Word, PowerPoint, PDF, Teams or Moodle content). Two strands.
+
+Strand A: Digital accessibility (WCAG 2.2 AA)
+- Organise criteria under Perceivable, Operable, Understandable, Robust.
+- Start from the success criteria in the confidence statements above, then add any other Level A or AA criteria relevant to staff-made resources (for example 1.4.11 Non-text contrast, 3.1.1 Language of page).
+- State which other WCAG 2.2 additions (for example 2.4.11 Focus not obscured, 3.2.6 Consistent help, 3.3.7 Redundant entry) apply to these resource types and which do not, with a reason.
+- For each criterion: plain-English description, what staff should check, how to check it in Microsoft 365 (note where the browser and desktop apps differ, for example where Alt Text is found), and the Accessibility Checker result that relates to it, or that the Checker cannot test it.
+
+Strand B: Cognitive overload
+- Every criterion must be grounded in named evidence: Cognitive Load Theory (Sweller: intrinsic, extraneous and germane load), Mayer's principles of multimedia learning (coherence, signalling, redundancy, spatial contiguity, temporal contiguity, segmenting, pre-training, modality), and W3C Making Content Usable for People with Cognitive and Learning Disabilities (COGA).
+- For each criterion: plain-English description, the evidence source, what staff should look for, and a short before and after example.
+- Link to Immersive Reader where it helps learners manage load.
+
+Scoring scale
+- Five levels: Green, Light yellow, Amber, Pink, Red, with a descriptor for each level in each strand.
+- Map the five levels to RAG (Green, Amber, Red) so results can feed area RAG ratings.
+- Never rely on colour alone: every level also has a text label and a number (5 to 1).
+
+Principles the framework must follow
+- Humans stay in control: staff review and approve any suggested change. AI output is a prompt to check, not a verdict.
+- No extra paperwork for staff.
+- Staff learn what to look for: each criterion explains why it matters for learners.
+Stop and ask me to review the draft criteria and scale.
+
+PHASE 4: OUTPUTS (only when I ask)
+1. A one-page staff checklist.
+2. A consistent reviewer prompt for a Copilot agent, so every resource check returns the same structure: score per strand, criteria met and not met, top three recommended fixes, and what the member of staff should check themselves.
+3. A short task force briefing summarising this area's analysis and the proposed framework.
+
+OUTPUT FORMAT (every phase)
+- Real headings in order, short paragraphs, plain English, UK spelling.
+- Tables with header rows, no merged cells, no blank cells used for layout.
+- Do not use colour as the only way to show meaning.`;
 }
 
 function _repBuildBenDoc(docx, data, opts) {
