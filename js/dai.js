@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v1.0 · 09/11/26 · Digital Accessibility and Inclusion: Registration and "How's it going" imports, staff matching, progress view, staff profile card
+// DPC Hub · js/dai.js · v1.1 · 09/11/26 · support recommendations section (dai-support.js), priorities filled from targets on import
+// v1.0 · 09/11/26 · Digital Accessibility and Inclusion: Registration and "How's it going" imports, staff matching, progress view, staff profile card
 //
 // Reads two Microsoft Forms Excel exports from the connected Data folder:
 //   Registration    who came to the DA&I training, with one overall
@@ -341,6 +342,7 @@ function _daiApply(scan, decisions) {
   const staff = window.DPC_DATA.staff.staff;
   const touchedAreas = new Set();
   let created = 0, linked = 0, added = 0;
+  const importedIds = [];
 
   scan.people.forEach(p => {
     let profile = null;
@@ -365,6 +367,7 @@ function _daiApply(scan, decisions) {
       created++;
     }
     if (!profile.touchHistory) profile.touchHistory = [];
+    importedIds.push(profile.staffId);
     p.records.forEach(r => {
       const areaCode = _daiResolveArea(r.areaRaw) || profile.areaCode || '';
       const stored = { ...r, staffId: profile.staffId, areaCode, importedAt: nowISO() };
@@ -395,7 +398,9 @@ function _daiApply(scan, decisions) {
   });
   if (typeof saveStaffBulk === 'function') saveStaffBulk();
   if (typeof saveDAIData === 'function') saveDAIData();
-  return { created, linked, added };
+  // Empty development priorities take the person's DA&I targets.
+  const pr = typeof daiFillPriorities === 'function' ? daiFillPriorities(importedIds) : { filled: 0 };
+  return { created, linked, added, prioritiesFilled: pr.filled };
 }
 
 // ── Analysis ──────────────────────────────────────────────────
@@ -483,13 +488,22 @@ function initDAI() {
     <section aria-labelledby="dai-import-h" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);margin-bottom:var(--space-xl);background:var(--color-white);">
       <h2 id="dai-import-h" style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-sm);">Import</h2>
       <p style="font-size:var(--text-sm);color:var(--color-slate);margin-bottom:var(--space-md);max-width:70ch;">Save the Forms exports (.xlsx) into the Data folder, then import. The Hub finds them by their columns, so the file names do not matter. Responses already imported are skipped.</p>
-      <button id="dai-scan-btn" type="button" class="btn btn--primary">Check the Data folder</button>
+      <div class="btn-row">
+        <button id="dai-scan-btn" type="button" class="btn btn--primary">Check the Data folder</button>
+        <button id="dai-fill-btn" type="button" class="btn btn--secondary">Fill development priorities from targets</button>
+      </div>
       <p id="dai-status" role="status" aria-live="polite" style="font-size:var(--text-sm);color:var(--color-slate);margin-top:var(--space-md);"></p>
       <div id="dai-review"></div>
     </section>
     <div id="dai-body"></div>
   `;
   document.getElementById('dai-scan-btn').addEventListener('click', _daiOnScan);
+  document.getElementById('dai-fill-btn').addEventListener('click', () => {
+    const r = typeof daiFillPriorities === 'function' ? daiFillPriorities() : { people: 0, filled: 0 };
+    document.getElementById('dai-status').textContent = r.filled
+      ? `Filled ${r.filled} development priorit${r.filled === 1 ? 'y' : 'ies'} for ${r.people} ${r.people === 1 ? 'person' : 'people'}. Only empty slots were used.`
+      : 'Nothing to fill: every target is already a priority, or the three slots are full.';
+  });
   main.addEventListener('click', _daiDelegate);
   _daiRenderBody();
 }
@@ -587,7 +601,7 @@ function _daiOnApply() {
   const res = _daiApply(_daiPending, decisions);
   _daiPending = null;
   document.getElementById('dai-review').innerHTML = '';
-  const msg = `Imported ${res.added} response${res.added === 1 ? '' : 's'}: ${res.linked} linked to existing profiles, ${res.created} new profile${res.created === 1 ? '' : 's'} created.`;
+  const msg = `Imported ${res.added} response${res.added === 1 ? '' : 's'}: ${res.linked} linked to existing profiles, ${res.created} new profile${res.created === 1 ? '' : 's'} created${res.prioritiesFilled ? `, ${res.prioritiesFilled} development priorit${res.prioritiesFilled === 1 ? 'y' : 'ies'} filled from targets` : ''}.`;
   document.getElementById('dai-status').textContent = msg;
   if (typeof UI !== 'undefined' && UI.showToast) UI.showToast('success', msg);
   _daiRenderBody();
@@ -635,7 +649,7 @@ function _daiRenderBody() {
 
   const kpis = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);">
     ${_daiKPI(d.regsCount, 'People registered', 'Came to the DA&amp;I training')}
-    ${_daiKPI(d.reflCount, '"How\'s it going" returns', d.regsCount ? `${Math.round(d.reflCount / d.regsCount * 100)}% of those registered` : '')}
+    ${_daiKPI(d.reflCount, '"How\'s it going" returns', `${d.all.filter(p => p.reg && p.refl).length} of them also registered`)}
     ${_daiKPI(d.before == null ? '–' : `${_daiFmt(d.before)} of 5`, 'Confidence before', 'One overall rating at registration')}
     ${_daiKPI(d.after == null ? '–' : `${_daiFmt(d.after)} of 5`, 'Confidence after', 'Average across the 11 elements')}
     ${_daiKPI(shift == null ? '–' : `${shift >= 0 ? '+' : ''}${_daiFmt(shift)}`, 'Average change', `${d.both.length} people answered both`)}
@@ -661,7 +675,9 @@ function _daiRenderBody() {
 
   const caveat = `<p style="font-size:var(--text-xs);color:var(--color-muted);max-width:75ch;">Before is one overall rating given at registration; after is the average of 11 element ratings. Treat the change as an indication, not a like-for-like measure. Each person's latest response of each kind counts.${d.unscored ? ` ${d.unscored} registration answer${d.unscored === 1 ? ' is' : 's are'} not scored yet: run the import again to map the wording.` : ''}</p>`;
 
-  body.innerHTML = kpis + elements + areas + coaching + support + caveat;
+  const recs = typeof daiSupportSection === 'function' ? daiSupportSection() : '';
+  body.innerHTML = kpis + recs + elements + areas + coaching + support + caveat;
+  if (typeof daiWireSupportSection === 'function') daiWireSupportSection();
 }
 
 // ── Staff profile card ────────────────────────────────────────
@@ -698,6 +714,7 @@ function daiRenderStaffCard(staffId) {
       </div>
       ${targets.length ? `<h4 style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);margin-top:var(--space-md);">Their targets to December</h4>
         <ol style="margin:var(--space-xs) 0 0 var(--space-lg);font-size:var(--text-sm);">${targets.map(t => `<li style="margin-bottom:var(--space-xs);">${_daiEsc(t.text)} <span style="color:var(--color-muted);">(confidence ${t.confidence == null ? 'not given' : t.confidence + ' of 5'})</span></li>`).join('')}</ol>` : ''}
+      ${typeof daiSupportStaffHTML === 'function' ? daiSupportStaffHTML(staffId) : ''}
       ${line('Support asked for', (refl.supportWanted || '').split(/;|\n/).map(x => x.trim()).filter(Boolean).join(', '))}${line('What for', refl.supportDetail)}
       ${(refl.takeaway || refl.tried || refl.why) ? `<details style="margin-top:var(--space-md);"><summary style="cursor:pointer;font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);min-height:24px;">Their reflections</summary>
         ${line('Took away', refl.takeaway)}${line('Tried since', refl.tried)}${line('Why it matters to them', refl.why)}</details>` : ''}

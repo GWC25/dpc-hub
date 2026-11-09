@@ -1,4 +1,5 @@
-// DPC Hub · js/staff.js · v1.2 · 09/11/26 · email field (links Forms responses), DA&I card on the profile
+// DPC Hub · js/staff.js · v1.3 · 09/11/26 · campus field (campus support view)
+// v1.2 · 09/11/26 · email field (links Forms responses), DA&I card on the profile
 // v1.1 · 01/09/26 · Session 63 — Health Check tab: per-review Word report download
 // Staff Profile module. Dynamic creation via Instructional Coaching/LW/referral.
 // Touch history, development priorities (3), ETF stage, reflection timeline.
@@ -56,6 +57,14 @@ function initStaff() {
           <select class="form-select" id="staff-area" required aria-required="true">
             <option value="">— Select area —</option>
           </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label form-label--optional" for="staff-campus">Main campus</label>
+          <select class="form-select" id="staff-campus" aria-describedby="staff-campus-hint">
+            <option value="">Same as their area</option>
+            ${(typeof DL_CAMPUS_ORDER !== 'undefined' ? DL_CAMPUS_ORDER.filter(c => c !== 'Unassigned') : ['SWSC', 'Loxton', 'Knightstone', 'Winter Gardens', 'CTC', 'Puxton Park', 'AMTEC', 'AROSFA']).map(c => `<option value="${c}">${c}</option>`).join('')}
+          </select>
+          <p id="staff-campus-hint" class="form-hint" style="font-size:var(--text-xs);color:var(--color-muted);">Used to group support by campus, for example a Teach Meet at Loxton.</p>
         </div>
         <div class="form-group" id="staff-department-group" style="display:none;">
           <label class="form-label form-label--optional" for="staff-department">Department</label>
@@ -446,6 +455,7 @@ function _openStaffModal(staffId=null) {
   titleEl.textContent = s ? 'Edit profile' : 'New staff profile';
   document.getElementById('staff-name').value  = s ? s.name : '';
   document.getElementById('staff-email').value = s ? (s.email||'') : '';
+  document.getElementById('staff-campus').value = s ? (s.campus||'') : '';
   document.getElementById('staff-area').value  = s ? (s.areaCode||'') : '';
   document.getElementById('staff-role').value  = s ? (s.role||'') : '';
   _sPopulateDepartmentSelect(s ? s.areaCode : '', s ? s.departmentCode : '');
@@ -473,6 +483,7 @@ function _saveStaffModal() {
     name,
     email:                (document.getElementById('staff-email')?.value || '').trim().toLowerCase(),
     areaCode,
+    campus:               document.getElementById('staff-campus')?.value || '',
     departmentCode:       document.getElementById('staff-department')?.value || null,
     additionalAreas:      existing?.additionalAreas || [],
     role:                 document.getElementById('staff-role').value.trim(),
