@@ -1,4 +1,5 @@
-// DPC Hub · js/config.js · v1.1 · 09/11/26 · Hub Lite archived: Supabase settings removed (kept on branch archive/hub-lite)
+// DPC Hub · js/config.js · v1.2 · 09/11/26 · data-dai.json added to optional files
+// v1.1 · 09/11/26 · Hub Lite archived: Supabase settings removed (kept on branch archive/hub-lite)
 // v1.0 · July 2026
 // Configuration constants.
 // PASSWORD IS NOT STORED HERE IN PLAIN TEXT.
@@ -40,6 +41,7 @@ const DPC_CONFIG = Object.freeze({
     'data-caseloads.json',
     'data-milestones.json',
     'data-confidence.json',
+    'data-dai.json',
   ],
   // ── Hub version ───────────────────────────────────────────
   HUB_VERSION: '1.0.0',

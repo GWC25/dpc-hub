@@ -1,4 +1,5 @@
-// DPC Hub · js/schema.js · v1.0 · July 2026
+// DPC Hub · js/schema.js · v1.1 · 09/11/26 · DA&I default store, training touch type
+// v1.0 · July 2026
 // All schema constants. Imports nothing. Exports constants only.
 // Every other file that needs these values imports from here.
 // Do not add UI logic or data operations to this file.
@@ -230,6 +231,7 @@ const TOUCH_TYPE = Object.freeze({
   HEALTH_CHECK:      'health-check',
   REFLECTION:        'reflection',
   WORK_REVIEW:       'work-review',
+  TRAINING:          'training',
 });
 
 // ── Digital Health Check (Session 36 rebuild) ───────────────────
@@ -521,6 +523,7 @@ const DEFAULT_DATA = Object.freeze({
   'data-caseloads.json':    { caseloads: [] },
   'data-milestones.json':   { snapshots: [] },
   'data-confidence.json':   { responses: [] },
+  'data-dai.json':          { responses: [], areaMap: {}, scaleMap: {} },
 });
 
 // ── Helper: get LRA theme by ID ───────────────────────────────

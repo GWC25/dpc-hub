@@ -1,4 +1,5 @@
-// DPC Hub · js/app.js · v1.0 · July 2026
+// DPC Hub · js/app.js · v1.1 · 09/11/26 · DA&I progress module
+// v1.0 · July 2026
 // Application controller. Tab routing. Module initialisation.
 // UI helper functions passed to data.js as the `ui` object.
 // Imports from all module files. This is the only file that does.
@@ -169,6 +170,7 @@ const MODULES = {
   staff:          { label: 'Staff',          icon: '👤', init: () => initStaff() },
   afis:           { label: 'Loops',          icon: '🔁', init: () => initAFIs() },
   inclusion:      { label: 'Accessibility & Inclusion', icon: '♿', init: () => initInclusion() },
+  dai:            { label: 'DA&I progress',  icon: '📈', init: () => initDAI() },
   devobs:         { label: 'Instructional Coaching', icon: '🔍', init: () => initDevObs() },
   learningwalk:   { label: 'Learning Walk',  icon: '🚶', init: () => initLearningWalk() },
   reflections:    { label: 'Reflections',    icon: '💭', init: () => initReflections() },

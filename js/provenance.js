@@ -1,4 +1,5 @@
-// DPC Hub · js/provenance.js · v1.1 · 09/09/26 · Job A1 fix — a restored snapshot no longer overwrites load-time provenance
+// DPC Hub · js/provenance.js · v1.2 · 09/11/26 · DA&I responses domain
+// v1.1 · 09/09/26 · Job A1 fix — a restored snapshot no longer overwrites load-time provenance
 // Records where every data domain was actually loaded from, and makes that
 // visible. Solves the failure this was built for: when the OneDrive folder
 // handle does not reconnect, data.js proceeds with empty defaults and every
@@ -30,6 +31,7 @@
     'data-resource-library.json': { key: 'resourceLibrary', label: 'Resource library',   required: false },
     'data-departments.json':      { key: 'departments',     label: 'Departments',        required: false },
     'data-ai-runs.json':          { key: 'aiRuns',          label: 'AI runs',            required: false },
+    'data-dai.json':              { key: 'dai',             label: 'DA&I responses',     required: false },
   });
 
   // ── Source vocabulary ───────────────────────────────────────

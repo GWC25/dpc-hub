@@ -1,4 +1,5 @@
-// DPC Hub · js/staff.js · v1.1 · 01/09/26 · Session 63 — Health Check tab: per-review Word report download
+// DPC Hub · js/staff.js · v1.2 · 09/11/26 · email field (links Forms responses), DA&I card on the profile
+// v1.1 · 01/09/26 · Session 63 — Health Check tab: per-review Word report download
 // Staff Profile module. Dynamic creation via Instructional Coaching/LW/referral.
 // Touch history, development priorities (3), ETF stage, reflection timeline.
 // Reads from window.DPC_DATA.staff via data.js globals.
@@ -46,6 +47,11 @@ function initStaff() {
           <input class="form-input" type="text" id="staff-name" required aria-required="true">
         </div>
         <div class="form-group">
+          <label class="form-label form-label--optional" for="staff-email">College email</label>
+          <input class="form-input" type="email" id="staff-email" autocomplete="off" aria-describedby="staff-email-hint">
+          <p id="staff-email-hint" class="form-hint" style="font-size:var(--text-xs);color:var(--color-muted);">Links this person to their Forms responses, such as the DA&amp;I Registration.</p>
+        </div>
+        <div class="form-group">
           <label class="form-label" for="staff-area">Primary area</label>
           <select class="form-select" id="staff-area" required aria-required="true">
             <option value="">— Select area —</option>
@@ -69,6 +75,7 @@ function initStaff() {
             <option value="devobs">Instructional Coaching</option>
             <option value="learning-walk">Learning Walk</option>
             <option value="health-check">Health Check visit</option>
+            <option value="dai-forms">DA&amp;I Forms import</option>
           </select>
         </div>
         <div class="form-group">
@@ -210,6 +217,9 @@ function _renderStaffDetailContent(staffId) {
 
     <!-- Health Check trend summary (Session 42) -->
     ${_sRenderHCTrendCard(staffId)}
+
+    <!-- Digital Accessibility and Inclusion responses (dai.js) -->
+    ${typeof daiRenderStaffCard === 'function' ? daiRenderStaffCard(staffId) : ''}
 
     <!-- Open AFIs summary -->
     ${openAFIs.length > 0 ? `
@@ -435,6 +445,7 @@ function _openStaffModal(staffId=null) {
   const s = staffId ? _getStaff(staffId) : null;
   titleEl.textContent = s ? 'Edit profile' : 'New staff profile';
   document.getElementById('staff-name').value  = s ? s.name : '';
+  document.getElementById('staff-email').value = s ? (s.email||'') : '';
   document.getElementById('staff-area').value  = s ? (s.areaCode||'') : '';
   document.getElementById('staff-role').value  = s ? (s.role||'') : '';
   _sPopulateDepartmentSelect(s ? s.areaCode : '', s ? s.departmentCode : '');
@@ -460,6 +471,7 @@ function _saveStaffModal() {
   const profile = {
     staffId:              existingId || generateId(),
     name,
+    email:                (document.getElementById('staff-email')?.value || '').trim().toLowerCase(),
     areaCode,
     departmentCode:       document.getElementById('staff-department')?.value || null,
     additionalAreas:      existing?.additionalAreas || [],

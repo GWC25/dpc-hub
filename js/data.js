@@ -1,4 +1,5 @@
-// DPC Hub · js/data.js · v1.9 · 09/11/26 · Hub Lite archived: Supabase capture check removed
+// DPC Hub · js/data.js · v2.0 · 09/11/26 · DA&I store (data-dai.json), bulk staff save
+// v1.9 · 09/11/26 · Hub Lite archived: Supabase capture check removed
 // v1.8 · 02/10/26 · Session RAG-3 — re-scores Health Checks with the Copilot support priority method on load
 // v1.7 · 02/10/26 · Session RAG-2 — list/read any file in the connected folder (Excel imports), Health Check area-code memory, milestone and confidence stores, CPD save fix, action plan shared-with-DL date
 // v1.6 · 09/09/26 · Job A5 — AFI source stamping, gap/strength separation, one-time backfill
@@ -186,6 +187,9 @@ window.DPC_DATA = {
   milestones:    { snapshots: [] },
   // Imported staff confidence responses (WCAG 2.2 AA / Accessibility Checker form).
   confidence:    { responses: [] },
+  // Digital Accessibility and Inclusion: Registration (before the day) and
+  // "How's it going" (after) responses, matched to staff profiles (dai.js).
+  dai:           { responses: [], areaMap: {}, scaleMap: {} },
   // Cross-college activities (Session 66): Quick Capture entries that
   // belong to a focus, a Digital Lead or a Health Check review rather
   // than to one curriculum area. Area-bound activities stay in
@@ -466,7 +470,7 @@ async function loadOptionalFiles() {
       // Capture, so "missing" is the normal starting state rather than a
       // data-integrity problem. Mark it dirty so the next auto-save
       // writes it, and do not raise a banner for it.
-      if (filename === 'data-activities.json' || filename === 'data-caseloads.json' || filename === 'data-milestones.json' || filename === 'data-confidence.json') { _dirty.add(filename); continue; }
+      if (filename === 'data-activities.json' || filename === 'data-caseloads.json' || filename === 'data-milestones.json' || filename === 'data-confidence.json' || filename === 'data-dai.json') { _dirty.add(filename); continue; }
       _pendingBanners.push({
         type:      'amber',
         message:   `${filename} not found — this module will start empty. Any figure drawn from it will read zero.`,
@@ -1715,6 +1719,14 @@ function saveStaff(staffData) {
   _writeLocalSnapshot();
 }
 
+// Many staff records changed by one import (dai.js). The caller has
+// already changed the records in window.DPC_DATA.staff.staff, so this
+// writes the snapshot once instead of once per person.
+function saveStaffBulk() {
+  _dirty.add('data-staff.json');
+  _writeLocalSnapshot();
+}
+
 // ── Public: save a Digital Lead profile (Session 43) ─────────────
 // This function did not exist before. js/digitalleads.js's own _saveDL()
 // only ever mutated window.DPC_DATA in memory and set an unused flag
@@ -2715,6 +2727,14 @@ function saveConfidenceResponses(list) {
   _writeLocalSnapshot();
 }
 
+// Digital Accessibility and Inclusion store (dai.js). The caller has
+// already removed responses that are stored; this marks the file to save.
+function saveDAIData() {
+  if (!window.DPC_DATA.dai) window.DPC_DATA.dai = { responses: [], areaMap: {}, scaleMap: {} };
+  _dirty.add('data-dai.json');
+  _writeLocalSnapshot();
+}
+
 // CPD (Session RAG-2): cpd.js changed window.DPC_DATA.cpd in memory but
 // never marked data-cpd.json dirty, so logged CPD only ever reached the
 // browser's local snapshot, never OneDrive. Called after every CPD save.
@@ -2806,6 +2826,7 @@ function _assignToStore(filename, data) {
     'data-caseloads.json':    'caseloads',
     'data-milestones.json':   'milestones',
     'data-confidence.json':   'confidence',
+    'data-dai.json':          'dai',
   };
   const key = keyMap[filename];
   if (key && data) window.DPC_DATA[key] = data;
@@ -2833,6 +2854,7 @@ function _getDataForFile(filename) {
     'data-caseloads.json':    window.DPC_DATA.caseloads,
     'data-milestones.json':   window.DPC_DATA.milestones,
     'data-confidence.json':   window.DPC_DATA.confidence,
+    'data-dai.json':          window.DPC_DATA.dai,
     [DPC_CONFIG.MANIFEST_FILENAME]: window.DPC_DATA.manifest,
   };
   return keyMap[filename] || null;
