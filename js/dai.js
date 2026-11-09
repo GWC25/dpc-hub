@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v1.7 · 09/11/26 · staff card targets with progress and evidence (dai-targets.js); targets KPI
+// DPC Hub · js/dai.js · v1.8 · 09/11/26 · impact report download on the Overview tab (dai-report.js)
+// v1.7 · 09/11/26 · staff card targets with progress and evidence (dai-targets.js); targets KPI
 // v1.6 · 09/11/26 · click handler bound once (revisiting the page no longer doubles clicks)
 // v1.5 · 09/11/26 · Area Action Plans imported with the DA&I files (dai-plans.js); Area plans tab; area code found anywhere in the answer
 // v1.4 · 09/11/26 · the 1-or-2 count is a clear button that lists just those people
@@ -714,7 +715,7 @@ function _daiRenderBody() {
   const caveat = `<p style="font-size:var(--text-xs);color:var(--color-muted);max-width:75ch;">Before is one overall rating given at registration; after is the average of 11 element ratings. Treat the change as an indication, not a like-for-like measure. Each person's latest response of each kind counts.${d.unscored ? ` ${d.unscored} registration answer${d.unscored === 1 ? ' is' : 's are'} not scored yet: run the import again to map the wording.` : ''}</p>`;
 
   const panels = {
-    overview:  kpis + (sp.actions || '') + caveat,
+    overview:  (typeof daiReportPanelHTML === 'function' ? daiReportPanelHTML() : '') + kpis + (sp.actions || '') + caveat,
     resources: sp.resources || '',
     theme:     (sp.themes || '') + elements,
     area:      areas + (sp.areaNeeds || ''),
@@ -741,6 +742,7 @@ function _daiRenderBody() {
     });
   });
   if (typeof daiWireSupportSection === 'function') daiWireSupportSection();
+  if (typeof daiReportWire === 'function') daiReportWire(body);
 }
 
 // Who rated an element at each level. People at 1 or 2 come first, with
