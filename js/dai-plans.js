@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-plans.js · v1.0 · 09/11/26 · Area Action Plans from the Heads of Area Forms export: import, area tab, college overview, status tracking
+// DPC Hub · js/dai-plans.js · v1.1 · 09/11/26 · evidence on actions, milestones and the plan (dai-evidence.js); evidence count in the overview
+// v1.0 · 09/11/26 · Area Action Plans from the Heads of Area Forms export: import, area tab, college overview, status tracking
 //
 // The Area Action Plan form is completed by each Head of Area. It is
 // imported with the DA&I exports ("Check the Data folder" on the DA&I
@@ -112,7 +113,8 @@ function daiPlanRenderAreaTab(panel, areaCode) {
   const p = versions[0];
   const areaName = _daiAreaName(areaCode);
   if (!p) {
-    panel.innerHTML = `${_dplH(3, 'DA&amp;I Area Action Plan')}<p style="font-size:var(--text-sm);color:var(--color-muted);max-width:70ch;">No Area Action Plan imported for ${_daiEsc(areaName)} yet. When the Head of Area submits the form, save the export into the Data folder and use "Check the Data folder" on the DA&amp;I progress page.</p>${_dplConfidence(areaCode)}`;
+    panel.innerHTML = `${_dplH(3, 'DA&amp;I Area Action Plan')}<p style="font-size:var(--text-sm);color:var(--color-muted);max-width:70ch;">No Area Action Plan imported for ${_daiEsc(areaName)} yet. When the Head of Area submits the form, save the export into the Data folder and use "Check the Data folder" on the DA&amp;I progress page. You can still record evidence for the area below.</p>${_dplConfidence(areaCode)}${typeof daiEvidenceSection === 'function' ? daiEvidenceSection(areaCode, null) : ''}<p id="dpl-status-msg" role="status" aria-live="polite" style="font-size:var(--text-sm);color:var(--color-teal);min-height:1.5em;margin-top:var(--space-md);"></p>`;
+    if (typeof daiEvidenceWire === 'function') daiEvidenceWire(panel, areaCode, null, () => daiPlanRenderAreaTab(panel, areaCode));
     return;
   }
   const meta = [
@@ -125,7 +127,8 @@ function daiPlanRenderAreaTab(panel, areaCode) {
     if (!x.where && !x.what && !x.how) return '';
     const st = _dplStatus(areaCode, 'action:' + a.id);
     return `<tr>${_daiTd(`<strong>${_daiEsc(a.label)}</strong>`)}${_daiTd(_daiEsc(x.where), 'white-space:pre-line;')}${_daiTd(_daiEsc(x.what), 'white-space:pre-line;')}${_daiTd(_daiEsc(x.how), 'white-space:pre-line;')}
-      ${_daiTd(_dplSelect(`dpl-a-${a.id}`, `${a.label} progress`, DAI_ACTION_STATUS, st.status || 'Not started', `data-dpl-status="action:${a.id}" data-dpl-area="${_daiEsc(areaCode)}"`))}</tr>`;
+      ${_daiTd(_dplSelect(`dpl-a-${a.id}`, `${a.label} progress`, DAI_ACTION_STATUS, st.status || 'Not started', `data-dpl-status="action:${a.id}" data-dpl-area="${_daiEsc(areaCode)}"`))}
+      ${_daiTd(typeof daiEvidenceCell === 'function' ? daiEvidenceCell(areaCode, 'action:' + a.id, a.label) : '')}</tr>`;
   }).filter(Boolean);
 
   const msRows = p.milestones.filter(m => m.date || m.dateText || m.willBeTrue).map(m => {
@@ -134,7 +137,8 @@ function daiPlanRenderAreaTab(panel, areaCode) {
     const when = m.date ? `${_daiFmtDate(m.date)}${days != null ? `<br><span style="color:var(--color-muted);">${days < 0 ? `${-days} days ago` : days === 0 ? 'today' : `in ${days} days`}</span>` : ''}` : _daiEsc(m.dateText || 'No date');
     return `<tr>${_daiTd(`<strong>${m.n}</strong>`)}${_daiTd(when)}${_daiTd(_daiEsc(m.willBeTrue), 'white-space:pre-line;')}${_daiTd(_daiEsc(m.evidence), 'white-space:pre-line;')}
       ${_daiTd(`${_dplSelect(`dpl-m-${m.n}`, `Milestone ${m.n} status`, DAI_MILESTONE_STATUS, st.status || 'Not due yet', `data-dpl-status="m${m.n}" data-dpl-area="${_daiEsc(areaCode)}"`)}
-        <label class="sr-only" for="dpl-mn-${m.n}">Milestone ${m.n} note</label><input id="dpl-mn-${m.n}" type="text" class="form-input" placeholder="Note" value="${_daiEsc(st.note || '')}" data-dpl-note="m${m.n}" data-dpl-area="${_daiEsc(areaCode)}" style="margin-top:4px;min-height:36px;font-size:var(--text-sm);max-width:200px;">`)}</tr>`;
+        <label class="sr-only" for="dpl-mn-${m.n}">Milestone ${m.n} note</label><input id="dpl-mn-${m.n}" type="text" class="form-input" placeholder="Note" value="${_daiEsc(st.note || '')}" data-dpl-note="m${m.n}" data-dpl-area="${_daiEsc(areaCode)}" style="margin-top:4px;min-height:36px;font-size:var(--text-sm);max-width:200px;">`)}
+      ${_daiTd(typeof daiEvidenceCell === 'function' ? daiEvidenceCell(areaCode, 'm' + m.n, `milestone ${m.n}`) : '')}</tr>`;
   });
 
   const fixed = p.fixed.length ? `<ul style="margin:0 0 0 var(--space-lg);font-size:var(--text-sm);">${p.fixed.map(f => `<li>${f.resource ? `<strong>${_daiEsc(f.resource)}</strong>${f.initials ? ` (${_daiEsc(f.initials)})` : ''}: ${_daiEsc(f.fix)}` : _daiEsc(f.line)}</li>`).join('')}</ul>` : _dplText('', 'None listed yet.');
@@ -151,18 +155,20 @@ function daiPlanRenderAreaTab(panel, areaCode) {
     </div>
     ${_dplH(4, 'Actions')}
     ${p.takingNext ? `<p style="font-size:var(--text-sm);margin-bottom:var(--space-sm);"><strong>Taking next:</strong> ${_daiEsc(p.takingNext)}</p>` : ''}
-    ${actRows.length ? _daiTable(`${areaName} action plan`, ['Focus', 'Where we are now', 'What we will do', 'How we will know', 'Progress'], actRows, 900) : _dplText('', 'No actions completed on the form.')}
+    ${actRows.length ? _daiTable(`${areaName} action plan`, ['Focus', 'Where we are now', 'What we will do', 'How we will know', 'Progress', 'Evidence'], actRows, 1040) : _dplText('', 'No actions completed on the form.')}
     ${_dplH(4, 'Milestones')}
-    ${msRows.length ? _daiTable(`${areaName} milestones`, ['', 'Date', 'What will be true', 'The evidence', 'Status'], msRows, 860) : _dplText('', 'No milestones set.')}
+    ${msRows.length ? _daiTable(`${areaName} milestones`, ['', 'Date', 'What will be true', 'The evidence (HoA)', 'Status', 'Your evidence'], msRows, 1000) : _dplText('', 'No milestones set.')}
     ${_dplH(4, `Resources the team has fixed (${p.fixed.length})`)}${fixed}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-lg);">
       <div>${_dplH(4, 'What is stopping us, and who could unblock it')}${_dplText(p.blockers)}</div>
       <div>${_dplH(4, 'Support that would help')}${_dplText(p.support)}</div>
     </div>
+    ${typeof daiEvidenceSection === 'function' ? daiEvidenceSection(areaCode, p) : ''}
     <p id="dpl-status-msg" role="status" aria-live="polite" style="font-size:var(--text-sm);color:var(--color-teal);min-height:1.5em;margin-top:var(--space-md);"></p>
     ${versions.length > 1 ? `<details style="margin-top:var(--space-md);"><summary style="cursor:pointer;font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);min-height:24px;">Earlier versions (${versions.length - 1})</summary>
       <ul style="margin:var(--space-xs) 0 0 var(--space-lg);font-size:var(--text-sm);">${versions.slice(1).map(v => `<li>${_daiFmtDate(v.when) || 'Undated'}${v.hoaInitials ? `, ${_daiEsc(v.hoaInitials)}` : ''}: taking next ${_daiEsc(v.takingNext || 'not given')}, ${v.fixed.length} resources fixed</li>`).join('')}</ul></details>` : ''}`;
   daiPlansWire(panel);
+  if (typeof daiEvidenceWire === 'function') daiEvidenceWire(panel, areaCode, p, () => daiPlanRenderAreaTab(panel, areaCode));
 }
 
 // Staff confidence for the area, so the plan sits next to the people evidence.
@@ -214,14 +220,15 @@ function daiPlansOverviewHTML() {
     const m = p.milestones.filter(x => x.date && _dplDaysTo(x.date) >= 0).sort((x, y) => x.date.localeCompare(y.date))[0];
     return m ? `${_daiFmtDate(m.date)}: ${_daiEsc(m.willBeTrue).slice(0, 80)}` : '–';
   };
+  const evCount = code => typeof daiEvidenceFor === 'function' ? daiEvidenceFor(code).length : 0;
   const tRows = rows.map(({ a, p }) => p
-    ? `<tr>${_daiTd(areaBtn(a))}${_daiTd(_daiFmtDate(p.dateCompleted) || _daiFmtDate(p.when))}${_daiTd(_daiEsc(p.takingNext || '–'))}${_daiTd(next(p))}${_daiTd(p.fixed.length)}${_daiTd(_daiEsc(p.qip || '–'))}${_daiTd(_daiEsc(p.support || '–'), 'max-width:28ch;')}</tr>`
-    : `<tr>${_daiTd(areaBtn(a))}${_daiTd('<strong>Not submitted</strong>')}${_daiTd('')}${_daiTd('')}${_daiTd('')}${_daiTd('')}${_daiTd('')}</tr>`);
+    ? `<tr>${_daiTd(areaBtn(a))}${_daiTd(_daiFmtDate(p.dateCompleted) || _daiFmtDate(p.when))}${_daiTd(_daiEsc(p.takingNext || '–'))}${_daiTd(next(p))}${_daiTd(p.fixed.length)}${_daiTd(evCount(a.areaCode))}${_daiTd(_daiEsc(p.qip || '–'))}${_daiTd(_daiEsc(p.support || '–'), 'max-width:28ch;')}</tr>`
+    : `<tr>${_daiTd(areaBtn(a))}${_daiTd('<strong>Not submitted</strong>')}${_daiTd('')}${_daiTd('')}${_daiTd('')}${_daiTd(evCount(a.areaCode) || '')}${_daiTd('')}${_daiTd('')}</tr>`);
 
   const list = (title, items, fmt) => items.length ? `${_dplH(3, title)}<ul style="margin:0 0 0 var(--space-lg);font-size:var(--text-sm);">${items.map(fmt).join('')}</ul>` : '';
   return kpis
     + list('Milestones needing attention', concerns, x => `<li>${areaBtn(x.a)}: milestone ${x.m.n}${x.m.date ? ` (${_daiFmtDate(x.m.date)})` : ''}, <strong>${_daiEsc(x.state)}</strong>. ${_daiEsc(x.m.willBeTrue)}</li>`)
     + list('Milestones in the next 14 days', upcoming.sort((x, y) => x.days - y.days), x => `<li>${areaBtn(x.a)}: milestone ${x.m.n}, ${_daiFmtDate(x.m.date)}. ${_daiEsc(x.m.willBeTrue)}</li>`)
     + _dplH(3, 'Every area')
-    + _daiTable('Area Action Plans by area', ['Area', 'Submitted', 'Taking next', 'Next milestone', 'Resources fixed', 'QIP and shared', 'Support asked for'], tRows, 1000);
+    + _daiTable('Area Action Plans by area', ['Area', 'Submitted', 'Taking next', 'Next milestone', 'Resources fixed', 'Your evidence', 'QIP and shared', 'Support asked for'], tRows, 1080);
 }

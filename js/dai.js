@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v1.5 · 09/11/26 · Area Action Plans imported with the DA&I files (dai-plans.js); Area plans tab; area code found anywhere in the answer
+// DPC Hub · js/dai.js · v1.6 · 09/11/26 · click handler bound once (revisiting the page no longer doubles clicks)
+// v1.5 · 09/11/26 · Area Action Plans imported with the DA&I files (dai-plans.js); Area plans tab; area code found anywhere in the answer
 // v1.4 · 09/11/26 · the 1-or-2 count is a clear button that lists just those people
 // v1.3 · 09/11/26 · element rows open to show who rated what, with their targets and support asks
 // v1.2 · 09/11/26 · progress page split into tabs; planning prompt buttons
@@ -516,7 +517,7 @@ function initDAI() {
       ? `Filled ${r.filled} development priorit${r.filled === 1 ? 'y' : 'ies'} for ${r.people} ${r.people === 1 ? 'person' : 'people'}. Only empty slots were used.`
       : 'Nothing to fill: every target is already a priority, or the three slots are full.';
   });
-  main.addEventListener('click', _daiDelegate);
+  if (!main._daiBound) { main.addEventListener('click', _daiDelegate); main._daiBound = true; }
   _daiRenderBody();
 }
 
