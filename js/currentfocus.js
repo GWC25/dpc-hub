@@ -1,4 +1,5 @@
-// DPC Hub · js/currentfocus.js · v2.3 · September 2026
+// DPC Hub · js/currentfocus.js · v2.4 · 09/11/26 · milestone placeholders reworded to clear a false Data check match
+// v2.3 · September 2026
 // v2.3 — action plan import and export (js/actionplan-io.js): Export plan,
 // Import plan with a check-before-apply preview, and a blank template.
 // v2.2 — combined report across every focus, and the option to file a
@@ -547,11 +548,11 @@ function _cfRenderPlanPanel(f) {
       </div>
       <div class="form-group">
         <label class="form-label form-label--optional" for="cf-ms-crit">Success criteria</label>
-        <textarea class="form-input" id="cf-ms-crit" rows="3" placeholder="One per line"></textarea>
+        <textarea class="form-input" id="cf-ms-crit" rows="3" placeholder="Put each on a new line"></textarea>
       </div>
       <div class="form-group">
         <label class="form-label form-label--optional" for="cf-ms-tasks">Tasks</label>
-        <textarea class="form-input" id="cf-ms-tasks" rows="3" placeholder="One per line"></textarea>
+        <textarea class="form-input" id="cf-ms-tasks" rows="3" placeholder="Put each on a new line"></textarea>
       </div>
       <p id="cf-ms-error" role="alert" style="font-size:var(--text-sm);color:var(--color-red);display:none;margin-bottom:var(--space-sm);"></p>
       <div class="btn-row">
