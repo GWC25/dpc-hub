@@ -29,6 +29,11 @@
                  private inbox (claude-inbox.js). Same review, same
                  checks.
 
+   From summaries  Copilot summaries of meeting transcripts, saved as
+                   Word or text files in "Meeting summaries" inside the
+                   OneDrive folder (transcripts-inbox.js). Same review,
+                   same checks (November 2026).
+
    Saving needs the OneDrive folder. If it is not connected, the page
    offers a one-click reconnect (then reloads and comes back here) or
    saving in this browser only.
@@ -46,7 +51,7 @@ const MN_MARKS = [
   { value: '?', label: '? · Check' },
 ];
 const MN_DEST_ORDER = ['Meetings', 'Tasks', 'Task changes', 'Calendar', 'Notes'];
-const MN_TABS = ['write', 'paper', 'claude'];
+const MN_TABS = ['write', 'paper', 'claude', 'transcript'];
 
 let _mn = { tab: 'write', draft: null, review: null, lastImport: null, saveTimer: null };
 
@@ -124,6 +129,7 @@ function initMeetingNotes() {
         <button type="button" class="mn-tab" role="tab" id="mn-tab-write" aria-controls="mn-panel" data-tab="write">Write notes</button>
         <button type="button" class="mn-tab" role="tab" id="mn-tab-paper" aria-controls="mn-panel" data-tab="paper">From paper (Copilot)</button>
         <button type="button" class="mn-tab" role="tab" id="mn-tab-claude" aria-controls="mn-panel" data-tab="claude">From Claude</button>
+        <button type="button" class="mn-tab" role="tab" id="mn-tab-transcript" aria-controls="mn-panel" data-tab="transcript">From meeting summaries</button>
       </div>
       <div id="mn-panel" role="tabpanel" tabindex="-1"></div>
       <p id="mn-live" class="mn-sr" role="status" aria-live="polite"></p>
@@ -133,6 +139,7 @@ function initMeetingNotes() {
     const t = e.target.closest('.mn-tab');
     if (!t) return;
     if (t.dataset.tab === 'claude' && typeof _ci !== 'undefined') _ci.editing = null;
+    if (t.dataset.tab === 'transcript' && typeof _ti !== 'undefined') { _ti.editing = null; _ti.items = null; _ti.error = null; }
     _mnShowTab(t.dataset.tab, true);
   });
   el.querySelector('.mn-tabs').addEventListener('keydown', (e) => {
@@ -160,6 +167,7 @@ function _mnShowTab(tab, focusPanel) {
   panel.setAttribute('aria-labelledby', 'mn-tab-' + tab);
   if (tab === 'write') _mnRenderWrite();
   else if (tab === 'claude' && typeof ciRender === 'function') ciRender(panel);
+  else if (tab === 'transcript' && typeof tiRender === 'function') tiRender(panel);
   else _mnRenderPaper();
   if (focusPanel) panel.focus();
 }
@@ -681,7 +689,7 @@ function _mnReview(text, source) {
         <h3>${parsed.errors.length} thing${parsed.errors.length === 1 ? '' : 's'} to fix before this can go into the Hub</h3>
         <ul>${parsed.errors.map(e => `<li>${_mnEsc(e.msg)}</li>`).join('')}</ul>
       </div>
-      <div class="mn-actions-bar"><button type="button" id="mn-back" class="btn btn--secondary">Back to ${source === 'form' ? 'my notes' : source === 'claude' ? 'the text' : 'the pasted reply'}</button></div>`;
+      <div class="mn-actions-bar"><button type="button" id="mn-back" class="btn btn--secondary">Back to ${source === 'form' ? 'my notes' : source === 'claude' || source === 'transcript' ? 'the text' : 'the pasted reply'}</button></div>`;
     document.getElementById('mn-back').addEventListener('click', () => _mnBack(text, source));
     document.getElementById('mn-err').focus();
     return;
@@ -778,6 +786,12 @@ function _mnBack(text, source) {
     // Came from an edited copy: go back to that text, keeping the edits.
     if (typeof _ci !== 'undefined' && _ci.editing) _ci.editing.text = text;
     _mnShowTab('claude', false);
+    return;
+  }
+  if (source === 'transcript') {
+    if (typeof _ti !== 'undefined' && _ti.editing) _ti.editing.text = text;
+    else if (typeof _ti !== 'undefined') _ti.editing = { name: '', text };
+    _mnShowTab('transcript', false);
     return;
   }
   if (source === 'form') { _mnShowTab('write', false); document.getElementById('mn-review-btn')?.focus(); }
@@ -968,6 +982,7 @@ function _mnRenderDone(chosen, backupMsg, meetingId, source) {
       <div class="mn-actions-bar">
         ${meetingId ? '<button type="button" id="mn-open-meeting" class="btn btn--primary btn--sm">Open the meeting</button>' : ''}
         ${source === 'claude' ? '<button type="button" id="mn-to-inbox" class="btn btn--secondary btn--sm">Back to the Claude inbox</button>' : ''}
+        ${source === 'transcript' ? '<button type="button" id="mn-to-summaries" class="btn btn--secondary btn--sm">Back to meeting summaries</button>' : ''}
         <button type="button" id="mn-new" class="btn btn--secondary btn--sm">Take new notes</button>
         <button type="button" id="mn-undo" class="btn btn--ghost btn--sm">Undo this import</button>
       </div>
@@ -975,6 +990,7 @@ function _mnRenderDone(chosen, backupMsg, meetingId, source) {
   document.getElementById('mn-open-meeting')?.addEventListener('click', () => { if (typeof openMeeting === 'function') openMeeting(meetingId); });
   document.getElementById('mn-new').addEventListener('click', () => _mnShowTab('write', false));
   document.getElementById('mn-to-inbox')?.addEventListener('click', () => { if (typeof _ci !== 'undefined') _ci.editing = null; _mnShowTab('claude', false); document.getElementById('mn-tab-claude')?.focus(); });
+  document.getElementById('mn-to-summaries')?.addEventListener('click', () => { if (typeof _ti !== 'undefined') _ti.editing = null; _mnShowTab('transcript', false); document.getElementById('mn-tab-transcript')?.focus(); });
   document.getElementById('mn-undo').addEventListener('click', _mnUndo);
   document.getElementById('mn-done-h').focus();
   _mnToast('success', 'Notes saved to the Hub.');

@@ -28,6 +28,7 @@
   'use strict';
 
   var NI_HEADER = 'DPC HUB NOTES IMPORT · format v1';
+  var NI_HEADER_RE = /^DPC HUB NOTES IMPORT\s*\S?\s*format v1$/i;
   var NI_KINDS = {
     meeting:  { prefix: 'M', required: ['Key', 'Date'] },
     action:   { prefix: 'A', required: ['Key'] },
@@ -97,7 +98,7 @@
       var f2 = all.findIndex(function (l, k) { return k > f1 && /^\s*```/.test(l); });
       all = all.slice(f1 + 1, f2 > f1 ? f2 : all.length);
     }
-    return all.map(function (l) { return l.replace(/\*\*/g, '').replace(/^\s*>\s?/, '').replace(/\s+$/, ''); });
+    return all.map(function (l) { return l.replace(/\u00a0/g, ' ').replace(/\*\*/g, '').replace(/^\s*>\s?/, '').replace(/\s+$/, ''); });
   }
 
   /* ctx: { areas: ['QUA', ...], areaNames: ['Quality & Standards', ...],
@@ -107,7 +108,9 @@
     var lines = _clean(text);
     var out = { header: {}, items: [], checks: [], checkLinks: [], errors: [], warnings: [] };
     var i = 0;
-    while (i < lines.length && lines[i].trim() !== NI_HEADER) i++;
+    // November 2026: Word and Copilot can change the dot in the header
+    // or its case, so match the words rather than the exact characters.
+    while (i < lines.length && !NI_HEADER_RE.test(lines[i].trim())) i++;
     if (i >= lines.length) {
       out.errors.push({ line: 1, msg: 'The first line "' + NI_HEADER + '" was not found. Paste the whole reply from Copilot.' });
       return out;

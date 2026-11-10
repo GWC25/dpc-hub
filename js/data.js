@@ -2804,6 +2804,22 @@ async function saveBytesToFolder(filename, bytes, subfolder) {
   return (subfolder ? subfolder + '/' : '') + filename;
 }
 
+// November 2026: read-only listing of one subfolder of the connected
+// OneDrive folder (used by the meeting summaries tab). Creates the
+// subfolder if it is missing, so it is there to save into. Returns
+// [{ name, lastModified, file }] for files only, newest first.
+async function listFilesInSubfolder(subfolder) {
+  if (!_folderHandle) throw new Error('No folder is connected.');
+  const dir = await _folderHandle.getDirectoryHandle(subfolder, { create: true });
+  const out = [];
+  for await (const entry of dir.values()) {
+    if (entry.kind !== 'file' || /^~\$|^\./.test(entry.name)) continue; // skip Word lock files
+    const file = await entry.getFile();
+    out.push({ name: entry.name, lastModified: file.lastModified, file });
+  }
+  return out.sort((a, b) => b.lastModified - a.lastModified);
+}
+
 // ── Internal: assign file data to store ──────────────────────
 function _assignToStore(filename, data) {
   const keyMap = {
