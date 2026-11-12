@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v2.0 · 12/11/26 · catch-up session register (Accessibility Confidence Check-In) imported as registration, with role and resource brought
+// DPC Hub · js/dai.js · v2.1 · 12/11/26 · baseline check on Overview (dai-baseline.js), remembered register links used on import; targets tile moved to By person
+// v2.0 · 12/11/26 · catch-up session register (Accessibility Confidence Check-In) imported as registration, with role and resource brought
 // v1.9 · 09/11/26 · support action progress (dai-actions.js): Mark done button, filters
 // v1.8 · 09/11/26 · impact report download on the Overview tab (dai-report.js)
 // v1.7 · 09/11/26 · staff card targets with progress and evidence (dai-targets.js); targets KPI
@@ -359,6 +360,9 @@ async function _daiScan() {
   const nameMatches = [];
   let byEmailCount = 0, toCreate = 0;
   people.forEach(p => {
+    const aliasId = typeof daiAliasFor === 'function' ? daiAliasFor(p.email, p.name) : null;
+    const aliased = aliasId && staff.find(s => s.staffId === aliasId);
+    if (aliased) { p.match = { type: 'email', staffId: aliased.staffId }; byEmailCount++; return; }
     const e = p.email && byEmail.get(p.email);
     if (e) { p.match = { type: 'email', staffId: e.staffId }; byEmailCount++; return; }
     const nk = _daiNameKey(p.name);
@@ -715,11 +719,10 @@ function _daiRenderBody() {
   const kpis = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);">
     ${_daiKPI(d.regsCount, 'People registered', (() => { const c = d.all.filter(p => p.reg && p.reg.session === 'catch-up').length; return c ? `${d.regsCount - c} on the day, ${c} at a catch-up session` : 'Came to the DA&amp;I training'; })())}
     ${_daiKPI(d.reflCount, '"How\'s it going" returns', `${d.all.filter(p => p.reg && p.refl).length} of them also registered`)}
-    ${_daiKPI(d.before == null ? '–' : `${_daiFmt(d.before)} of 5`, 'Confidence before', 'One overall rating at registration')}
+    ${_daiKPI(d.before == null ? '–' : `${_daiFmt(d.before)} of 5`, 'Confidence before', 'One overall rating: day registration or catch-up Check-In')}
     ${_daiKPI(d.after == null ? '–' : `${_daiFmt(d.after)} of 5`, 'Confidence after', 'Average across the 11 elements')}
-    ${_daiKPI(shift == null ? '–' : `${shift >= 0 ? '+' : ''}${_daiFmt(shift)}`, 'Average change', `${d.both.length} people answered both`)}
+    ${_daiKPI(shift == null ? '–' : `${shift >= 0 ? '+' : ''}${_daiFmt(shift)}`, 'Average change', `${d.both.length} of ${d.reflCount} returns have a registration rating`)}
     ${(() => { const a = typeof daiActionSummary === 'function' ? daiActionSummary() : null; return a ? _daiKPI(a.done, 'Support actions done', `${a.inProgress} planned or in progress`) : ''; })()}
-    ${(() => { const t = typeof daiTargetsSummary === 'function' ? daiTargetsSummary() : null; return t && t.total ? _daiKPI(`${t.achieved} of ${t.total}`, 'Personal targets achieved', `${t.inProgress} in progress, ${t.withEvidence} with evidence`) : ''; })()}
   </div>`;
 
   const elRows = d.elements.map(e => {
@@ -749,12 +752,12 @@ function _daiRenderBody() {
   const caveat = `<p style="font-size:var(--text-xs);color:var(--color-muted);max-width:75ch;">Before is one overall rating given at registration; after is the average of 11 element ratings. Treat the change as an indication, not a like-for-like measure. Each person's latest response of each kind counts.${d.unscored ? ` ${d.unscored} registration answer${d.unscored === 1 ? ' is' : 's are'} not scored yet: run the import again to map the wording.` : ''}</p>`;
 
   const panels = {
-    overview:  (typeof daiReportPanelHTML === 'function' ? daiReportPanelHTML() : '') + kpis + (sp.actions || '') + caveat,
+    overview:  (typeof daiReportPanelHTML === 'function' ? daiReportPanelHTML() : '') + kpis + (typeof daiBaselineSectionHTML === 'function' ? daiBaselineSectionHTML() : '') + (sp.actions || '') + caveat,
     resources: sp.resources || '',
     theme:     (sp.themes || '') + elements,
     area:      areas + (sp.areaNeeds || ''),
     campus:    sp.campus || '',
-    people:    coaching + (sp.person || ''),
+    people:    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);">${(() => { const t = typeof daiTargetsSummary === 'function' ? daiTargetsSummary() : null; return t && t.total ? _daiKPI(`${t.achieved} of ${t.total}`, 'Personal targets achieved', `${t.inProgress} in progress, ${t.withEvidence} with evidence`) : ''; })()}</div>` + coaching + (sp.person || ''),
     asked:     support,
     plans:     typeof daiPlansOverviewHTML === 'function' ? daiPlansOverviewHTML() : '',
   };
@@ -777,6 +780,7 @@ function _daiRenderBody() {
   });
   if (typeof daiWireSupportSection === 'function') daiWireSupportSection();
   if (typeof daiReportWire === 'function') daiReportWire(body);
+  if (typeof daiBaselineWire === 'function') daiBaselineWire(body);
   if (typeof daiActionWireFilters === 'function') daiActionWireFilters(body);
 }
 
