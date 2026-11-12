@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-roster.js · v1.2 · 12/11/26 · attending = Yes or Part of the day (matches the workbook); tiles count straight from each register; names on the lists re-matched each time; reconciliation panel
+// DPC Hub · js/dai-roster.js · v1.3 · 12/11/26 · add people (and a new area) to the attendance lists by hand; they arrive ticked, ready to mark as trained
+// v1.2 · 12/11/26 · attending = Yes or Part of the day (matches the workbook); tiles count straight from each register; names on the lists re-matched each time; reconciliation panel
 // v1.1 · 12/11/26 · record training by hand for selected people or whole areas (EFE and other sessions)
 // v1.0 · 12/11/26 · TLA Tracker (staff roster) and Area attendance workbook: import, profile updates, who has not trained
 //
@@ -251,10 +252,79 @@ function daiRosterApply(prep, decisions) {
 
 // ── Attendance view ───────────────────────────────────────────
 let _drsSel = [];
+let _drsPreselect = new Set();
+
+// Add people by hand: a profile per name (an existing profile with the same
+// name is reused), flagged daiListed so it is counted on this tab.
+function daiAddPeople(areaCode, lines) {
+  const staff = window.DPC_DATA.staff.staff;
+  const out = { added: 0, reused: 0, elsewhere: [], ids: [] };
+  lines.map(l => l.trim()).filter(Boolean).forEach(line => {
+    const [name, ...rest] = line.split(/\s*[,;\t]\s*/);
+    if (!name) return;
+    const role = rest.join(', ');
+    let s = staff.find(x => _daiNameKey(x.name) === _daiNameKey(name));
+    if (s) {
+      out.reused++;
+      if (!s.areaCode) s.areaCode = areaCode;
+      else if (s.areaCode !== areaCode) out.elsewhere.push(`${s.name} (${s.areaCode})`);
+      if (!s.role && role) s.role = role;
+    } else {
+      s = { staffId: generateId(), name: name.trim(), email: '', areaCode, departmentCode: null, additionalAreas: [], role,
+        entryPathway: 'dai-manual', entryDate: todayISO(), etfStage: null, developmentPriorities: ['', '', ''], confidenceRating: null,
+        touchHistory: [], reflectionRefs: [], afiRefs: [], isAnonymousAtAreaLevel: true, notes: 'Added by hand on the DA&I Attendance tab.', createdAt: nowISO(), lastUpdated: nowISO() };
+      staff.push(s); out.added++;
+    }
+    s.daiListed = true; s.lastUpdated = nowISO();
+    out.ids.push(s.staffId);
+    const area = (window.DPC_DATA.areas.areas || []).find(a => a.areaCode === s.areaCode);
+    if (area) { if (!area.staffRefs) area.staffRefs = []; if (!area.staffRefs.includes(s.staffId)) area.staffRefs.push(s.staffId); }
+  });
+  if (typeof saveStaffBulk === 'function') saveStaffBulk();
+  if (typeof _dirty !== 'undefined') _dirty.add('data-areas.json');
+  return out;
+}
+
 function daiAttendanceWire(root) {
+  const addBtn = root.querySelector('#drs-add-go');
+  if (addBtn) {
+    const areaSel = root.querySelector('#drs-add-area'), newBox = root.querySelector('#drs-add-new');
+    areaSel.addEventListener('change', () => { newBox.hidden = areaSel.value !== '__new'; if (!newBox.hidden) root.querySelector('#drs-add-name').focus(); });
+    root.querySelector('#drs-add-name')?.addEventListener('input', e => { const c = root.querySelector('#drs-add-code'); if (!c.dataset.touched) c.value = _daiSuggestCode(e.target.value); });
+    root.querySelector('#drs-add-code')?.addEventListener('input', e => { e.target.dataset.touched = '1'; });
+    addBtn.addEventListener('click', () => {
+      const msg = root.querySelector('#drs-add-msg');
+      let code = areaSel.value;
+      if (!code) { msg.textContent = 'Choose an area, or add a new one.'; areaSel.focus(); return; }
+      if (code === '__new') {
+        const name = root.querySelector('#drs-add-name').value.trim();
+        code = root.querySelector('#drs-add-code').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (!name || !code) { msg.textContent = 'Give the new area a name and a code.'; root.querySelector(name ? '#drs-add-code' : '#drs-add-name').focus(); return; }
+        if (!_daiAreaList().some(a => a.areaCode === code)) {
+          saveArea({ areaCode: code, areaName: name, campus: '', hoaName: '', digitalLeadId: null, pyramidLevel: 'foundations', ragDimensions: {}, healthChecks: [], activityLog: [], afiRefs: [], actionPoints: [], staffRefs: [], notes: 'Added on the DA&I Attendance tab.' });
+        }
+      }
+      const lines = root.querySelector('#drs-add-names').value.split(/\n/);
+      if (!lines.some(l => l.trim())) { msg.textContent = 'Add at least one name, one per line.'; root.querySelector('#drs-add-names').focus(); return; }
+      const res = daiAddPeople(code, lines);
+      _drsPreselect = new Set(res.ids);
+      _daiRenderBody();
+      const st = document.getElementById('dai-status');
+      if (st) st.textContent = `Added ${res.added} ${res.added === 1 ? 'person' : 'people'} to ${code}${res.reused ? `; ${res.reused} already had a profile and ${res.reused === 1 ? 'was' : 'were'} reused` : ''}${res.elsewhere.length ? ` (${res.elsewhere.join(', ')} ${res.elsewhere.length === 1 ? 'stays' : 'stay'} in ${res.elsewhere.length === 1 ? 'their' : 'their'} own area)` : ''}. They are ticked below: set the session and press "Mark selected as trained".`;
+      document.getElementById('drs-kind')?.focus();
+    });
+  }
   const btn = root.querySelector('#drs-record');
   if (!btn) return;
   const count = () => { root.querySelector('#drs-count').textContent = root.querySelectorAll('[data-drs-person]:checked').length; };
+  // Groups with people ticked on arrival: open them and set the "Select all" state.
+  root.querySelectorAll('[data-drs-area]').forEach(cb => {
+    const all = root.querySelectorAll(`[data-drs-group="${cb.dataset.drsArea}"]`), on = [...all].filter(x => x.checked).length;
+    cb.checked = on > 0 && on === all.length; cb.indeterminate = on > 0 && on < all.length;
+    if (on) { const det = all[0] && all[0].closest('details'); if (det) det.open = true; }
+  });
+  count();
+  _drsPreselect = new Set();
   root.querySelectorAll('[data-drs-area]').forEach(cb => cb.addEventListener('change', () => {
     root.querySelectorAll(`[data-drs-group="${cb.dataset.drsArea}"]`).forEach(p => { p.checked = cb.checked; });
     count();
@@ -348,7 +418,8 @@ function daiAttendanceHTML() {
   const staff = _daiStaffList();
   const onTracker = staff.filter(s => s.tracker && s.tracker.onLatest);
   const expected = store.expected || [];
-  if (!onTracker.length && !expected.length) {
+  const listedByHand = staff.filter(s => s.daiListed);
+  if (!onTracker.length && !expected.length && !listedByHand.length) {
     return _dsuP('Save the TLA Tracker and the Area attendance workbook into the Data folder, then use "Check the Data folder". This tab then shows who was due to train, who attended on the day or at a catch-up, and who has not trained yet.');
   }
   const trained = _drsTrained();
@@ -366,6 +437,7 @@ function daiAttendanceHTML() {
   // Everyone to account for: tracker staff, plus names on the lists not on the tracker.
   const people = new Map();
   onTracker.forEach(s => people.set(s.staffId, { staffId: s.staffId, name: s.name, areaCode: s.areaCode, role: s.role, status: s.tracker.status }));
+  listedByHand.forEach(s => { if (!people.has(s.staffId)) people.set(s.staffId, { staffId: s.staffId, name: s.name, areaCode: s.areaCode, role: s.role, byHand: true }); });
   listed.forEach((v, k) => { if (!people.has(k)) people.set(k, { staffId: v.e.staffId, name: v.e.name, areaCode: v.e.areaCode, role: v.e.role, notOnTracker: !!onTracker.length }); });
   const all = [...people.entries()].map(([k, p]) => ({ ...p, k, due: due.has(k), said: listed.has(k) ? listed.get(k).cls : '', how: p.staffId ? trained.get(p.staffId) || '' : '' }));
   const rc = daiRegisterCounts();
@@ -389,7 +461,7 @@ function daiAttendanceHTML() {
     .sort((a, b) => b.not.length - a.not.length || a.code.localeCompare(b.code))
     .map((x, ai) => `<tr>${_daiTd(x.code ? `<strong>${_daiEsc(x.code)}</strong> ${_daiEsc(_daiAreaName(x.code))}` : 'No area matched')}${_daiTd(x.ps.length)}${_daiTd(x.ps.filter(p => p.due).length)}${_daiTd(x.ps.filter(p => p.how === 'day').length)}${_daiTd(x.ps.filter(p => p.how === 'catch-up' || p.how === 'manual').length)}
       ${_daiTd(x.not.length ? `<div style="display:flex;gap:6px;align-items:center;"><input type="checkbox" id="drs-all-${ai}" data-drs-area="${ai}" style="width:20px;height:20px;"><label for="drs-all-${ai}" style="font-size:var(--text-xs);">Select all ${x.not.length}<span class="sr-only"> not trained in ${_daiEsc(x.code || 'no area')}</span></label></div>
-        <details><summary style="cursor:pointer;min-height:24px;color:var(--color-teal);font-weight:bold;">${x.not.length} <span class="sr-only">not trained, show who</span></summary><ul style="list-style:none;margin-top:4px;">${x.not.sort((a, b) => a.name.localeCompare(b.name)).map(p => { const i = _drsSel.indexOf(p); return `<li style="padding:2px 0;display:flex;gap:6px;align-items:flex-start;"><input type="checkbox" id="drs-p-${i}" data-drs-person="${i}" data-drs-group="${ai}" aria-label="Select ${_daiEsc(p.name)}" style="width:20px;height:20px;flex-shrink:0;"><span>${nameBtn(p)} <span style="color:var(--color-muted);">${_daiEsc(p.role || '')}${p.due ? ', marked attending' : p.said === 'no' ? ', marked not attending' : ''}${p.status ? ', ' + _daiEsc(p.status) : ''}${p.notOnTracker ? ', not on tracker' : ''}</span></span></li>`; }).join('')}</ul></details>` : '0')}</tr>`);
+        <details><summary style="cursor:pointer;min-height:24px;color:var(--color-teal);font-weight:bold;">${x.not.length} <span class="sr-only">not trained, show who</span></summary><ul style="list-style:none;margin-top:4px;">${x.not.sort((a, b) => a.name.localeCompare(b.name)).map(p => { const i = _drsSel.indexOf(p); return `<li style="padding:2px 0;display:flex;gap:6px;align-items:flex-start;"><input type="checkbox" id="drs-p-${i}" data-drs-person="${i}" data-drs-group="${ai}" ${_drsPreselect.has(p.staffId) ? 'checked' : ''} aria-label="Select ${_daiEsc(p.name)}" style="width:20px;height:20px;flex-shrink:0;"><span>${nameBtn(p)} <span style="color:var(--color-muted);">${_daiEsc([p.role, p.due ? 'marked attending' : p.said === 'no' ? 'marked not attending' : '', p.status, p.byHand ? 'added by hand' : p.notOnTracker ? 'not on tracker' : ''].filter(Boolean).join(', '))}</span></span></li>`; }).join('')}</ul></details>` : '0')}</tr>`);
 
   const gone = staff.filter(s => s.tracker && !s.tracker.onLatest);
   const unmatchedAreas = [...new Set(onTracker.filter(s => !s.areaCode).map(s => s.tracker.faculty).filter(Boolean))];
@@ -402,7 +474,8 @@ function daiAttendanceHTML() {
       <li><strong>Trained in total:</strong> ${rc.trained} people (each counted once).</li>
       <li><strong>Area attendance lists:</strong> ${expected.length} rows across the area sheets, ${listed.size} different people. ${lc.yes} marked Yes or Part of the day, ${lc.no} No${lc.none ? `, ${lc.none} with no answer` : ''}. Session bookings are not people: one person can book more than one session.</li>
       <li><strong>TLA Tracker:</strong> ${store.roster ? `${store.roster.count} staff from ${_daiEsc(store.roster.fileName)}, imported ${_daiFmtDate(store.roster.importedAt)}.` : 'not imported. Run "Check the Data folder": the status line says why any file could not be used.'}</li>
-      <li><strong>Not trained yet</strong> counts everyone on the tracker or the attendance lists with no training recorded.</li>
+      ${listedByHand.length ? `<li><strong>Added by hand on this tab:</strong> ${listedByHand.length} people.</li>` : ''}
+      <li><strong>Not trained yet</strong> counts everyone on the tracker, the attendance lists or added here, with no training recorded.</li>
     </ul></details>`;
   const recordForm = `<fieldset style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
       <legend style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);padding:0 4px;">Record training by hand for the people selected below</legend>
@@ -417,6 +490,21 @@ function daiAttendanceHTML() {
     </fieldset>`;
   return tiles + recon
     + _dsuH3('By area') + _dsuP('Most not yet trained first. Open a number to see who. Trained means on the day registration, the catch-up Check-In, or recorded here by hand. Use "Select all" for a whole area, then open the list to untick anyone.')
+    + `<details style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);background:var(--color-white);">
+        <summary style="cursor:pointer;font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);min-height:24px;">Add people who are not listed (for example a team missing from the tracker)</summary>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-md);margin-top:var(--space-sm);">
+          <div class="form-group"><label class="form-label" for="drs-add-area">Area</label>
+            <select id="drs-add-area" class="form-select"><option value="">Choose an area</option><option value="__new">Not in the Hub yet: add a new area</option>${_daiAreaList().slice().sort((a, b) => a.areaName.localeCompare(b.areaName)).map(a => `<option value="${_daiEsc(a.areaCode)}">${_daiEsc(a.areaCode)}, ${_daiEsc(a.areaName)}</option>`).join('')}</select></div>
+          <div id="drs-add-new" hidden style="display:grid;grid-template-columns:2fr 1fr;gap:var(--space-sm);">
+            <div class="form-group"><label class="form-label" for="drs-add-name">New area name</label><input id="drs-add-name" class="form-input" type="text" placeholder="For example: Education for Employment"></div>
+            <div class="form-group"><label class="form-label" for="drs-add-code">Code</label><input id="drs-add-code" class="form-input" type="text" maxlength="5" style="text-transform:uppercase;" placeholder="EFE"></div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label" for="drs-add-names">Names, one per line. Add a role after a comma if you like.</label>
+          <textarea id="drs-add-names" class="form-textarea" rows="5" placeholder="Jo Bloggs, Tutor&#10;Sam Smith"></textarea></div>
+        <button type="button" id="drs-add-go" class="btn btn--primary">Add to the lists</button>
+        <p id="drs-add-msg" role="alert" style="font-size:var(--text-sm);color:var(--color-red);min-height:1.2em;margin-top:var(--space-xs);"></p>
+      </details>`
     + recordForm
     + _daiTable('Training attendance by area', ['Area', 'Staff', 'Marked attending', 'Trained on the day', 'Trained at catch-up or other', 'Not trained yet'], rows, 900)
     + (unmatchedAreas.length ? _dsuH3('Tracker faculties with no Hub area', true) + _dsuP(`Map these when you next run the import, or add them as new areas: ${unmatchedAreas.map(_daiEsc).join(', ')}.`) : '')
