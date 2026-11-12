@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-dash.js · v1.0 · 12/11/26 · DA&I dashboard framework (filter bar, clickable tiles with detail panels) and the By person tab
+// DPC Hub · js/dai-dash.js · v1.1 · 12/11/26 · coaching can be based on the combined average or one element, each with its own threshold
+// v1.0 · 12/11/26 · DA&I dashboard framework (filter bar, clickable tiles with detail panels) and the By person tab
 //
 // Framework, reused by every DA&I tab:
 //   - one filter (area, campus, element, confidence, name) shared across
@@ -20,6 +21,16 @@ function daiCoachThreshold() {
   const s = _daiStore().settings || {};
   const v = parseFloat(s.coachThreshold);
   return v >= 1 && v <= 5 ? v : 2;
+}
+// What coaching is based on: '' = elements combined, or an element id.
+function daiCoachBasis() {
+  const b = (_daiStore().settings || {}).coachBasis || '';
+  return !b || DAI_ELEMENTS.some(e => e.id === b) ? b : '';
+}
+function _ddSetBasis(b) {
+  const d = _daiStore();
+  d.settings = { ...(d.settings || {}), coachBasis: b };
+  if (typeof saveDAIData === 'function') saveDAIData();
 }
 function _ddSetThreshold(v) {
   const d = _daiStore();
@@ -105,6 +116,7 @@ function daiDashWire(root) {
     _ddTimer = setTimeout(() => { _ddFilter.q = i.value; _ddShowAll = false; _ddRerender(i.id); }, 350);
   }));
   root.querySelector('[data-dd-clear]')?.addEventListener('click', () => { _ddFilter = { area: '', campus: '', element: '', conf: '', q: '' }; _ddRerender('dd-f-area'); });
+  root.querySelector('#dd-coach-basis')?.addEventListener('change', e => { _ddSetBasis(e.target.value); _ddRerender('dd-coach-basis'); });
   root.querySelector('#dd-threshold')?.addEventListener('change', e => {
     const v = parseFloat(e.target.value);
     if (v >= 1 && v <= 5) { _ddSetThreshold(v); _ddRerender('dd-threshold'); }
@@ -122,7 +134,10 @@ function daiPersonTabHTML(d) {
   const withBefore = P.filter(p => p.before != null), withAfter = P.filter(p => p.after != null);
   const urgent = P.filter(p => _ddLow(p).length);
   const th = daiCoachThreshold();
-  const coach = withAfter.filter(p => p.after < th).sort((a, b) => a.after - b.after);
+  const basis = daiCoachBasis();
+  const basisLabel = basis ? _ddEl(basis) : 'Elements combined';
+  const coachScore = p => basis ? (p.elements || {})[basis] : p.after;
+  const coach = P.filter(p => coachScore(p) != null && coachScore(p) < th).sort((a, b) => coachScore(a) - coachScore(b) || (a.after || 0) - (b.after || 0));
   const elStats = DAI_ELEMENTS.map(e => {
     const v = P.map(p => p.elements[e.id]).filter(x => x != null);
     return { ...e, avg: _daiAvg(v), n: v.length, low: P.filter(p => p.elements[e.id] != null && p.elements[e.id] <= 2) };
@@ -150,10 +165,15 @@ function daiPersonTabHTML(d) {
         <p style="font-size:var(--text-sm);">${e.low.length ? `Rated 1 or 2 (${e.low.length}): ${e.low.map(_daiPersonBtn).join(', ')}` : 'No one rated it 1 or 2.'}</p>`).join('')
         + `<h3 style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin-top:var(--space-md);">All elements</h3>`
         + _daiTable('Elements, lowest first', ['Element', 'Average of 5', 'Answers', 'At 1 or 2'], elStats.map(e => `<tr>${_daiTd(_daiEsc(e.label))}${_daiTd(_daiFmt(e.avg))}${_daiTd(e.n)}${_daiTd(e.low.length)}</tr>`), 520) },
-    { id: 'coach', value: coach.length, label: 'Coaching', sub: `Elements combined below ${th}`,
-      detail: () => `<div class="form-group" style="max-width:260px;"><label class="form-label" for="dd-threshold">Coach when the combined average is below</label>
-          <input id="dd-threshold" type="number" min="1" max="5" step="0.25" class="form-input" value="${th}"></div>`
-        + ppl(coach, [['Element average', p => _daiFmt(p.after)], ['Rated 1 or 2', lowList], ['Plan it', p => {
+    { id: 'coach', value: coach.length, label: 'Coaching', sub: `${basisLabel} below ${th}`,
+      detail: () => `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-md);max-width:620px;">
+          <div class="form-group"><label class="form-label" for="dd-coach-basis">Coach on</label>
+            <select id="dd-coach-basis" class="form-select"><option value=""${!basis ? ' selected' : ''}>Elements combined (average of 11)</option>${DAI_ELEMENTS.map(e => `<option value="${e.id}"${e.id === basis ? ' selected' : ''}>${_daiEsc(e.label)}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label" for="dd-threshold" >Coach when the score is below</label>
+            <input id="dd-threshold" type="number" min="1" max="5" step="0.25" class="form-input" value="${th}" aria-describedby="dd-threshold-hint"></div>
+        </div>
+        <p id="dd-threshold-hint" style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-sm);">${basis ? `Ratings on one element are whole numbers, so "below ${th}" means ${Math.ceil(th) - 1 >= 1 ? `${Math.ceil(th) - 1} or lower` : 'no one'}.` : 'The combined average can include decimals.'} The filters at the top still apply.</p>`
+        + ppl(coach, [...(basis ? [[_ddEl(basis), p => `${coachScore(p)} of 5`]] : []), ['Elements combined', p => _daiFmt(p.after)], ['Rated 1 or 2', lowList], ['Plan it', p => {
           const n = needsBy.filter(x => x.staffId === p.staffId);
           return n.length && typeof _dsuPromptBtn === 'function' ? _dsuPromptBtn({ kind: 'coaching', themes: n.map(x => x.theme), needs: n, staffId: p.staffId }, `coaching for ${p.name}`) : '';
         }]]) },
