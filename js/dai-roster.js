@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-roster.js · v1.1 · 12/11/26 · record training by hand for selected people or whole areas (EFE and other sessions)
+// DPC Hub · js/dai-roster.js · v1.2 · 12/11/26 · attending = Yes or Part of the day (matches the workbook); tiles count straight from each register; names on the lists re-matched each time; reconciliation panel
+// v1.1 · 12/11/26 · record training by hand for selected people or whole areas (EFE and other sessions)
 // v1.0 · 12/11/26 · TLA Tracker (staff roster) and Area attendance workbook: import, profile updates, who has not trained
 //
 // TLA Tracker ("TLA Tracker 26-27", updated monthly): recognised by its
@@ -34,7 +35,7 @@ function _drsHash(v) {
   return h.toString(36) + ':' + s.length;
 }
 function _drsHeaderRow(rows, test) {
-  for (let i = 0; i < Math.min(rows.length, 15); i++) {
+  for (let i = 0; i < Math.min(rows.length, 40); i++) {
     const head = (rows[i] || []).map(_daiNorm);
     if (test(head)) return { i, head };
   }
@@ -50,7 +51,7 @@ function _drsCampus(raw) {
   if (/puxton/.test(n)) return 'Puxton Park';
   return String(raw).trim();
 }
-const _drsYes = v => /^\s*(y|yes|attending|true|✓|x)\b/i.test(String(v == null ? '' : v));
+const _drsYes = v => /^\s*(y|yes|attending|true|✓|x|part)\b/i.test(String(v == null ? '' : v));
 const _drsNo = v => /^\s*(n|no|not)\b/i.test(String(v == null ? '' : v));
 
 // ── Read ──────────────────────────────────────────────────────
@@ -322,6 +323,26 @@ function daiRecordTraining(people, opts) {
   return n;
 }
 
+// Straight counts from each register, so they can be checked against the source files.
+function daiRegisterCounts() {
+  const regs = _daiStore().responses.filter(r => r.source === 'registration');
+  const dayRows = regs.filter(r => !r.session && !r.manual), cuRows = regs.filter(r => r.session === 'catch-up' && !r.manual), manRows = regs.filter(r => r.manual);
+  const ids = list => new Set(list.filter(r => r.staffId).map(r => r.staffId));
+  const day = ids(dayRows), cu = ids(cuRows), man = ids(manRows);
+  const unnamed = dayRows.filter(r => !r.staffId).length + cuRows.filter(r => !r.staffId).length;
+  const all = new Set([...day, ...cu, ...man]);
+  return { dayRows: dayRows.length, cuRows: cuRows.length, day: day.size, catchup: cu.size, both: [...cu].filter(id => day.has(id)).length,
+    manual: [...man].filter(id => !day.has(id) && !cu.has(id)).length, unnamed, trained: all.size + unnamed, dayIds: day, cuIds: cu, allIds: all };
+}
+
+// The attendance lists, classified the same way as the workbook: Yes or Part of the day = attending; No = not attending.
+function _drsListClass(e) {
+  const raw = e.attendingRaw != null ? e.attendingRaw : e.attending;
+  if (_drsYes(raw)) return 'yes';
+  if (_drsNo(raw)) return 'no';
+  return 'none';
+}
+
 function daiAttendanceHTML() {
   const store = _daiStore();
   const staff = _daiStaffList();
@@ -331,24 +352,34 @@ function daiAttendanceHTML() {
     return _dsuP('Save the TLA Tracker and the Area attendance workbook into the Data folder, then use "Check the Data folder". This tab then shows who was due to train, who attended on the day or at a catch-up, and who has not trained yet.');
   }
   const trained = _drsTrained();
-  const due = new Map();
-  expected.forEach(e => { if (e.attending !== 'no') due.set(e.staffId || 'x:' + _daiNameKey(e.name), e); });
+  // Re-match list names to profiles each time, so people added since the import are found.
+  expected.forEach(e => {
+    if (e.staffId && staff.some(s => s.staffId === e.staffId)) return;
+    const m = typeof _drsCandidates === 'function' ? _drsCandidates(e.name, e.areaCode, staff) : { auto: null };
+    e.staffId = m.auto ? m.auto.staffId : '';
+  });
+  const listKey = e => e.staffId || 'x:' + _daiNameKey(e.name);
+  const listed = new Map();
+  expected.forEach(e => { const k = listKey(e); const c = _drsListClass(e); const cur = listed.get(k); if (!cur || (cur.cls !== 'yes' && c === 'yes')) listed.set(k, { e, cls: c }); });
+  const lc = { yes: 0, no: 0, none: 0 }; listed.forEach(v => { lc[v.cls]++; });
+  const due = new Map([...listed].filter(([, v]) => v.cls === 'yes').map(([k, v]) => [k, v.e]));
   // Everyone to account for: tracker staff, plus names on the lists not on the tracker.
   const people = new Map();
   onTracker.forEach(s => people.set(s.staffId, { staffId: s.staffId, name: s.name, areaCode: s.areaCode, role: s.role, status: s.tracker.status }));
-  expected.forEach(e => { const k = e.staffId || 'x:' + _daiNameKey(e.name); if (!people.has(k)) people.set(k, { staffId: e.staffId, name: e.name, areaCode: e.areaCode, role: e.role, notOnTracker: true }); });
-  const all = [...people.entries()].map(([k, p]) => ({ ...p, k, due: due.has(k), said: (expected.find(e => (e.staffId || 'x:' + _daiNameKey(e.name)) === k) || {}).attending || '', how: p.staffId ? trained.get(p.staffId) || '' : '' }));
+  listed.forEach((v, k) => { if (!people.has(k)) people.set(k, { staffId: v.e.staffId, name: v.e.name, areaCode: v.e.areaCode, role: v.e.role, notOnTracker: !!onTracker.length }); });
+  const all = [...people.entries()].map(([k, p]) => ({ ...p, k, due: due.has(k), said: listed.has(k) ? listed.get(k).cls : '', how: p.staffId ? trained.get(p.staffId) || '' : '' }));
+  const rc = daiRegisterCounts();
   const day = all.filter(p => p.how === 'day').length, cu = all.filter(p => p.how === 'catch-up').length, man = all.filter(p => p.how === 'manual').length;
   _drsSel = all.filter(p => !p.how);
   const notYet = all.filter(p => !p.how);
   const dueNot = notYet.filter(p => p.due);
 
   const tiles = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);">
-    ${_daiKPI(onTracker.length, 'Staff on the TLA Tracker', store.roster ? `Imported ${_daiFmtDate(store.roster.importedAt)}` : '')}
-    ${_daiKPI(due.size, 'Due to attend on 23 Oct', 'From the area attendance lists')}
-    ${_daiKPI(day, 'Trained on the day', 'On the day registration')}
-    ${_daiKPI(cu + man, 'Trained at a catch-up or other session', `${cu} on the Check-In register${man ? `, ${man} recorded by hand` : ''}`)}
-    ${_daiKPI(notYet.length, 'Not trained yet', `${dueNot.length} of them were due on the day`)}
+    ${_daiKPI(onTracker.length, 'Staff on the TLA Tracker', store.roster ? `Imported ${_daiFmtDate(store.roster.importedAt)}` : 'Not imported yet: see "Where these numbers come from"')}
+    ${_daiKPI(lc.yes, 'Marked attending on 23 Oct', `Yes or Part of the day. ${lc.no} not attending${lc.none ? `, ${lc.none} no answer` : ''}`)}
+    ${_daiKPI(rc.day, 'Trained on the day', `${rc.dayRows} rows on the day register`)}
+    ${_daiKPI(rc.catchup + rc.manual, 'Trained at a catch-up or other session', `${rc.catchup} on the Check-In${rc.both ? ` (${rc.both} also on the day register)` : ''}${rc.manual ? `, ${rc.manual} recorded by hand` : ''}`)}
+    ${_daiKPI(notYet.length, 'Not trained yet', `${dueNot.length} of them were marked attending`)}
   </div>`;
 
   const byArea = new Map();
@@ -358,10 +389,21 @@ function daiAttendanceHTML() {
     .sort((a, b) => b.not.length - a.not.length || a.code.localeCompare(b.code))
     .map((x, ai) => `<tr>${_daiTd(x.code ? `<strong>${_daiEsc(x.code)}</strong> ${_daiEsc(_daiAreaName(x.code))}` : 'No area matched')}${_daiTd(x.ps.length)}${_daiTd(x.ps.filter(p => p.due).length)}${_daiTd(x.ps.filter(p => p.how === 'day').length)}${_daiTd(x.ps.filter(p => p.how === 'catch-up' || p.how === 'manual').length)}
       ${_daiTd(x.not.length ? `<div style="display:flex;gap:6px;align-items:center;"><input type="checkbox" id="drs-all-${ai}" data-drs-area="${ai}" style="width:20px;height:20px;"><label for="drs-all-${ai}" style="font-size:var(--text-xs);">Select all ${x.not.length}<span class="sr-only"> not trained in ${_daiEsc(x.code || 'no area')}</span></label></div>
-        <details><summary style="cursor:pointer;min-height:24px;color:var(--color-teal);font-weight:bold;">${x.not.length} <span class="sr-only">not trained, show who</span></summary><ul style="list-style:none;margin-top:4px;">${x.not.sort((a, b) => a.name.localeCompare(b.name)).map(p => { const i = _drsSel.indexOf(p); return `<li style="padding:2px 0;display:flex;gap:6px;align-items:flex-start;"><input type="checkbox" id="drs-p-${i}" data-drs-person="${i}" data-drs-group="${ai}" aria-label="Select ${_daiEsc(p.name)}" style="width:20px;height:20px;flex-shrink:0;"><span>${nameBtn(p)} <span style="color:var(--color-muted);">${_daiEsc(p.role || '')}${p.due ? ', was due' : p.said === 'no' ? ', said not attending' : ''}${p.status ? ', ' + _daiEsc(p.status) : ''}${p.notOnTracker ? ', not on tracker' : ''}</span></span></li>`; }).join('')}</ul></details>` : '0')}</tr>`);
+        <details><summary style="cursor:pointer;min-height:24px;color:var(--color-teal);font-weight:bold;">${x.not.length} <span class="sr-only">not trained, show who</span></summary><ul style="list-style:none;margin-top:4px;">${x.not.sort((a, b) => a.name.localeCompare(b.name)).map(p => { const i = _drsSel.indexOf(p); return `<li style="padding:2px 0;display:flex;gap:6px;align-items:flex-start;"><input type="checkbox" id="drs-p-${i}" data-drs-person="${i}" data-drs-group="${ai}" aria-label="Select ${_daiEsc(p.name)}" style="width:20px;height:20px;flex-shrink:0;"><span>${nameBtn(p)} <span style="color:var(--color-muted);">${_daiEsc(p.role || '')}${p.due ? ', marked attending' : p.said === 'no' ? ', marked not attending' : ''}${p.status ? ', ' + _daiEsc(p.status) : ''}${p.notOnTracker ? ', not on tracker' : ''}</span></span></li>`; }).join('')}</ul></details>` : '0')}</tr>`);
 
   const gone = staff.filter(s => s.tracker && !s.tracker.onLatest);
   const unmatchedAreas = [...new Set(onTracker.filter(s => !s.areaCode).map(s => s.tracker.faculty).filter(Boolean))];
+  const recon = `<details style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);background:var(--color-white);">
+    <summary style="cursor:pointer;font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);min-height:24px;">Where these numbers come from</summary>
+    <ul style="font-size:var(--text-sm);margin:var(--space-sm) 0 0 var(--space-lg);line-height:1.7;">
+      <li><strong>Day register:</strong> ${rc.dayRows} rows. ${rc.day} different people${(() => { const rep = rc.dayRows - rc.day - rc.unnamed; return rep > 0 ? `; ${rep} ${rep === 1 ? 'row was a repeat' : 'rows were repeats'} by someone already counted` : ''; })()}${rc.unnamed ? `; ${rc.unnamed} ${rc.unnamed === 1 ? 'row gave' : 'rows gave'} no name` : ''}.</li>
+      <li><strong>Catch-up Check-In:</strong> ${rc.cuRows} rows, ${rc.catchup} different people${rc.both ? `, of whom ${rc.both} are also on the day register` : ''}.</li>
+      ${rc.manual ? `<li><strong>Recorded by hand:</strong> ${rc.manual} people not on either register.</li>` : ''}
+      <li><strong>Trained in total:</strong> ${rc.trained} people (each counted once).</li>
+      <li><strong>Area attendance lists:</strong> ${expected.length} rows across the area sheets, ${listed.size} different people. ${lc.yes} marked Yes or Part of the day, ${lc.no} No${lc.none ? `, ${lc.none} with no answer` : ''}. Session bookings are not people: one person can book more than one session.</li>
+      <li><strong>TLA Tracker:</strong> ${store.roster ? `${store.roster.count} staff from ${_daiEsc(store.roster.fileName)}, imported ${_daiFmtDate(store.roster.importedAt)}.` : 'not imported. Run "Check the Data folder": the status line says why any file could not be used.'}</li>
+      <li><strong>Not trained yet</strong> counts everyone on the tracker or the attendance lists with no training recorded.</li>
+    </ul></details>`;
   const recordForm = `<fieldset style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
       <legend style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);padding:0 4px;">Record training by hand for the people selected below</legend>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);">
@@ -373,10 +415,10 @@ function daiAttendanceHTML() {
       <button type="button" id="drs-record" class="btn btn--primary">Mark selected as trained (<span id="drs-count">0</span>)</button>
       <p id="drs-msg" role="status" aria-live="polite" style="font-size:var(--text-sm);color:var(--color-teal);min-height:1.2em;margin-top:var(--space-xs);"></p>
     </fieldset>`;
-  return tiles
+  return tiles + recon
     + _dsuH3('By area') + _dsuP('Most not yet trained first. Open a number to see who. Trained means on the day registration, the catch-up Check-In, or recorded here by hand. Use "Select all" for a whole area, then open the list to untick anyone.')
     + recordForm
-    + _daiTable('Training attendance by area', ['Area', 'Staff', 'Due on the day', 'Trained on the day', 'Trained at catch-up or other', 'Not trained yet'], rows, 900)
+    + _daiTable('Training attendance by area', ['Area', 'Staff', 'Marked attending', 'Trained on the day', 'Trained at catch-up or other', 'Not trained yet'], rows, 900)
     + (unmatchedAreas.length ? _dsuH3('Tracker faculties with no Hub area', true) + _dsuP(`Map these when you next run the import, or add them as new areas: ${unmatchedAreas.map(_daiEsc).join(', ')}.`) : '')
     + (gone.length ? _dsuH3(`No longer on the TLA Tracker (${gone.length})`, true) + _dsuP('These profiles were on an earlier tracker but not the latest one. They are kept; check whether they have left.') + `<p style="font-size:var(--text-sm);">${gone.map(_daiPersonBtn).join(', ')}</p>` : '');
 }

@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v2.3 · 12/11/26 · "anonymous" Forms emails treated as no email (was merging people), one-off repair of stored data; both surveys shown as baselines, no before/after change
+// DPC Hub · js/dai.js · v2.4 · 12/11/26 · scan reports every file it could not use and why; .xlsm/.xls read; repair no longer links by surname alone; name check re-homes mislinked responses; registered tile split by register
+// v2.3 · 12/11/26 · "anonymous" Forms emails treated as no email (was merging people), one-off repair of stored data; both surveys shown as baselines, no before/after change
 // v2.2 · 12/11/26 · TLA Tracker and area attendance lists imported with the DA&I files (dai-roster.js); Attendance tab; new areas from the import
 // v2.1 · 12/11/26 · baseline check on Overview (dai-baseline.js), remembered register links used on import; targets tile moved to By person
 // v2.0 · 12/11/26 · catch-up session register (Accessibility Confidence Check-In) imported as registration, with role and resource brought
@@ -294,7 +295,7 @@ function _daiResolveArea(raw) {
 async function _daiScan() {
   if (typeof listFolderFiles !== 'function' || typeof readFolderFileBytes !== 'function') throw new Error('The Hub data layer did not load. Refresh the Hub.');
   if (typeof XLSX === 'undefined') throw new Error('The spreadsheet library did not load. Refresh the Hub and try again.');
-  const files = await listFolderFiles(n => /\.xlsx$/i.test(n) && !n.startsWith('~$'));
+  const files = await listFolderFiles(n => /\.(xlsx|xlsm|xls)$/i.test(n) && !n.startsWith('~$'));
   if (!files.length) throw new Error('No Excel files found in the connected Data folder. Check the folder is connected in Settings.');
 
   const found = [], records = [], notes = [], plans = [];
@@ -310,8 +311,11 @@ async function _daiScan() {
         continue;
       }
       parsed = _daiReadWorkbook(bytes);
-    } catch (e) { continue; }
-    if (!parsed) continue;
+      if (!parsed) { notes.push(`${f.name}: not used. Its columns do not match any DA&I export the Hub knows.`); continue; }
+    } catch (e) {
+      notes.push(`${f.name}: could not be opened. ${/password|encrypt|protect|CFB/i.test(String(e && e.message)) ? 'It looks protected (for example by a sensitivity label). Save an unprotected copy into the Data folder.' : 'It may still be downloading from OneDrive, or be open and locked. Try again in a minute.'}`);
+      continue;
+    }
     if (parsed.kind === 'registration') {
       const list = _daiParseRegistration(parsed.head, parsed.rows, f.name);
       found.push({ name: f.name, kind: 'Registration', count: list.length });
@@ -365,7 +369,7 @@ async function _daiScan() {
   const byEmail = new Map(staff.filter(s => s.email).map(s => [s.email.toLowerCase(), s]));
   const people = new Map();
   fresh.forEach(r => {
-    const pk = r.email || 'name:' + _daiNameKey(r.name);
+    const pk = r.email || (_daiNameKey(r.name) ? 'name:' + _daiNameKey(r.name) : 'unnamed:' + r.key);
     if (!people.has(pk)) people.set(pk, { pk, email: r.email, name: r.name, areaRaw: r.areaRaw, records: [] });
     const p = people.get(pk);
     p.records.push(r);
@@ -375,6 +379,7 @@ async function _daiScan() {
   const nameMatches = [];
   let byEmailCount = 0, toCreate = 0;
   people.forEach(p => {
+    if (p.pk.startsWith('unnamed:')) { p.match = { type: 'unnamed' }; return; }
     const aliasId = typeof daiAliasFor === 'function' ? daiAliasFor(p.email, p.name) : null;
     const aliased = aliasId && staff.find(s => s.staffId === aliasId);
     if (aliased) { p.match = { type: 'email', staffId: aliased.staffId }; byEmailCount++; return; }
@@ -421,6 +426,11 @@ function _daiApply(scan, decisions) {
   const importedIds = [];
 
   scan.people.forEach(p => {
+    // A row with no name and no email is counted, but cannot belong to anyone.
+    if (p.match.type === 'unnamed') {
+      p.records.forEach(r => { store.responses.push({ ...r, staffId: '', unnamed: true, areaCode: _daiResolveArea(r.areaRaw), importedAt: nowISO() }); added++; });
+      return;
+    }
     let profile = null;
     if (p.match.type === 'email') profile = staff.find(s => s.staffId === p.match.staffId);
     if (p.match.type === 'name') {
@@ -551,7 +561,7 @@ function _daiCompute() {
 
   return {
     all, regsCount: regs.length, unnamedRegs, reflCount: refl.length,
-    before: _daiAvg(all.map(p => p.before)), after: _daiAvg(all.map(p => p.after)),
+    before: _daiAvg(all.map(p => p.before).concat(regs.filter(r => !r.staffId).map(_daiBefore))), after: _daiAvg(all.map(p => p.after)),
     both: all.filter(p => p.before != null && p.after != null),
     elements, areas, coaching,
     support: [...support.entries()].map(([opt, ps]) => ({ opt, people: ps })).sort((a, b) => b.people.length - a.people.length),
@@ -590,9 +600,51 @@ function initDAI() {
       : 'Nothing to fill: every target is already a priority, or the three slots are full.';
   });
   if (!main._daiBound) { main.addEventListener('click', _daiDelegate); main._daiBound = true; }
-  const fixed = _daiRepairEmails();
+  const fixed = [_daiRepairEmails(), _daiCheckNames()].filter(Boolean).join(' ');
   if (fixed) document.getElementById('dai-status').textContent = fixed;
   _daiRenderBody();
+}
+
+// Name check: a response whose name does not fit the profile it sits on
+// (not the same name, a short form, the same email, or a link Graeme
+// confirmed) is moved to the profile with that name, or a new one. Catches
+// any response linked to the wrong person by surname alone.
+function _daiCheckNames() {
+  const store = _daiStore();
+  const staff = window.DPC_DATA.staff && window.DPC_DATA.staff.staff;
+  if (!staff || typeof _drsSameFirst !== 'function') return '';
+  const aliases = store.aliases || {};
+  const fits = (r, s) => {
+    if (!r.name) return true;
+    if (r.email && s.email && r.email === s.email) return true;
+    if (aliases['n:' + _daiNameKey(r.name)] === s.staffId) return true;
+    if (_daiNameKey(r.name) === _daiNameKey(s.name)) return true;
+    const a = _dblParts(r.name), b = _dblParts(s.name);
+    const lastOk = a.last === b.last || a.first === b.last && a.last === b.first;
+    return lastOk && (_drsSameFirst(a.first, b.first) || _drsSameFirst(a.last, b.first));
+  };
+  let moved = 0, created = 0;
+  store.responses.filter(r => r.staffId && r.name && !r.manual).forEach(r => {
+    const from = staff.find(s => s.staffId === r.staffId);
+    if (!from || fits(r, from)) return;
+    const others = staff.filter(s => s.staffId !== from.staffId);
+    let target = others.find(s => _daiNameKey(s.name) === _daiNameKey(r.name) && s.tracker) || others.find(s => _daiNameKey(s.name) === _daiNameKey(r.name));
+    if (!target) { const m = _drsCandidates(r.name, r.areaCode, others); if (m.auto) target = m.auto; }
+    if (!target) {
+      target = { staffId: generateId(), name: r.name, email: r.email || '', areaCode: r.areaCode || '', departmentCode: null, additionalAreas: [], role: r.role || '',
+        entryPathway: 'dai-forms', entryDate: todayISO(), etfStage: null, developmentPriorities: ['', '', ''], confidenceRating: null,
+        touchHistory: [], reflectionRefs: [], afiRefs: [], isAnonymousAtAreaLevel: true, notes: 'Created from the DA&I Forms import.', createdAt: nowISO(), lastUpdated: nowISO() };
+      staff.push(target); created++;
+    }
+    const t = (from.touchHistory || []).filter(x => x.sourceRef === r.key);
+    from.touchHistory = (from.touchHistory || []).filter(x => x.sourceRef !== r.key);
+    target.touchHistory = (target.touchHistory || []).concat(t);
+    r.staffId = target.staffId; moved++;
+  });
+  if (!moved) return '';
+  if (typeof saveStaffBulk === 'function') saveStaffBulk();
+  if (typeof saveDAIData === 'function') saveDAIData();
+  return `Name check: ${moved} response${moved === 1 ? ' was' : 's were'} on a profile with a different name and ${moved === 1 ? 'has' : 'have'} been moved to the right person (${created} new profile${created === 1 ? '' : 's'}).`;
 }
 
 // One-off repair: earlier imports treated "anonymous" as an email address,
@@ -621,7 +673,7 @@ function _daiRepairEmails() {
       const others = staff.filter(s => !blob.has(s.staffId));
       const same = others.filter(s => _daiNameKey(s.name) === nk);
       target = same.find(s => s.tracker) || same[0] || null;
-      if (!target && typeof _drsCandidates === 'function') { const m = _drsCandidates(r.name, r.areaCode, others); if (m.auto) target = m.auto; else if (m.options.length === 1) target = m.options[0]; }
+      if (!target && typeof _drsCandidates === 'function') { const m = _drsCandidates(r.name, r.areaCode, others); if (m.auto) target = m.auto; }
       if (!target) {
         target = { staffId: generateId(), name: r.name, email: '', areaCode: r.areaCode || '', departmentCode: null, additionalAreas: [], role: r.role || '',
           entryPathway: 'dai-forms', entryDate: todayISO(), etfStage: null, developmentPriorities: ['', '', ''], confidenceRating: null,
@@ -826,7 +878,7 @@ function _daiRenderBody() {
   const shift = d.both.length ? _daiAvg(d.both.map(p => p.after - p.before)) : null;
 
   const kpis = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);">
-    ${_daiKPI(d.regsCount, 'People registered', (() => { const c = d.all.filter(p => p.reg && p.reg.session === 'catch-up').length; const m = d.all.filter(p => p.reg && p.reg.session && p.reg.session !== 'catch-up').length; return `${d.regsCount - c - m} on the day${c ? `, ${c} at a catch-up` : ''}${m ? `, ${m} added by hand` : ''}${d.unnamedRegs ? ` (${d.unnamedRegs} gave no name)` : ''}`; })())}
+    ${(() => { const c = typeof daiRegisterCounts === 'function' ? daiRegisterCounts() : null; return c ? _daiKPI(c.trained, 'People trained', `${c.day} on the day register, ${c.catchup} on the Check-In${c.both ? ` (${c.both} on both)` : ''}${c.manual ? `, ${c.manual} added by hand` : ''}${c.unnamed ? `; ${c.unnamed} day rows gave no name` : ''}`) : _daiKPI(d.regsCount, 'People registered', ''); })()}
     ${_daiKPI(d.reflCount, '"How\'s it going" returns', `${d.all.filter(p => p.reg && p.refl).length} of them also registered`)}
     ${_daiKPI(d.before == null ? '–' : `${_daiFmt(d.before)} of 5`, 'Baseline: overall confidence', 'One rating at registration (day or catch-up)')}
     ${_daiKPI(d.after == null ? '–' : `${_daiFmt(d.after)} of 5`, 'Baseline: element confidence', 'Average of 11 elements, "How\'s it going"')}
