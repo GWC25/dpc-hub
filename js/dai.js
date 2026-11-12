@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v2.4 · 12/11/26 · scan reports every file it could not use and why; .xlsm/.xls read; repair no longer links by surname alone; name check re-homes mislinked responses; registered tile split by register
+// DPC Hub · js/dai.js · v2.5 · 12/11/26 · By person tab rebuilt on the dashboard framework (dai-dash.js); coaching threshold is a setting
+// v2.4 · 12/11/26 · scan reports every file it could not use and why; .xlsm/.xls read; repair no longer links by surname alone; name check re-homes mislinked responses; registered tile split by register
 // v2.3 · 12/11/26 · "anonymous" Forms emails treated as no email (was merging people), one-off repair of stored data; both surveys shown as baselines, no before/after change
 // v2.2 · 12/11/26 · TLA Tracker and area attendance lists imported with the DA&I files (dai-roster.js); Attendance tab; new areas from the import
 // v2.1 · 12/11/26 · baseline check on Overview (dai-baseline.js), remembered register links used on import; targets tile moved to By person
@@ -544,7 +545,8 @@ function _daiCompute() {
 
   const coaching = all.map(p => {
     const reasons = [];
-    if (p.after != null && p.after <= DAI_LOW) reasons.push(`Low confidence after the day (${_daiFmt(p.after)})`);
+    const th = typeof daiCoachThreshold === 'function' ? daiCoachThreshold() : DAI_LOW;
+    if (p.after != null && p.after < th) reasons.push(`Combined element confidence ${_daiFmt(p.after)}, below ${th}`);
     const lowT = p.targets.filter(t => t.confidence != null && t.confidence <= 2).length;
     if (lowT) reasons.push(`${lowT} target${lowT === 1 ? '' : 's'} rated 2 or below`);
     return { ...p, reasons };
@@ -917,7 +919,7 @@ function _daiRenderBody() {
     theme:     (sp.themes || '') + elements,
     area:      areas + (sp.areaNeeds || ''),
     campus:    sp.campus || '',
-    people:    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);">${(() => { const t = typeof daiTargetsSummary === 'function' ? daiTargetsSummary() : null; return t && t.total ? _daiKPI(`${t.achieved} of ${t.total}`, 'Personal targets achieved', `${t.inProgress} in progress, ${t.withEvidence} with evidence`) : ''; })()}</div>` + coaching + (sp.person || ''),
+    people:    typeof daiPersonTabHTML === 'function' ? daiPersonTabHTML(d) : coaching + (sp.person || ''),
     asked:     support,
     plans:     typeof daiPlansOverviewHTML === 'function' ? daiPlansOverviewHTML() : '',
     attendance: typeof daiAttendanceHTML === 'function' ? daiAttendanceHTML() : '',
@@ -943,6 +945,7 @@ function _daiRenderBody() {
   if (typeof daiReportWire === 'function') daiReportWire(body);
   if (typeof daiBaselineWire === 'function') daiBaselineWire(body);
   if (typeof daiAttendanceWire === 'function') daiAttendanceWire(body);
+  if (typeof daiDashWire === 'function') daiDashWire(body);
   if (typeof daiActionWireFilters === 'function') daiActionWireFilters(body);
 }
 
