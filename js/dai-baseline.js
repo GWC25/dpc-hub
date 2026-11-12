@@ -56,7 +56,7 @@ function _dblScore(ret, cand) {
 function _dblPeople() {
   const staff = new Map(_daiStaffList().map(s => [s.staffId, s]));
   const by = new Map();
-  _daiStore().responses.forEach(r => {
+  _daiStore().responses.filter(r => r.staffId).forEach(r => {
     if (!by.has(r.staffId)) by.set(r.staffId, { staffId: r.staffId, reg: false, refl: false, email: '', name: '', areaCode: '' });
     const p = by.get(r.staffId);
     if (r.source === 'registration') p.reg = true; else if (r.source === 'reflection') p.refl = true;

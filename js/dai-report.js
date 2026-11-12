@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-report.js · v1.1 · 09/11/26 · support actions done
+// DPC Hub · js/dai-report.js · v1.2 · 12/11/26 · two baselines, no before/after change
+// v1.1 · 09/11/26 · support actions done
 // v1.0 · 09/11/26 · DA&I impact report: Word export from the DA&I progress page
 //
 // A Word document for line management and the task force: confidence
@@ -70,7 +71,7 @@ function _drpBuild(docx, opts) {
   children.push(H('Summary')); sections++;
   children.push(...B([
     `${d.regsCount} staff registered for the training; ${d.reflCount} completed the "How's it going" reflection.`,
-    `Average confidence before the training: ${_drpFmt(d.before)} of 5. After: ${_drpFmt(d.after)} of 5${shift != null ? `, a change of ${shift >= 0 ? '+' : ''}${_daiFmt(shift)} for the ${d.both.length} staff who answered both` : ''}.`,
+    `Baseline overall confidence (one rating at registration): ${_drpFmt(d.before)} of 5. Baseline element confidence (average of 11 elements, "How's it going"): ${_drpFmt(d.after)} of 5.`,
     `Area Action Plans submitted: ${got.length} of ${areas.length} areas.`,
     `Resources teams report fixing: ${fixedTotal}.`,
     `Personal targets set: ${tg.total}; achieved ${tg.achieved}, in progress ${tg.inProgress}, with evidence ${tg.withEvidence}.`,
@@ -95,7 +96,7 @@ function _drpBuild(docx, opts) {
   }).filter(Boolean);
   if (areaRows.length) {
     children.push(H('By curriculum area')); sections++;
-    children.push(_repDocTable(docx, ['Area', 'Registered', 'Reflections', 'Before', 'After', 'Weakest element', 'Plan', 'Evidence'], areaRows, [2600, 950, 1000, 750, 750, 1500, 650, 800]));
+    children.push(_repDocTable(docx, ['Area', 'Registered', 'Reflections', 'Overall baseline', 'Element baseline', 'Weakest element', 'Plan', 'Evidence'], areaRows, [2600, 950, 1000, 750, 750, 1500, 650, 800]));
   }
 
   // Plans
@@ -162,7 +163,7 @@ function _drpBuild(docx, opts) {
   // Notes
   children.push(H('About this data')); sections++;
   children.push(...B([
-    'Confidence before the training is one overall rating given at registration; confidence after is the average of eleven element ratings, so the change is an indication rather than a like-for-like measure.',
+    'There are two baselines: overall confidence, one rating given at registration on the day or at a catch-up, and element confidence, the average of eleven ratings from the "How\'s it going" survey. They ask different questions and are not compared with each other. Progress will be measured when the same questions are asked again.',
     'Each person\'s latest response of each kind is counted.',
     'Area Action Plans are completed by Heads of Area; milestone and action statuses are recorded by the Digital Pedagogy Coach.',
     'This report contains no staff names. Area-level and person-level detail is held in the DPC Hub.',

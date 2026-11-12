@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v2.2 · 12/11/26 · TLA Tracker and area attendance lists imported with the DA&I files (dai-roster.js); Attendance tab; new areas from the import
+// DPC Hub · js/dai.js · v2.3 · 12/11/26 · "anonymous" Forms emails treated as no email (was merging people), one-off repair of stored data; both surveys shown as baselines, no before/after change
+// v2.2 · 12/11/26 · TLA Tracker and area attendance lists imported with the DA&I files (dai-roster.js); Attendance tab; new areas from the import
 // v2.1 · 12/11/26 · baseline check on Overview (dai-baseline.js), remembered register links used on import; targets tile moved to By person
 // v2.0 · 12/11/26 · catch-up session register (Accessibility Confidence Check-In) imported as registration, with role and resource brought
 // v1.9 · 09/11/26 · support action progress (dai-actions.js): Mark done button, filters
@@ -69,6 +70,8 @@ function _daiEsc(v) { return v == null ? '' : String(v).replace(/&/g, '&amp;').r
 function _daiNorm(v) { return String(v == null ? '' : v).toLowerCase().replace(/[“”"'’]/g, '').replace(/[–—]/g, '-').replace(/\s+/g, ' ').trim(); }
 function _daiNameKey(v) { return _daiNorm(v).replace(/[^a-z\s-]/g, ' ').split(/[\s-]+/).filter(Boolean).sort().join(' '); }
 function _daiText(v) { return v == null || String(v).trim() === '' ? '' : String(v).replace(/\r\n?/g, '\n').trim(); }
+// Forms puts "anonymous" in the Email column when a form allows anyone to respond. Only a real address counts.
+function _daiEmail(v) { const e = _daiText(v).toLowerCase(); return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e) ? e : ''; }
 function _daiFmt(n) { return n == null ? '–' : (Math.round(n * 10) / 10).toFixed(1); }
 function _daiAvg(list) { const v = list.filter(x => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; }
 function _daiFmtDate(iso) {
@@ -184,7 +187,7 @@ function _daiParseRegistration(head, rows, fileName) {
       source: 'registration', fileName,
       formId: String(_daiCell(r, idC)),
       when: _daiWhen(_daiCell(r, doneC)),
-      email: _daiText(_daiCell(r, emailC)).toLowerCase(),
+      email: _daiEmail(_daiCell(r, emailC)),
       name: formsName && !/^anonymous$/i.test(formsName) ? formsName : fromParts,
       areaRaw: _daiText(_daiCell(r, areaC)),
       hoaNamed: _daiText(_daiCell(r, hoaC)),
@@ -205,7 +208,7 @@ function _daiParseCatchup(head, rows, fileName) {
     source: 'registration', session: 'catch-up', fileName,
     formId: 'catchup-' + String(_daiCell(r, idC)),
     when: _daiWhen(_daiCell(r, doneC)),
-    email: _daiText(_daiCell(r, emailC)).toLowerCase(),
+    email: _daiEmail(_daiCell(r, emailC)),
     name: _daiText(_daiCell(r, nameC)),
     areaRaw: _daiText(_daiCell(r, areaC)),
     role: _daiText(_daiCell(r, roleC)),
@@ -235,7 +238,7 @@ function _daiParseReflection(head, rows, fileName) {
       source: 'reflection', fileName,
       formId: String(_daiCell(r, idC)),
       when: _daiWhen(_daiCell(r, doneC)),
-      email: _daiText(_daiCell(r, emailC)).toLowerCase(),
+      email: _daiEmail(_daiCell(r, emailC)),
       name: _daiText(_daiCell(r, nameC)),
       areaRaw: _daiText(_daiCell(r, cols.area)),
       attended: _daiText(_daiCell(r, cols.attended)),
@@ -503,7 +506,8 @@ function _daiCompute() {
   const staffById = new Map(_daiStaffList().map(s => [s.staffId, s]));
   const people = new Map();
   const person = id => { if (!people.has(id)) { const s = staffById.get(id); people.set(id, { staffId: id, name: s ? s.name : 'Unknown', areaCode: s ? s.areaCode : '', before: null, after: null, elements: {}, targets: [], reg: null, refl: null }); } return people.get(id); };
-  regs.forEach(r => { const p = person(r.staffId); p.reg = r; p.before = _daiBefore(r); if (r.areaCode) p.areaCode = r.areaCode; });
+  const unnamedRegs = regs.filter(r => !r.staffId).length;
+  regs.filter(r => r.staffId).forEach(r => { const p = person(r.staffId); p.reg = r; p.before = _daiBefore(r); if (r.areaCode) p.areaCode = r.areaCode; });
   refl.forEach(r => { const p = person(r.staffId); p.refl = r; p.elements = _daiElements(r); p.after = _daiAfter(r); p.targets = _daiTargets(r); if (r.areaCode) p.areaCode = r.areaCode; });
   const all = [...people.values()];
 
@@ -531,7 +535,6 @@ function _daiCompute() {
   const coaching = all.map(p => {
     const reasons = [];
     if (p.after != null && p.after <= DAI_LOW) reasons.push(`Low confidence after the day (${_daiFmt(p.after)})`);
-    if (p.before != null && p.after != null && p.after < p.before) reasons.push('Confidence lower after the day than before');
     const lowT = p.targets.filter(t => t.confidence != null && t.confidence <= 2).length;
     if (lowT) reasons.push(`${lowT} target${lowT === 1 ? '' : 's'} rated 2 or below`);
     return { ...p, reasons };
@@ -547,7 +550,7 @@ function _daiCompute() {
   });
 
   return {
-    all, regsCount: regs.length, reflCount: refl.length,
+    all, regsCount: regs.length, unnamedRegs, reflCount: refl.length,
     before: _daiAvg(all.map(p => p.before)), after: _daiAvg(all.map(p => p.after)),
     both: all.filter(p => p.before != null && p.after != null),
     elements, areas, coaching,
@@ -587,7 +590,61 @@ function initDAI() {
       : 'Nothing to fill: every target is already a priority, or the three slots are full.';
   });
   if (!main._daiBound) { main.addEventListener('click', _daiDelegate); main._daiBound = true; }
+  const fixed = _daiRepairEmails();
+  if (fixed) document.getElementById('dai-status').textContent = fixed;
   _daiRenderBody();
+}
+
+// One-off repair: earlier imports treated "anonymous" as an email address,
+// so every anonymous response was put on one profile. This clears those
+// emails, recalculates each response's key, and gives each response back
+// to the right person by name (an existing profile with that name, or a
+// new one). Responses with no name stay as unnamed registrations.
+function _daiRepairEmails() {
+  const store = _daiStore();
+  const staff = window.DPC_DATA.staff && window.DPC_DATA.staff.staff;
+  if (!staff) return '';
+  const bad = e => !!e && !_daiEmail(e);
+  const badProfiles = staff.filter(s => bad(s.email));
+  const badResponses = store.responses.filter(r => bad(r.email));
+  if (!badProfiles.length && !badResponses.length) return '';
+  const blob = new Set(badProfiles.map(s => s.staffId));
+  const rekey = new Map();
+  badResponses.forEach(r => { r.email = ''; const k = _daiKey(r); rekey.set(r.key, k); r.key = k; });
+  staff.forEach(s => (s.touchHistory || []).forEach(t => { if (rekey.has(t.sourceRef)) t.sourceRef = rekey.get(t.sourceRef); }));
+  let moved = 0, created = 0, unnamed = 0;
+  store.responses.filter(r => blob.has(r.staffId)).forEach(r => {
+    const from = staff.find(s => s.staffId === r.staffId);
+    const nk = _daiNameKey(r.name);
+    let target = null;
+    if (nk) {
+      const others = staff.filter(s => !blob.has(s.staffId));
+      const same = others.filter(s => _daiNameKey(s.name) === nk);
+      target = same.find(s => s.tracker) || same[0] || null;
+      if (!target && typeof _drsCandidates === 'function') { const m = _drsCandidates(r.name, r.areaCode, others); if (m.auto) target = m.auto; else if (m.options.length === 1) target = m.options[0]; }
+      if (!target) {
+        target = { staffId: generateId(), name: r.name, email: '', areaCode: r.areaCode || '', departmentCode: null, additionalAreas: [], role: r.role || '',
+          entryPathway: 'dai-forms', entryDate: todayISO(), etfStage: null, developmentPriorities: ['', '', ''], confidenceRating: null,
+          touchHistory: [], reflectionRefs: [], afiRefs: [], isAnonymousAtAreaLevel: true, notes: 'Created from the DA&I Forms import.', createdAt: nowISO(), lastUpdated: nowISO() };
+        staff.push(target); created++;
+      }
+    }
+    if (from) {
+      const t = (from.touchHistory || []).filter(x => x.sourceRef === r.key);
+      from.touchHistory = (from.touchHistory || []).filter(x => x.sourceRef !== r.key);
+      if (target) target.touchHistory = (target.touchHistory || []).concat(t);
+    }
+    if (target) { r.staffId = target.staffId; moved++; } else { r.staffId = ''; r.unnamed = true; unnamed++; }
+  });
+  badProfiles.forEach(s => { s.email = ''; });
+  // Remove the merged profile only if the import made it and nothing is left on it.
+  const ev = store.evidence || [];
+  window.DPC_DATA.staff.staff = staff.filter(s => !(blob.has(s.staffId) && s.entryPathway === 'dai-forms'
+    && !store.responses.some(r => r.staffId === s.staffId) && !(s.touchHistory || []).length && !ev.some(e => (e.staffIds || []).includes(s.staffId))));
+  Object.keys(store.aliases || {}).forEach(k => { if (k.startsWith('e:') && !_daiEmail(k.slice(2))) delete store.aliases[k]; });
+  if (typeof saveStaffBulk === 'function') saveStaffBulk();
+  if (typeof saveDAIData === 'function') saveDAIData();
+  return `Repaired the DA&I data: ${moved} responses that had "anonymous" as their email were given back to the right people (${created} new profile${created === 1 ? '' : 's'})${unnamed ? `; ${unnamed} gave no name and ${unnamed === 1 ? 'is' : 'are'} counted as ${unnamed === 1 ? 'an unnamed registration' : 'unnamed registrations'}` : ''}.`;
 }
 
 function _daiDelegate(ev) {
@@ -769,11 +826,10 @@ function _daiRenderBody() {
   const shift = d.both.length ? _daiAvg(d.both.map(p => p.after - p.before)) : null;
 
   const kpis = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);">
-    ${_daiKPI(d.regsCount, 'People registered', (() => { const c = d.all.filter(p => p.reg && p.reg.session === 'catch-up').length; return c ? `${d.regsCount - c} on the day, ${c} at a catch-up session` : 'Came to the DA&amp;I training'; })())}
+    ${_daiKPI(d.regsCount, 'People registered', (() => { const c = d.all.filter(p => p.reg && p.reg.session === 'catch-up').length; const m = d.all.filter(p => p.reg && p.reg.session && p.reg.session !== 'catch-up').length; return `${d.regsCount - c - m} on the day${c ? `, ${c} at a catch-up` : ''}${m ? `, ${m} added by hand` : ''}${d.unnamedRegs ? ` (${d.unnamedRegs} gave no name)` : ''}`; })())}
     ${_daiKPI(d.reflCount, '"How\'s it going" returns', `${d.all.filter(p => p.reg && p.refl).length} of them also registered`)}
-    ${_daiKPI(d.before == null ? '–' : `${_daiFmt(d.before)} of 5`, 'Confidence before', 'One overall rating: day registration or catch-up Check-In')}
-    ${_daiKPI(d.after == null ? '–' : `${_daiFmt(d.after)} of 5`, 'Confidence after', 'Average across the 11 elements')}
-    ${_daiKPI(shift == null ? '–' : `${shift >= 0 ? '+' : ''}${_daiFmt(shift)}`, 'Average change', `${d.both.length} of ${d.reflCount} returns have a registration rating`)}
+    ${_daiKPI(d.before == null ? '–' : `${_daiFmt(d.before)} of 5`, 'Baseline: overall confidence', 'One rating at registration (day or catch-up)')}
+    ${_daiKPI(d.after == null ? '–' : `${_daiFmt(d.after)} of 5`, 'Baseline: element confidence', 'Average of 11 elements, "How\'s it going"')}
     ${(() => { const a = typeof daiActionSummary === 'function' ? daiActionSummary() : null; return a ? _daiKPI(a.done, 'Support actions done', `${a.inProgress} planned or in progress`) : ''; })()}
   </div>`;
 
@@ -789,11 +845,11 @@ function _daiRenderBody() {
 
   const arRows = d.areas.map(a => `<tr>${_daiTd(a.code ? `<strong>${_daiEsc(a.code)}</strong> ${_daiEsc(a.name)}` : _daiEsc(a.name))}${_daiTd(a.registered)}${_daiTd(a.reflections)}${_daiTd(_daiFmt(a.before))}${_daiTd(_daiFmt(a.after))}${_daiTd(_daiEsc(a.weakest))}</tr>`);
   const areas = _daiSection('dai-ar-h', 'By area', 'Lowest confidence after the training first. The weakest element is where that area most needs support.',
-    _daiTable('Confidence by curriculum area, out of 5', ['Area', 'Registered', 'Returns', 'Before', 'After', 'Weakest element'], arRows, 720));
+    _daiTable('Confidence by curriculum area, out of 5', ['Area', 'Registered', 'Returns', 'Overall baseline', 'Element baseline', 'Weakest element'], arRows, 720));
 
   const coRows = d.coaching.map(p => `<tr>${_daiTd(_daiPersonBtn(p))}${_daiTd(_daiEsc(p.areaCode || ''))}${_daiTd(_daiFmt(p.before))}${_daiTd(_daiFmt(p.after))}${_daiTd(p.reasons.map(_daiEsc).join('<br>'))}</tr>`);
   const coaching = _daiSection('dai-co-h', `Coaching list (${d.coaching.length})`, `People with average confidence of ${DAI_LOW} or below after the training, lower confidence than before, or targets they feel unsure of. Select a name to open their profile.`,
-    d.coaching.length ? _daiTable('Staff who may benefit from coaching', ['Name', 'Area', 'Before', 'After', 'Why listed'], coRows, 720) : '<p style="font-size:var(--text-sm);color:var(--color-muted);">No one meets these conditions.</p>');
+    d.coaching.length ? _daiTable('Staff who may benefit from coaching', ['Name', 'Area', 'Overall baseline', 'Element baseline', 'Why listed'], coRows, 720) : '<p style="font-size:var(--text-sm);color:var(--color-muted);">No one meets these conditions.</p>');
 
   const support = _daiSection('dai-su-h', 'Support asked for', 'From "What support would help you?". Open a group to see who asked and what for.',
     d.support.length ? d.support.map(g => `<details style="border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-sm) var(--space-md);margin-bottom:var(--space-sm);">
@@ -801,7 +857,7 @@ function _daiRenderBody() {
       <ul style="list-style:none;margin-top:var(--space-sm);">${g.people.map(p => `<li style="font-size:var(--text-sm);padding:var(--space-xs) 0;border-top:1px solid var(--color-border);">${_daiPersonBtn(p)}${p.areaCode ? ` <span style="color:var(--color-muted);">${_daiEsc(p.areaCode)}</span>` : ''}${p.refl.supportDetail ? `<br><span style="color:var(--color-slate);">${_daiEsc(p.refl.supportDetail)}</span>` : ''}</li>`).join('')}</ul>
     </details>`).join('') : '<p style="font-size:var(--text-sm);color:var(--color-muted);">No support requests yet.</p>');
 
-  const caveat = `<p style="font-size:var(--text-xs);color:var(--color-muted);max-width:75ch;">Before is one overall rating given at registration; after is the average of 11 element ratings. Treat the change as an indication, not a like-for-like measure. Each person's latest response of each kind counts.${d.unscored ? ` ${d.unscored} registration answer${d.unscored === 1 ? ' is' : 's are'} not scored yet: run the import again to map the wording.` : ''}</p>`;
+  const caveat = `<p style="font-size:var(--text-xs);color:var(--color-muted);max-width:75ch;">Two baselines. Overall confidence is one rating given at registration on the day or at a catch-up. Element confidence is the average of 11 ratings from "How's it going". They ask different questions, so they are not compared with each other. Progress will be measured against these when the same questions are asked again. Each person's latest response of each kind counts.${d.unscored ? ` ${d.unscored} registration answer${d.unscored === 1 ? ' is' : 's are'} not scored yet: run the import again to map the wording.` : ''}</p>`;
 
   const panels = {
     overview:  (typeof daiReportPanelHTML === 'function' ? daiReportPanelHTML() : '') + kpis + (typeof daiBaselineSectionHTML === 'function' ? daiBaselineSectionHTML() : '') + (sp.actions || '') + caveat,
@@ -834,6 +890,7 @@ function _daiRenderBody() {
   if (typeof daiWireSupportSection === 'function') daiWireSupportSection();
   if (typeof daiReportWire === 'function') daiReportWire(body);
   if (typeof daiBaselineWire === 'function') daiBaselineWire(body);
+  if (typeof daiAttendanceWire === 'function') daiAttendanceWire(body);
   if (typeof daiActionWireFilters === 'function') daiActionWireFilters(body);
 }
 
@@ -910,8 +967,8 @@ function daiRenderStaffCard(staffId) {
   return `<section aria-labelledby="dai-card-h-${_daiEsc(staffId)}" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);margin-bottom:var(--space-lg);">
     <h3 id="dai-card-h-${_daiEsc(staffId)}" style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-sm);">Digital Accessibility and Inclusion</h3>
     <p style="font-size:var(--text-sm);color:var(--color-slate);">
-      Before the training: <strong>${before == null ? 'not given' : word(before)}</strong>${reg && reg.when ? ` (${reg.session === 'catch-up' ? 'online catch-up, ' : ''}${_daiFmtDate(reg.when)})` : ''}.${reg && reg.broughtResource ? ` Brought a resource to fix: ${_daiEsc(reg.broughtResource)}.` : ''}
-      After: <strong>${after == null ? (refl ? 'no ratings' : 'no "How\'s it going" response yet') : `${_daiFmt(after)} of 5 average`}</strong>${refl && refl.when ? ` (${_daiFmtDate(refl.when)})` : ''}.
+      Overall confidence at registration: <strong>${before == null ? 'not given' : word(before)}</strong>${reg && reg.when ? ` (${reg.session === 'catch-up' ? 'online catch-up, ' : reg.session === 'manual' ? _daiEsc(reg.sessionLabel || 'recorded by hand') + ', ' : ''}${_daiFmtDate(reg.when)})` : ''}.${reg && reg.broughtResource ? ` Brought a resource to fix: ${_daiEsc(reg.broughtResource)}.` : ''}
+      Element confidence ("How's it going"): <strong>${after == null ? (refl ? 'no ratings' : 'no response yet') : `${_daiFmt(after)} of 5 average`}</strong>${refl && refl.when ? ` (${_daiFmtDate(refl.when)})` : ''}.
     </p>
     ${refl ? `
       <div style="overflow-x:auto;margin-top:var(--space-md);" tabindex="0" role="region" aria-label="Confidence by element">

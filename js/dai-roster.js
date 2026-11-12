@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-roster.js · v1.0 · 12/11/26 · TLA Tracker (staff roster) and Area attendance workbook: import, profile updates, who has not trained
+// DPC Hub · js/dai-roster.js · v1.1 · 12/11/26 · record training by hand for selected people or whole areas (EFE and other sessions)
+// v1.0 · 12/11/26 · TLA Tracker (staff roster) and Area attendance workbook: import, profile updates, who has not trained
 //
 // TLA Tracker ("TLA Tracker 26-27", updated monthly): recognised by its
 // FIRST NAME and LAST NAME columns. Only these columns are read:
@@ -248,13 +249,77 @@ function daiRosterApply(prep, decisions) {
 }
 
 // ── Attendance view ───────────────────────────────────────────
+let _drsSel = [];
+function daiAttendanceWire(root) {
+  const btn = root.querySelector('#drs-record');
+  if (!btn) return;
+  const count = () => { root.querySelector('#drs-count').textContent = root.querySelectorAll('[data-drs-person]:checked').length; };
+  root.querySelectorAll('[data-drs-area]').forEach(cb => cb.addEventListener('change', () => {
+    root.querySelectorAll(`[data-drs-group="${cb.dataset.drsArea}"]`).forEach(p => { p.checked = cb.checked; });
+    count();
+  }));
+  root.querySelectorAll('[data-drs-person]').forEach(cb => cb.addEventListener('change', () => {
+    const all = root.querySelectorAll(`[data-drs-group="${cb.dataset.drsGroup}"]`);
+    const head = root.querySelector(`[data-drs-area="${cb.dataset.drsGroup}"]`);
+    const on = [...all].filter(x => x.checked).length;
+    if (head) { head.checked = on === all.length; head.indeterminate = on > 0 && on < all.length; }
+    count();
+  }));
+  btn.addEventListener('click', () => {
+    const picked = [...root.querySelectorAll('[data-drs-person]:checked')].map(cb => _drsSel[+cb.dataset.drsPerson]).filter(Boolean);
+    const msg = root.querySelector('#drs-msg');
+    if (!picked.length) { msg.textContent = 'Select at least one person first.'; return; }
+    const kind = root.querySelector('#drs-kind').value, label = root.querySelector('#drs-label').value.trim();
+    if (kind === 'other' && !label) { msg.textContent = 'Give the session a name, for example "EFE team session".'; root.querySelector('#drs-label').focus(); return; }
+    const n = daiRecordTraining(picked, { kind, label, date: root.querySelector('#drs-date').value, confidence: parseInt(root.querySelector('#drs-conf').value, 10) || null });
+    _daiRenderBody();
+    const st = document.getElementById('dai-status');
+    if (st) st.textContent = `Recorded training for ${n} ${n === 1 ? 'person' : 'people'}${label ? ` (${label})` : ''}.`;
+    document.getElementById('dai-panel')?.focus();
+  });
+}
+
+// How each person trained: on the day beats a catch-up, which beats a session recorded by hand.
 function _drsTrained() {
+  const rank = { day: 3, 'catch-up': 2, manual: 1 };
   const map = new Map();
-  _daiStore().responses.filter(r => r.source === 'registration').forEach(r => {
+  _daiStore().responses.filter(r => r.source === 'registration' && r.staffId).forEach(r => {
+    const how = r.session === 'catch-up' ? 'catch-up' : r.session === 'manual' ? 'manual' : 'day';
     const cur = map.get(r.staffId);
-    if (!cur || r.session !== 'catch-up') map.set(r.staffId, r.session === 'catch-up' ? 'catch-up' : 'day');
+    if (!cur || rank[how] > rank[cur]) map.set(r.staffId, how);
   });
   return map;
+}
+
+// Record training by hand: one registration per person, marked manual.
+function daiRecordTraining(people, opts) {
+  const store = _daiStore();
+  const staff = window.DPC_DATA.staff.staff;
+  let n = 0;
+  people.forEach(p => {
+    let s = p.staffId && staff.find(x => x.staffId === p.staffId);
+    if (!s) {
+      s = { staffId: generateId(), name: p.name, email: '', areaCode: p.areaCode || '', departmentCode: null, additionalAreas: [], role: p.role || '',
+        entryPathway: 'dai-manual', entryDate: todayISO(), etfStage: null, developmentPriorities: ['', '', ''], confidenceRating: null,
+        touchHistory: [], reflectionRefs: [], afiRefs: [], isAnonymousAtAreaLevel: true, notes: 'Created when recording DA&I training by hand.', createdAt: nowISO(), lastUpdated: nowISO() };
+      staff.push(s);
+      (store.expected || []).forEach(e => { if (!e.staffId && _daiNameKey(e.name) === _daiNameKey(p.name) && e.areaCode === p.areaCode) e.staffId = s.staffId; });
+    }
+    const session = opts.kind === 'day' ? 'day' : opts.kind === 'catch-up' ? 'catch-up' : 'manual';
+    const rec = { source: 'registration', session: session === 'day' ? undefined : session, sessionLabel: opts.label || '', manual: true, fileName: 'Recorded in the Hub',
+      formId: 'manual-' + generateId(), when: (opts.date || todayISO()) + 'T12:00:00', email: s.email || '', name: s.name, areaRaw: '', areaCode: s.areaCode || '',
+      overallRaw: opts.confidence || null, staffId: s.staffId, importedAt: nowISO() };
+    rec.key = _daiKey(rec);
+    store.responses.push(rec);
+    if (!s.touchHistory) s.touchHistory = [];
+    s.touchHistory.push({ touchId: generateId(), touchType: TOUCH_TYPE.TRAINING, date: opts.date || todayISO(), areaCode: s.areaCode || '',
+      summary: `DA&I training recorded by hand: ${opts.label || (session === 'day' ? 'on the day, 23 Oct' : 'online catch-up')}${opts.confidence ? `, confidence ${opts.confidence} of 5` : ''}`, sourceRef: rec.key, createdAt: nowISO() });
+    s.lastUpdated = nowISO();
+    n++;
+  });
+  if (typeof saveStaffBulk === 'function') saveStaffBulk();
+  if (typeof saveDAIData === 'function') saveDAIData();
+  return n;
 }
 
 function daiAttendanceHTML() {
@@ -273,7 +338,8 @@ function daiAttendanceHTML() {
   onTracker.forEach(s => people.set(s.staffId, { staffId: s.staffId, name: s.name, areaCode: s.areaCode, role: s.role, status: s.tracker.status }));
   expected.forEach(e => { const k = e.staffId || 'x:' + _daiNameKey(e.name); if (!people.has(k)) people.set(k, { staffId: e.staffId, name: e.name, areaCode: e.areaCode, role: e.role, notOnTracker: true }); });
   const all = [...people.entries()].map(([k, p]) => ({ ...p, k, due: due.has(k), said: (expected.find(e => (e.staffId || 'x:' + _daiNameKey(e.name)) === k) || {}).attending || '', how: p.staffId ? trained.get(p.staffId) || '' : '' }));
-  const day = all.filter(p => p.how === 'day').length, cu = all.filter(p => p.how === 'catch-up').length;
+  const day = all.filter(p => p.how === 'day').length, cu = all.filter(p => p.how === 'catch-up').length, man = all.filter(p => p.how === 'manual').length;
+  _drsSel = all.filter(p => !p.how);
   const notYet = all.filter(p => !p.how);
   const dueNot = notYet.filter(p => p.due);
 
@@ -281,7 +347,7 @@ function daiAttendanceHTML() {
     ${_daiKPI(onTracker.length, 'Staff on the TLA Tracker', store.roster ? `Imported ${_daiFmtDate(store.roster.importedAt)}` : '')}
     ${_daiKPI(due.size, 'Due to attend on 23 Oct', 'From the area attendance lists')}
     ${_daiKPI(day, 'Trained on the day', 'On the day registration')}
-    ${_daiKPI(cu, 'Trained at a catch-up', 'On the Check-In register')}
+    ${_daiKPI(cu + man, 'Trained at a catch-up or other session', `${cu} on the Check-In register${man ? `, ${man} recorded by hand` : ''}`)}
     ${_daiKPI(notYet.length, 'Not trained yet', `${dueNot.length} of them were due on the day`)}
   </div>`;
 
@@ -290,14 +356,27 @@ function daiAttendanceHTML() {
   const nameBtn = p => p.staffId ? _daiPersonBtn(p) : _daiEsc(p.name);
   const rows = [...byArea.entries()].map(([code, ps]) => ({ code, ps, not: ps.filter(p => !p.how) }))
     .sort((a, b) => b.not.length - a.not.length || a.code.localeCompare(b.code))
-    .map(x => `<tr>${_daiTd(x.code ? `<strong>${_daiEsc(x.code)}</strong> ${_daiEsc(_daiAreaName(x.code))}` : 'No area matched')}${_daiTd(x.ps.length)}${_daiTd(x.ps.filter(p => p.due).length)}${_daiTd(x.ps.filter(p => p.how === 'day').length)}${_daiTd(x.ps.filter(p => p.how === 'catch-up').length)}
-      ${_daiTd(x.not.length ? `<details><summary style="cursor:pointer;min-height:24px;color:var(--color-teal);font-weight:bold;">${x.not.length} <span class="sr-only">not trained, show who</span></summary><ul style="list-style:none;margin-top:4px;">${x.not.sort((a, b) => a.name.localeCompare(b.name)).map(p => `<li style="padding:2px 0;">${nameBtn(p)} <span style="color:var(--color-muted);">${_daiEsc(p.role || '')}${p.due ? ', was due' : p.said === 'no' ? ', said not attending' : ''}${p.status ? ', ' + _daiEsc(p.status) : ''}${p.notOnTracker ? ', not on tracker' : ''}</span></li>`).join('')}</ul></details>` : '0')}</tr>`);
+    .map((x, ai) => `<tr>${_daiTd(x.code ? `<strong>${_daiEsc(x.code)}</strong> ${_daiEsc(_daiAreaName(x.code))}` : 'No area matched')}${_daiTd(x.ps.length)}${_daiTd(x.ps.filter(p => p.due).length)}${_daiTd(x.ps.filter(p => p.how === 'day').length)}${_daiTd(x.ps.filter(p => p.how === 'catch-up' || p.how === 'manual').length)}
+      ${_daiTd(x.not.length ? `<div style="display:flex;gap:6px;align-items:center;"><input type="checkbox" id="drs-all-${ai}" data-drs-area="${ai}" style="width:20px;height:20px;"><label for="drs-all-${ai}" style="font-size:var(--text-xs);">Select all ${x.not.length}<span class="sr-only"> not trained in ${_daiEsc(x.code || 'no area')}</span></label></div>
+        <details><summary style="cursor:pointer;min-height:24px;color:var(--color-teal);font-weight:bold;">${x.not.length} <span class="sr-only">not trained, show who</span></summary><ul style="list-style:none;margin-top:4px;">${x.not.sort((a, b) => a.name.localeCompare(b.name)).map(p => { const i = _drsSel.indexOf(p); return `<li style="padding:2px 0;display:flex;gap:6px;align-items:flex-start;"><input type="checkbox" id="drs-p-${i}" data-drs-person="${i}" data-drs-group="${ai}" aria-label="Select ${_daiEsc(p.name)}" style="width:20px;height:20px;flex-shrink:0;"><span>${nameBtn(p)} <span style="color:var(--color-muted);">${_daiEsc(p.role || '')}${p.due ? ', was due' : p.said === 'no' ? ', said not attending' : ''}${p.status ? ', ' + _daiEsc(p.status) : ''}${p.notOnTracker ? ', not on tracker' : ''}</span></span></li>`; }).join('')}</ul></details>` : '0')}</tr>`);
 
   const gone = staff.filter(s => s.tracker && !s.tracker.onLatest);
   const unmatchedAreas = [...new Set(onTracker.filter(s => !s.areaCode).map(s => s.tracker.faculty).filter(Boolean))];
+  const recordForm = `<fieldset style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+      <legend style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);padding:0 4px;">Record training by hand for the people selected below</legend>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);">
+        <div class="form-group"><label class="form-label" for="drs-kind">Session</label><select id="drs-kind" class="form-select"><option value="other">Another session (name it)</option><option value="day">On the day, 23 October</option><option value="catch-up">Online catch-up</option></select></div>
+        <div class="form-group"><label class="form-label form-label--optional" for="drs-label">Session name</label><input id="drs-label" class="form-input" type="text" placeholder="For example: EFE team session"></div>
+        <div class="form-group"><label class="form-label" for="drs-date">Date</label><input id="drs-date" class="form-input" type="date" value="${todayISO()}"></div>
+        <div class="form-group"><label class="form-label form-label--optional" for="drs-conf">Overall confidence, if known</label><select id="drs-conf" class="form-select"><option value="">Not known</option>${[1, 2, 3, 4, 5].map(v => `<option value="${v}">${v}, ${DAI_SCALE_WORDS[v]}</option>`).join('')}</select></div>
+      </div>
+      <button type="button" id="drs-record" class="btn btn--primary">Mark selected as trained (<span id="drs-count">0</span>)</button>
+      <p id="drs-msg" role="status" aria-live="polite" style="font-size:var(--text-sm);color:var(--color-teal);min-height:1.2em;margin-top:var(--space-xs);"></p>
+    </fieldset>`;
   return tiles
-    + _dsuH3('By area') + _dsuP('Most not yet trained first. Open a number to see who. Trained means on the day registration or the catch-up Check-In.')
-    + _daiTable('Training attendance by area', ['Area', 'Staff', 'Due on the day', 'Trained on the day', 'Trained at catch-up', 'Not trained yet'], rows, 860)
+    + _dsuH3('By area') + _dsuP('Most not yet trained first. Open a number to see who. Trained means on the day registration, the catch-up Check-In, or recorded here by hand. Use "Select all" for a whole area, then open the list to untick anyone.')
+    + recordForm
+    + _daiTable('Training attendance by area', ['Area', 'Staff', 'Due on the day', 'Trained on the day', 'Trained at catch-up or other', 'Not trained yet'], rows, 900)
     + (unmatchedAreas.length ? _dsuH3('Tracker faculties with no Hub area', true) + _dsuP(`Map these when you next run the import, or add them as new areas: ${unmatchedAreas.map(_daiEsc).join(', ')}.`) : '')
     + (gone.length ? _dsuH3(`No longer on the TLA Tracker (${gone.length})`, true) + _dsuP('These profiles were on an earlier tracker but not the latest one. They are kept; check whether they have left.') + `<p style="font-size:var(--text-sm);">${gone.map(_daiPersonBtn).join(', ')}</p>` : '');
 }
