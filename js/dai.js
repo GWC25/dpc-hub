@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v1.9 · 09/11/26 · support action progress (dai-actions.js): Mark done button, filters
+// DPC Hub · js/dai.js · v2.0 · 12/11/26 · catch-up session register (Accessibility Confidence Check-In) imported as registration, with role and resource brought
+// v1.9 · 09/11/26 · support action progress (dai-actions.js): Mark done button, filters
 // v1.8 · 09/11/26 · impact report download on the Overview tab (dai-report.js)
 // v1.7 · 09/11/26 · staff card targets with progress and evidence (dai-targets.js); targets KPI
 // v1.6 · 09/11/26 · click handler bound once (revisiting the page no longer doubles clicks)
@@ -143,6 +144,7 @@ function _daiTargets(r) {
 function _daiKind(head) {
   if (head.some(h => h.startsWith('how confident do you feel with each digital accessibility element'))) return 'reflection';
   if (head.some(h => h.startsWith('rate your confidence in meeting accessibility'))) return 'registration';
+  if (head.some(h => h.startsWith('how confident do you feel today about making resources'))) return 'catchup';
   if (head.includes('head of area initials') && head.some(h => h.startsWith('priority 1'))) return 'actionplan';
   return null;
 }
@@ -187,6 +189,27 @@ function _daiParseRegistration(head, rows, fileName) {
       overallRaw: _daiCell(r, rateC),
     };
   });
+}
+
+// Online catch-up sessions register ("Accessibility Confidence Check-In").
+// Stored as a registration, so its confidence counts as "before" for staff
+// who missed the day; session marks where it came from.
+function _daiParseCatchup(head, rows, fileName) {
+  const c = _daiCols(head);
+  const idC = c.eq('id'), doneC = c.eq('completion time', 'start time'), emailC = c.eq('email'), nameC = c.eq('name');
+  const areaC = c.eq('area', 'your area'), roleC = c.starts('your role');
+  const rateC = c.starts('how confident do you feel today about making resources'), broughtC = c.starts('did you bring a resource');
+  return rows.filter(r => _daiCell(r, idC) != null && _daiCell(r, idC) !== '').map(r => ({
+    source: 'registration', session: 'catch-up', fileName,
+    formId: 'catchup-' + String(_daiCell(r, idC)),
+    when: _daiWhen(_daiCell(r, doneC)),
+    email: _daiText(_daiCell(r, emailC)).toLowerCase(),
+    name: _daiText(_daiCell(r, nameC)),
+    areaRaw: _daiText(_daiCell(r, areaC)),
+    role: _daiText(_daiCell(r, roleC)),
+    overallRaw: _daiCell(r, rateC),
+    broughtResource: _daiText(_daiCell(r, broughtC)),
+  }));
 }
 
 function _daiParseReflection(head, rows, fileName) {
@@ -278,6 +301,10 @@ async function _daiScan() {
       const list = _daiParseRegistration(parsed.head, parsed.rows, f.name);
       found.push({ name: f.name, kind: 'Registration', count: list.length });
       records.push(...list);
+    } else if (parsed.kind === 'catchup') {
+      const list = _daiParseCatchup(parsed.head, parsed.rows, f.name);
+      found.push({ name: f.name, kind: 'Catch-up register', count: list.length });
+      records.push(...list);
     } else if (parsed.kind === 'reflection') {
       const { list, missing } = _daiParseReflection(parsed.head, parsed.rows, f.name);
       found.push({ name: f.name, kind: "How's it going", count: list.length });
@@ -289,7 +316,7 @@ async function _daiScan() {
       plans.push(...list);
     }
   }
-  if (!found.length) throw new Error('No Registration, "How\'s it going" or Area Action Plan export found in the Data folder.');
+  if (!found.length) throw new Error('No Registration, catch-up register, "How\'s it going" or Area Action Plan export found in the Data folder.');
 
   const store = _daiStore();
   const have = new Set(store.responses.map(r => r.key));
@@ -368,11 +395,13 @@ function _daiApply(scan, decisions) {
     }
     if (profile) {
       if (p.email && !profile.email) profile.email = p.email;
+      const role = (p.records.find(r => r.role) || {}).role;
+      if (role && !profile.role) profile.role = role;
       linked++;
     } else {
       profile = {
         staffId: generateId(), name: p.name || p.email || 'Unnamed', email: p.email || '',
-        areaCode: _daiResolveArea(p.areaRaw), departmentCode: null, additionalAreas: [], role: '',
+        areaCode: _daiResolveArea(p.areaRaw), departmentCode: null, additionalAreas: [], role: (p.records.find(r => r.role) || {}).role || '',
         entryPathway: 'dai-forms', entryDate: todayISO(), etfStage: null,
         developmentPriorities: ['', '', ''], confidenceRating: null, touchHistory: [], reflectionRefs: [], afiRefs: [],
         isAnonymousAtAreaLevel: true, notes: 'Created from the DA&I Forms import.', createdAt: nowISO(), lastUpdated: nowISO(),
@@ -395,7 +424,7 @@ function _daiApply(scan, decisions) {
           touchType: r.source === 'registration' ? TOUCH_TYPE.TRAINING : TOUCH_TYPE.REFLECTION,
           date: (r.when || todayISO()).slice(0, 10), areaCode,
           summary: r.source === 'registration'
-            ? `DA&I training registration${b != null ? `, confidence before ${b} of 5` : ''}`
+            ? `${r.session === 'catch-up' ? 'DA&I online catch-up session' : 'DA&I training registration'}${b != null ? `, confidence ${b} of 5` : ''}${r.broughtResource ? `, brought a resource: ${r.broughtResource}` : ''}`
             : `DA&I "How's it going"${a != null ? `, average confidence ${_daiFmt(a)} of 5` : ''}`,
           sourceRef: r.key, createdAt: nowISO(),
         });
@@ -498,7 +527,7 @@ function initDAI() {
     <div style="margin-bottom:var(--space-lg);">
       <h1 style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-navy);">Digital Accessibility and Inclusion progress</h1>
       <p style="font-size:var(--text-sm);color:var(--color-muted);max-width:70ch;margin-top:var(--space-xs);">
-        Staff confidence before and after the DA&amp;I training, personal targets and support asks, from the Registration and "How's it going" Forms exports in your Data folder.
+        Staff confidence before and after the DA&amp;I training, personal targets and support asks, from the Registration, catch-up register (Accessibility Confidence Check-In), "How's it going" and Area Action Plan Forms exports in your Data folder.
       </p>
     </div>
     <section aria-labelledby="dai-import-h" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);margin-bottom:var(--space-xl);background:var(--color-white);">
@@ -610,11 +639,12 @@ function _daiReviewHTML(s) {
         <option value="__new">Different person, create a new profile</option>
       </select></div>`).join('')}` : '';
 
-  const regs = s.fresh.filter(r => r.source === 'registration').length;
-  const refl = s.fresh.length - regs;
+  const cu = s.fresh.filter(r => r.session === 'catch-up').length;
+  const regs = s.fresh.filter(r => r.source === 'registration').length - cu;
+  const refl = s.fresh.filter(r => r.source === 'reflection').length;
   return `<h3 id="dai-review-h" tabindex="-1" style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin-top:var(--space-md);">Check before importing</h3>
     <ul style="font-size:var(--text-sm);color:var(--color-slate);margin:var(--space-sm) 0 0 var(--space-lg);">
-      <li>${regs} new Registration response${regs === 1 ? '' : 's'} and ${refl} new "How's it going" response${refl === 1 ? '' : 's'}${s.already ? `, ${s.already} already in the Hub` : ''}.</li>
+      <li>${regs} new Registration response${regs === 1 ? '' : 's'}, ${cu} new catch-up register response${cu === 1 ? '' : 's'} and ${refl} new "How's it going" response${refl === 1 ? '' : 's'}${s.already ? `, ${s.already} already in the Hub` : ''}.</li>
       <li>${s.people.length} people: ${s.byEmailCount} matched to a profile by email, ${s.nameMatches.length} by name (check below), ${s.toCreate} new profile${s.toCreate === 1 ? '' : 's'} to create.</li>
       ${s.freshPlans.length ? `<li>${s.freshPlans.length} new Area Action Plan${s.freshPlans.length === 1 ? '' : 's'}. A resubmitted plan becomes the latest version; earlier versions are kept.</li>` : ''}
       ${s.notes.map(n => `<li>${_daiEsc(n)}</li>`).join('')}
@@ -683,7 +713,7 @@ function _daiRenderBody() {
   const shift = d.both.length ? _daiAvg(d.both.map(p => p.after - p.before)) : null;
 
   const kpis = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);">
-    ${_daiKPI(d.regsCount, 'People registered', 'Came to the DA&amp;I training')}
+    ${_daiKPI(d.regsCount, 'People registered', (() => { const c = d.all.filter(p => p.reg && p.reg.session === 'catch-up').length; return c ? `${d.regsCount - c} on the day, ${c} at a catch-up session` : 'Came to the DA&amp;I training'; })())}
     ${_daiKPI(d.reflCount, '"How\'s it going" returns', `${d.all.filter(p => p.reg && p.refl).length} of them also registered`)}
     ${_daiKPI(d.before == null ? '–' : `${_daiFmt(d.before)} of 5`, 'Confidence before', 'One overall rating at registration')}
     ${_daiKPI(d.after == null ? '–' : `${_daiFmt(d.after)} of 5`, 'Confidence after', 'Average across the 11 elements')}
@@ -822,7 +852,7 @@ function daiRenderStaffCard(staffId) {
   return `<section aria-labelledby="dai-card-h-${_daiEsc(staffId)}" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);margin-bottom:var(--space-lg);">
     <h3 id="dai-card-h-${_daiEsc(staffId)}" style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin-bottom:var(--space-sm);">Digital Accessibility and Inclusion</h3>
     <p style="font-size:var(--text-sm);color:var(--color-slate);">
-      Before the training: <strong>${before == null ? 'not given' : word(before)}</strong>${reg && reg.when ? ` (${_daiFmtDate(reg.when)})` : ''}.
+      Before the training: <strong>${before == null ? 'not given' : word(before)}</strong>${reg && reg.when ? ` (${reg.session === 'catch-up' ? 'online catch-up, ' : ''}${_daiFmtDate(reg.when)})` : ''}.${reg && reg.broughtResource ? ` Brought a resource to fix: ${_daiEsc(reg.broughtResource)}.` : ''}
       After: <strong>${after == null ? (refl ? 'no ratings' : 'no "How\'s it going" response yet') : `${_daiFmt(after)} of 5 average`}</strong>${refl && refl.when ? ` (${_daiFmtDate(refl.when)})` : ''}.
     </p>
     ${refl ? `
