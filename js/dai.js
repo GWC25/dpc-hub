@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v2.1 · 12/11/26 · baseline check on Overview (dai-baseline.js), remembered register links used on import; targets tile moved to By person
+// DPC Hub · js/dai.js · v2.2 · 12/11/26 · TLA Tracker and area attendance lists imported with the DA&I files (dai-roster.js); Attendance tab; new areas from the import
+// v2.1 · 12/11/26 · baseline check on Overview (dai-baseline.js), remembered register links used on import; targets tile moved to By person
 // v2.0 · 12/11/26 · catch-up session register (Accessibility Confidence Check-In) imported as registration, with role and resource brought
 // v1.9 · 09/11/26 · support action progress (dai-actions.js): Mark done button, filters
 // v1.8 · 09/11/26 · impact report download on the Overview tab (dai-report.js)
@@ -294,9 +295,19 @@ async function _daiScan() {
   if (!files.length) throw new Error('No Excel files found in the connected Data folder. Check the folder is connected in Settings.');
 
   const found = [], records = [], notes = [], plans = [];
+  const rosterResults = [];
   for (const f of files) {
     let parsed = null;
-    try { parsed = _daiReadWorkbook((await readFolderFileBytes(f.name)).bytes); } catch (e) { continue; }
+    try {
+      const bytes = (await readFolderFileBytes(f.name)).bytes;
+      const roster = typeof daiRosterRead === 'function' ? daiRosterRead(bytes, f.name) : null;
+      if (roster) {
+        found.push({ name: f.name, kind: roster.kind === 'tracker' ? 'TLA Tracker' : 'Area attendance lists', count: roster.people.length });
+        rosterResults.push(roster);
+        continue;
+      }
+      parsed = _daiReadWorkbook(bytes);
+    } catch (e) { continue; }
     if (!parsed) continue;
     if (parsed.kind === 'registration') {
       const list = _daiParseRegistration(parsed.head, parsed.rows, f.name);
@@ -338,7 +349,8 @@ async function _daiScan() {
 
   // Area wordings without an exact or remembered match.
   const areaTexts = new Map();
-  [...fresh, ...freshPlans].forEach(r => {
+  const roster = typeof daiRosterPrepare === 'function' && rosterResults.length ? daiRosterPrepare(rosterResults) : null;
+  [...fresh, ...freshPlans, ...(roster ? roster.areaItems : [])].forEach(r => {
     if (!r.areaRaw || _daiAreaExact(r.areaRaw)) return;
     const k = _daiNorm(r.areaRaw);
     if (!areaTexts.has(k)) areaTexts.set(k, { raw: r.areaRaw, count: 0, guess: _daiAreaGuess(r.areaRaw) });
@@ -367,6 +379,7 @@ async function _daiScan() {
     if (e) { p.match = { type: 'email', staffId: e.staffId }; byEmailCount++; return; }
     const nk = _daiNameKey(p.name);
     const cands = nk ? staff.filter(s => _daiNameKey(s.name) === nk && (!s.email || !p.email)) : [];
+    if (cands.length === 1 && cands[0].entryPathway === 'tla-tracker' && !cands[0].email) { p.match = { type: 'email', staffId: cands[0].staffId }; byEmailCount++; return; }
     if (cands.length >= 1) { p.match = { type: 'name', staffId: cands[0].staffId, options: cands.map(s => s.staffId) }; nameMatches.push(p); return; }
     p.match = { type: 'new' }; toCreate++;
   });
@@ -375,7 +388,7 @@ async function _daiScan() {
     found, notes, fresh, freshPlans, already: records.length - fresh.length + plans.length - freshPlans.length,
     wordings: [...wordings.values()].sort((a, b) => b.count - a.count),
     areaTexts: [...areaTexts.values()].sort((a, b) => a.raw.localeCompare(b.raw)),
-    people: [...people.values()], nameMatches, byEmailCount, toCreate,
+    people: [...people.values()], nameMatches, byEmailCount, toCreate, roster,
   };
 }
 
@@ -383,7 +396,21 @@ async function _daiScan() {
 function _daiApply(scan, decisions) {
   const store = _daiStore();
   Object.entries(decisions.scale).forEach(([k, v]) => { store.scaleMap[k] = v; });
+  // New areas chosen on the review screen are created first, so everything below can use their codes.
+  let areasAdded = 0;
+  Object.entries(decisions.areas).forEach(([k, v]) => {
+    if (v !== '__new') return;
+    const n = (decisions.newAreas || {})[k] || {};
+    const code = (n.code || '').replace(/[^A-Z0-9]/g, '');
+    if (!code) { delete decisions.areas[k]; return; }
+    if (!_daiAreaList().some(a => a.areaCode === code) && typeof saveArea === 'function') {
+      saveArea({ areaCode: code, areaName: n.name || code, campus: '', hoaName: '', digitalLeadId: null, pyramidLevel: 'foundations', ragDimensions: {}, healthChecks: [], activityLog: [], afiRefs: [], actionPoints: [], staffRefs: [], notes: 'Added from the DA&I import.' });
+      areasAdded++;
+    }
+    decisions.areas[k] = code;
+  });
   Object.entries(decisions.areas).forEach(([k, v]) => { if (v) store.areaMap[k] = v; });
+  const rosterRes = scan.roster && typeof daiRosterApply === 'function' ? daiRosterApply(scan.roster, decisions) : null;
 
   const staff = window.DPC_DATA.staff.staff;
   const touchedAreas = new Set();
@@ -396,6 +423,11 @@ function _daiApply(scan, decisions) {
     if (p.match.type === 'name') {
       const chosen = decisions.names[p.pk];
       if (chosen && chosen !== '__new') profile = staff.find(s => s.staffId === chosen);
+    }
+    // A profile the TLA Tracker created in this same import, with the same name and no email yet.
+    if (!profile && p.match.type === 'new' && p.name) {
+      const same = staff.filter(s => s.entryPathway === 'tla-tracker' && !s.email && _daiNameKey(s.name) === _daiNameKey(p.name));
+      if (same.length === 1) profile = same[0];
     }
     if (profile) {
       if (p.email && !profile.email) profile.email = p.email;
@@ -449,7 +481,8 @@ function _daiApply(scan, decisions) {
   if (typeof saveDAIData === 'function') saveDAIData();
   // Empty development priorities take the person's DA&I targets.
   const pr = typeof daiFillPriorities === 'function' ? daiFillPriorities(importedIds) : { filled: 0 };
-  return { created, linked, added, plansAdded, prioritiesFilled: pr.filled };
+  if (rosterRes && typeof saveStaffBulk === 'function') saveStaffBulk();
+  return { created, linked, added, plansAdded, prioritiesFilled: pr.filled, rosterRes, areasAdded };
 }
 
 // ── Analysis ──────────────────────────────────────────────────
@@ -603,17 +636,26 @@ async function _daiOnScan() {
   document.getElementById('dai-review-h')?.focus();
 }
 
+function _daiSuggestCode(raw) {
+  const words = String(raw || '').toUpperCase().replace(/[^A-Z\s]/g, ' ').split(/\s+/).filter(w => w && !['AND', 'OF', 'THE', 'FOR'].includes(w));
+  let code = words.length >= 3 ? words.slice(0, 3).map(w => w[0]).join('') : words.length === 2 ? words[0].slice(0, 2) + words[1][0] : (words[0] || 'NEW').slice(0, 3);
+  const taken = new Set(_daiAreaList().map(a => a.areaCode));
+  let n = 2; const base = code; while (taken.has(code)) code = base.slice(0, 2) + n++;
+  return code;
+}
+
 function _daiAreaOptions(selected) {
   const opts = _daiAreaList().slice().sort((a, b) => a.areaName.localeCompare(b.areaName))
     .map(a => `<option value="${_daiEsc(a.areaCode)}"${a.areaCode === selected ? ' selected' : ''}>${_daiEsc(a.areaCode)}, ${_daiEsc(a.areaName)}</option>`).join('');
-  return `<option value=""${!selected ? ' selected' : ''}>Choose an area</option><option value="__none">No curriculum area (cross-college)</option>${opts}`;
+  return `<option value=""${!selected ? ' selected' : ''}>Choose an area</option><option value="__none">No curriculum area (cross-college)</option><option value="__new">Not in the Hub yet: add it as a new area</option>${opts}`;
 }
 
 function _daiReviewHTML(s) {
   const h3 = t => `<h4 style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin:var(--space-lg) 0 var(--space-xs);">${t}</h4>`;
   const hint = t => `<p style="font-size:var(--text-sm);color:var(--color-muted);margin-bottom:var(--space-sm);max-width:70ch;">${t}</p>`;
   const row = 'display:flex;flex-wrap:wrap;gap:var(--space-sm);align-items:center;padding:var(--space-xs) 0;border-bottom:1px solid var(--color-border);';
-  if (!s.fresh.length && !s.freshPlans.length) {
+  const rv = typeof daiRosterReviewHTML === 'function' ? daiRosterReviewHTML(s.roster) : { li: '', block: '' };
+  if (!s.fresh.length && !s.freshPlans.length && !rv.li) {
     return `<h3 id="dai-review-h" tabindex="-1" style="font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);margin-top:var(--space-md);">Nothing new to import</h3>
       ${hint(`All ${s.already} responses and plans in these files are already in the Hub.`)}`;
   }
@@ -631,7 +673,10 @@ function _daiReviewHTML(s) {
     ${hint('These area answers do not exactly match a Hub area. The Hub has suggested a match where it could. It remembers your choice.')}
     ${s.areaTexts.map((a, i) => `<div style="${row}">
       <label for="dai-area-${i}" style="flex:1 1 260px;font-size:var(--text-sm);">"${_daiEsc(a.raw)}" <span style="color:var(--color-muted);">(${a.count})</span></label>
-      <select id="dai-area-${i}" class="form-select" data-dai-area="${_daiEsc(_daiNorm(a.raw))}" style="max-width:320px;">${_daiAreaOptions(a.guess)}</select></div>`).join('')}` : '';
+      <select id="dai-area-${i}" class="form-select" data-dai-area="${_daiEsc(_daiNorm(a.raw))}" style="max-width:320px;">${_daiAreaOptions(a.guess)}</select>
+      <label class="sr-only" for="dai-newcode-${i}">Code for a new area named ${_daiEsc(a.raw)}</label>
+      <input id="dai-newcode-${i}" type="text" maxlength="5" class="form-input" data-dai-newcode="${_daiEsc(_daiNorm(a.raw))}" data-dai-newname="${_daiEsc(a.raw)}" placeholder="New code" value="${_daiEsc(_daiSuggestCode(a.raw))}" style="max-width:110px;text-transform:uppercase;" aria-describedby="dai-newcode-hint"></div>`).join('')}
+    <p id="dai-newcode-hint" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-xs);">The code box is only used when you choose "add it as a new area".</p>` : '';
 
   const staffById = new Map(_daiStaffList().map(x => [x.staffId, x]));
   const names = s.nameMatches.length ? `${h3('Is this the same person?')}
@@ -652,10 +697,11 @@ function _daiReviewHTML(s) {
       <li>${s.people.length} people: ${s.byEmailCount} matched to a profile by email, ${s.nameMatches.length} by name (check below), ${s.toCreate} new profile${s.toCreate === 1 ? '' : 's'} to create.</li>
       ${s.freshPlans.length ? `<li>${s.freshPlans.length} new Area Action Plan${s.freshPlans.length === 1 ? '' : 's'}. A resubmitted plan becomes the latest version; earlier versions are kept.</li>` : ''}
       ${s.notes.map(n => `<li>${_daiEsc(n)}</li>`).join('')}
+      ${rv.li}
     </ul>
-    ${wordings}${areas}${names}
+    ${wordings}${areas}${names}${rv.block}
     <div class="btn-row" style="margin-top:var(--space-lg);">
-      <button id="dai-apply-btn" type="button" class="btn btn--primary">Import ${s.fresh.length + s.freshPlans.length} item${s.fresh.length + s.freshPlans.length === 1 ? '' : 's'}</button>
+      <button id="dai-apply-btn" type="button" class="btn btn--primary">Import and update</button>
       <button id="dai-cancel-btn" type="button" class="btn btn--secondary">Cancel</button>
     </div>`;
 }
@@ -666,10 +712,16 @@ function _daiOnApply() {
   document.querySelectorAll('[data-dai-scale]').forEach(el => { decisions.scale[el.getAttribute('data-dai-scale')] = parseInt(el.value, 10) || 0; });
   document.querySelectorAll('[data-dai-area]').forEach(el => { if (el.value) decisions.areas[el.getAttribute('data-dai-area')] = el.value; });
   document.querySelectorAll('[data-dai-name]').forEach(el => { decisions.names[el.getAttribute('data-dai-name')] = el.value; });
+  decisions.newAreas = {};
+  document.querySelectorAll('[data-dai-newcode]').forEach(el => { decisions.newAreas[el.getAttribute('data-dai-newcode')] = { code: el.value.trim().toUpperCase(), name: el.getAttribute('data-dai-newname') }; });
+  decisions.tracker = {};
+  document.querySelectorAll('[data-drs-name]').forEach(el => { decisions.tracker[el.getAttribute('data-drs-name')] = el.value; });
   const res = _daiApply(_daiPending, decisions);
   _daiPending = null;
   document.getElementById('dai-review').innerHTML = '';
-  const msg = `${res.plansAdded ? `Imported ${res.plansAdded} Area Action Plan${res.plansAdded === 1 ? '' : 's'}. ` : ''}Imported ${res.added} response${res.added === 1 ? '' : 's'}: ${res.linked} linked to existing profiles, ${res.created} new profile${res.created === 1 ? '' : 's'} created${res.prioritiesFilled ? `, ${res.prioritiesFilled} development priorit${res.prioritiesFilled === 1 ? 'y' : 'ies'} filled from targets` : ''}.`;
+  const rr = res.rosterRes;
+  const rosterMsg = rr ? `${rr.created || rr.updated ? `TLA Tracker: ${rr.updated} profiles updated, ${rr.created} created${rr.gone ? `, ${rr.gone} no longer on the tracker` : ''}. ` : ''}${rr.expected ? `Attendance lists: ${rr.expected} names. ` : ''}` : '';
+  const msg = `${res.areasAdded ? `${res.areasAdded} new area${res.areasAdded === 1 ? '' : 's'} added. ` : ''}${rosterMsg}${res.plansAdded ? `Imported ${res.plansAdded} Area Action Plan${res.plansAdded === 1 ? '' : 's'}. ` : ''}Imported ${res.added} response${res.added === 1 ? '' : 's'}: ${res.linked} linked to existing profiles, ${res.created} new profile${res.created === 1 ? '' : 's'} created${res.prioritiesFilled ? `, ${res.prioritiesFilled} development priorit${res.prioritiesFilled === 1 ? 'y' : 'ies'} filled from targets` : ''}.`;
   document.getElementById('dai-status').textContent = msg;
   if (typeof UI !== 'undefined' && UI.showToast) UI.showToast('success', msg);
   _daiRenderBody();
@@ -708,7 +760,7 @@ const _daiPersonBtn = p => `<button type="button" data-dai-staff="${_daiEsc(p.st
 function _daiRenderBody() {
   const body = document.getElementById('dai-body');
   if (!body) return;
-  if (!_daiStore().responses.length && !(_daiStore().plans || []).length) {
+  if (!_daiStore().responses.length && !(_daiStore().plans || []).length && !(_daiStore().expected || []).length && !_daiStore().roster) {
     body.innerHTML = `<p style="font-size:var(--text-sm);color:var(--color-muted);">No DA&amp;I responses imported yet. Use "Check the Data folder" above.</p>`;
     return;
   }
@@ -760,6 +812,7 @@ function _daiRenderBody() {
     people:    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);">${(() => { const t = typeof daiTargetsSummary === 'function' ? daiTargetsSummary() : null; return t && t.total ? _daiKPI(`${t.achieved} of ${t.total}`, 'Personal targets achieved', `${t.inProgress} in progress, ${t.withEvidence} with evidence`) : ''; })()}</div>` + coaching + (sp.person || ''),
     asked:     support,
     plans:     typeof daiPlansOverviewHTML === 'function' ? daiPlansOverviewHTML() : '',
+    attendance: typeof daiAttendanceHTML === 'function' ? daiAttendanceHTML() : '',
   };
   if (!panels[_daiTab]) _daiTab = 'overview';
   body.innerHTML = `
@@ -827,6 +880,7 @@ const DAI_TABS = Object.freeze([
   { id: 'people',    label: 'By person' },
   { id: 'asked',     label: 'Support asked for' },
   { id: 'plans',     label: 'Area plans' },
+  { id: 'attendance', label: 'Attendance' },
 ]);
 let _daiTab = 'overview';
 function _daiSetTab(id) {
