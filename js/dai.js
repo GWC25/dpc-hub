@@ -1,4 +1,5 @@
-// DPC Hub · js/dai.js · v2.5 · 12/11/26 · By person tab rebuilt on the dashboard framework (dai-dash.js); coaching threshold is a setting
+// DPC Hub · js/dai.js · v2.6 · 12/11/26 · By resource type, By theme and By area rebuilt on the dashboard framework (dai-tabs.js)
+// v2.5 · 12/11/26 · By person tab rebuilt on the dashboard framework (dai-dash.js); coaching threshold is a setting
 // v2.4 · 12/11/26 · scan reports every file it could not use and why; .xlsm/.xls read; repair no longer links by surname alone; name check re-homes mislinked responses; registered tile split by register
 // v2.3 · 12/11/26 · "anonymous" Forms emails treated as no email (was merging people), one-off repair of stored data; both surveys shown as baselines, no before/after change
 // v2.2 · 12/11/26 · TLA Tracker and area attendance lists imported with the DA&I files (dai-roster.js); Attendance tab; new areas from the import
@@ -709,6 +710,10 @@ function _daiDelegate(ev) {
     if (spec && typeof daiPromptOpen === 'function') daiPromptOpen(spec, pb);
     return;
   }
+  const sb = ev.target.closest('[data-dtb-share]');
+  if (sb) { ev.preventDefault(); if (typeof daiShareOpen === 'function') daiShareOpen(+sb.getAttribute('data-dtb-share'), sb); return; }
+  const arb = ev.target.closest('[data-dtb-area]');
+  if (arb && typeof _ddFilter !== 'undefined') { ev.preventDefault(); _ddFilter.area = arb.getAttribute('data-dtb-area'); _daiRenderBody(); document.getElementById('dd-f-area')?.focus(); return; }
   const ab = ev.target.closest('[data-dac-open]');
   if (ab) { ev.preventDefault(); if (typeof daiActionOpen === 'function') daiActionOpen(+ab.getAttribute('data-dac-open'), ab); return; }
   const ob = ev.target.closest('[data-dpl-open]');
@@ -877,6 +882,7 @@ function _daiRenderBody() {
   }
   const d = _daiCompute();
   const sp = typeof daiSupportParts === 'function' ? daiSupportParts() : {};
+  if (typeof daiTabsReset === 'function') daiTabsReset();
   const shift = d.both.length ? _daiAvg(d.both.map(p => p.after - p.before)) : null;
 
   const kpis = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);">
@@ -915,9 +921,9 @@ function _daiRenderBody() {
 
   const panels = {
     overview:  (typeof daiReportPanelHTML === 'function' ? daiReportPanelHTML() : '') + kpis + (typeof daiBaselineSectionHTML === 'function' ? daiBaselineSectionHTML() : '') + (sp.actions || '') + caveat,
-    resources: sp.resources || '',
-    theme:     (sp.themes || '') + elements,
-    area:      areas + (sp.areaNeeds || ''),
+    resources: typeof daiResourceTabHTML === 'function' ? daiResourceTabHTML(d) : (sp.resources || ''),
+    theme:     typeof daiThemeTabHTML === 'function' ? daiThemeTabHTML(d, elements) : (sp.themes || '') + elements,
+    area:      typeof daiAreaTabHTML === 'function' ? daiAreaTabHTML(d, sp.areaNeeds || '') : areas + (sp.areaNeeds || ''),
     campus:    sp.campus || '',
     people:    typeof daiPersonTabHTML === 'function' ? daiPersonTabHTML(d) : coaching + (sp.person || ''),
     asked:     support,
