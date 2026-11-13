@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-actions.js · v1.0 · 09/11/26 · progress on recommended DA&I support actions, linked to Resource Library entries
+// DPC Hub · js/dai-actions.js · v1.1 · 13/11/26 · Resource Library entries tagged for DA&I (element and format), with detection from the title
+// v1.0 · 09/11/26 · progress on recommended DA&I support actions, linked to Resource Library entries
 //
 // Each recommended action (Teach Meet, drop-in, area session, a video or
 // guide to make, coaching) has a stable key, so its status survives the
@@ -35,6 +36,30 @@ function _dacLibEntries() {
   const manual = (window.DPC_DATA.resourceLibrary && window.DPC_DATA.resourceLibrary.entries) || [];
   return manual.filter(e => !e.archived);
 }
+// ── DA&I tags on Resource Library entries ─────────────────────
+// entry.dai = { elements: [themeId], format: 'video' | 'guide' | 'other' } once confirmed,
+// or { off: true } when Graeme says it is not DA&I support. Untagged entries
+// are read from their title, description and tags.
+const DAI_LIB_FORMATS = Object.freeze({ video: 'How-To video', guide: 'How-To guide sheet', other: 'Other resource' });
+function daiLibGuess(e) {
+  const text = [e.title, e.description, ...(e.tags || [])].filter(Boolean).join(' ').replace(/[-_]+/g, ' ');
+  const elements = typeof _dsuThemesIn === 'function' ? _dsuThemesIn(text) : [];
+  const t = text.toLowerCase();
+  const format = /\bvideo\b|\bvid\b|\.mp4|recording|screencast|\bclip\b/.test(t) ? 'video'
+    : /\bguide\b|\bsheet\b|\bdocx\b|\bpdf\b|handout|checklist|step by step|instructions/.test(t) ? 'guide' : 'other';
+  return { elements, format };
+}
+function daiLibTags(e) {
+  if (e.dai && e.dai.off) return null;
+  if (e.dai && (e.dai.elements || []).length) return { elements: e.dai.elements, format: e.dai.format || 'other', source: 'tagged' };
+  const g = daiLibGuess(e);
+  return g.elements.length ? { ...g, source: 'found' } : null;
+}
+// Library entries that are a given format on a given element.
+function daiLibFor(fmt, theme) {
+  return _dacLibEntries().map(e => ({ e, t: daiLibTags(e) })).filter(x => x.t && x.t.elements.includes(theme) && x.t.format === fmt);
+}
+
 function _dacShares(resourceId) {
   return ((window.DPC_DATA.resourceLibrary && window.DPC_DATA.resourceLibrary.shares) || []).filter(s => s.resourceId === resourceId);
 }

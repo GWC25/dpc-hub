@@ -1,4 +1,5 @@
-// DPC Hub · js/library.js · v1.0 · 31/07/26 · Session 32
+// DPC Hub · js/library.js · v1.1 · 13/11/26 · DA&I support tags (format and elements) on DPC-created entries, suggested from the title
+// v1.0 · 31/07/26 · Session 32
 // v1.1 (Sept 2026) — shows where an entry is used: which Current Focus
 // records pin it, and how many logged activities attach it.
 // Resource Library module. Three entry types (LIBRARY_TYPE in schema.js):
@@ -84,6 +85,19 @@ function initLibrary() {
           <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:4px;">Comma-separated. Using existing heuristic tags (e.g. modelling, checks-for-understanding) means this resource can also surface automatically as a Learning Walk / Instructional Coaching recommendation.</p>
           <input class="form-input" type="text" id="lib-skills" placeholder="e.g. modelling, screen-recording">
         </div>
+        <fieldset id="lib-dai-group" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
+          <legend style="font-size:var(--text-sm);font-weight:var(--font-bold);color:var(--color-navy);padding:0 4px;">Digital Accessibility and Inclusion support</legend>
+          <div style="display:flex;gap:var(--space-sm);align-items:center;margin-bottom:var(--space-sm);">
+            <input type="checkbox" id="lib-dai-on" style="width:20px;height:20px;"><label for="lib-dai-on" style="font-size:var(--text-sm);">This resource is DA&amp;I support</label>
+          </div>
+          <div id="lib-dai-fields">
+            <div class="form-group"><label class="form-label" for="lib-dai-format">Format</label>
+              <select id="lib-dai-format" class="form-select"><option value="video">How-To video</option><option value="guide">How-To guide sheet</option><option value="other">Other resource</option></select></div>
+            <p id="lib-dai-el-label" style="font-size:var(--text-sm);font-weight:var(--font-bold);margin-bottom:4px;">Elements it covers</p>
+            <div id="lib-dai-elements" role="group" aria-labelledby="lib-dai-el-label" style="display:flex;flex-wrap:wrap;gap:4px 14px;"></div>
+            <p id="lib-dai-hint" style="font-size:var(--text-xs);color:var(--color-muted);margin-top:var(--space-xs);"></p>
+          </div>
+        </fieldset>
         <input type="hidden" id="lib-entry-id">
         <input type="hidden" id="lib-entry-type">
         <p id="lib-entry-error" role="alert" style="font-size:var(--text-sm);color:var(--color-red);display:none;margin-bottom:var(--space-md);"></p>
@@ -283,6 +297,7 @@ function _openLibraryDetail(resourceId) {
         ${e.author ? `<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:2px;">by ${_libEsc(e.author)}</p>` : ''}
         ${e.description ? `<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:var(--space-xs);">${_libEsc(e.description)}</p>` : ''}
         <p style="font-size:var(--text-xs);margin-top:var(--space-xs);"><a href="${_libEsc(e.url)}" target="_blank" rel="noopener noreferrer" style="color:var(--color-teal);">${_libEsc(e.url)}</a></p>
+        ${e.dai && !e.dai.off && typeof DSU_THEMES !== 'undefined' ? `<p style="font-size:var(--text-sm);margin-top:var(--space-sm);"><strong>DA&amp;I support:</strong> ${_libEsc((typeof DAI_LIB_FORMATS !== 'undefined' ? DAI_LIB_FORMATS[e.dai.format] : e.dai.format) || '')} on ${_libEsc(e.dai.elements.map(id => (DSU_THEMES.find(t => t.id === id) || {}).label || id).join(', '))}</p>` : ''}
         ${(e.tags || []).length > 0 ? `<div style="margin-top:var(--space-sm);display:flex;gap:4px;flex-wrap:wrap;">${e.tags.map(t => `<span style="font-size:10px;background:var(--color-light);color:var(--color-muted);padding:1px 8px;border-radius:999px;">${_libEsc(_libHumanizeTag(t))}</span>`).join('')}</div>` : ''}
       </div>
       <div style="display:flex;gap:var(--space-sm);flex-shrink:0;">
@@ -352,6 +367,20 @@ function _openEntryModal(type, existingId = null) {
   // Author only makes sense for Reading Material — matches the exact
   // three fields asked for (Title, Author, Link), not bolted onto
   // every type regardless of relevance.
+  // DA&I tags: saved tags, or a suggestion read from the title for a new or untagged entry.
+  const daiThemes = typeof DSU_THEMES !== 'undefined' ? DSU_THEMES : [];
+  const daiBox = document.getElementById('lib-dai-group');
+  if (daiBox) {
+    daiBox.style.display = daiThemes.length ? 'block' : 'none';
+    const saved = existing && existing.dai;
+    const guess = typeof daiLibGuess === 'function' ? daiLibGuess(existing || { title: '' }) : { elements: [], format: 'other' };
+    const cur = saved && !saved.off ? saved : guess;
+    document.getElementById('lib-dai-on').checked = saved ? !saved.off : guess.elements.length > 0;
+    document.getElementById('lib-dai-format').value = cur.format || 'other';
+    document.getElementById('lib-dai-elements').innerHTML = daiThemes.map(t => `<span style="display:inline-flex;gap:4px;align-items:center;"><input type="checkbox" id="lib-dai-el-${t.id}" value="${t.id}" ${(cur.elements || []).includes(t.id) ? 'checked' : ''} style="width:18px;height:18px;"><label for="lib-dai-el-${t.id}" style="font-size:var(--text-sm);">${_libEsc(t.label)}</label></span>`).join('');
+    document.getElementById('lib-dai-hint').textContent = saved ? '' : (guess.elements.length ? 'Suggested from the name. Check it before saving.' : '');
+  }
+
   const authorGroup = document.getElementById('lib-author-group');
   if (authorGroup) authorGroup.style.display = type === LIBRARY_TYPE.READING_MATERIAL ? 'block' : 'none';
 
@@ -372,7 +401,16 @@ function _saveEntry() {
   const tags = document.getElementById('lib-skills').value.split(',').map(t => t.trim()).filter(Boolean);
   const existing = existId ? _libGetEntry(existId) : null;
 
+  let dai = existing && existing.dai ? existing.dai : null;
+  const daiOn = document.getElementById('lib-dai-on');
+  if (daiOn && document.getElementById('lib-dai-group').style.display !== 'none') {
+    const els = [...document.querySelectorAll('#lib-dai-elements input:checked')].map(x => x.value);
+    if (daiOn.checked && !els.length) { errEl.textContent = 'Choose at least one element it covers, or untick DA&I support.'; errEl.style.display = 'block'; return; }
+    dai = daiOn.checked ? { elements: els, format: document.getElementById('lib-dai-format').value } : { off: true };
+  }
+
   const entry = {
+    dai,
     resourceId:  existId || generateId(),
     type,
     title,

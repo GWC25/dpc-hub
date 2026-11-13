@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-tabs.js · v1.0 · 12/11/26 · By resource type, By theme and By area on the dashboard framework; record a share with many people across areas
+// DPC Hub · js/dai-tabs.js · v1.1 · 13/11/26 · library entries tagged (or found) for DA&I count as made; bulk tagging panel on By resource type
+// v1.0 · 12/11/26 · By resource type, By theme and By area on the dashboard framework; record a share with many people across areas
 //
 // All three tabs use the shared filter and clickable tiles (dai-dash.js).
 // End of Term 2 columns are in place and read "Awaiting form" until the
@@ -35,10 +36,14 @@ const _dtbBtn = 'min-height:32px;padding:2px 10px;border:2px solid var(--color-t
 function _dtbRes(fmt, theme, needers) {
   const key = fmt === 'coaching' ? `coachgroup|${theme}` : `res|${fmt}|${theme}`;
   const st = typeof _dacGet === 'function' ? _dacGet(key) : {};
-  const entries = (st.resourceIds || []).map(id => _dacLibEntries().find(e => e.resourceId === id)).filter(Boolean);
+  const linked = (st.resourceIds || []).map(id => _dacLibEntries().find(e => e.resourceId === id)).filter(Boolean);
+  const tagged = fmt === 'coaching' || typeof daiLibFor !== 'function' ? [] : daiLibFor(fmt, theme);
+  const entries = [...new Map([...linked, ...tagged.map(x => x.e)].map(e => [e.resourceId, e])).values()];
+  const found = new Set(tagged.filter(x => x.t.source === 'found').map(x => x.e.resourceId));
+  linked.forEach(e => found.delete(e.resourceId));
   const made = st.status === 'Done' || entries.length > 0;
   const reach = entries.length ? _dacReach(entries.map(e => e.resourceId), needers) : 0;
-  return { key, st, entries, made, reach };
+  return { key, st, entries, made, reach, found };
 }
 function _dtbShareBtn(spec, label) {
   _dtbShares.push(spec);
@@ -67,7 +72,7 @@ function daiResourceTabHTML(d) {
       sorted.map(r => {
         const what = `${DSU_FORMATS[r.fmt]} on ${r.e.label}`;
         return `<tr>${_daiTd(r.ps.length ? '<strong>Yes</strong>' : 'No')}${_daiTd(_daiEsc(what))}
-          ${_daiTd(r.entries.length ? `Yes: ${r.entries.map(x => _daiEsc(x.title)).join(', ')}` : r.made ? 'Marked done' : 'No')}
+          ${_daiTd(r.entries.length ? `Yes: ${r.entries.map(x => `${_daiEsc(x.title)}${r.found.has(x.resourceId) ? ' <span style="color:var(--color-muted);">(found by its title; confirm below)</span>' : ''}`).join(', ')}` : r.made ? 'Marked done' : 'No')}
           ${_daiTd(_dtbWho(r.ps))}${_daiTd(r.entries.length ? `${r.reach} of ${r.ps.length}` : '–')}
           ${_daiTd(r.ps.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;">${_dtbShareBtn({ title: what, actionKey: r.key, themeIds: [r.e.id], people: r.ps }, what)}${typeof _dsuPromptBtn === 'function' ? _dsuPromptBtn(r.fmt === 'coaching' ? { kind: 'coachgroup', themes: [r.e.id], needs: r.list } : { kind: r.fmt, themes: [r.e.id], needs: r.list }, what) : ''}</div>` : '')}</tr>`;
       }), 980);
@@ -80,8 +85,61 @@ function daiResourceTabHTML(d) {
   ];
   return daiDashFilterHTML(d.all.map(p => ({ ...p, campus: _ddCampus(p) })))
     + daiDashTilesHTML('resources', tiles)
+    + _dtbLibPanel()
     + _dtbH('Every resource') + _dtbP('A resource counts as made when it is linked from the Resource Library (Record share or Mark done) or marked done. Staff shared with counts only the people who needed it.')
     + table(types.filter(t => t.fmt !== 'coaching').flatMap(t => t.rows));
+}
+
+// Bulk tagging: every library entry with what the Hub reads from it; confirm in one go.
+let _dtbLibOpen = false;
+function _dtbLibPanel() {
+  if (typeof daiLibTags !== 'function') return '';
+  const entries = _dacLibEntries().slice().sort((a, b) => String(a.title).localeCompare(String(b.title)));
+  if (!entries.length) return '';
+  const els = (typeof DSU_THEMES !== 'undefined' ? DSU_THEMES : DAI_ELEMENTS);
+  const pending = entries.filter(e => !e.dai && daiLibTags(e)).length;
+  const rows = entries.map((e, i) => {
+    const t = daiLibTags(e) || (e.dai && e.dai.off ? null : daiLibGuess(e));
+    const cur = e.dai && !e.dai.off ? e.dai : (t || { elements: [], format: daiLibGuess(e).format });
+    const status = e.dai ? (e.dai.off ? 'Not DA&amp;I' : 'Tagged') : (t ? 'Found by title' : 'Not matched');
+    return `<tr>
+      ${_daiTd(`<input type="checkbox" id="dtb-l-${i}" data-dtb-lib="${_daiEsc(e.resourceId)}" ${e.dai ? (e.dai.off ? '' : 'checked') : (t ? 'checked' : '')} style="width:20px;height:20px;"><label class="sr-only" for="dtb-l-${i}">DA&amp;I support: ${_daiEsc(e.title)}</label>`)}
+      ${_daiTd(`<strong>${_daiEsc(e.title)}</strong><br><span style="color:var(--color-muted);">${status}</span>`)}
+      ${_daiTd(`<label class="sr-only" for="dtb-lf-${i}">Format of ${_daiEsc(e.title)}</label><select id="dtb-lf-${i}" class="form-select" data-dtb-libfmt="${_daiEsc(e.resourceId)}" style="min-height:36px;font-size:var(--text-sm);">${Object.entries(DAI_LIB_FORMATS).map(([k, v]) => `<option value="${k}"${k === cur.format ? ' selected' : ''}>${v}</option>`).join('')}</select>`)}
+      ${_daiTd(`<fieldset style="border:none;padding:0;margin:0;"><legend class="sr-only">Elements covered by ${_daiEsc(e.title)}</legend><div style="display:flex;flex-wrap:wrap;gap:2px 10px;">${els.map(th => `<span style="display:inline-flex;gap:3px;align-items:center;"><input type="checkbox" id="dtb-le-${i}-${th.id}" data-dtb-libel="${_daiEsc(e.resourceId)}" value="${th.id}" ${(cur.elements || []).includes(th.id) ? 'checked' : ''} style="width:16px;height:16px;"><label for="dtb-le-${i}-${th.id}" style="font-size:var(--text-xs);">${_daiEsc(th.label)}</label></span>`).join('')}</div></fieldset>`)}
+    </tr>`;
+  });
+  return `<details id="dtb-lib" ${_dtbLibOpen ? 'open' : ''} style="border:2px solid var(--color-teal);border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);background:var(--color-white);">
+    <summary style="cursor:pointer;font-size:var(--text-base);font-weight:var(--font-bold);color:var(--color-navy);min-height:24px;">Tag Resource Library entries as DA&amp;I support${pending ? ` (${pending} found by title, not yet confirmed)` : ''}</summary>
+    <p style="font-size:var(--text-sm);color:var(--color-slate);margin:var(--space-sm) 0;max-width:80ch;">The Hub reads each entry's title, description and tags and suggests its format and elements. Tick the entries that are DA&amp;I support, correct anything it got wrong, then save once. Tagged entries count as made on these tabs, and their shares count as reach. You can also tag an entry when you edit it in the Resource Library.</p>
+    ${_daiTable('Resource Library entries and their DA&I tags', ['DA&I', 'Resource', 'Format', 'Elements covered'], rows, 980)}
+    <div class="btn-row" style="margin-top:var(--space-md);"><button type="button" id="dtb-lib-save" class="btn btn--primary">Save tags</button></div>
+  </details>`;
+}
+function daiTabsWire(root) {
+  const det = root.querySelector('#dtb-lib');
+  if (!det) return;
+  det.addEventListener('toggle', () => { _dtbLibOpen = det.open; });
+  root.querySelector('#dtb-lib-save').addEventListener('click', () => {
+    let on = 0, off = 0;
+    _dacLibEntries().forEach(e => {
+      const cb = root.querySelector(`[data-dtb-lib="${e.resourceId}"]`);
+      if (!cb) return;
+      const elements = [...root.querySelectorAll(`[data-dtb-libel="${e.resourceId}"]:checked`)].map(x => x.value);
+      const format = root.querySelector(`[data-dtb-libfmt="${e.resourceId}"]`).value;
+      const before = JSON.stringify(e.dai || null);
+      if (cb.checked && elements.length) { e.dai = { elements, format }; on++; }
+      else { e.dai = { off: true }; off++; }
+      if (JSON.stringify(e.dai) !== before) e.lastUpdated = nowISO();
+    });
+    if (typeof _dirty !== 'undefined') _dirty.add('data-resource-library.json');
+    if (typeof _writeLocalSnapshot === 'function') _writeLocalSnapshot();
+    _dtbLibOpen = true;
+    _daiRenderBody();
+    const m = document.getElementById('dai-status');
+    if (m) m.textContent = `Saved DA&I tags: ${on} entr${on === 1 ? 'y is' : 'ies are'} DA&I support, ${off} ${off === 1 ? 'is' : 'are'} not.`;
+    document.getElementById('dtb-lib')?.querySelector('summary')?.focus();
+  });
 }
 
 // ── By theme ──────────────────────────────────────────────────

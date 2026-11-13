@@ -952,6 +952,7 @@ function _daiRenderBody() {
   if (typeof daiBaselineWire === 'function') daiBaselineWire(body);
   if (typeof daiAttendanceWire === 'function') daiAttendanceWire(body);
   if (typeof daiDashWire === 'function') daiDashWire(body);
+  if (typeof daiTabsWire === 'function') daiTabsWire(body);
   if (typeof daiActionWireFilters === 'function') daiActionWireFilters(body);
 }
 
