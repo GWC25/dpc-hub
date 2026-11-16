@@ -16,9 +16,12 @@
 
    What is stored where
      - The inbox files: private Files repository (initials only).
-     - The read token: this browser only (localStorage). It is a
-       fine-grained token with read-only access to Files. It is never
-       in this public repository and the Hub never writes to GitHub.
+     - The token: this browser only (localStorage). It is a classic
+       token (repo scope) from graemewright2005-ux, which is a
+       collaborator on GWC25/Files. Fine-grained tokens cannot reach
+       repositories where the account is a collaborator, so a classic
+       token is needed. It is never in this public repository. The
+       Hub reads the inbox and writes one file: the task list copy.
      - Whether an item is done: worked out from the Hub's own data.
        An item counts as in the Hub once anything carrying its import
        ID exists (meeting, task, date, note or evidence). Dismissed
@@ -46,7 +49,7 @@ async function _ciFetch(url, token, raw) {
   });
   if (res.status === 404) return null;
   if (res.status === 401) throw new Error('The token was refused. It may have expired. Add a new one below.');
-  if (res.status === 403) throw new Error('The token cannot read the Files repository. Check it has Contents: Read-only on GWC25/Files.');
+  if (res.status === 403) throw new Error('The token cannot read the Files repository. Check it was made by graemewright2005-ux with the repo scope ticked.');
   if (!res.ok) throw new Error('GitHub replied ' + res.status + '. Try again in a minute.');
   return raw ? res.text() : res.json();
 }
@@ -120,16 +123,15 @@ function _ciRenderSetup(panel, message) {
       <p class="mn-hint">Claude saves your talked-through notes to a private inbox, and the Hub sends Claude a copy of your task list so you can ask what is on today. The Hub needs a key for your private Files repository to do both. You do this once on each computer.</p>
       ${message ? `<div class="mn-err" role="alert"><p style="margin:0;">${_mnEsc(message)}</p></div>` : ''}
       <ol style="margin:0 0 var(--space-md);padding-left:20px;font-size:var(--text-sm);line-height:1.6;">
-        <li>On GitHub, signed in as GWC25, open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">New fine-grained token<span class="mn-sr"> (opens in a new tab)</span></a>.</li>
-        <li>Name it <strong>DPC Hub and Claude</strong>. Resource owner: <strong>GWC25</strong>.</li>
-        <li>Repository access: <strong>Only select repositories</strong>, then choose <strong>Files</strong>.</li>
-        <li>Permissions: <strong>Contents: Read and write</strong>. Nothing else.</li>
+        <li>On GitHub, signed in as <strong>graemewright2005-ux</strong>, open <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener">New personal access token (classic)<span class="mn-sr"> (opens in a new tab)</span></a>.</li>
+        <li>Note: <strong>DPC Hub and Claude</strong>. Expiration: <strong>90 days</strong>.</li>
+        <li>Scopes: tick <strong>repo</strong>. Nothing else.</li>
         <li>Generate the token, copy it, and paste it below.</li>
       </ol>
       <div class="mn-field" style="max-width:520px;">
         <label for="ci-token">Token</label>
         <input id="ci-token" type="password" class="form-input" autocomplete="off" spellcheck="false" aria-describedby="ci-token-hint">
-        <span id="ci-token-hint" class="mn-hint" style="margin:0;">Kept in this browser only. It works on the private Files repository and nothing else. The Hub uses it to read the inbox and to write one file: your task list for Claude.</span>
+        <span id="ci-token-hint" class="mn-hint" style="margin:0;">Kept in this browser only. A classic token is needed because graemewright2005-ux is a collaborator on Files, and fine-grained tokens cannot reach collaborator repositories. It can reach every repository that account can, so keep it private. The Hub only uses it to read the inbox and to write one file: your task list for Claude.</span>
       </div>
       <div class="mn-actions-bar"><button type="button" id="ci-save-token" class="btn btn--primary">Save and check the inbox</button></div>
     </section>`;
@@ -270,8 +272,8 @@ function _ciDate(iso) {
 // Claude can answer "what's on today?". The Hub stays the only master
 // copy; Claude sends changes back through the inbox for approval.
 //
-// Needs the inbox key to have Contents: Read and write on Files. With a
-// read-only key the copy is skipped and the From Claude tab says why.
+// Needs the inbox key to be able to write to Files (repo scope). If it
+// cannot, the copy is skipped and the From Claude tab says why.
 // Only runs while the folder is connected, so a Hub that opened without
 // its data never overwrites the copy with an empty list.
 const CI_TASKS_PATH = '08-platforms/dpc-hub/status/tasks.json';
@@ -351,7 +353,7 @@ async function ciSyncTasks(force) {
       if (res.ok) { _ciSetSyncState({ sig, at: new Date().toISOString(), error: null, open: snap.openTasks }); return; }
       if ((res.status === 409 || res.status === 422) && attempt === 0) continue; // someone else wrote it; fetch the new sha once
       const msg = res.status === 403 || res.status === 404
-        ? 'Your inbox key can only read. To send tasks to Claude, replace it with one that has Contents: Read and write on Files.'
+        ? 'Your inbox key cannot write to Files. To send tasks to Claude, replace it with a classic token from graemewright2005-ux with the repo scope ticked.'
         : res.status === 401 ? 'The inbox key was refused. It may have expired.' : 'GitHub replied ' + res.status + '.';
       _ciSetSyncState({ error: msg, errorAt: new Date().toISOString() });
       return;
