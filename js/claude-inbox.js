@@ -3,34 +3,38 @@
    From Claude: notes Claude has written up, waiting for approval
    (October 2026).
 
-   How it works
+   How it works (November 2026: no GitHub token)
      1. Graeme talks a meeting through with Claude. Claude writes it
-        up in the notes import format (notes-import.js) and saves it
-        to the private GWC25/Files repository, in
-        08-platforms/dpc-hub/inbox/, one file per meeting.
-     2. This tab lists those files. Each one opens in the same review
-        screen as typed or Copilot notes (meetingnotes.js), so the
-        same checks, routing and privacy flags apply.
+        up in the notes import format (notes-import.js), keeps the
+        plain copy in the private GWC25/Files repository, and publishes
+        an encrypted copy to inbox/ in this repository.
+     2. This tab reads inbox/index.json from the Hub's own site (no
+        token needed) and unlocks each note with a passphrase that
+        Graeme types once on each computer. The notes open in the same
+        review screen as typed or Copilot notes (meetingnotes.js), so
+        the same checks, routing and privacy flags apply.
      3. Saving writes to the OneDrive folder through the normal save
         path. Nothing is saved until Graeme ticks and saves.
 
    What is stored where
-     - The inbox files: private Files repository (initials only).
-     - The token: this browser only (localStorage). It is a classic
-       token (repo scope) from graemewright2005-ux, which is a
-       collaborator on GWC25/Files. Fine-grained tokens cannot reach
-       repositories where the account is a collaborator, so a classic
-       token is needed. It is never in this public repository. The
-       Hub reads the inbox and writes one file: the task list copy.
+     - Inbox notes: plain text in the private Files repository;
+       encrypted (AES-GCM, key from the passphrase by PBKDF2) in this
+       public repository. Initials only either way.
+     - The passphrase: this browser only (localStorage). It never
+       expires. It unlocks the inbox notes and nothing else: it gives
+       no access to any repository.
+     - The task list for Claude: saved to the OneDrive folder, in
+       Claude/tasks-for-claude.json. Claude reads it when Graeme chats
+       from the Claude desktop app with his computer linked.
      - Whether an item is done: worked out from the Hub's own data.
        An item counts as in the Hub once anything carrying its import
        ID exists (meeting, task, date, note or evidence). Dismissed
        items are remembered on this device only.
    ================================================================ */
 
-const CI_REPO = 'GWC25/Files';
-const CI_DIR = '08-platforms/dpc-hub/inbox';
-const CI_TOKEN_KEY = 'dpc-claude-inbox-token-v1';
+const CI_INBOX_URL = 'inbox/';
+const CI_PASS_KEY = 'dpc-claude-inbox-pass-v1';
+const CI_OLD_TOKEN_KEY = 'dpc-claude-inbox-token-v1'; // GitHub token from the old set-up; removed on load
 const CI_DISMISSED_KEY = 'dpc-claude-inbox-dismissed-v1';
 
 let _ci = { items: null, error: null, loading: false, showAll: false, editing: null };
@@ -40,29 +44,56 @@ function _ciSet(key, val) { try { if (val == null) localStorage.removeItem(key);
 function _ciDismissed() { try { return JSON.parse(_ciGet(CI_DISMISSED_KEY) || '[]'); } catch (e) { return []; } }
 function _ciSetDismissed(list) { _ciSet(CI_DISMISSED_KEY, JSON.stringify(list)); }
 
-// ── GitHub (read only) ────────────────────────────────────────
-async function _ciFetch(url, token, raw) {
-  const res = await fetch(url, {
-    headers: { 'Authorization': 'Bearer ' + token, 'Accept': raw ? 'application/vnd.github.raw' : 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28' },
-    cache: 'no-store',
-  });
+// ── Encrypted inbox on the Hub's own site ──────────────────
+// Bytes are written as three-digit numbers (000 to 255), so the
+// published files hold digits only and can never look like a name.
+try { localStorage.removeItem(CI_OLD_TOKEN_KEY); } catch (e) { /* private browsing */ }
+
+function _ciDigits(str) {
+  const out = new Uint8Array(Math.floor(String(str || '').length / 3));
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(str.substr(i * 3, 3), 10);
+  return out;
+}
+
+let _ciKeyCache = { pass: null, salt: null, key: null };
+async function _ciKey(pass, saltDigits, iter) {
+  if (_ciKeyCache.key && _ciKeyCache.pass === pass && _ciKeyCache.salt === saltDigits) return _ciKeyCache.key;
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: _ciDigits(saltDigits), iterations: iter, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  _ciKeyCache = { pass, salt: saltDigits, key };
+  return key;
+}
+
+async function _ciGetJson(url) {
+  const res = await fetch(url, { cache: 'no-store' });
   if (res.status === 404) return null;
-  if (res.status === 401) throw new Error('The token was refused. It may have expired. Add a new one below.');
-  if (res.status === 403) throw new Error('The token cannot read the Files repository. Check it was made by graemewright2005-ux with the repo scope ticked.');
-  if (!res.ok) throw new Error('GitHub replied ' + res.status + '. Try again in a minute.');
-  return raw ? res.text() : res.json();
+  if (!res.ok) throw new Error('The inbox could not be loaded (' + res.status + '). Try again in a minute.');
+  return res.json();
+}
+
+async function _ciDecrypt(key, file) {
+  try {
+    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: _ciDigits(file.iv) }, key, _ciDigits(file.ct));
+    return JSON.parse(new TextDecoder().decode(plain));
+  } catch (e) {
+    throw new Error('That passphrase did not unlock the notes. Check it and try again.');
+  }
 }
 
 async function ciLoadInbox() {
-  const token = _ciGet(CI_TOKEN_KEY);
-  if (!token) return;
+  const pass = _ciGet(CI_PASS_KEY);
+  if (!pass) return;
   _ci.loading = true; _ci.error = null;
   try {
-    const list = await _ciFetch(`https://api.github.com/repos/${CI_REPO}/contents/${CI_DIR}?ref=main`, token, false);
-    const files = (Array.isArray(list) ? list : []).filter(f => f.type === 'file' && /\.txt$/i.test(f.name));
-    const texts = await Promise.all(files.map(f => _ciFetch(`https://api.github.com/repos/${CI_REPO}/contents/${encodeURI(f.path)}?ref=main`, token, true)));
-    _ci.items = files.map((f, i) => _ciDescribe(f.name, texts[i] || '')).sort((a, b) => b.name.localeCompare(a.name));
+    const index = await _ciGetJson(CI_INBOX_URL + 'index.json');
+    const names = (index && Array.isArray(index.files)) ? index.files : [];
+    if (!names.length) { _ci.items = []; return; }
+    const key = await _ciKey(pass, index.salt, index.iter || 310000);
+    const files = await Promise.all(names.map(n => _ciGetJson(CI_INBOX_URL + encodeURIComponent(n))));
+    const notes = [];
+    for (const f of files) { if (f) notes.push(await _ciDecrypt(key, f)); }
+    _ci.items = notes.map(n => _ciDescribe(n.name, n.text || '')).sort((a, b) => b.name.localeCompare(a.name));
   } catch (e) {
     _ci.error = e.message || String(e);
   } finally {
@@ -105,8 +136,7 @@ function ciStatus(item) {
 
 // ── Render (inside the Meeting notes page) ───────────────────
 function ciRender(panel) {
-  const token = _ciGet(CI_TOKEN_KEY);
-  if (!token) { _ciRenderSetup(panel, null); return; }
+  if (!_ciGet(CI_PASS_KEY)) { _ciRenderSetup(panel, null); return; }
   if (_ci.editing) { _ciRenderEdit(panel); return; }
   if (_ci.items === null && !_ci.error) {
     panel.innerHTML = `<p class="mn-hint" role="status">Checking for notes from Claude…</p>`;
@@ -119,36 +149,29 @@ function ciRender(panel) {
 function _ciRenderSetup(panel, message) {
   panel.innerHTML = `
     <section class="mn-section" aria-labelledby="ci-h-setup">
-      <h3 id="ci-h-setup">Connect the Claude inbox</h3>
-      <p class="mn-hint">Claude saves your talked-through notes to a private inbox, and the Hub sends Claude a copy of your task list so you can ask what is on today. The Hub needs a key for your private Files repository to do both. You do this once on each computer.</p>
+      <h3 id="ci-h-setup">Unlock the Claude inbox</h3>
+      <p class="mn-hint">Claude saves your talked-through notes to the Hub in locked form. Type the inbox passphrase once on each computer to unlock them. It never expires, and it only unlocks these notes: it gives no access to anything else.</p>
       ${message ? `<div class="mn-err" role="alert"><p style="margin:0;">${_mnEsc(message)}</p></div>` : ''}
-      <ol style="margin:0 0 var(--space-md);padding-left:20px;font-size:var(--text-sm);line-height:1.6;">
-        <li>On GitHub, signed in as <strong>graemewright2005-ux</strong>, open <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener">New personal access token (classic)<span class="mn-sr"> (opens in a new tab)</span></a>.</li>
-        <li>Note: <strong>DPC Hub and Claude</strong>. Expiration: <strong>90 days</strong>.</li>
-        <li>Scopes: tick <strong>repo</strong>. Nothing else.</li>
-        <li>Generate the token, copy it, and paste it below.</li>
-      </ol>
       <div class="mn-field" style="max-width:520px;">
-        <label for="ci-token">Token</label>
-        <input id="ci-token" type="password" class="form-input" autocomplete="off" spellcheck="false" aria-describedby="ci-token-hint">
-        <span id="ci-token-hint" class="mn-hint" style="margin:0;">Kept in this browser only. A classic token is needed because graemewright2005-ux is a collaborator on Files, and fine-grained tokens cannot reach collaborator repositories. It can reach every repository that account can, so keep it private. The Hub only uses it to read the inbox and to write one file: your task list for Claude.</span>
+        <label for="ci-pass">Inbox passphrase</label>
+        <input id="ci-pass" type="password" class="form-input" autocomplete="off" spellcheck="false" aria-describedby="ci-pass-hint">
+        <span id="ci-pass-hint" class="mn-hint" style="margin:0;">Kept in this browser only. Ask Claude for it if you do not have it to hand.</span>
       </div>
-      <div class="mn-actions-bar"><button type="button" id="ci-save-token" class="btn btn--primary">Save and check the inbox</button></div>
+      <div class="mn-actions-bar"><button type="button" id="ci-save-pass" class="btn btn--primary">Unlock and check the inbox</button></div>
     </section>`;
-  const inp = document.getElementById('ci-token');
-  document.getElementById('ci-save-token').addEventListener('click', async () => {
+  const inp = document.getElementById('ci-pass');
+  document.getElementById('ci-save-pass').addEventListener('click', async () => {
     const v = inp.value.trim();
-    if (!/^(github_pat_|ghp_)[A-Za-z0-9_]{20,}$/.test(v)) { inp.focus(); _mnToast('error', 'That does not look like a GitHub token. Copy it again.'); return; }
-    if (!_ciSet(CI_TOKEN_KEY, v)) { _mnToast('error', 'This browser would not keep the token. Private browsing may be on.'); return; }
+    if (v.length < 12) { inp.focus(); _mnToast('error', 'That passphrase is too short. Copy it again.'); return; }
+    if (!_ciSet(CI_PASS_KEY, v)) { _mnToast('error', 'This browser would not keep the passphrase. Private browsing may be on.'); return; }
     _ci.items = null; _ci.error = null;
     ciRender(panel);
-    ciSyncTasks(true).then(() => { if (_mn.tab === 'claude' && !_ci.editing) _ciRenderSync(); });
   });
   if (!message) inp.focus();
 }
 
 function _ciRenderList(panel) {
-  if (_ci.error && /token/i.test(_ci.error) && !_ci.items) { _ciRenderSetup(panel, _ci.error); return; }
+  if (_ci.error && /passphrase/i.test(_ci.error) && !_ci.items) { _ciSet(CI_PASS_KEY, null); _ciRenderSetup(panel, _ci.error); return; }
   const items = _ci.items || [];
   const withStatus = items.map(it => ({ it, st: ciStatus(it) }));
   const fresh = withStatus.filter(x => x.st === 'new');
@@ -193,11 +216,11 @@ function _ciRenderList(panel) {
     </section>
     <section class="mn-section" aria-labelledby="ci-h-sync">
       <h3 id="ci-h-sync">Your tasks for Claude</h3>
-      <p class="mn-hint">After each save, the Hub sends Claude a copy of your open tasks and the next two weeks of your diary, so you can ask Claude what is on today. Names become initials in the copy.</p>
+      <p class="mn-hint">After each save, the Hub saves a copy of your open tasks and the next two weeks of your diary to your OneDrive folder, in Claude/tasks-for-claude.json. Claude reads it when you chat in the Claude desktop app with your computer linked, so you can ask what is on today. Names become initials in the copy.</p>
       <p id="ci-sync-status" class="mn-hint" role="status" style="margin:0 0 8px;"></p>
-      <button type="button" id="ci-sync-now" class="btn btn--secondary btn--sm">Send tasks to Claude now</button>
+      <button type="button" id="ci-sync-now" class="btn btn--secondary btn--sm">Save tasks for Claude now</button>
     </section>
-    <p class="mn-hint"><button type="button" id="ci-forget" class="btn btn--ghost btn--sm">Remove the key from this browser</button></p>`;
+    <p class="mn-hint"><button type="button" id="ci-forget" class="btn btn--ghost btn--sm">Remove the passphrase from this browser</button></p>`;
 
   document.getElementById('ci-refresh').addEventListener('click', async () => {
     _ci.items = null; _ci.error = null; ciRender(panel); _mnSay('Checking for new notes.');
@@ -205,14 +228,14 @@ function _ciRenderList(panel) {
   document.getElementById('ci-toggle')?.addEventListener('click', () => { _ci.showAll = !_ci.showAll; _ciRenderList(panel); document.getElementById('ci-toggle')?.focus(); });
   _ciRenderSync();
   document.getElementById('ci-sync-now').addEventListener('click', async (e) => {
-    const b = e.currentTarget; b.disabled = true; b.textContent = 'Sending…';
+    const b = e.currentTarget; b.disabled = true; b.textContent = 'Saving…';
     await ciSyncTasks(true);
-    b.disabled = false; b.textContent = 'Send tasks to Claude now';
+    b.disabled = false; b.textContent = 'Save tasks for Claude now';
     _ciRenderSync(); _mnSay(document.getElementById('ci-sync-status')?.textContent || '');
   });
   document.getElementById('ci-forget').addEventListener('click', () => {
-    if (!confirm('Remove the key from this browser? You can add it again at any time.')) return;
-    _ciSet(CI_TOKEN_KEY, null); _ci.items = null; ciRender(panel);
+    if (!confirm('Remove the passphrase from this browser? You can add it again at any time.')) return;
+    _ciSet(CI_PASS_KEY, null); _ci.items = null; ciRender(panel);
   });
   panel.querySelectorAll('[data-ci]').forEach(b => b.addEventListener('click', () => {
     const it = items[+b.dataset.i], act = b.dataset.ci, key = it.ref || it.name;
@@ -234,10 +257,10 @@ function _ciRenderSync() {
   const st = ciSyncState(), connected = typeof hasFolderAccess === 'function' && hasFolderAccess();
   const when = (iso) => { const d = new Date(iso); return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ' at ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); };
   const parts = [];
-  if (st.at) parts.push('Last sent ' + when(st.at) + (st.open != null ? ', with ' + st.open + ' open task' + (st.open === 1 ? '' : 's') : '') + '.');
-  else parts.push('Not sent yet.');
+  if (st.at) parts.push('Last saved ' + when(st.at) + (st.open != null ? ', with ' + st.open + ' open task' + (st.open === 1 ? '' : 's') : '') + '.');
+  else parts.push('Not saved yet.');
   if (st.error && (!st.at || st.errorAt > st.at)) parts.push(st.error);
-  if (!connected) parts.push('Connect the OneDrive folder so the Hub can send your real list.');
+  if (!connected) parts.push('Connect the OneDrive folder so the Hub can save your real list.');
   el.textContent = parts.join(' ');
 }
 
@@ -268,15 +291,14 @@ function _ciDate(iso) {
 
 // ── Task list for Claude (October 2026) ───────────────────────
 // After each save to the OneDrive folder, and once at start-up, the Hub
-// writes a copy of the task list to the private Files repository so
-// Claude can answer "what's on today?". The Hub stays the only master
+// saves a copy of the task list into the folder (Claude subfolder) so
+// Claude can answer "what's on today?" when Graeme chats from the Claude
+// desktop app with his computer linked. The Hub stays the only master
 // copy; Claude sends changes back through the inbox for approval.
-//
-// Needs the inbox key to be able to write to Files (repo scope). If it
-// cannot, the copy is skipped and the From Claude tab says why.
 // Only runs while the folder is connected, so a Hub that opened without
 // its data never overwrites the copy with an empty list.
-const CI_TASKS_PATH = '08-platforms/dpc-hub/status/tasks.json';
+const CI_TASKS_DIR = 'Claude';
+const CI_TASKS_FILE = 'tasks-for-claude.json';
 const CI_SYNC_KEY = 'dpc-claude-task-sync-v1';
 let _ciSyncTimer = null, _ciSyncing = false;
 
@@ -325,41 +347,19 @@ function ciBuildTaskSnapshot() {
   return { format: 'dpc-hub-tasks v1', today, openTasks: tasks.filter(t => t.status !== 'complete').length, tasks, diary, focuses: focusList };
 }
 
-function _ciB64(str) {
-  const bytes = new TextEncoder().encode(str);
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-  return btoa(bin);
-}
-
 async function ciSyncTasks(force) {
-  const token = _ciGet(CI_TOKEN_KEY);
-  if (!token || _ciSyncing) return;
-  if (typeof hasFolderAccess === 'function' && !hasFolderAccess()) return;
+  if (_ciSyncing) return;
+  if (typeof hasFolderAccess !== 'function' || !hasFolderAccess() || typeof saveBytesToFolder !== 'function') return;
   const snap = ciBuildTaskSnapshot();
   const body = JSON.stringify(snap, null, 2);
-  const sig = (typeof _ciSig === 'function') ? _ciSig(body) : body.length;
+  const sig = _ciSig(body);
   if (!force && ciSyncState().sig === sig) return;
   _ciSyncing = true;
-  const url = `https://api.github.com/repos/${CI_REPO}/contents/${CI_TASKS_PATH}`;
-  const headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
   try {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const cur = await fetch(url + '?ref=main', { headers, cache: 'no-store' });
-      const sha = cur.ok ? (await cur.json()).sha : null;
-      const res = await fetch(url, { method: 'PUT', headers, body: JSON.stringify({
-        message: 'Hub: task list for Claude (' + snap.openTasks + ' open)', branch: 'main',
-        content: _ciB64(body + '\n'), ...(sha ? { sha } : {}) }) });
-      if (res.ok) { _ciSetSyncState({ sig, at: new Date().toISOString(), error: null, open: snap.openTasks }); return; }
-      if ((res.status === 409 || res.status === 422) && attempt === 0) continue; // someone else wrote it; fetch the new sha once
-      const msg = res.status === 403 || res.status === 404
-        ? 'Your inbox key cannot write to Files. To send tasks to Claude, replace it with a classic token from graemewright2005-ux with the repo scope ticked.'
-        : res.status === 401 ? 'The inbox key was refused. It may have expired.' : 'GitHub replied ' + res.status + '.';
-      _ciSetSyncState({ error: msg, errorAt: new Date().toISOString() });
-      return;
-    }
+    await saveBytesToFolder(CI_TASKS_FILE, new TextEncoder().encode(body + '\n'), CI_TASKS_DIR);
+    _ciSetSyncState({ sig, at: new Date().toISOString(), error: null, open: snap.openTasks });
   } catch (e) {
-    _ciSetSyncState({ error: 'Could not reach GitHub to send tasks. The Hub will try again after the next save.', errorAt: new Date().toISOString() });
+    _ciSetSyncState({ error: 'The task list could not be saved to the folder. The Hub will try again after the next save.', errorAt: new Date().toISOString() });
   } finally {
     _ciSyncing = false;
   }
