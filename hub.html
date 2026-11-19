@@ -256,6 +256,12 @@
       errorEl.textContent = msg;
       errorEl.style.display = 'block';
     },
+    // 19/11/26: relabel the button (e.g. to "Choose your OneDrive folder")
+    // and keep focus on it so the next click or Enter opens the chooser.
+    setButtonLabel: function(label) {
+      btn.textContent = label;
+      btn.focus();
+    },
     _onConfirm: null,
     _onOffline: null,
   };

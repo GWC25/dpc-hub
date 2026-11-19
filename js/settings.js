@@ -1,4 +1,5 @@
-// DPC Hub · js/settings.js · v1.0 · 31/07/26 · Session 34
+// DPC Hub · js/settings.js · v1.1 · 19/11/26 · reload after reconnect, Choose a different folder
+// v1.0 · 31/07/26 · Session 34
 // Settings tab. Two independent things live here:
 //
 // 1. Connection status + manual Reconnect — the visible half of the
@@ -53,7 +54,11 @@ function initSettings() {
         <span id="dpc-conn-label" style="font-size:var(--text-sm);color:var(--color-slate);"></span>
       </div>
       <p style="font-size:var(--text-xs);color:var(--color-muted);margin-bottom:var(--space-md);">DPC Hub checks silently on every load whether it still has permission to your OneDrive data folder. If that check fails — permission revoked, folder moved, or a different machine — reconnect manually below.</p>
-      <button id="dpc-reconnect-btn" type="button" class="btn btn--primary btn--sm">Reconnect to OneDrive folder</button>
+      <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+        <button id="dpc-reconnect-btn" type="button" class="btn btn--primary btn--sm">Reconnect to OneDrive folder</button>
+        <button id="dpc-choose-folder-btn" type="button" class="btn btn--secondary btn--sm">Choose a different folder</button>
+      </div>
+      <p id="dpc-conn-error" role="alert" style="font-size:var(--text-sm);color:var(--color-red);margin-top:var(--space-sm);"></p>
     </section>
 
     <!-- Job A1: where this data came from -->
@@ -155,12 +160,39 @@ function initSettings() {
   document.getElementById('dpc-area-bulk-btn')?.addEventListener('click', _dpcOpenBulkAddPanel);
   _dpcWireSELConsolidate();
   _dpcSettingsInit();
+  // 19/11/26: both buttons reload the Hub after connecting, so OneDrive
+  // data is loaded fresh. Before this, reconnecting here after an offline
+  // start left the empty offline data in memory, and auto-save could write
+  // it over the real files.
   document.getElementById('dpc-reconnect-btn')?.addEventListener('click', async () => {
-    await reconnectFolder(UI);
+    if (getConnectionStatus() === 'connected' && typeof _saveAllDirty === 'function') await _saveAllDirty(UI);
+    if (await reconnectFolder(UI)) { _dpcReloadAfterConnect(); return; }
     _dpcRenderConnectionStatus();
-    if (typeof UI !== 'undefined') UI.showToast(getConnectionStatus() === 'connected' ? 'success' : 'warning',
-      getConnectionStatus() === 'connected' ? 'Reconnected to OneDrive.' : 'Still offline.');
+    UI.showToast('warning', 'Still offline.');
   });
+  document.getElementById('dpc-choose-folder-btn')?.addEventListener('click', async () => {
+    // The chooser must open first in this click, with nothing awaited before it.
+    const result = await chooseFolderFromClick(UI);
+    if (result === true) { _dpcReloadAfterConnect(); return; }
+    const err = document.getElementById('dpc-conn-error');
+    if (err) err.textContent = result;
+  });
+}
+
+function _dpcReloadAfterConnect() {
+  if (typeof pauseAutoSave === 'function') pauseAutoSave();
+  try { sessionStorage.setItem('dpc-settings-return', '1'); } catch (e) { /* lands on home instead */ }
+  location.reload();
+}
+
+// Called once after the Hub loads: back to Settings with a confirmation.
+function settingsResumeAfterReconnect() {
+  let flag = null;
+  try { flag = sessionStorage.getItem('dpc-settings-return'); sessionStorage.removeItem('dpc-settings-return'); } catch (e) { return; }
+  if (!flag) return;
+  if (typeof navigateTo === 'function') navigateTo('settings');
+  UI.showToast(getConnectionStatus() === 'connected' ? 'success' : 'warning',
+    getConnectionStatus() === 'connected' ? 'Reconnected to OneDrive. Your data has been reloaded.' : 'Still offline.');
 }
 
 function _dpcRenderProvenancePanel() {

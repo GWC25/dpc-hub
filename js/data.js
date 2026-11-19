@@ -1,4 +1,5 @@
-// DPC Hub · js/data.js · v2.0 · 09/11/26 · DA&I store (data-dai.json), bulk staff save
+// DPC Hub · js/data.js · v2.1 · 19/11/26 · OneDrive reconnect: second click opens the chooser, gone folders forgotten, Settings reload
+// v2.0 · 09/11/26 · DA&I store (data-dai.json), bulk staff save
 // v1.9 · 09/11/26 · Hub Lite archived: Supabase capture check removed
 // v1.8 · 02/10/26 · Session RAG-3 — re-scores Health Checks with the Copilot support priority method on load
 // v1.7 · 02/10/26 · Session RAG-2 — list/read any file in the connected folder (Excel imports), Health Check area-code memory, milestone and confidence stores, CPD save fix, action plan shared-with-DL date
@@ -115,21 +116,81 @@ async function tryReconnectSilently() {
 // IndexedDB. Must run from a click. Returns true when _folderHandle is now
 // usable. Does not load data: if the Hub started offline, reload the page
 // afterwards so OneDrive data loads before anything is saved over it.
+//
+// v2.1 (19/11/26): requestPermission() uses up the click, so a picker
+// opened straight after a refusal is blocked by the browser and the
+// button seemed to do nothing. Callers now ask for a second click before
+// opening the picker. A remembered folder that no longer exists (OneDrive
+// moved or re-synced) is forgotten here so it is not retried.
 let _storedHandlePromise = null;
 function _storedHandle() {
   if (!_storedHandlePromise) _storedHandlePromise = _idbGetHandle();
   return _storedHandlePromise;
 }
+function _forgetStoredHandle() {
+  _storedHandlePromise = Promise.resolve(null);
+  _idbClearHandle();
+}
 async function requestStoredFolderPermission() {
   const handle = await _storedHandle();
   if (!handle || typeof handle.requestPermission !== 'function') return false;
   try {
-    if ((await handle.requestPermission({ mode: 'readwrite' })) !== 'granted') return false;
+    const state = await handle.requestPermission({ mode: 'readwrite' });
+    if (state !== 'granted') {
+      console.warn('DPC Hub: browser did not allow the remembered folder (' + state + ').');
+      return false;
+    }
+    // Permission can be granted for a folder that has since gone. Reading
+    // one entry proves it is still there.
+    for await (const _name of handle.keys()) break;
     _folderHandle = handle;
     return true;
-  } catch { return false; }
+  } catch (err) {
+    console.warn('DPC Hub: the remembered folder could not be reopened, so it has been forgotten:', err);
+    _forgetStoredHandle();
+    return false;
+  }
 }
 async function hasStoredFolder() { return !!(await _storedHandle()); }
+
+// Plain-English message for a failed folder chooser.
+function _folderPickerErrorMessage(err) {
+  console.warn('DPC Hub: folder chooser failed:', err);
+  const name = err && err.name;
+  if (name === 'AbortError') return 'No folder was chosen. Click the button to try again.';
+  if (name === 'SecurityError') return 'Edge needs a fresh click to open the folder chooser. Click the button again.';
+  if (name === 'NotAllowedError') return 'Edge did not allow the Hub to edit that folder. Click the padlock to the left of the web address, set File editing to Allow, then click the button again.';
+  return 'Could not open the folder: ' + ((err && err.message) || 'unknown error') + '. Click the button to try again.';
+}
+
+// Opens the folder chooser and makes the chosen folder the Hub's folder.
+// Must be the first thing a click handler does (nothing awaited before
+// it). Unsaved changes go to the old folder before the switch. Returns
+// true on success; throws the chooser's error otherwise.
+async function _pickAndStoreFolder(ui) {
+  const handle = await window.showDirectoryPicker({ id: 'dpc-hub-data', mode: 'readwrite' });
+  if (_folderHandle && _dirty.size && ui) await _saveAllDirty(ui);
+  _folderHandle = handle;
+  localStorage.setItem(DPC_CONFIG.LS_KEYS.FOLDER_HANDLE_STORED, 'true');
+  localStorage.setItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE, new Date().toISOString());
+  _storedHandlePromise = Promise.resolve(handle);
+  await _idbStoreHandle(handle);
+  return true;
+}
+
+// Settings "Choose a different folder": goes straight to the chooser.
+// Returns true when a folder was chosen, or the error message.
+async function chooseFolderFromClick(ui) {
+  try { return await _pickAndStoreFolder(ui); }
+  catch (err) { return _folderPickerErrorMessage(err); }
+}
+
+// Stops auto-save before a reload, so data loaded while offline is never
+// written over the real OneDrive files.
+function pauseAutoSave() {
+  if (_autoSaveTimer) clearInterval(_autoSaveTimer);
+  _autoSaveTimer = null;
+}
 
 // For the Settings tab connection-status display.
 function getConnectionStatus() {
@@ -240,19 +301,11 @@ async function selectFolderFirstTime(ui) {
       btnLabel:'Select OneDrive folder',
       onConfirm: async () => {
         try {
-          const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
-          _folderHandle = handle;
-          localStorage.setItem(DPC_CONFIG.LS_KEYS.FOLDER_HANDLE_STORED, 'true');
-          localStorage.setItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE, new Date().toISOString());
-          await _idbStoreHandle(handle);
+          await _pickAndStoreFolder(null);
           ui.hideFolderModal();
           resolve(true);
         } catch (err) {
-          if (err.name === 'AbortError') {
-            ui.showFolderModalError('Folder selection is required to use DPC Hub. Please try again.');
-          } else {
-            ui.showFolderModalError(`Could not access the folder: ${err.message}. Please try again.`);
-          }
+          ui.showFolderModalError(_folderPickerErrorMessage(err));
         }
       }
     });
@@ -260,10 +313,29 @@ async function selectFolderFirstTime(ui) {
 }
 
 // ── Step 3b: Weekly reconnect ─────────────────────────────────
+// First click: ask the browser to allow the remembered folder again (no
+// chooser). If that is refused or the folder has gone, the button changes
+// to "Choose your OneDrive folder" and the next click opens the chooser
+// straight away, so the browser cannot block it.
 async function reconnectFolder(ui) {
   _storedHandle(); // read it now, so the click below can ask for permission straight away
   const lastWeekSummary = buildLastWeekSummary();
   return new Promise((resolve) => {
+    let chooserNext = false;
+    const done = () => {
+      localStorage.setItem(DPC_CONFIG.LS_KEYS.FOLDER_HANDLE_STORED, 'true');
+      localStorage.setItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE, new Date().toISOString());
+      ui.hideFolderModal();
+      resolve(true);
+    };
+    const choose = async () => {
+      try {
+        await _pickAndStoreFolder(ui);
+        done();
+      } catch (err) {
+        ui.showFolderModalError(_folderPickerErrorMessage(err));
+      }
+    };
     ui.showFolderModal({
       title:   'Good morning — weekly reconnect needed',
       message: 'To keep your data secure, please reconnect to your OneDrive folder. This takes one click.',
@@ -271,29 +343,11 @@ async function reconnectFolder(ui) {
       btnLabel:'Reconnect to OneDrive folder',
       allowOffline: true,
       onConfirm: async () => {
-        // October 2026: after a browser restart the stored handle usually
-        // only needs permission again. Ask for that first (one click, no
-        // folder picker); fall back to the picker if it is refused or gone.
-        if (await requestStoredFolderPermission()) {
-          localStorage.setItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE, new Date().toISOString());
-          ui.hideFolderModal();
-          resolve(true);
-          return;
-        }
-        try {
-          const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
-          _folderHandle = handle;
-          localStorage.setItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE, new Date().toISOString());
-          await _idbStoreHandle(handle);
-          ui.hideFolderModal();
-          resolve(true);
-        } catch (err) {
-          if (err.name === 'AbortError') {
-            ui.showFolderModalError('Reconnection cancelled. You can continue in offline mode.');
-          } else {
-            ui.showFolderModalError(`Could not reconnect: ${err.message}`);
-          }
-        }
+        if (chooserNext || !(await _storedHandle())) { await choose(); return; }
+        if (await requestStoredFolderPermission()) { done(); return; }
+        chooserNext = true;
+        ui.setFolderModalButton('Choose your OneDrive folder');
+        ui.showFolderModalError('Edge could not reopen the folder it remembered. Click "Choose your OneDrive folder" and select your DPC Hub data folder.');
       },
       onOffline: () => {
         ui.hideFolderModal();

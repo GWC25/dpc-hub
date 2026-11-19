@@ -1,4 +1,5 @@
-// DPC Hub · js/app.js · v1.2 · 09/11/26 · every page and opened record starts at the top
+// DPC Hub · js/app.js · v1.3 · 19/11/26 · folder modal relabel, return to Settings after reconnect
+// v1.2 · 09/11/26 · every page and opened record starts at the top
 // v1.1 · 09/11/26 · DA&I progress module
 // v1.0 · July 2026
 // Application controller. Tab routing. Module initialisation.
@@ -43,6 +44,10 @@ const UI = {
 
   showFolderModalError(msg) {
     if (window.DPC_FOLDER_MODAL) window.DPC_FOLDER_MODAL.showError(msg);
+  },
+
+  setFolderModalButton(label) {
+    if (window.DPC_FOLDER_MODAL && window.DPC_FOLDER_MODAL.setButtonLabel) window.DPC_FOLDER_MODAL.setButtonLabel(label);
   },
 
   showFatalError(msg, retryFn) {
@@ -291,6 +296,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     navigateTo('home');
     // Back to Meeting notes after a one-click reconnect from that page.
     if (typeof mnResumeAfterReconnect === 'function') mnResumeAfterReconnect();
+    // Back to Settings after reconnecting or choosing a folder there.
+    if (typeof settingsResumeAfterReconnect === 'function') settingsResumeAfterReconnect();
     // Send Claude a fresh task list at the start of each session.
     if (typeof ciQueueTaskSync === 'function') ciQueueTaskSync(2000);
   }
