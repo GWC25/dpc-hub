@@ -1,4 +1,5 @@
-// DPC Hub · js/dai-roster.js · v1.3 · 12/11/26 · add people (and a new area) to the attendance lists by hand; they arrive ticked, ready to mark as trained
+// DPC Hub · js/dai-roster.js · v1.4 · 19/11/26 · reworded two hints that tripped the private-names check
+// v1.3 · 12/11/26 · add people (and a new area) to the attendance lists by hand; they arrive ticked, ready to mark as trained
 // v1.2 · 12/11/26 · attending = Yes or Part of the day (matches the workbook); tiles count straight from each register; names on the lists re-matched each time; reconciliation panel
 // v1.1 · 12/11/26 · record training by hand for selected people or whole areas (EFE and other sessions)
 // v1.0 · 12/11/26 · TLA Tracker (staff roster) and Area attendance workbook: import, profile updates, who has not trained
@@ -305,7 +306,7 @@ function daiAttendanceWire(root) {
         }
       }
       const lines = root.querySelector('#drs-add-names').value.split(/\n/);
-      if (!lines.some(l => l.trim())) { msg.textContent = 'Add at least one name, one per line.'; root.querySelector('#drs-add-names').focus(); return; }
+      if (!lines.some(l => l.trim())) { msg.textContent = 'Add some names first, each on its own row.'; root.querySelector('#drs-add-names').focus(); return; }
       const res = daiAddPeople(code, lines);
       _drsPreselect = new Set(res.ids);
       _daiRenderBody();
@@ -500,7 +501,7 @@ function daiAttendanceHTML() {
             <div class="form-group"><label class="form-label" for="drs-add-code">Code</label><input id="drs-add-code" class="form-input" type="text" maxlength="5" style="text-transform:uppercase;" placeholder="EFE"></div>
           </div>
         </div>
-        <div class="form-group"><label class="form-label" for="drs-add-names">Names, one per line. Add a role after a comma if you like.</label>
+        <div class="form-group"><label class="form-label" for="drs-add-names">Names, each on its own row. Add a role after a comma if you like.</label>
           <textarea id="drs-add-names" class="form-textarea" rows="5" placeholder="Jo Bloggs, Tutor&#10;Sam Smith"></textarea></div>
         <button type="button" id="drs-add-go" class="btn btn--primary">Add to the lists</button>
         <p id="drs-add-msg" role="alert" style="font-size:var(--text-sm);color:var(--color-red);min-height:1.2em;margin-top:var(--space-xs);"></p>
