@@ -69,6 +69,13 @@ function initNotes() {
 
           <input type="text" id="n-detail-project" class="form-input" placeholder="Project reference" style="margin-bottom:8px;">
 
+          <label for="n-detail-link" style="display:block;font-size:var(--text-xs);font-weight:bold;color:var(--color-navy);margin-bottom:4px;">Resource link</label>
+          <div style="display:grid;grid-template-columns:2fr auto;gap:4px;align-items:center;margin-bottom:4px;">
+            <input type="url" id="n-detail-link" class="form-input" inputmode="url" placeholder="https://…" aria-describedby="n-detail-link-err">
+            <a id="n-open-link" class="btn btn--ghost btn--sm" target="_blank" rel="noopener noreferrer" style="display:none;">Open →<span class="sr-only"> the resource (opens in a new tab)</span></a>
+          </div>
+          <p id="n-detail-link-err" role="alert" style="color:var(--color-red);font-size:var(--text-sm);margin:0 0 8px;"></p>
+
           <div style="display:grid;grid-template-columns:2fr auto;gap:4px;align-items:center;margin-bottom:8px;">
             <select id="n-detail-meeting" class="form-select"><option value="">No meeting</option></select>
             <button type="button" id="n-open-meeting-btn" class="btn btn--ghost btn--sm" style="display:none;">Open →</button>
@@ -191,6 +198,7 @@ function _nRenderList() {
             ${n.personRef ? ` · <span style="background:var(--color-light);padding:1px 6px;border-radius:999px;">${_nEsc(n.personRef)}</span>` : ''}
             ${n.departmentId ? ` · <span style="background:var(--color-light);padding:1px 6px;border-radius:999px;">${_nEsc(_nDeptName(n.departmentId))}</span>` : ''}
             ${n.projectRef ? ` · <span style="background:var(--color-light);padding:1px 6px;border-radius:999px;">${_nEsc(n.projectRef)}</span>` : ''}
+            ${n.resourceUrl ? ` · <span style="background:var(--color-light);padding:1px 6px;border-radius:999px;">Has a link</span>` : ''}
           </p>
         </div>
       </div>
@@ -273,6 +281,14 @@ function _nWireEvents() {
     const n = noteId ? _nGet(noteId) : { noteId: generateId(), createdAt: nowISO() };
     if (noteId && !n) return;
 
+    // November 2026: a link to the resource the note is about.
+    const linkEl = document.getElementById('n-detail-link');
+    const resourceUrl = (typeof niSafeLink === 'function' ? niSafeLink : (v => { const t = String(v || '').trim(); return !t ? null : (/^https?:\/\/[^\s<>"]+$/i.test(t) ? t : undefined); }))(linkEl.value);
+    if (resourceUrl === undefined) {
+      document.getElementById('n-detail-link-err').textContent = 'This is not a web address. It should start with https://';
+      linkEl.setAttribute('aria-invalid', 'true'); linkEl.focus(); return;
+    }
+    n.resourceUrl = resourceUrl;
     n.text = text;
     n.areaCode = document.getElementById('n-detail-area').value || null;
     n.projectRef = document.getElementById('n-detail-project').value.trim() || null;
@@ -340,6 +356,10 @@ function _nOpenDetail(noteId = null) {
   document.getElementById('n-detail-area').value = n?.areaCode || '';
   document.getElementById('n-detail-person').value = n?.personRef || '';
   document.getElementById('n-detail-project').value = n?.projectRef || '';
+  document.getElementById('n-detail-link').value = n?.resourceUrl || '';
+  document.getElementById('n-detail-link').removeAttribute('aria-invalid');
+  document.getElementById('n-detail-link-err').textContent = '';
+  _nShowLink(n?.resourceUrl);
   document.getElementById('n-detail-meeting').value = n?.linkedMeetingId || '';
   document.getElementById('n-detail-dept').value = n?.departmentId || '';
   document.getElementById('n-detail-dept-other').style.display = 'none';
@@ -368,6 +388,13 @@ function _nOpenDetail(noteId = null) {
 
   modal.style.display = 'flex';
   document.getElementById('n-detail-text').focus();
+}
+
+// The Open link only shows for a saved, safe link.
+function _nShowLink(url) {
+  const a = document.getElementById('n-open-link');
+  if (!a) return;
+  if (url) { a.href = url; a.style.display = 'inline-flex'; } else { a.removeAttribute('href'); a.style.display = 'none'; }
 }
 
 function _nToggleOpenBtn(btnId, value) {

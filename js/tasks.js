@@ -84,6 +84,11 @@ function initTasks() {
           <label class="form-label form-label--optional" for="task-notes">Notes</label>
           <textarea class="form-textarea" id="task-notes" rows="3"></textarea>
         </div>
+        <div class="form-group">
+          <label class="form-label form-label--optional" for="task-link">Resource link</label>
+          <input class="form-input" type="url" id="task-link" inputmode="url" placeholder="https://…" aria-describedby="task-link-err">
+          <p id="task-link-err" role="alert" style="color:var(--color-red);font-size:var(--text-sm);margin:4px 0 0;"></p>
+        </div>
         <input type="hidden" id="task-modal-id">
         <div class="btn-row">
           <button id="task-modal-save" type="button" class="btn btn--primary">Save</button>
@@ -159,6 +164,7 @@ function _renderTaskList() {
           ${t.source && t.source !== 'manual' ? ` · <span style="font-style:italic;">from ${_tEsc(t.source)}</span>` : ''}
         </p>
         ${t.notes ? `<p style="font-size:var(--text-xs);color:var(--color-slate);margin-top:2px;">${_tEsc(t.notes)}</p>` : ''}
+        ${t.resourceUrl ? `<p style="font-size:var(--text-xs);margin-top:2px;"><a href="${_tEsc(t.resourceUrl)}" target="_blank" rel="noopener noreferrer">Open the resource<span class="sr-only"> for ${_tEsc(t.title)} (opens in a new tab)</span></a>${t.signedOffAt ? ' · Signed off ' + _tEsc(_tFmtDate(t.signedOffAt.slice(0, 10))) : ''}</p>` : (t.signedOffAt ? `<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:2px;">Signed off ${_tEsc(_tFmtDate(t.signedOffAt.slice(0, 10)))}</p>` : '')}
         ${steps.length && !isDone ? `<ul style="list-style:none;margin:6px 0 0;padding:0;">${steps.map((m, i) => `
           <li style="display:flex;align-items:center;gap:8px;min-height:32px;">
             <input type="checkbox" id="step-${t.entryId}-${i}" class="task-step-checkbox" data-task-id="${t.entryId}" data-step="${i}" ${m.done ? 'checked' : ''} style="width:18px;height:18px;">
@@ -193,6 +199,7 @@ function _tSetTaskDone(taskId, done) {
   const task = _getAllTasks().find(t => t.entryId === taskId);
   if (!task) return;
   task.status = done ? TASK_STATUS.COMPLETE : TASK_STATUS.UPCOMING;
+  if (!done) delete task.signedOffAt; // reopened, so no longer signed off
   saveCalendarEntry(task);
   // Session (11/08/26): a task created from an Action Plan item (via
   // createTaskFromSource) used to be a one-way copy — completing it here
@@ -220,6 +227,9 @@ function _openTaskModal(taskId = null) {
   document.getElementById('task-area').value = task ? (task.areaCode || '') : '';
   document.getElementById('task-person').value = task ? (task.personRefs || []).join(', ') : '';
   document.getElementById('task-notes').value = task ? (task.notes || '') : '';
+  document.getElementById('task-link').value = task ? (task.resourceUrl || '') : '';
+  document.getElementById('task-link-err').textContent = '';
+  document.getElementById('task-link').removeAttribute('aria-invalid');
   document.getElementById('task-modal-id').value = taskId || '';
   if (deleteBtn) deleteBtn.style.display = task ? 'inline-flex' : 'none';
   modal.style.display = 'flex';
@@ -231,6 +241,13 @@ function _saveTaskModal() {
   const date = document.getElementById('task-date').value;
   if (!title) { document.getElementById('task-title').focus(); return; }
   if (!date) { document.getElementById('task-date').focus(); return; }
+  // November 2026: a link to the resource the task is about.
+  const linkEl = document.getElementById('task-link');
+  const resourceUrl = (typeof niSafeLink === 'function' ? niSafeLink : (v => { const t = String(v || '').trim(); return !t ? null : (/^https?:\/\/[^\s<>"]+$/i.test(t) ? t : undefined); }))(linkEl.value);
+  if (resourceUrl === undefined) {
+    document.getElementById('task-link-err').textContent = 'This is not a web address. It should start with https://';
+    linkEl.setAttribute('aria-invalid', 'true'); linkEl.focus(); return;
+  }
 
   const existingId = document.getElementById('task-modal-id').value;
   const existing = existingId ? _getAllTasks().find(t => t.entryId === existingId) : null;
@@ -252,6 +269,7 @@ function _saveTaskModal() {
     projectRef: existing ? (existing.projectRef || null) : null,
     status: existing ? existing.status : TASK_STATUS.UPCOMING,
     notes: document.getElementById('task-notes').value.trim() || null,
+    resourceUrl,
     microTasks: _taskSteps.filter(m => String(m.title || '').trim()).map(m => ({ ...m, title: m.title.trim() })),
     isSurfaceLayerVisible: true,
     source: existing?.source || 'manual',

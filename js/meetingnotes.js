@@ -105,6 +105,14 @@ function initMeetingNotes() {
       .mn-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; font-size:var(--text-xs); }
       .mn-chip { background:var(--color-light); color:var(--color-navy); padding:2px 8px; border-radius:999px; }
       .mn-chip--update { background:var(--color-amber-lt); color:#7A4B00; }
+      .mn-extra { display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; margin-top:6px; }
+      .mn-extra details summary { cursor:pointer; color:var(--color-navy); font-size:var(--text-sm); text-decoration:underline; min-height:24px; }
+      .mn-extra .mn-linkbox { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:4px; }
+      .mn-extra .mn-linkbox input { min-width:260px; flex:1; }
+      .mn-signoff { display:inline-flex; align-items:center; gap:8px; font-size:var(--text-sm); color:var(--color-navy); min-height:32px; }
+      .mn-signoff input[type=checkbox] { width:20px; height:20px; margin:0; }
+      .mn-item .mn-signoff label, .mn-item .mn-linkbox label { font-weight:400; }
+      .mn-linkerr { color:var(--color-red); font-size:var(--text-sm); width:100%; }
       .mn-warn { margin:4px 0 0; padding-left:18px; font-size:var(--text-sm); color:#7A4B00; }
       .mn-err { background:var(--color-red-lt); border:1px solid var(--color-red); border-radius:var(--radius-md); padding:var(--space-sm) var(--space-md); margin-bottom:var(--space-md); }
       .mn-err h3, .mn-callout h3 { margin:0 0 6px; font-size:var(--text-base); color:var(--color-navy); }
@@ -608,6 +616,8 @@ RULES
 5. Only use codes from the lists below. If an area or focus I wrote does not clearly match one, write none and add a Check question.
 6. Meeting type: Team = quality-team, HoA = hoa, Digital Lead = digital-lead, 1:1 or Other = other-staff.
 7. Only add a Loop line if I wrote a loop code such as L3 on that line.
+8. If I wrote a web address on a line, add it to that block as "Link: <address>". Never make one up.
+9. If I ticked an action as done, add "Status: complete" to that Action block.
 
 WHAT EACH LINE BECOMES
 - Note lines with no letter: lines in the Meeting block's Notes, each starting "- ".
@@ -650,6 +660,8 @@ Owner: <initials>
 Area: <area code or none>
 Focus: <focus code or none>
 Loop: <loop code, only if I wrote one>
+Status: <complete, only if I ticked it as done>
+Link: <web address, only if I wrote one>
 Meeting: M1
 
 ## Date: <what>
@@ -667,6 +679,7 @@ Type: meeting
 Area: <area code or none>
 Focus: <focus code or none>
 Loop: <loop code, only if I wrote one>
+Link: <web address, only if I wrote one>
 Summary:
 <what I wrote>
 
@@ -714,6 +727,7 @@ function _mnReview(text, source) {
         <div style="display:flex;gap:8px;margin-bottom:4px;">
           <button type="button" class="btn btn--ghost btn--sm" data-tick="${_mnEsc(g)}" data-val="1">Tick all</button>
           <button type="button" class="btn btn--ghost btn--sm" data-tick="${_mnEsc(g)}" data-val="0">Untick all</button>
+          ${g === 'Tasks' ? '<button type="button" class="btn btn--ghost btn--sm" data-signall="1">Sign off all tasks</button>' : ''}
         </div>
         ${groups[g].map(i => _mnItemHtml(ops[i], i)).join('')}
       </fieldset>`).join('')}
@@ -730,6 +744,13 @@ function _mnReview(text, source) {
     groups[b.dataset.tick].forEach(i => { ops[i].include = b.dataset.val === '1'; const cb = panel.querySelector(`input[data-op="${i}"]`); if (cb) cb.checked = ops[i].include; });
     count();
   }));
+  // November 2026: sign off finished tasks, and attach a link to any item.
+  panel.querySelectorAll('input[data-signoff]').forEach(cb => cb.addEventListener('change', () => { ops[+cb.dataset.signoff].signedOff = cb.checked; }));
+  panel.querySelector('[data-signall]')?.addEventListener('click', () => {
+    ops.forEach((o, i) => { if (o.kind !== 'action') return; o.signedOff = true; const cb = panel.querySelector(`input[data-signoff="${i}"]`); if (cb) cb.checked = true; });
+    _mnSay('All tasks signed off. They will be saved as done.');
+  });
+  panel.querySelectorAll('input[data-link]').forEach(inp => inp.addEventListener('change', () => _mnSetLinkFromInput(inp)));
   document.getElementById('mn-back').addEventListener('click', () => _mnBack(text, source));
   document.getElementById('mn-apply').addEventListener('click', () => _mnApply());
   count();
@@ -756,8 +777,54 @@ function _mnItemHtml(o, i) {
           ${o.note ? `<span>${_mnEsc(o.note)}</span>` : ''}
           ${o.warnings.length ? `<ul class="mn-warn">${o.warnings.map(w => `<li>${_mnEsc(w)}</li>`).join('')}</ul>` : ''}
         </div>
+        ${_mnExtraHtml(o, i)}
       </div>
     </div>`;
+}
+
+// ── Resource links and sign-off (November 2026) ──────────────
+// Meetings keep their link in linkedDocumentUrl (the field the Meetings
+// page already shows). Everything else uses resourceUrl.
+function _mnLinkField(o) { return o.kind === 'meeting' ? 'linkedDocumentUrl' : 'resourceUrl'; }
+function _mnGetLink(o) { return (o.entity && o.entity[_mnLinkField(o)]) || ''; }
+function _mnSafeLink(v) { return typeof niSafeLink === 'function' ? niSafeLink(v) : (/^https?:\/\/[^\s<>"]+$/i.test(String(v || '').trim()) ? String(v).trim() : (String(v || '').trim() ? undefined : null)); }
+
+function _mnExtraHtml(o, i) {
+  if (o.kind === 'update') return '';
+  const link = _mnGetLink(o);
+  const signoff = o.kind === 'action'
+    ? `<span class="mn-signoff"><input type="checkbox" id="mn-so-${i}" data-signoff="${i}"${o.signedOff ? ' checked' : ''}><label for="mn-so-${i}">Signed off: save as done</label></span>`
+    : '';
+  return `<div class="mn-extra">
+      ${signoff}
+      <details${link ? ' open' : ''}>
+        <summary>${link ? 'Resource link' : 'Add a resource link'}</summary>
+        <div class="mn-linkbox">
+          <label for="mn-link-${i}" class="mn-sr">Resource link for ${_mnEsc(o.title)}</label>
+          <input type="url" class="form-input" id="mn-link-${i}" data-link="${i}" inputmode="url" placeholder="https://…" value="${_mnEsc(link)}" aria-describedby="mn-linkerr-${i}">
+          ${link ? `<a href="${_mnEsc(link)}" target="_blank" rel="noopener noreferrer">Open<span class="mn-sr"> the resource (opens in a new tab)</span></a>` : ''}
+          <span class="mn-linkerr" id="mn-linkerr-${i}" role="alert"></span>
+        </div>
+      </details>
+    </div>`;
+}
+
+// Returns true if the box holds a usable link (or nothing).
+function _mnSetLinkFromInput(inp) {
+  const r = _mn.review; if (!r) return true;
+  const o = r.ops[+inp.dataset.link]; if (!o) return true;
+  const err = document.getElementById('mn-linkerr-' + inp.dataset.link);
+  const v = _mnSafeLink(inp.value);
+  if (v === undefined) {
+    if (err) err.textContent = 'This is not a web address. It should start with https://';
+    inp.setAttribute('aria-invalid', 'true');
+    return false;
+  }
+  if (err) err.textContent = '';
+  inp.removeAttribute('aria-invalid');
+  o.entity[_mnLinkField(o)] = v;
+  if (o.kind === 'meeting') o.entity.linkedDocumentLabel = v ? (o.entity.linkedDocumentLabel || 'Resource') : null;
+  return true;
 }
 
 // Do-on day, steps and changes, for tasks and task updates.
@@ -847,6 +914,8 @@ async function _mnApply(e, offlineOk) {
   if (!r) return;
   const chosen = r.ops.filter(o => o.include);
   if (!chosen.length) { _mnToast('error', 'Nothing is ticked.'); return; }
+  const badLink = Array.from(document.querySelectorAll('#mn-panel input[data-link]')).find(inp => r.ops[+inp.dataset.link].include && !_mnSetLinkFromInput(inp));
+  if (badLink) { badLink.closest('details').open = true; badLink.focus(); _mnToast('error', 'One of the links is not a web address.'); return; }
   // October 2026: saving while the OneDrive folder is not connected only
   // keeps the items in this browser. Say so before it happens.
   if (!offlineOk && typeof hasFolderAccess === 'function' && !hasFolderAccess()) { _mnShowConnectPrompt(); return; }
@@ -876,6 +945,7 @@ async function _mnApply(e, offlineOk) {
         .map(act => ({ ...act, linkedTaskId: mapId(act.linkedTaskId) }));
       ent.entryId = mapId(ent.entryId);
       const merged = o._existing ? { ...o._existing, ...ent } : ent;
+      if (o._existing && !ent.linkedDocumentUrl && o._existing.linkedDocumentUrl) { merged.linkedDocumentUrl = o._existing.linkedDocumentUrl; merged.linkedDocumentLabel = o._existing.linkedDocumentLabel; }
       saveCalendarEntry(merged);
       undo.push({ store: 'calendar', id: merged.entryId, prev: o._existing });
     } else if (o.kind === 'action' || o.kind === 'date') {
@@ -888,8 +958,13 @@ async function _mnApply(e, offlineOk) {
       }
       if (o.kind === 'date' && !ent.date) ent.date = meetingDate;
       ent.entryId = mapId(ent.entryId);
-      // Keep progress made since the earlier import.
-      const merged = o._existing ? { ...o._existing, ...ent, status: o._existing.status || ent.status, microTasks: o._existing.microTasks || ent.microTasks } : ent;
+      // Keep progress made since the earlier import, and any link added since.
+      const merged = o._existing ? { ...o._existing, ...ent, status: o._existing.status || ent.status, microTasks: o._existing.microTasks || ent.microTasks,
+        resourceUrl: ent.resourceUrl || o._existing.resourceUrl || null } : ent;
+      if (o.kind === 'action' && o.signedOff) {
+        merged.status = (typeof TASK_STATUS !== 'undefined' ? TASK_STATUS.COMPLETE : 'complete');
+        merged.signedOffAt = (o._existing && o._existing.signedOffAt) || nowISO();
+      }
       saveCalendarEntry(merged);
       undo.push({ store: 'calendar', id: merged.entryId, prev: o._existing });
     } else if (o.kind === 'update') {
@@ -904,12 +979,12 @@ async function _mnApply(e, offlineOk) {
       undo.push({ store: 'calendar', id: merged.entryId, prev });
     } else if (o.kind === 'note') {
       if (ent.linkedMeetingId) ent.linkedMeetingId = meetingOp ? mapId(ent.linkedMeetingId) : null;
-      const merged = o._existing ? { ...o._existing, ...ent, createdAt: o._existing.createdAt } : { ...ent, createdAt: ent.createdAt || nowISO() };
+      const merged = o._existing ? { ...o._existing, ...ent, createdAt: o._existing.createdAt, resourceUrl: ent.resourceUrl || o._existing.resourceUrl || null } : { ...ent, createdAt: ent.createdAt || nowISO() };
       saveNote(merged);
       undo.push({ store: 'note', id: merged.noteId, prev: o._existing });
     } else if (o.kind === 'evidence') {
       if (o._existing) _mnRemoveActivity(o._existing.activityId);
-      const act = { ...ent, createdAt: (o._existing && o._existing.createdAt) || nowISO() };
+      const act = { ...ent, createdAt: (o._existing && o._existing.createdAt) || nowISO(), resourceUrl: ent.resourceUrl || (o._existing && o._existing.resourceUrl) || null };
       saveActivity(act);
       undo.push({ store: 'activity', id: act.activityId, prev: o._existing });
       if (o.loopEvidence) {
@@ -977,7 +1052,7 @@ function _mnRenderDone(chosen, backupMsg, meetingId, source) {
   panel.innerHTML = `
     <div class="mn-section">
       <h3 id="mn-done-h" tabindex="-1">Saved to the Hub</h3>
-      <ul style="margin:0 0 var(--space-sm);padding-left:20px;">${Object.keys(counts).map(k => `<li>${_mnEsc(k)}: ${counts[k]}</li>`).join('')}</ul>
+      <ul style="margin:0 0 var(--space-sm);padding-left:20px;">${Object.keys(counts).map(k => `<li>${_mnEsc(k)}: ${counts[k]}${k === 'Tasks' && chosen.some(o => o.signedOff) ? ` (${chosen.filter(o => o.signedOff).length} signed off as done)` : ''}</li>`).join('')}</ul>
       <p class="mn-hint">${_mnEsc(backupMsg)}</p>
       <div class="mn-actions-bar">
         ${meetingId ? '<button type="button" id="mn-open-meeting" class="btn btn--primary btn--sm">Open the meeting</button>' : ''}

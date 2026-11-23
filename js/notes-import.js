@@ -39,7 +39,7 @@
     update:   { prefix: 'U', required: ['Key', 'Task'] }
   };
   var NI_FIELDS = ['Key','Date','Due','Time','Type','With','Owner','Area','Focus','Loop',
-    'Meeting','Project','Status','Kind','Repeats','Movement','Attended','Task','Do','Check','Notes','Detail','Text','Summary','Steps'];
+    'Meeting','Project','Status','Kind','Repeats','Movement','Attended','Task','Do','Check','Link','Notes','Detail','Text','Summary','Steps'];
   var NI_LONG = ['Notes','Text','Summary','Detail','Steps'];
   var NI_MEETING_TYPES = (typeof MEETING_TYPE !== 'undefined')
     ? Object.keys(MEETING_TYPE).map(function (k) { return MEETING_TYPE[k]; })
@@ -59,9 +59,19 @@
     'Current Focus','Health Check','Health Checks','Teach Meet','Microsoft Teams','Google Classroom',
     'Immersive Reader','Exam Access','Access Arrangements','Line Focus','Screen Mask',
     'Accessibility Checker','Digital Accessibility','Winter Gardens','Learning Technology','Open Clinics','Experiential Learning',
-    'Cognitive Overload','Text Scrambling','Vision Simulation','Persona Spectrum','Reading Order','Colour Contrast'];
+    'Cognitive Overload','Text Scrambling','Vision Simulation','Persona Spectrum','Reading Order','Colour Contrast',
+    'Online Video','Scan To','Turn In','Add Work','Student View'];
 
   function _isNone(v) { return v == null || /^\s*(none|n\/a|-)?\s*$/i.test(String(v)); }
+
+  // November 2026: a web link to the resource an item is about (a deck,
+  // a guide, a SharePoint page). Only https and http links are kept, so a
+  // pasted link can never run code when it is opened from the Hub.
+  function _link(v) {
+    if (_isNone(v)) return null;
+    var s = String(v).trim().replace(/^<|>$/g, '');
+    return /^https?:\/\/[^\s<>"]+$/i.test(s) ? s : undefined;
+  }
 
   function _parseDate(v) {
     if (_isNone(v)) return null;
@@ -228,6 +238,8 @@
       if (it.kind === 'evidence' && !_isNone(f.Type) && NI_EVIDENCE_TYPES.indexOf(f.Type) < 0) e('Evidence type "' + f.Type + '" not recognised.');
       if (it.kind === 'evidence' && !_isNone(f.Movement) && NI_MOVEMENTS.indexOf(f.Movement) < 0) e('Movement "' + f.Movement + '" not recognised.');
       if (!_isNone(f.Attended) && !/^\d{1,4}$/.test(String(f.Attended).trim())) e('Attended "' + f.Attended + '" should be a number of people.');
+      if (_link(f.Link) === undefined) e('Link "' + String(f.Link).slice(0, 60) + '" is not a web address. It should start with https://.');
+      if (it.kind === 'update' && !_isNone(f.Link)) e('Update "' + it.title + '" has a Link. Links go on actions, notes, evidence, dates and meetings.');
       if (it.kind === 'evidence' && _isNone(f.Area) && _isNone(f.Focus)) e('Evidence "' + it.title + '" needs an area or a focus. Go back to your notes and choose an area on that line, or a focus for the meeting.');
       if (it.kind === 'evidence' && !_isNone(f.Movement) && f.Movement !== 'none' && _isNone(f.Loop)) w('Movement "' + f.Movement + '" given without a loop, so it will be ignored.');
       if (it.kind === 'date' && !_isNone(f.Kind) && NI_DATE_KINDS.indexOf(f.Kind) < 0) e('Date kind "' + f.Kind + '" not recognised.');
@@ -340,7 +352,7 @@
       var f = it.f, op = { key: f.Key.toUpperCase(), kind: it.kind, title: it.title, untick: !!it.untick, links: [] };
       var tm = _parseTime(f.Time) || {};
       var meetingRef = _isNone(f.Meeting) ? null : meetingIds[f.Meeting.toUpperCase()];
-      var fo = focusOf(f.Focus), lo = loopOf(f.Loop);
+      var fo = focusOf(f.Focus), lo = loopOf(f.Loop), link = _link(f.Link) || null;
       if (area(f.Area)) op.links.push({ type: 'area', label: area(f.Area) });
       if (fo) op.links.push({ type: 'focus', label: fo.title });
       if (lo) op.links.push({ type: 'loop', label: lo.title });
@@ -350,7 +362,7 @@
         op.dest = 'Meetings';
         op.entity = { entryId: meetingIds[f.Key.toUpperCase()], entryType: 'meeting', meetingType: _isNone(f.Type) ? 'other-staff' : f.Type,
           title: it.title, date: _parseDate(f.Date), startTime: tm.start || null, endTime: tm.end || null, location: null,
-          personRefs: people(f.With), areaCode: area(f.Area), linkedDocumentUrl: null, linkedDocumentLabel: null,
+          personRefs: people(f.With), areaCode: area(f.Area), linkedDocumentUrl: link, linkedDocumentLabel: link ? 'Resource' : null,
           prepNotes: null, links: [], myNotes: f.Notes || null, actions: [], notesComplete: true,
           linkedFocusId: fo ? fo.id : null, source: 'notes-import', importId: importId(f.Key) };
       } else if (it.kind === 'action') {
@@ -360,14 +372,16 @@
           status: _isNone(f.Status) ? 'upcoming' : f.Status, notes: f.Detail || null, microTasks: _steps(f.Steps, id), isSurfaceLayerVisible: true,
           doDate: _parseDate(f.Do) || null,
           source: meetingRef ? 'meeting' : 'notes-import', sourceRef: meetingRef ? { entryId: meetingRef } : {},
-          linkedFocusId: fo ? fo.id : null, linkedAfiId: lo ? lo.id : null, importId: importId(f.Key) };
+          linkedFocusId: fo ? fo.id : null, linkedAfiId: lo ? lo.id : null, resourceUrl: link, importId: importId(f.Key) };
+        // Work already finished when the notes were written comes in signed off.
+        op.signedOff = op.entity.status === 'complete';
         if (!op.entity.date) op.note = 'No due date, so it is set to the meeting date.';
       } else if (it.kind === 'note') {
         op.dest = 'Notes';
         op.entity = { noteId: id(), createdAt: cap ? cap + 'T09:00:00.000Z' : null, text: f.Text, areaCode: area(f.Area),
           projectRef: _isNone(f.Project) ? null : f.Project, linkedMeetingId: meetingRef, personRef: people(f.With).join(', ') || null, personStaffId: null,
           departmentId: null, linkedAfiId: lo ? lo.id : null, linkedFocusId: fo ? fo.id : null, personRefs: people(f.With),
-          source: 'notes-import', importId: importId(f.Key) };
+          resourceUrl: link, source: 'notes-import', importId: importId(f.Key) };
       } else if (it.kind === 'evidence') {
         op.dest = area(f.Area) ? 'Area log · ' + area(f.Area) : 'Cross-college activity';
         var links = [];
@@ -375,7 +389,7 @@
         op.entity = { activityId: id(), activityType: f.Type, date: _parseDate(f.Date) || cap, areaCode: area(f.Area) || '',
           staffIds: [], lraThemeIds: [], hyperThemes: [],
           summary: (f.Summary.indexOf(it.title) === 0 ? f.Summary : it.title + ': ' + f.Summary) + (people(f.With).length ? ' (with ' + people(f.With).join(', ') + ')' : ''), links: links, personRefs: people(f.With),
-          afiIdsGenerated: [], sharedId: null, qipRef: null, createdAt: null, source: 'notes-import', importId: importId(f.Key) };
+          afiIdsGenerated: [], sharedId: null, qipRef: null, createdAt: null, resourceUrl: link, source: 'notes-import', importId: importId(f.Key) };
         // How many people took part (sessions delivered). Feeds the My week report.
         if (!_isNone(f.Attended)) op.entity.attendees = parseInt(f.Attended, 10);
         if (lo) op.loopEvidence = { afiId: lo.id, loopMovement: (_isNone(f.Movement) || f.Movement === 'none') ? 'progresses' : f.Movement };
@@ -394,7 +408,7 @@
         op.entity = { entryId: id(), entryType: kind, title: it.title, date: _parseDate(f.Date),
           startTime: tm.start || null, endTime: tm.end || null, personRefs: people(f.With), areaCode: area(f.Area), status: null,
           notes: _isNone(f.Repeats) ? null : 'Repeats: ' + f.Repeats, linkedFocusId: fo ? fo.id : null,
-          source: 'notes-import', importId: importId(f.Key) };
+          resourceUrl: link, source: 'notes-import', importId: importId(f.Key) };
       }
       ops.push(op);
     });
@@ -411,7 +425,7 @@
     return ops;
   }
 
-  var api = { NI_HEADER: NI_HEADER, niParse: niParse, niBuild: niBuild, niParseDate: _parseDate, NI_EVIDENCE_TYPES: NI_EVIDENCE_TYPES, niInitialiseNames: niInitialiseNames };
+  var api = { NI_HEADER: NI_HEADER, niParse: niParse, niBuild: niBuild, niParseDate: _parseDate, NI_EVIDENCE_TYPES: NI_EVIDENCE_TYPES, niInitialiseNames: niInitialiseNames, niSafeLink: _link };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  else { root.niParse = niParse; root.niBuild = niBuild; root.NI_HEADER = NI_HEADER; root.niParseDate = _parseDate; root.niInitialiseNames = niInitialiseNames; }
+  else { root.niParse = niParse; root.niBuild = niBuild; root.NI_HEADER = NI_HEADER; root.niParseDate = _parseDate; root.niInitialiseNames = niInitialiseNames; root.niSafeLink = _link; }
 })(this);

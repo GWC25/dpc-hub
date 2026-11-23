@@ -342,6 +342,7 @@ function _renderAreaTab(tab, areaCode) {
             <div style="flex:1;">
               <span style="font-size:var(--text-xs);font-weight:var(--font-bold);background:var(--color-teal-lt);color:var(--color-teal);padding:1px 8px;border-radius:999px;margin-right:var(--space-xs);">${_escHtml(entry.activityType||'')}</span>
               <span style="font-size:var(--text-sm);color:var(--color-slate);">${_escHtml(entry.summary||'')}</span>
+              ${/^https?:\/\//i.test(entry.resourceUrl || '') ? `<a href="${_escHtml(entry.resourceUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;font-size:var(--text-sm);margin-top:2px;">Open the resource<span class="sr-only"> (opens in a new tab)</span></a>` : ''}
             </div>
           </div>`).join('')
       }`;
