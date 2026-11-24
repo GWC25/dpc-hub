@@ -91,8 +91,16 @@ async function ciLoadInbox() {
     if (!names.length) { _ci.items = []; return; }
     const key = await _ciKey(pass, index.salt, index.iter || 310000);
     const files = await Promise.all(names.map(n => _ciGetJson(CI_INBOX_URL + encodeURIComponent(n))));
-    const notes = [];
-    for (const f of files) { if (f) notes.push(await _ciDecrypt(key, f)); }
+    // 24/11/26: open each note on its own. Before this, one note locked
+    // with a different passphrase made the whole inbox fail, and the Hub
+    // then deleted the saved passphrase and asked for it again.
+    const notes = []; let locked = 0;
+    for (const f of files) {
+      if (!f) continue;
+      try { notes.push(await _ciDecrypt(key, f)); } catch (e) { locked++; }
+    }
+    if (locked && !notes.length) throw new Error('That passphrase did not unlock the notes. Check it and try again.');
+    if (locked) _ci.error = locked + (locked === 1 ? ' note' : ' notes') + ' could not be opened with your saved passphrase. They were probably locked with a different one; ask Claude to publish them again with the inbox passphrase. Your other notes are below.';
     _ci.items = notes.map(n => _ciDescribe(n.name, n.text || '')).sort((a, b) => b.name.localeCompare(a.name));
   } catch (e) {
     _ci.error = e.message || String(e);

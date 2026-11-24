@@ -84,13 +84,14 @@ function _tiRenderConnect(panel) {
     <section class="mn-section" aria-labelledby="ti-h-connect">
       <h3 id="ti-h-connect" tabindex="-1">Connect your OneDrive folder</h3>
       <p class="mn-hint">Meeting summaries are read from the "${_mnEsc(TI_FOLDER)}" folder inside your Hub folder, so the folder needs to be connected first.</p>
-      <div class="mn-actions-bar"><button type="button" id="ti-reconnect" class="btn btn--primary">Reconnect the folder</button></div>
+      <div class="mn-actions-bar"><button type="button" id="ti-reconnect" class="btn btn--primary">Choose your OneDrive folder</button></div>
     </section>`;
   document.getElementById('ti-reconnect').addEventListener('click', async () => {
-    if (typeof requestStoredFolderPermission !== 'function' || !(await requestStoredFolderPermission())) {
-      _mnToast('error', 'The folder could not be reconnected here. Use Settings to choose it again.');
-      return;
-    }
+    // 24/11/26: open the folder chooser straight away (Edge's re-allow
+    // prompt often only shows as an address-bar icon, so it seemed dead).
+    const res = typeof chooseFolderFromClick === 'function' ? await chooseFolderFromClick(null) : 'The Hub could not open the folder chooser.';
+    if (res !== true) { _mnToast('error', res); return; }
+    if (typeof pauseAutoSave === 'function') pauseAutoSave();
     try { sessionStorage.setItem('dpc-meeting-notes-return', 'transcript'); } catch (err) { /* lands on home instead */ }
     location.reload();
   });

@@ -1019,15 +1019,16 @@ function _mnShowConnectPrompt() {
       <h3>Your OneDrive folder is not connected</h3>
       <p class="mn-hint" style="margin:0 0 8px;">Saving now keeps these items in this browser only. Reconnect first so they reach your folder. The Hub reloads to fetch your latest data, then brings you back here.${keep}</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button type="button" id="mn-reconnect" class="btn btn--primary btn--sm">Reconnect the folder</button>
+        <button type="button" id="mn-reconnect" class="btn btn--primary btn--sm">Choose your OneDrive folder</button>
         <button type="button" id="mn-save-offline" class="btn btn--ghost btn--sm">Save in this browser only</button>
       </div>
     </div>`;
   document.getElementById('mn-reconnect').addEventListener('click', async () => {
-    if (typeof requestStoredFolderPermission !== 'function' || !(await requestStoredFolderPermission())) {
-      _mnToast('error', 'The folder could not be reconnected here. Use Settings to choose it again.');
-      return;
-    }
+    // 24/11/26: open the folder chooser straight away (Edge's re-allow
+    // prompt often only shows as an address-bar icon, so it seemed dead).
+    const res = typeof chooseFolderFromClick === 'function' ? await chooseFolderFromClick(null) : 'The Hub could not open the folder chooser.';
+    if (res !== true) { _mnToast('error', res); return; }
+    if (typeof pauseAutoSave === 'function') pauseAutoSave();
     try { sessionStorage.setItem('dpc-meeting-notes-return', _mn.tab); } catch (err) { /* lands on home instead */ }
     location.reload();
   });

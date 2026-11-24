@@ -1,4 +1,5 @@
-// DPC Hub · js/data.js · v2.2 · 23/11/26 · remembered folder checked before use; load errors no longer leave a blank Hub
+// DPC Hub · js/data.js · v2.3 · 24/11/26 · reconnect opens the chooser straight away; a file Edge cannot read is never overwritten
+// v2.2 · 23/11/26 · remembered folder checked before use; load errors no longer leave a blank Hub
 // v2.1 · 19/11/26 · OneDrive reconnect: second click opens the chooser, gone folders forgotten, Settings reload
 // v2.0 · 09/11/26 · DA&I store (data-dai.json), bulk staff save
 // v1.9 · 09/11/26 · Hub Lite archived: Supabase capture check removed
@@ -327,41 +328,41 @@ async function selectFolderFirstTime(ui) {
 }
 
 // ── Step 3b: Weekly reconnect ─────────────────────────────────
-// First click: ask the browser to allow the remembered folder again (no
-// chooser). If that is refused or the folder has gone, the button changes
-// to "Choose your OneDrive folder" and the next click opens the chooser
-// straight away, so the browser cannot block it.
+// v2.3 (24/11/26): the button now opens the folder chooser straight away.
+// Asking Edge to re-allow the remembered folder (requestPermission) was
+// unreliable: Edge often shows that request only as a small icon in the
+// address bar, so the click seemed to do nothing and the Hub waited for
+// ever. The chooser is a full window and always appears. It reopens in
+// the folder used last time (id 'dpc-hub-data'), so it is one more click.
 async function reconnectFolder(ui) {
-  _storedHandle(); // read it now, so the click below can ask for permission straight away
   const lastWeekSummary = buildLastWeekSummary();
   return new Promise((resolve) => {
-    let chooserNext = false;
-    const done = () => {
-      localStorage.setItem(DPC_CONFIG.LS_KEYS.FOLDER_HANDLE_STORED, 'true');
-      localStorage.setItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE, new Date().toISOString());
-      ui.hideFolderModal();
-      resolve(true);
-    };
-    const choose = async () => {
-      try {
-        await _pickAndStoreFolder(ui);
-        done();
-      } catch (err) {
-        ui.showFolderModalError(_folderPickerErrorMessage(err));
-      }
-    };
+    let busy = false;
     ui.showFolderModal({
       title:   'Good morning — weekly reconnect needed',
-      message: 'To keep your data secure, please reconnect to your OneDrive folder. This takes one click.',
+      message: 'Click the button, then choose your DPC-Hub > Data folder in OneDrive and click "Select folder". If Edge asks, choose "Edit files".',
       summary: lastWeekSummary,
-      btnLabel:'Reconnect to OneDrive folder',
+      btnLabel:'Choose your OneDrive folder',
       allowOffline: true,
       onConfirm: async () => {
-        if (chooserNext || !(await _storedHandle())) { await choose(); return; }
-        if (await requestStoredFolderPermission()) { done(); return; }
-        chooserNext = true;
-        ui.setFolderModalButton('Choose your OneDrive folder');
-        ui.showFolderModalError('Edge could not reopen the folder it remembered. Click "Choose your OneDrive folder" and select your DPC Hub data folder.');
+        if (busy) return;
+        busy = true;
+        // If nothing has come back after 10 seconds, say what to look for.
+        const watchdog = setTimeout(() => {
+          ui.showFolderModalError('No folder window yet? Look for a small folder or lock icon at the right-hand end of the address bar, click it and choose Allow. Then click the button again.');
+        }, 10000);
+        try {
+          await _pickAndStoreFolder(ui);
+          localStorage.setItem(DPC_CONFIG.LS_KEYS.FOLDER_HANDLE_STORED, 'true');
+          localStorage.setItem(DPC_CONFIG.LS_KEYS.PERMISSION_DATE, new Date().toISOString());
+          ui.hideFolderModal();
+          resolve(true);
+        } catch (err) {
+          ui.showFolderModalError(_folderPickerErrorMessage(err) + ' (' + ((err && err.name) || 'Error') + ')');
+        } finally {
+          clearTimeout(watchdog);
+          busy = false;
+        }
       },
       onOffline: () => {
         ui.hideFolderModal();
@@ -482,7 +483,17 @@ async function loadRequiredFiles(ui) {
   for (let i = 0; i < results.length; i++) {
     const filename = DPC_CONFIG.REQUIRED_FILES[i];
     const result   = results[i];
-    if (result.status === 'rejected' || result.value === null) {
+    if (result.status === 'rejected') {
+      // v2.3: the file is there but Edge could not read it. Do not write
+      // over it; say which file and why, so it can be fixed in OneDrive.
+      _pendingBanners.push({
+        type:        'red',
+        message:     `${filename} is in your OneDrive folder but could not be read (${_unreadable.get(filename) || 'read error'}). It has not been changed. In File Explorer, right-click the DPC-Hub Data folder, choose "Always keep on this device", wait for the green ticks, then reload the Hub.`,
+        dismissible: false,
+      });
+      continue;
+    }
+    if (result.value === null) {
       // Try to create the file with defaults
       if (filename === 'data-areas.json') {
         const seedData = await _buildDefaultAreas();
@@ -527,7 +538,19 @@ async function loadOptionalFiles() {
   for (let i = 0; i < results.length; i++) {
     const filename = DPC_CONFIG.OPTIONAL_FILES[i];
     const result   = results[i];
-    if (result.status === 'rejected' || result.value === null) {
+    if (result.status === 'rejected') {
+      // v2.3: present but unreadable. Use the empty default on screen but
+      // never save it over the real file (_writeFile refuses).
+      const defaultVal = DEFAULT_DATA[filename];
+      if (defaultVal) _assignToStore(filename, defaultVal);
+      _pendingBanners.push({
+        type:        'red',
+        message:     `${filename} could not be read (${_unreadable.get(filename) || 'read error'}), so that part of the Hub is showing empty. The file has not been changed. Set the DPC-Hub Data folder to "Always keep on this device" in File Explorer, then reload.`,
+        dismissible: false,
+      });
+      continue;
+    }
+    if (result.value === null) {
       // File missing — use default, queue a non-blocking banner
       const defaultVal = DEFAULT_DATA[filename];
       if (defaultVal) _assignToStore(filename, defaultVal);
@@ -573,7 +596,7 @@ async function _saveAllDirty(ui) {
   }
   ui.showSaveIndicator('saving');
   const errors = [];
-  const promises = [..._dirty].map(async (filename) => {
+  const promises = [..._dirty].filter(f => !_unreadable.has(f)).map(async (filename) => {
     try {
       const data = _getDataForFile(filename);
       await _writeFile(filename, data);
@@ -2757,6 +2780,11 @@ async function forceSaveNow(ui) {
 }
 
 // ── Internal: file read ───────────────────────────────────────
+// v2.3 (24/11/26): files that exist but could not be read (OneDrive not
+// finished downloading, locked, part-synced). Before this, a failed read
+// was treated as "missing" and seed or empty data was written over the
+// real file. Nothing is ever written to a file in this set.
+const _unreadable = new Map(); // filename -> error name
 async function _readFile(filename) {
   if (!_folderHandle) return null;
   try {
@@ -2769,6 +2797,8 @@ async function _readFile(filename) {
     return JSON.parse(text);
   } catch (err) {
     if (err.name === 'NotFoundError') return null;
+    _unreadable.set(filename, err.name || 'Error');
+    console.error('DPC Hub: ' + filename + ' exists but could not be read, so it will not be saved over:', err);
     throw err;
   }
 }
@@ -2776,6 +2806,7 @@ async function _readFile(filename) {
 // ── Internal: file write ──────────────────────────────────────
 async function _writeFile(filename, data) {
   if (!_folderHandle) return;
+  if (_unreadable.has(filename)) throw new Error(filename + ' could not be read when the Hub loaded, so it is protected from being saved over.');
   const fileHandle   = await _folderHandle.getFileHandle(filename, { create: true });
   const writable     = await fileHandle.createWritable();
   await writable.write(JSON.stringify(data, null, 2));
