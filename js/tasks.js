@@ -37,7 +37,7 @@ function initTasks() {
     </div>
     <p id="task-filter-hint" style="font-size:var(--text-sm);color:var(--color-slate);margin:-8px 0 var(--space-md);"></p>
 
-    <div id="task-list"></div>
+    <div id="task-list" tabindex="-1" aria-label="Tasks"></div>
 
     <!-- New/Edit task modal -->
     <div id="task-modal" role="dialog" aria-modal="true" aria-labelledby="task-modal-title" style="
@@ -94,7 +94,9 @@ function initTasks() {
           <button id="task-modal-save" type="button" class="btn btn--primary">Save</button>
           <button id="task-modal-cancel" type="button" class="btn btn--secondary">Cancel</button>
           <button id="task-modal-delete" type="button" class="btn btn--ghost" style="color:var(--color-red);border-color:var(--color-red);display:none;">Delete</button>
+          <button id="task-modal-loop" type="button" class="btn btn--ghost" style="display:none;" aria-describedby="task-loop-msg">Make this a loop</button>
         </div>
+        <p id="task-loop-msg" role="status" aria-live="polite" style="font-size:var(--text-sm);margin:6px 0 0;"></p>
       </div>
     </div>
   `;
@@ -164,6 +166,8 @@ function _renderTaskList() {
           ${t.source && t.source !== 'manual' ? ` · <span style="font-style:italic;">from ${_tEsc(t.source)}</span>` : ''}
         </p>
         ${t.notes ? `<p style="font-size:var(--text-xs);color:var(--color-slate);margin-top:2px;">${_tEsc(t.notes)}</p>` : ''}
+        ${!isDone && (t.loopIds || []).length ? `<p style="margin-top:4px;"><button type="button" class="btn btn--ghost btn--sm task-loop-open" data-afi-id="${_tEsc(t.loopIds[t.loopIds.length - 1])}">Open its loop<span class="sr-only">: ${_tEsc(t.title)}</span></button></p>` : ''}
+        ${!isDone && !(t.loopIds || []).length && taskLooksLikeLoop(t) ? `<p style="margin-top:4px;"><button type="button" class="btn btn--ghost btn--sm task-loop-make" data-task-id="${t.entryId}">Make this a loop<span class="sr-only">: ${_tEsc(t.title)}</span></button></p>` : ''}
         ${t.resourceUrl ? `<p style="font-size:var(--text-xs);margin-top:2px;"><a href="${_tEsc(t.resourceUrl)}" target="_blank" rel="noopener noreferrer">Open the resource<span class="sr-only"> for ${_tEsc(t.title)} (opens in a new tab)</span></a>${t.signedOffAt ? ' · Signed off ' + _tEsc(_tFmtDate(t.signedOffAt.slice(0, 10))) : ''}</p>` : (t.signedOffAt ? `<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:2px;">Signed off ${_tEsc(_tFmtDate(t.signedOffAt.slice(0, 10)))}</p>` : '')}
         ${steps.length && !isDone ? `<ul style="list-style:none;margin:6px 0 0;padding:0;">${steps.map((m, i) => `
           <li style="display:flex;align-items:center;gap:8px;min-height:32px;">
@@ -177,6 +181,13 @@ function _renderTaskList() {
   list.querySelectorAll('.task-done-checkbox').forEach(cb => {
     cb.addEventListener('change', () => _tSetTaskDone(cb.dataset.taskId, cb.checked));
   });
+  list.querySelectorAll('.task-loop-make').forEach(b => b.addEventListener('click', () => {
+    const t = _getAllTasks().find(x => x.entryId === b.dataset.taskId);
+    if (t && !t.areaCode) { _openTaskModal(t.entryId); _tLoopMsg('Choose an area for this task first, then select Make this a loop.', true); document.getElementById('task-area')?.focus(); return; }
+    const afi = taskToLoop(b.dataset.taskId);
+    if (afi) { _renderTaskList(); if (typeof UI !== 'undefined') UI.showToast('success', 'Loop opened: ' + afi.lraThemeLabel + '. It is in Loops.'); document.getElementById('task-list')?.focus(); }
+  }));
+  list.querySelectorAll('.task-loop-open').forEach(b => b.addEventListener('click', () => { if (typeof openLoop === 'function') openLoop(b.dataset.afiId); }));
   list.querySelectorAll('.task-row-open').forEach(row => {
     row.addEventListener('click', () => _openTaskModal(row.dataset.taskId));
   });
@@ -232,11 +243,14 @@ function _openTaskModal(taskId = null) {
   document.getElementById('task-link').removeAttribute('aria-invalid');
   document.getElementById('task-modal-id').value = taskId || '';
   if (deleteBtn) deleteBtn.style.display = task ? 'inline-flex' : 'none';
+  const loopBtn = document.getElementById('task-modal-loop');
+  if (loopBtn) loopBtn.style.display = task && task.status !== TASK_STATUS.COMPLETE ? 'inline-flex' : 'none';
+  _tLoopMsg('');
   modal.style.display = 'flex';
   document.getElementById('task-title').focus();
 }
 
-function _saveTaskModal() {
+function _saveTaskModal(quiet) {
   const title = document.getElementById('task-title').value.trim();
   const date = document.getElementById('task-date').value;
   if (!title) { document.getElementById('task-title').focus(); return; }
@@ -276,6 +290,7 @@ function _saveTaskModal() {
     sourceRef: existing?.sourceRef || null,
   };
   saveCalendarEntry(task);
+  if (quiet === true) return;
   document.getElementById('task-modal').style.display = 'none';
   _renderTaskList();
   if (typeof UI !== 'undefined') UI.showToast('success', `Task ${existing ? 'updated' : 'created'}: ${title}`);
@@ -286,6 +301,17 @@ function _wireTaskEvents() {
   document.getElementById('task-modal-close')?.addEventListener('click', () => { document.getElementById('task-modal').style.display = 'none'; });
   document.getElementById('task-modal-cancel')?.addEventListener('click', () => { document.getElementById('task-modal').style.display = 'none'; });
   document.getElementById('task-modal-save')?.addEventListener('click', _saveTaskModal);
+  document.getElementById('task-modal-loop')?.addEventListener('click', () => {
+    const id = document.getElementById('task-modal-id').value;
+    const area = document.getElementById('task-area').value;
+    if (!area) { _tLoopMsg('Choose an area first. A loop belongs to an area.', true); document.getElementById('task-area').focus(); return; }
+    _saveTaskModal(true);
+    const afi = taskToLoop(id);
+    if (!afi) { _tLoopMsg('The loop could not be made. Save the task and try again.', true); return; }
+    document.getElementById('task-modal').style.display = 'none';
+    _renderTaskList();
+    if (typeof UI !== 'undefined') UI.showToast('success', 'Loop opened: ' + afi.lraThemeLabel + '. It is in Loops.');
+  });
   document.getElementById('task-step-add')?.addEventListener('click', () => {
     _taskSteps.push({ id: generateId(), title: '', done: false });
     _renderTaskSteps();
@@ -379,3 +405,58 @@ function _getAllTasks() {
 }
 function _tFmtDate(iso) { if (!iso) return ''; try { return new Date(iso.split('T')[0] + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return iso; } }
 function _tEsc(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+// ── Tasks into loops (November 2026) ───────────────────────────
+// Notes often carried "Open a loop in the Hub: ..." as a task, because
+// loops could not be opened from anywhere else. This turns a task into
+// a loop in its area. A task that only existed to open the loop is
+// marked done; any other task stays open and is listed on the loop as
+// its first action.
+const T_LOOP_PREFIX = /^\s*open\s+(a\s+)?loops?\b(\s+in\s+the\s+hub)?\s*[:\-]?\s*/i;
+
+function taskLooksLikeLoop(t) {
+  return T_LOOP_PREFIX.test(String(t && t.title || ''));
+}
+
+function _tLoopMsg(msg, isErr) {
+  const el = document.getElementById('task-loop-msg');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.style.color = isErr ? 'var(--color-red)' : 'var(--color-slate)';
+}
+
+function taskToLoop(taskId) {
+  const task = _getAllTasks().find(t => t.entryId === taskId);
+  if (!task || !task.areaCode || typeof saveAFI !== 'function') return null;
+  const onlyToOpen = T_LOOP_PREFIX.test(task.title || '');
+  const label = String(task.title || 'Loop').replace(T_LOOP_PREFIX, '').trim() || task.title;
+  const afi = {
+    afiId: generateId(),
+    areaCode: task.areaCode,
+    staffId: null,
+    lraCategoryId: null, lraThemeId: null,
+    lraThemeLabel: label.charAt(0).toUpperCase() + label.slice(1),
+    description: task.notes || task.title,
+    digitalOpportunity: null, digitalApplicable: null, rationaleTest: null,
+    status: AFI_STATUS.OPEN,
+    severity: AFI_SEVERITY.STRENGTHEN,
+    closeWindow: null,
+    linkedActions: onlyToOpen ? [] : [{
+      actionId: generateId(), actionType: 'task', description: task.title, taskId: task.entryId,
+      linkedTemplateId: null, linkedResourceId: null, linkedPathwayUrl: null,
+      targetDate: task.date || null, completedAt: null, kpiTag: null,
+    }],
+    evidenceChain: [],
+    parentObservationId: null, hyperThemeMatch: null, qipRef: null,
+    people: (task.personRefs || []).slice(),
+    source: (typeof AFI_SOURCE !== 'undefined' ? AFI_SOURCE.MANUAL : 'manual'),
+    fromTaskId: task.entryId,
+    closedAt: null,
+  };
+  saveAFI(afi);
+  task.loopIds = (task.loopIds || []).concat(afi.afiId);
+  // Plural ("Open loops ...") may need more than one loop, so it stays open.
+  if (onlyToOpen && !/^\s*open\s+loops\b/i.test(task.title)) task.status = TASK_STATUS.COMPLETE;
+  saveCalendarEntry(task);
+  return afi;
+}
