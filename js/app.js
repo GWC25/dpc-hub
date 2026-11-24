@@ -1,4 +1,5 @@
-// DPC Hub · js/app.js · v1.3 · 19/11/26 · folder modal relabel, return to Settings after reconnect
+// DPC Hub · js/app.js · v1.4 · 23/11/26 · warning banners stay on screen when changing page
+// v1.3 · 19/11/26 · folder modal relabel, return to Settings after reconnect
 // v1.2 · 09/11/26 · every page and opened record starts at the top
 // v1.1 · 09/11/26 · DA&I progress module
 // v1.0 · July 2026
@@ -29,6 +30,7 @@ const DOM = {
 };
 
 // ── UI object passed to data.js ───────────────────────────────
+const _stickyBanners = [];
 const UI = {
   showFolderModal({ title, message, btnLabel, summary='', allowOffline=false, onConfirm, onOffline }) {
     // Delegates to window.DPC_FOLDER_MODAL which is set up in hub.html
@@ -115,6 +117,24 @@ const UI = {
       banner.appendChild(close);
     }
     container.appendChild(banner);
+    // v1.4 (23/11/26): warnings that cannot be dismissed (e.g. "Not
+    // connected to OneDrive") are kept and put back on every page, since
+    // opening a page clears the main panel and used to wipe them unseen.
+    if (!dismissible || persistent) _stickyBanners.push(banner);
+  },
+
+  restoreStickyBanners() {
+    if (!_stickyBanners.length) return;
+    const main = DOM.mainContent();
+    if (!main) return;
+    let container = DOM.bannerContainer();
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'banner-container';
+      container.setAttribute('aria-live', 'polite');
+      main.prepend(container);
+    }
+    _stickyBanners.forEach(b => { if (!container.contains(b)) container.appendChild(b); });
   },
 
   showRestoreBanner(time, onRestore) {
@@ -211,6 +231,7 @@ function navigateTo(moduleKey) {
 
   _currentModule = moduleKey;
   MODULES[moduleKey].init();
+  UI.restoreStickyBanners();
   scrollHubToTop();
 }
 

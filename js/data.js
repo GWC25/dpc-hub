@@ -1,4 +1,5 @@
-// DPC Hub · js/data.js · v2.1 · 19/11/26 · OneDrive reconnect: second click opens the chooser, gone folders forgotten, Settings reload
+// DPC Hub · js/data.js · v2.2 · 23/11/26 · remembered folder checked before use; load errors no longer leave a blank Hub
+// v2.1 · 19/11/26 · OneDrive reconnect: second click opens the chooser, gone folders forgotten, Settings reload
 // v2.0 · 09/11/26 · DA&I store (data-dai.json), bulk staff save
 // v1.9 · 09/11/26 · Hub Lite archived: Supabase capture check removed
 // v1.8 · 02/10/26 · Session RAG-3 — re-scores Health Checks with the Copilot support priority method on load
@@ -99,6 +100,19 @@ async function tryReconnectSilently() {
     try {
       const perm = await handle.queryPermission({ mode: 'readwrite' });
       if (perm === 'granted') {
+        // v2.2 (23/11/26): Edge can still grant a folder that OneDrive has
+        // since moved or re-synced. Trusting it made the first file read
+        // throw, which stopped the load before the reconnect box or the
+        // offline banner appeared (blank Hub). Read one entry to prove the
+        // folder is still there; if not, forget it so the reconnect box
+        // goes straight to the folder chooser.
+        try {
+          for await (const _name of handle.keys()) break;
+        } catch (err) {
+          console.warn('DPC Hub: the remembered folder no longer exists, so it has been forgotten:', err);
+          _forgetStoredHandle();
+          return false;
+        }
         _folderHandle = handle;
         return true;
       }
@@ -658,9 +672,24 @@ async function loadHub(ui) {
     // with defaults, same as before.
   }
 
-  await loadManifest(ui);
-  await loadRequiredFiles(ui);
-  await loadOptionalFiles();
+  // v2.2 (23/11/26): a folder that fails part-way through loading no
+  // longer leaves a blank Hub. Drop the folder, carry on with empty
+  // defaults under the red "Not connected" banner, and say what happened.
+  try {
+    await loadManifest(ui);
+    await loadRequiredFiles(ui);
+    await loadOptionalFiles();
+  } catch (err) {
+    console.error('DPC Hub: could not read the OneDrive folder:', err);
+    _folderHandle = null;
+    _forgetStoredHandle();
+    _pendingBanners.push({
+      type:        'red',
+      message:     'The Hub could not read your OneDrive folder (it may have been moved or re-synced). Go to Settings and click "Choose a different folder", then pick your DPC-Hub &gt; Data folder.',
+      dismissible: false,
+    });
+    await loadRequiredFiles(ui);
+  }
   await checkSessionSnapshot(ui);
   initAutoSave(ui);
 
