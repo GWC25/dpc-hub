@@ -25,7 +25,7 @@
 const MW_GROUPS = [
   { id: 'sessions', label: 'Training and sessions delivered', types: ['cpd-delivered', 'teach-meet'] },
   { id: 'coaching', label: 'Coaching and practice support', types: ['coaching', 'devobs', 'learning-walk', 'health-check-visit', 'work-review', 'referral'] },
-  { id: 'meetings', label: 'Meetings', types: ['digital-lead-meeting', 'hoa-meeting', 'meeting', 'tlam-meeting'] },
+  { id: 'meetings', label: 'Meetings', types: ['digital-lead-meeting', 'hoa-meeting', 'meeting', 'tlam-meeting', 'cal-meeting'] },
   { id: 'quality', label: 'Quality processes', types: ['ppr', 'cqrp', 'qra', 'peer-review', 'self-review', 'qip-review', 'sar-contribution', 'securing-improvement'] },
   { id: 'resources', label: 'Resources created', types: ['resource-created'] },
 ];
@@ -35,6 +35,7 @@ const MW_TYPE_LABELS = {
   'digital-lead-meeting': 'Digital Lead meeting', 'hoa-meeting': 'Head of Area meeting', 'meeting': 'Meeting', 'tlam-meeting': 'TLAM meeting',
   'ppr': 'PPR', 'cqrp': 'CQRP', 'qra': 'QRA', 'peer-review': 'Peer review', 'self-review': 'Self review', 'qip-review': 'QIP',
   'sar-contribution': 'SAR contribution', 'securing-improvement': 'Securing improvement', 'resource-created': 'Resource created',
+  'cal-meeting': 'Meeting',
 };
 
 function _mwEsc(s) { return s == null ? '' : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -112,11 +113,29 @@ function mwData(opts) {
     const meeting = a.importId ? cal.find(e => e.importId && e.entryType === 'meeting' && e.importId.split(':')[0] === a.importId.split(':')[0]) : null;
     if (meeting && meeting.linkedFocusId && fids.indexOf(meeting.linkedFocusId) < 0) fids.push(meeting.linkedFocusId);
     return {
-      id: a.activityId || '', date: a.date, type: a.activityType, typeLabel: MW_TYPE_LABELS[a.activityType] || a.activityType || 'Activity',
+      id: a.activityId || '', kind: 'activity', ref: a.importId ? String(a.importId).split(':')[0] : '', date: a.date, type: a.activityType, typeLabel: MW_TYPE_LABELS[a.activityType] || a.activityType || 'Activity',
       area: a.areaCode || '', focus: fids.map(focusTitle).filter(Boolean),
       summary: a.summary || '', attendees: Number.isFinite(a.attendees) ? a.attendees : null,
     };
   });
+
+  // November 2026: meetings saved on the Meetings page (or from notes)
+  // are calendar entries, not activities, so they were never counted.
+  // Held meetings in the period count, unless the same notes already
+  // logged that meeting as an activity.
+  const today = new Date().toISOString().slice(0, 10);
+  const loggedRefs = rows.filter(r => r.type === 'meeting' || /-meeting$/.test(r.type)).map(r => r.ref).filter(Boolean);
+  cal.filter(e => e.entryType === 'meeting' && _mwIn(e.date, from, to) && String(e.date).slice(0, 10) <= today)
+    .filter(e => !(e.importId && loggedRefs.indexOf(e.importId.split(':')[0]) >= 0))
+    .forEach(e => {
+      const who = (e.personRefs || []).filter(Boolean);
+      rows.push({
+        id: e.entryId || '', kind: 'meeting', ref: e.importId ? e.importId.split(':')[0] : '', date: e.date, type: 'cal-meeting', typeLabel: 'Meeting',
+        area: e.areaCode || '', focus: [focusTitle(e.linkedFocusId)].filter(Boolean),
+        summary: (e.title || 'Meeting') + (who.length ? ' (with ' + who.join(', ') + ')' : ''), attendees: null,
+      });
+    });
+  rows.sort((a, b) => String(a.date).localeCompare(String(b.date)));
 
   const groups = MW_GROUPS.map(g => ({ ...g, rows: rows.filter(r => g.types.indexOf(r.type) >= 0) }));
   const known = [].concat(...MW_GROUPS.map(g => g.types));
@@ -194,7 +213,7 @@ function mwRenderReport(opts) {
         <h4 class="mw-h">${_mwEsc(g.label)} (${g.rows.length})</h4>
         <table class="mw-table">
           <thead><tr><th scope="col">Date</th><th scope="col">Where</th><th scope="col">What</th>${g.id === 'sessions' ? '<th scope="col">People</th>' : ''}<th scope="col"><span class="mw-sr">Edit</span></th></tr></thead>
-          <tbody>${g.rows.map(r => `<tr data-mw-row="${_mwEsc(r.id)}"><td>${_mwEsc(_mwDate(r.date))}</td><td>${_mwEsc(r.area || r.focus[0] || 'College-wide')}</td><td>${_mwEsc(r.summary)}</td>${g.id === 'sessions' ? `<td>${r.attendees == null ? 'Not recorded' : r.attendees}</td>` : ''}<td>${r.id ? `<button type="button" class="btn btn--ghost btn--sm mw-edit" data-mw-edit="${_mwEsc(r.id)}" data-mw-cols="${g.id === 'sessions' ? 5 : 4}" aria-label="Edit ${_mwEsc(_mwDate(r.date))}: ${_mwEsc(_mwShort(r.summary))}">Edit</button>` : ''}</td></tr>`).join('')}</tbody>
+          <tbody>${g.rows.map(r => `<tr data-mw-row="${_mwEsc(r.id)}"><td>${_mwEsc(_mwDate(r.date))}</td><td>${_mwEsc(r.area || r.focus[0] || 'College-wide')}</td><td>${_mwEsc(r.summary)}</td>${g.id === 'sessions' ? `<td>${r.attendees == null ? 'Not recorded' : r.attendees}</td>` : ''}<td>${r.id ? `<button type="button" class="btn btn--ghost btn--sm mw-edit" data-mw-edit="${_mwEsc(r.id)}" data-mw-kind="${r.kind}" data-mw-cols="${g.id === 'sessions' ? 5 : 4}" aria-label="Edit ${_mwEsc(_mwDate(r.date))}: ${_mwEsc(_mwShort(r.summary))}">Edit</button>` : ''}</td></tr>`).join('')}</tbody>
         </table>`).join('') : '<p class="ms-muted">Nothing logged in this period yet.</p>'}
       ${d.tasksDone.length ? `<h4 class="mw-h">Tasks completed (${d.tasksDone.length})</h4><ul>${d.tasksDone.map(t => `<li>${_mwEsc(t.title)}</li>`).join('')}</ul>` : ''}
       ${d.comingUp.length ? `<h4 class="mw-h">Coming up in the next seven days</h4><ul>${d.comingUp.map(e => `<li>${_mwEsc(_mwDate(e.date))}${e.startTime ? ' ' + _mwEsc(e.startTime) : ''}: ${_mwEsc(e.title)}</li>`).join('')}</ul>` : ''}
@@ -282,7 +301,10 @@ function _mwOpenEdit(btn) {
   const row = btn.closest('tr');
   const body = btn.closest('.report-preview') || document;
   body.querySelectorAll('tr.mw-edit-row').forEach(r => { const f = r.querySelector('form'); if (f) _mwCloseEdit(f, false); });
-  const a = (typeof getAllActivities === 'function' ? getAllActivities() : []).find(x => x.activityId === id);
+  const isMeeting = btn.dataset.mwKind === 'meeting';
+  const a = isMeeting
+    ? (((window.DPC_DATA.calendar && window.DPC_DATA.calendar.entries) || []).find(x => x.entryId === id))
+    : (typeof getAllActivities === 'function' ? getAllActivities() : []).find(x => x.activityId === id);
   if (!a || !row) return;
   const areas = ((window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || []).slice()
     .sort((x, y) => String(x.areaCode).localeCompare(String(y.areaCode)));
@@ -294,15 +316,20 @@ function _mwOpenEdit(btn) {
   const tr = document.createElement('tr');
   tr.className = 'mw-edit-row';
   tr.innerHTML = `<td colspan="${Number(btn.dataset.mwCols) || 5}">
-    <form class="mw-form" data-mw-id="${_mwEsc(id)}" aria-labelledby="${f}-h" novalidate>
-      <h5 id="${f}-h" class="mw-form__wide" style="margin:0;color:var(--color-navy);">Edit this evidence</h5>
+    <form class="mw-form" data-mw-id="${_mwEsc(id)}" data-mw-kind="${isMeeting ? 'meeting' : 'activity'}" aria-labelledby="${f}-h" novalidate>
+      <h5 id="${f}-h" class="mw-form__wide" style="margin:0;color:var(--color-navy);">${isMeeting ? 'Edit this meeting' : 'Edit this evidence'}</h5>
       <div><label class="form-label" for="${f}-date">Date</label>
         <input class="form-input" type="date" id="${f}-date" name="date" required value="${_mwEsc(String(a.date || '').slice(0, 10))}"></div>
       <div><label class="form-label" for="${f}-area">Area</label>
         <select class="form-input" id="${f}-area" name="area">
           ${opt('', 'College-wide (no area)', !a.areaCode)}
+          ${a.areaCode && !areas.some(x => x.areaCode === a.areaCode) ? opt(a.areaCode, a.areaCode, true) : ''}
           ${areas.map(x => opt(x.areaCode, x.areaCode + ' ' + (x.areaName || ''), x.areaCode === a.areaCode)).join('')}
         </select></div>
+      ${isMeeting ? `<div class="mw-form__wide"><label class="form-label" for="${f}-what">Meeting title</label>
+        <input class="form-input" type="text" id="${f}-what" name="what" required value="${_mwEsc(a.title || '')}"></div>
+      <div class="mw-form__wide"><label class="form-label" for="${f}-notes">Notes</label>
+        <textarea class="form-input" id="${f}-notes" name="notes">${_mwEsc(a.myNotes || '')}</textarea></div>` : `
       <div><label class="form-label" for="${f}-type">Type</label>
         <select class="form-input" id="${f}-type" name="type">
           ${types.map(t => opt(t, labels[t] || t, t === a.activityType)).join('')}
@@ -311,7 +338,7 @@ function _mwOpenEdit(btn) {
         <input class="form-input" type="number" inputmode="numeric" min="0" max="9999" step="1" id="${f}-people" name="people" aria-describedby="${f}-people-hint" value="${Number.isFinite(a.attendees) ? a.attendees : ''}">
         <span id="${f}-people-hint" class="ms-muted" style="font-size:var(--text-sm);">Leave blank if not recorded. Counts towards people trained on sessions delivered.</span></div>
       <div class="mw-form__wide"><label class="form-label" for="${f}-what">What</label>
-        <textarea class="form-input" id="${f}-what" name="what" required>${_mwEsc(a.summary || '')}</textarea></div>
+        <textarea class="form-input" id="${f}-what" name="what" required>${_mwEsc(a.summary || '')}</textarea></div>`}
       <p class="mw-form__err" id="${f}-err" role="alert" hidden></p>
       ${a.importId ? '<p class="mw-form__note">This came from imported notes. If you save the same notes again from the inbox, they will replace this edit.</p>' : ''}
       <div class="mw-form__btns">
@@ -345,12 +372,21 @@ async function _mwSaveEdit(form) {
   };
   const date = v('date').trim(), what = v('what').trim(), people = v('people').trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail('Enter a date.', 'date');
-  if (!what) return fail('Enter what happened.', 'what');
+  if (!what) return fail(form.dataset.mwKind === 'meeting' ? 'Enter a meeting title.' : 'Enter what happened.', 'what');
   const pf = form.elements.people;
   if (pf && pf.validity && pf.validity.badInput) return fail('People attended must be a whole number, or blank.', 'people');
   if (people && !/^\d{1,4}$/.test(people)) return fail('People attended must be a whole number, or blank.', 'people');
-  if (typeof updateActivity !== 'function') return fail('Saving is not available. Reload the Hub and try again.');
-  const rec = updateActivity(id, { date, areaCode: v('area'), activityType: v('type'), summary: what, attendees: people === '' ? null : Number(people) });
+  let rec = null;
+  if (form.dataset.mwKind === 'meeting') {
+    const e = ((window.DPC_DATA.calendar && window.DPC_DATA.calendar.entries) || []).find(x => x.entryId === id);
+    if (e && typeof saveCalendarEntry === 'function') {
+      rec = { ...e, date, areaCode: v('area') || null, title: what, myNotes: v('notes').trim() || null, lastUpdated: new Date().toISOString() };
+      saveCalendarEntry(rec);
+    }
+  } else {
+    if (typeof updateActivity !== 'function') return fail('Saving is not available. Reload the Hub and try again.');
+    rec = updateActivity(id, { date, areaCode: v('area'), activityType: v('type'), summary: what, attendees: people === '' ? null : Number(people) });
+  }
   if (!rec) return fail('This evidence could not be found. It may have been deleted. Reload the report.');
   if (typeof forceSaveNow === 'function' && typeof UI !== 'undefined') { try { await forceSaveNow(UI); } catch (e) { /* autosave will retry */ } }
   if (typeof _repRenderPreview === 'function') _repRenderPreview();

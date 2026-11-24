@@ -2391,7 +2391,8 @@ function updateActivity(activityId, changes) {
   const cross = (window.DPC_DATA.activities && window.DPC_DATA.activities.activities) || [];
   const home = areas.find(a => (a.activityLog || []).indexOf(rec) >= 0);
   const oldCode = home ? home.areaCode : '';
-  if (changes.areaCode && !areas.some(a => a.areaCode === changes.areaCode)) return null;
+  if (changes.areaCode && changes.areaCode !== (rec.areaCode || oldCode) && !areas.some(a => a.areaCode === changes.areaCode)) return null;
+  if (changes.areaCode && changes.areaCode === rec.areaCode && !home) delete changes.areaCode;
 
   if (changes.date) rec.date = changes.date;
   if (changes.activityType) rec.activityType = changes.activityType;

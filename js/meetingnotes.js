@@ -719,7 +719,7 @@ function _mnReview(text, source) {
 
   panel.innerHTML = `
     <h3 id="mn-review-h" tabindex="-1" style="font-size:var(--text-xl);color:var(--color-navy);margin:0 0 4px;">Check before it goes in</h3>
-    <p class="mn-hint">${ops.length} item${ops.length === 1 ? '' : 's'} found. Ticked items will be saved where shown. Items with a warning start unticked.${updating ? ` ${updating} already came in from these notes before and will be updated, not duplicated.` : ''}</p>
+    <p class="mn-hint">${ops.length} item${ops.length === 1 ? '' : 's'} found. Ticked items will be saved where shown. Items with a warning start unticked, except meetings, which are always saved so you can correct them later.${updating ? ` ${updating} already came in from these notes before and will be updated, not duplicated.` : ''}</p>
     ${(parsed.checks.length || general.length) ? `<div class="mn-callout"><h3>Questions to settle</h3><ul>${parsed.checks.map(c => `<li>${_mnEsc(c)}</li>`).join('')}${general.map(c => `<li>${_mnEsc(c)}</li>`).join('')}</ul></div>` : ''}
     ${order.map(g => `
       <fieldset class="mn-group">

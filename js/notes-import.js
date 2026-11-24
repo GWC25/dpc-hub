@@ -195,6 +195,11 @@
         });
       });
       hits.forEach(function (it) {
+        // November 2026: a question about a meeting (its date, who was
+        // there) left the meeting itself unticked, so it was never saved
+        // while its actions were. Meetings now stay ticked with the
+        // question shown; they can be edited after saving.
+        if (it.kind === 'meeting') { out.warnings.push({ line: it.line, key: it.f.Key, msg: 'Check after saving: ' + q, keep: true }); return; }
         if (!it.untick) out.warnings.push({ line: it.line, key: it.f.Key, msg: 'Linked to a check question: ' + q });
         it.untick = true;
       });
