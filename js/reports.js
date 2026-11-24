@@ -557,6 +557,7 @@ function _repRenderPreview() {
   } else if (type === REPORT_TYPES.MY_WEEK && typeof mwRenderReport === 'function') {
     body.innerHTML = _repProvenanceGuard() + mwRenderReport({ dateFrom: opts.dateFrom, dateTo: opts.dateTo });
     panel.style.display = '';
+    if (typeof mwWireEdit === 'function') mwWireEdit(body);
     return;
   } else if (type === REPORT_TYPES.MILESTONE_IMPACT && typeof msRenderReport === 'function') {
     const msOpts = { dateFrom: opts.dateFrom, dateTo: opts.dateTo, reflection: document.getElementById('rep-ms-reflection')?.value.trim() || '', nextSteps: document.getElementById('rep-ms-next')?.value.trim() || '' };

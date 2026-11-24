@@ -2378,6 +2378,58 @@ function setActivityLinks(activityId, links) {
   return true;
 }
 
+// November 2026: corrections from a report (My week). Edits the record
+// itself, so every page and report that reads it shows the change.
+// changes: any of date, areaCode ('' = cross-college), activityType,
+// summary, attendees (null = not recorded). Moves the record if the
+// area changes, and keeps loop evidence copies (sourceId) in step.
+// Returns the updated record, or null if it was not found.
+function updateActivity(activityId, changes) {
+  const rec = _findActivityRecord(activityId);
+  if (!rec || !changes) return null;
+  const areas = (window.DPC_DATA.areas && window.DPC_DATA.areas.areas) || [];
+  const cross = (window.DPC_DATA.activities && window.DPC_DATA.activities.activities) || [];
+  const home = areas.find(a => (a.activityLog || []).indexOf(rec) >= 0);
+  const oldCode = home ? home.areaCode : '';
+  if (changes.areaCode && !areas.some(a => a.areaCode === changes.areaCode)) return null;
+
+  if (changes.date) rec.date = changes.date;
+  if (changes.activityType) rec.activityType = changes.activityType;
+  if (changes.summary != null) rec.summary = String(changes.summary);
+  if ('attendees' in changes) {
+    if (changes.attendees == null || changes.attendees === '') delete rec.attendees;
+    else rec.attendees = Number(changes.attendees);
+  }
+  rec.lastUpdated = nowISO();
+  rec.editedInReport = nowISO();
+
+  if ('areaCode' in changes) {
+    const newCode = changes.areaCode || '';
+    if (newCode !== oldCode) {
+      if (home) { home.activityLog.splice(home.activityLog.indexOf(rec), 1); home.lastUpdated = nowISO(); }
+      else { const j = cross.indexOf(rec); if (j >= 0) cross.splice(j, 1); }
+      if (newCode) rec.areaCode = newCode; else delete rec.areaCode;
+      saveActivity(rec);
+    }
+  }
+
+  // Loop evidence copies carry their own date and summary.
+  const afis = (window.DPC_DATA.afi && window.DPC_DATA.afi.afis) || [];
+  afis.forEach(loop => {
+    let touched = false;
+    (loop.evidenceChain || []).forEach(ev => {
+      if (ev.sourceId !== activityId) return;
+      ev.date = rec.date; ev.summary = rec.summary; touched = true;
+    });
+    if (touched) _dirty.add('data-afi.json');
+  });
+
+  _dirty.add('data-areas.json');
+  _dirty.add('data-activities.json');
+  _writeLocalSnapshot();
+  return rec;
+}
+
 function getFocusProgress(focus) {
   const ms = getMilestones(focus);
   const count = (st) => ms.filter(m => m.state === st).length;
