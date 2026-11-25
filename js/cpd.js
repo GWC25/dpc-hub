@@ -1,4 +1,5 @@
-// DPC Hub · js/cpd.js · v1.1 · 02/10/26 · Session RAG-2 — CPD now saves to OneDrive (was never marked dirty); Teach Meet flag, attendance register by area, satisfaction
+// DPC Hub · js/cpd.js · v1.2 · 25/11/26 · CPD entries can arrive from the Claude inbox; My CPD shows summary, how it fits, resource link and focus
+// v1.1 · 02/10/26 · Session RAG-2 — CPD now saves to OneDrive (was never marked dirty); Teach Meet flag, attendance register by area, satisfaction
 // v1.0 · July 2026
 // CPD module. DPC personal CPD log. Planned training. CPD delivered to areas/individuals.
 
@@ -75,13 +76,16 @@ function _renderCPDTab(tab) {
         : entries.map(e=>`
           <div style="padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-sm);">
             <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-xs);flex-wrap:wrap;">
-              <span style="font-size:var(--text-xs);font-weight:bold;background:var(--color-teal-lt);color:var(--color-teal);padding:1px 8px;border-radius:999px;">${_cpdEsc(e.type||'CPD')}</span>
+              <span style="font-size:var(--text-xs);font-weight:bold;background:var(--color-teal-lt);color:var(--color-teal);padding:1px 8px;border-radius:999px;">${_cpdEsc(_cpdTypeLabel(e.type))}</span>
               <span style="font-size:var(--text-xs);color:var(--color-muted);">${_cpdFmtDate(e.date)}</span>
               ${e.confidenceRating?`<span style="font-size:var(--text-xs);color:var(--color-amber);">★ ${e.confidenceRating}/5</span>`:''}
             </div>
             <p style="font-size:var(--text-base);font-weight:bold;color:var(--color-navy);">${_cpdEsc(e.title||'')}</p>
-            ${e.notes?`<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:4px;">${_cpdEsc(e.notes)}</p>`:''}
-            ${e.actionsArising?`<p style="font-size:var(--text-xs);color:var(--color-teal);margin-top:4px;font-style:italic;">Actions: ${_cpdEsc(e.actionsArising)}</p>`:''}
+            ${_cpdFocusTitle(e.linkedFocusId)?`<p style="font-size:var(--text-xs);color:var(--color-muted);margin-top:2px;">Focus: ${_cpdEsc(_cpdFocusTitle(e.linkedFocusId))}</p>`:''}
+            ${e.summary?`<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:4px;white-space:pre-line;"><strong>Summary:</strong> ${_cpdEsc(e.summary)}</p>`:''}
+            ${e.notes?`<p style="font-size:var(--text-sm);color:var(--color-slate);margin-top:4px;white-space:pre-line;">${e.summary?'<strong>How it fits my work:</strong> ':''}${_cpdEsc(e.notes)}</p>`:''}
+            ${e.actionsArising?`<p style="font-size:var(--text-sm);color:var(--color-teal);margin-top:4px;white-space:pre-line;"><strong>Actions:</strong> ${_cpdEsc(e.actionsArising)}</p>`:''}
+            ${_cpdSafeUrl(e.resourceUrl)?`<p style="font-size:var(--text-sm);margin-top:4px;"><a href="${_cpdEsc(_cpdSafeUrl(e.resourceUrl))}" target="_blank" rel="noopener noreferrer">Open the reading<span class="mn-sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;"> ${_cpdEsc(e.title||'')} (opens in a new tab)</span></a></p>`:''}
           </div>`).join('')}
     `;
     document.getElementById('cpd-add-my')?.addEventListener('click',()=>_openCPDModal('my-cpd'));
@@ -242,5 +246,8 @@ function _saveCPDEntry() {
   if(typeof UI!=='undefined') UI.showToast('success','CPD entry saved.');
 }
 
+function _cpdTypeLabel(t){return({conference:'Conference',course:'Course',reading:'Reading / research',network:'Professional network',observation:'Observation',other:'Other'})[t]||t||'CPD';}
+function _cpdSafeUrl(u){return /^https?:\/\/[^\s<>"]+$/i.test(String(u||'').trim())?String(u).trim():'';}
+function _cpdFocusTitle(id){if(!id)return'';const D=window.DPC_DATA||{};const list=(D.focus&&(D.focus.focuses||D.focus.items))||(D.currentFocus&&(D.currentFocus.focuses||D.currentFocus.items))||[];const f=(Array.isArray(list)?list:[]).find(x=>x&&(x.focusId===id||x.id===id));return f?(f.title||''):'';}
 function _cpdFmtDate(iso){if(!iso)return'';try{return new Date(iso.split('T')[0]+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return iso;}}
 function _cpdEsc(str){if(!str)return'';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}

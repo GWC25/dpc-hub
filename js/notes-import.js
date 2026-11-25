@@ -36,7 +36,9 @@
     evidence: { prefix: 'E', required: ['Key', 'Type', 'Summary'] },
     date:     { prefix: 'D', required: ['Key', 'Date'] },
     // Changes to a task already in the Hub, by its Hub ID (Task:).
-    update:   { prefix: 'U', required: ['Key', 'Task'] }
+    update:   { prefix: 'U', required: ['Key', 'Task'] },
+    // November 2026: an entry for Graeme's own CPD log (CPD > My CPD).
+    cpd:      { prefix: 'C', required: ['Key'] }
   };
   var NI_FIELDS = ['Key','Date','Due','Time','Type','With','Owner','Area','Focus','Loop',
     'Meeting','Project','Status','Kind','Repeats','Movement','Attended','Task','Do','Check','Link','Notes','Detail','Text','Summary','Steps'];
@@ -49,6 +51,7 @@
   var NI_MOVEMENTS = ['opens','progresses','closes','none'];
   var NI_DATE_KINDS = ['deadline','meeting','work-block'];
   var NI_STATUS = ['upcoming','in-progress','complete'];
+  var NI_CPD_TYPES = ['conference','course','reading','network','observation','other'];
 
   // Pairs of capitalised words that are not names.
   var NI_NAME_ALLOW = ['Read Aloud','Read Write','Open Clinics','Learning Without','Without Barriers',
@@ -60,7 +63,11 @@
     'Immersive Reader','Exam Access','Access Arrangements','Line Focus','Screen Mask',
     'Accessibility Checker','Digital Accessibility','Winter Gardens','Learning Technology','Open Clinics','Experiential Learning',
     'Cognitive Overload','Text Scrambling','Vision Simulation','Persona Spectrum','Reading Order','Colour Contrast',
-    'Online Video','Scan To','Turn In','Add Work','Student View'];
+    'Online Video','Scan To','Turn In','Add Work','Student View',
+    // November 2026: titles of published CPD reading.
+    'Generative Activity','Learning Strategies','Cognitive Load','Load Theory','American Educator','Principles Of Instruction',
+    'Education Endowment','Endowment Foundation','Worked Examples','Retrieval Practice',
+    'Cambridge University','University Press','Power Apps','Power App','Learning Studio','Resource Finder','Department Of','Digital Inclusion','Digital Foundations','Digital Innovation'];
 
   function _isNone(v) { return v == null || /^\s*(none|n\/a|-)?\s*$/i.test(String(v)); }
 
@@ -247,6 +254,7 @@
       if (it.kind === 'update' && !_isNone(f.Link)) e('Update "' + it.title + '" has a Link. Links go on actions, notes, evidence, dates and meetings.');
       if (it.kind === 'evidence' && _isNone(f.Area) && _isNone(f.Focus)) e('Evidence "' + it.title + '" needs an area or a focus. Go back to your notes and choose an area on that line, or a focus for the meeting.');
       if (it.kind === 'evidence' && !_isNone(f.Movement) && f.Movement !== 'none' && _isNone(f.Loop)) w('Movement "' + f.Movement + '" given without a loop, so it will be ignored.');
+      if (it.kind === 'cpd' && !_isNone(f.Type) && NI_CPD_TYPES.indexOf(f.Type.toLowerCase()) < 0) e('CPD type "' + f.Type + '" not recognised. Use ' + NI_CPD_TYPES.join(', ') + '.');
       if (it.kind === 'date' && !_isNone(f.Kind) && NI_DATE_KINDS.indexOf(f.Kind) < 0) e('Date kind "' + f.Kind + '" not recognised.');
       if ((it.kind === 'action' || it.kind === 'update') && !_isNone(f.Status) && NI_STATUS.indexOf(f.Status) < 0) e('Status "' + f.Status + '" not recognised.');
       if (it.kind === 'update' && !_isNone(f.Task) && ctx.taskIds && !ctx.taskIds[String(f.Task).trim()]) e('Task "' + it.title + '" is not in the Hub any more. It may have been deleted.');
@@ -270,7 +278,7 @@
     return part.length === 1 ? part[0] : null;
   }
 
-  function _kindLabel(k) { return { meeting: 'Meeting', action: 'Action', note: 'Note', evidence: 'Evidence', date: 'Date', update: 'Update' }[k] || k; }
+  function _kindLabel(k) { return { meeting: 'Meeting', action: 'Action', note: 'Note', evidence: 'Evidence', date: 'Date', update: 'Update', cpd: 'CPD' }[k] || k; }
 
   // "- Book the room" lines -> subtasks.
   function _steps(v, id) {
@@ -414,6 +422,13 @@
           startTime: tm.start || null, endTime: tm.end || null, personRefs: people(f.With), areaCode: area(f.Area), status: null,
           notes: _isNone(f.Repeats) ? null : 'Repeats: ' + f.Repeats, linkedFocusId: fo ? fo.id : null,
           resourceUrl: link, source: 'notes-import', importId: importId(f.Key) };
+      } else if (it.kind === 'cpd') {
+        op.dest = 'My CPD';
+        op.entity = { id: id(), title: it.title, date: _parseDate(f.Date) || cap || null,
+          type: _isNone(f.Type) ? 'reading' : f.Type.toLowerCase(), notes: _isNone(f.Notes) ? '' : f.Notes,
+          summary: _isNone(f.Summary) ? '' : f.Summary, actionsArising: _isNone(f.Detail) ? '' : f.Detail,
+          confidenceRating: null, linkedFocusId: fo ? fo.id : null, resourceUrl: link,
+          source: 'notes-import', importId: importId(f.Key) };
       }
       ops.push(op);
     });

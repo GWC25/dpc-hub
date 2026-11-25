@@ -50,7 +50,7 @@ const MN_MARKS = [
   { value: 'E', label: 'E · Evidence' },
   { value: '?', label: '? · Check' },
 ];
-const MN_DEST_ORDER = ['Meetings', 'Tasks', 'Task changes', 'Calendar', 'Notes'];
+const MN_DEST_ORDER = ['Meetings', 'Tasks', 'Task changes', 'Calendar', 'Notes', 'My CPD'];
 const MN_TABS = ['write', 'paper', 'claude', 'transcript'];
 
 let _mn = { tab: 'write', draft: null, review: null, lastImport: null, saveTimer: null };
@@ -868,6 +868,19 @@ function _mnBack(text, source) {
 // ── Apply ─────────────────────────────────────────────────────
 function _mnCalendar() { return (window.DPC_DATA.calendar && window.DPC_DATA.calendar.entries) || []; }
 function _mnNotes() { return (window.DPC_DATA.notes && window.DPC_DATA.notes.notes) || []; }
+function _mnCPD() { return (window.DPC_DATA.cpd && window.DPC_DATA.cpd.entries) || []; }
+// November 2026: CPD entries from the Claude inbox, keyed by importId.
+function _mnSaveCPD(entry) {
+  if (!window.DPC_DATA.cpd) window.DPC_DATA.cpd = { entries: [], plannedTraining: [], deliveredCPD: [] };
+  const list = window.DPC_DATA.cpd.entries = window.DPC_DATA.cpd.entries || [];
+  const i = list.findIndex(c => c.id === entry.id);
+  if (i >= 0) list[i] = entry; else list.push(entry);
+  if (typeof saveCPDData === 'function') saveCPDData();
+}
+function _mnDeleteCPD(id) {
+  const list = _mnCPD(); const i = list.findIndex(c => c.id === id);
+  if (i >= 0) { list.splice(i, 1); if (typeof saveCPDData === 'function') saveCPDData(); }
+}
 function _mnActivities() { return typeof getAllActivities === 'function' ? getAllActivities() : []; }
 
 function _mnFindExisting(o) {
@@ -875,6 +888,7 @@ function _mnFindExisting(o) {
   const id = o.entity.importId;
   if (o.kind === 'note') return _mnNotes().find(n => n.importId === id) || null;
   if (o.kind === 'evidence') return _mnActivities().find(a => a.importId === id) || null;
+  if (o.kind === 'cpd') return _mnCPD().find(c => c.importId === id) || null;
   return _mnCalendar().find(e => e.importId === id) || null;
 }
 
@@ -934,6 +948,7 @@ async function _mnApply(e, offlineOk) {
     if (ex && o.entity.entryId) idMap[o.entity.entryId] = ex.entryId;
     if (ex && o.entity.noteId) o.entity.noteId = ex.noteId;
     if (ex && o.entity.activityId) o.entity.activityId = ex.activityId;
+    if (ex && o.kind === 'cpd') o.entity.id = ex.id;
   });
   const mapId = (id) => idMap[id] || id;
   const chosenTaskIds = chosen.filter(o => o.kind === 'action').map(o => o.entity.entryId);
@@ -982,6 +997,12 @@ async function _mnApply(e, offlineOk) {
       const merged = o._existing ? { ...o._existing, ...ent, createdAt: o._existing.createdAt, resourceUrl: ent.resourceUrl || o._existing.resourceUrl || null } : { ...ent, createdAt: ent.createdAt || nowISO() };
       saveNote(merged);
       undo.push({ store: 'note', id: merged.noteId, prev: o._existing });
+    } else if (o.kind === 'cpd') {
+      // Keep a confidence rating or actions added in the Hub since.
+      const merged = o._existing ? { ...o._existing, ...ent, confidenceRating: o._existing.confidenceRating ?? null,
+        actionsArising: ent.actionsArising || o._existing.actionsArising || '', resourceUrl: ent.resourceUrl || o._existing.resourceUrl || null } : ent;
+      _mnSaveCPD(merged);
+      undo.push({ store: 'cpd', id: merged.id, prev: o._existing });
     } else if (o.kind === 'evidence') {
       if (o._existing) _mnRemoveActivity(o._existing.activityId);
       const act = { ...ent, createdAt: (o._existing && o._existing.createdAt) || nowISO(), resourceUrl: ent.resourceUrl || (o._existing && o._existing.resourceUrl) || null };
@@ -1079,6 +1100,7 @@ async function _mnUndo() {
   imp.undo.slice().reverse().forEach(u => {
     if (u.store === 'calendar') { if (u.prev) saveCalendarEntry(u.prev); else deleteCalendarEntry(u.id); }
     else if (u.store === 'note') { if (u.prev) saveNote(u.prev); else deleteNote(u.id); }
+    else if (u.store === 'cpd') { if (u.prev) _mnSaveCPD(u.prev); else _mnDeleteCPD(u.id); }
     else if (u.store === 'activity') { _mnRemoveActivity(u.id); if (u.prev) { const p = { ...u.prev }; delete p.areaName; saveActivity(p); } }
     else if (u.store === 'afi') { const afis = window.DPC_DATA.afi.afis; const i = afis.findIndex(a => a.afiId === u.id); if (i >= 0) afis[i] = u.prev; saveAFI(u.prev); }
   });

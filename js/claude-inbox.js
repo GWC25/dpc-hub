@@ -117,7 +117,7 @@ function _ciDescribe(name, text) {
   const date = line(/^Captured\s*:\s*(.+)$/mi);
   const area = line(/^Area\s*:\s*(.+)$/mi);
   const counts = {};
-  (text.match(/^##\s*(Action|Date|Evidence|Note|Update)\s*:/gmi) || []).forEach(h => {
+  (text.match(/^##\s*(Action|Date|Evidence|Note|Update|CPD)\s*:/gmi) || []).forEach(h => {
     const k = h.replace(/^##\s*/, '').replace(/\s*:$/, '').toLowerCase(); counts[k] = (counts[k] || 0) + 1;
   });
   const checks = (text.match(/^##\s*Check\s*$([\s\S]*)/mi) || ['', ''])[1].split('\n').filter(l => /^\s*[-*•]\s+\S/.test(l)).length;
@@ -133,6 +133,7 @@ function ciIsApplied(ref) {
   const D = window.DPC_DATA || {};
   if (hit(D.calendar && D.calendar.entries) || hit(D.notes && D.notes.notes)) return true;
   if (hit(D.activities && D.activities.activities)) return true;
+  if (hit(D.cpd && D.cpd.entries)) return true;
   return ((D.areas && D.areas.areas) || []).some(a => hit(a.activityLog));
 }
 
@@ -208,7 +209,7 @@ function _ciRenderList(panel) {
               <span class="mn-chip${st === 'new' ? '' : ' mn-chip--update'}">${label[st]}</span>
               ${it.date ? `<span class="mn-chip">${_mnEsc(_ciDate(it.date))}</span>` : ''}
               ${it.area ? `<span class="mn-chip">Area ${_mnEsc(it.area)}</span>` : ''}
-              ${Object.keys(it.counts).map(k => `<span class="mn-chip">${it.counts[k]} ${_mnEsc(k)}${it.counts[k] === 1 ? '' : 's'}</span>`).join('')}
+              ${Object.keys(it.counts).map(k => `<span class="mn-chip">${it.counts[k]} ${k === 'cpd' ? 'CPD ' + (it.counts[k] === 1 ? 'entry' : 'entries') : _mnEsc(k) + (it.counts[k] === 1 ? '' : 's')}</span>`).join('')}
               ${it.checks ? `<span class="mn-chip mn-chip--update">${it.checks} question${it.checks === 1 ? '' : 's'} to settle</span>` : ''}
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
